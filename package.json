@@ -1,0 +1,4 @@
+{
+  "main": "./lib/search-in-buffer",
+  "description": "Find and replace in the open buffer"
+}
