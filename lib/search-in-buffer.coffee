@@ -2,7 +2,8 @@
 Editor = require 'editor'
 $ = require 'jquery'
 Point = require 'point'
-BufferSearch = require './buffer-search'
+SearchModel = require './search-model'
+BufferSearchResultsModel = require './buffer-search-results-model'
 BufferSearchView = require './buffer-search-view'
 
 module.exports =
@@ -33,8 +34,8 @@ class SearchInBufferView extends View
     @on 'core:confirm', => @confirm()
     @on 'core:cancel', => @detach()
 
-    @bufferSearch = new BufferSearch
-    @bufferSearchView = new BufferSearchView(@bufferSearch)
+    @searchModel = new SearchModel
+    #@bufferSearchView = new BufferSearchResultsModel(@searchModel)
 
   detach: ->
     return unless @hasParent()

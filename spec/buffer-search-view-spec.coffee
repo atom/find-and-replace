@@ -1,8 +1,9 @@
 RootView = require 'root-view'
-BufferSearch = require 'search-in-buffer/lib/buffer-search'
+SearchModel = require 'search-in-buffer/lib/search-model'
+BufferSearchResultsModel = require 'search-in-buffer/lib/buffer-search-results-model'
 BufferSearchView = require 'search-in-buffer/lib/buffer-search-view'
 
-fdescribe 'BufferSearchView', ->
+describe 'BufferSearchView', ->
   [goToLine, editor, subject, buffer, bufferSearch] = []
 
   beforeEach ->

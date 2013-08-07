@@ -1,8 +1,9 @@
 RootView = require 'root-view'
-BufferSearch = require 'search-in-buffer/lib/buffer-search'
+SearchModel = require 'search-in-buffer/lib/search-model'
+BufferSearchResultsModel = require 'search-in-buffer/lib/buffer-search-results-model'
 
-fdescribe 'BufferSearch', ->
-  [goToLine, editor, subject, buffer] = []
+fdescribe 'BufferSearchResultsModel', ->
+  [goToLine, editor, subject, buffer, searchModel] = []
 
   beforeEach ->
     window.rootView = new RootView
@@ -11,16 +12,21 @@ fdescribe 'BufferSearch', ->
     editor = rootView.getActiveView()
     buffer = editor.activeEditSession.buffer
 
-    subject = new BufferSearch()
+    searchModel = new SearchModel()
+    subject = new BufferSearchResultsModel(searchModel)
 
   describe "search()", ->
+    beforeEach ->
+      subject.setBuffer(buffer)
+      searchModel.setPattern('items')
+
     it "finds all the matching ranges", ->
-      subject.search(buffer, 'items')
       expect(subject.ranges.length).toEqual 6
 
   describe "findNext()", ->
     beforeEach ->
-      subject.search(buffer, 'items')
+      subject.setBuffer(buffer)
+      searchModel.setPattern('items')
 
     it "finds next when before all ranges", ->
       range = subject.findNext([[0,0],[0,3]])
@@ -41,3 +47,12 @@ fdescribe 'BufferSearch', ->
     it "finds proper next range when selection inside of range", ->
       range = subject.findNext([[1,22],[1,25]])
       expect(range).toEqual [[2,8],[2,13]]
+
+    it "handles update to buffer", ->
+      buffer.on 'contents-modified', changeHandler = jasmine.createSpy()
+      buffer.insert([1, 0], "xxx")
+
+      advanceClock(buffer.stoppedChangingDelay+2)
+
+      range = subject.findNext([[0,0],[0,3]])
+      expect(range).toEqual [[1,25],[1,30]]
