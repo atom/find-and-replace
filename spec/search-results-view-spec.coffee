@@ -22,3 +22,17 @@ fdescribe 'SearchResultsView', ->
 
     it "marks all ranges", ->
       expect(subject.searchResults.length).toEqual 6
+
+  describe "search model activation", ->
+    beforeEach ->
+      searchModel.setPattern('items')
+
+    it "activate() shows the results view", ->
+      spyOn subject, 'show'
+      searchModel.activate()
+      expect(subject.show).toHaveBeenCalled()
+
+    it "deactivate() hides the results view", ->
+      spyOn subject, 'hide'
+      searchModel.deactivate()
+      expect(subject.hide).toHaveBeenCalled()

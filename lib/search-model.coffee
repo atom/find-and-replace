@@ -9,6 +9,7 @@ class SearchModel extends EventEmitter
   #   inWord: false
   #   inSelection: false
   constructor: (pattern, options) ->
+    @active = false
     @results = {}
     @search(pattern, options)
 
@@ -21,16 +22,23 @@ class SearchModel extends EventEmitter
     @regex = @buildRegex(@pattern, @options)
     @emit 'change', this, regex: @regex
 
+  activate: ->
+    @active = true
+    @emit 'activate', this
+  deactivate: ->
+    @active = false
+    @emit 'deactivate', this
+
   setOptions: (options) ->
     @search(@pattern, options)
 
   setPattern: (pattern) ->
     @search(pattern, @options)
 
-  setResultsForEditorId: (id, searchResultsModel) ->
+  setResultsForId: (id, searchResultsModel) ->
     @results[id] = searchResultsModel
 
-  getResultsForEditorId: (id) ->
+  getResultsForId: (id) ->
     @results[id]
     
   ### Internal ###

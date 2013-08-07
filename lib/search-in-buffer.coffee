@@ -34,20 +34,16 @@ class SearchInBufferView extends View
     @on 'core:cancel', => @detach()
 
     @searchModel = new SearchModel
-    @searchResultsViews = []
     rootView.eachEditor (editor) =>
       if editor.attached and not editor.mini
-        view = new SearchResultsView(@searchModel, editor)
-        editor.underlayer.append(view)
-        @searchResultsViews.push(view) 
+        editor.underlayer.append(new SearchResultsView(@searchModel, editor))
 
   detach: ->
     return unless @hasParent()
 
     @detaching = true
-    @miniEditor.setText('')
-
-    view.hide() for view in @searchResultsViews
+    
+    @searchModel.deactivate()
 
     if @previouslyFocusedElement?.isOnDom()
       @previouslyFocusedElement.focus()
@@ -63,27 +59,34 @@ class SearchInBufferView extends View
       @previouslyFocusedElement = $(':focus')
       rootView.append(this)
 
-    view.show() for view in @searchResultsViews
+    @searchModel.activate()
     @miniEditor.focus()
 
   confirm: =>
+    @search()
     @findNext()
-    rootView.getActiveView().focus()
+    #rootView.getActiveView().focus()
 
   showFind: =>
     @attach()
 
   showReplace: =>
-  findPrevious: =>
-  findNext: =>
-    editor = rootView.getActiveView()
-    editSession = editor.activeEditSession
-    pattern = @miniEditor.getText()
-    buffer = editSession.buffer
 
+  search: ->
+    pattern = @miniEditor.getText()
     @searchModel.search(pattern, @getFindOptions())
 
-    bufferRange = @searchModel.getResultsForEditorId(editor.id).findNext(editSession.getSelection().getBufferRange())
+  findPrevious: =>
+    @jumpToSearchResult('findPrevious')
+
+  findNext: =>
+    @jumpToSearchResult('findNext')
+
+  jumpToSearchResult: (functionName) ->
+    editor = rootView.getActiveView()
+    editSession = editor.activeEditSession
+
+    bufferRange = @searchModel.getResultsForId(editor.id)[functionName](editSession.getSelectedBufferRange())
     editSession.setSelectedBufferRange(bufferRange, autoscroll: true) if bufferRange
 
   getFindOptions: ->

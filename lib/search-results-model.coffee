@@ -13,7 +13,7 @@ class SearchResultsModel extends EventEmitter
   constructor: (@searchModel, @editor) ->
     @ranges = []
     @searchModel.on 'change', @search
-    @searchModel.setResultsForEditorId(@editor.id, this)
+    @searchModel.setResultsForId(@editor.id, this)
 
   search: =>
     return unless @searchModel.regex

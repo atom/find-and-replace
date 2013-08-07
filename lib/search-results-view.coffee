@@ -19,8 +19,13 @@ class SearchResultsView extends View
     @model = new SearchResultsModel(@searchModel, @editor)
     @model.on 'change:ranges', @onChangeRanges
 
+    @searchModel.on 'activate', => @show()
+    @searchModel.on 'deactivate', => @hide()
+
     @editor.on 'editor:path-changed', @onPathChanged
     @onPathChanged()
+
+    @hide()
 
   onChangeRanges: ({ranges}) =>
     @markRanges(ranges)
