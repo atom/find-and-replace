@@ -1,6 +1,9 @@
 '.editor':
   'meta-f': 'search-in-buffer:display-find'
   'alt-meta-f': 'search-in-buffer:display-replace'
+
+  'meta-g': 'search-in-buffer:find-next'
+  'meta-G': 'search-in-buffer:find-previous'
   
 '.search-in-buffer .mini.editor input':
   'enter': 'core:confirm',
