@@ -21,7 +21,11 @@ fdescribe 'SearchResultsView', ->
       searchModel.setPattern('items')
 
     it "marks all ranges", ->
-      expect(subject.searchResults.length).toEqual 6
+      expect(subject.children().length).toEqual 6
+
+    it "cleans up after itself", ->
+      searchModel.setPattern('notinthefilebro')
+      expect(subject.children().length).toEqual 0
 
   describe "search model activation", ->
     beforeEach ->

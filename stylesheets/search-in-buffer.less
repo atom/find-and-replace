@@ -1,4 +1,10 @@
-.editor .search-results .selection .region {
+.editor .marker .region {
+  position: absolute;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.editor .search-results .marker .region {
   background-color: transparent;
   border: 1px solid #ddd;
   border-radius: 2px;

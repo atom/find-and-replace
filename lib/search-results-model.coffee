@@ -15,6 +15,9 @@ class SearchResultsModel extends EventEmitter
     @searchModel.on 'change', @search
     @searchModel.setResultsForId(@editor.id, this)
 
+    @editor.on 'editor:path-changed', @onPathChanged
+    @onPathChanged()
+
   search: =>
     return unless @searchModel.regex
     @markers = @findAndMarkRanges(@buffer, @searchModel.regex, @searchModel.options)
@@ -33,15 +36,25 @@ class SearchResultsModel extends EventEmitter
 
   ### Internal ###
 
-  findAndMarkRanges: (buffer, regex, {inSelection}={}) -> 
+  onPathChanged: =>
+    # will search and emit the change:markers event -> update the interface
+    @setBuffer(@editor.activeEditSession.buffer)
+
+  findAndMarkRanges: (buffer, regex, {inSelection}={}) ->
+    @destroyMarkers()
+
     markerAttributes = @getMarkerAttributes()
     editSession = @editor.activeEditSession
+
     markers = []
     buffer.scanInRange regex, buffer.getRange(), ({range}) ->
       marker = editSession.markBufferRange(range, markerAttributes)
       markers.push(marker)
     console.log 'searched; found', markers
     markers
+
+  destroyMarkers: ->
+    marker.destroy() for marker in @markers
 
   getMarkerAttributes: (attributes={}) ->
     _.extend attributes, 
