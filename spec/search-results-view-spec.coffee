@@ -1,10 +1,10 @@
 RootView = require 'root-view'
 SearchModel = require 'search-in-buffer/lib/search-model'
-BufferSearchResultsModel = require 'search-in-buffer/lib/buffer-search-results-model'
-BufferSearchView = require 'search-in-buffer/lib/buffer-search-view'
+SearchResultsModel = require 'search-in-buffer/lib/search-results-model'
+SearchResultsView = require 'search-in-buffer/lib/search-results-view'
 
-describe 'BufferSearchView', ->
-  [goToLine, editor, subject, buffer, bufferSearch] = []
+fdescribe 'SearchResultsView', ->
+  [goToLine, editor, subject, buffer, searchModel] = []
 
   beforeEach ->
     window.rootView = new RootView
@@ -13,12 +13,12 @@ describe 'BufferSearchView', ->
     editor = rootView.getActiveView()
     buffer = editor.activeEditSession.buffer
 
-    bufferSearch = new BufferSearch()
-    subject = new BufferSearchView(bufferSearch, {editor})
+    searchModel = new SearchModel()
+    subject = new SearchResultsView(searchModel, editor)
 
   describe "searching marks the results", ->
     beforeEach ->
-      bufferSearch.search(buffer, 'items')
+      searchModel.setPattern('items')
 
     it "marks all ranges", ->
       expect(subject.searchResults.length).toEqual 6

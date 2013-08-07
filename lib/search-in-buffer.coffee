@@ -3,8 +3,7 @@ Editor = require 'editor'
 $ = require 'jquery'
 Point = require 'point'
 SearchModel = require './search-model'
-BufferSearchResultsModel = require './buffer-search-results-model'
-BufferSearchView = require './buffer-search-view'
+SearchResultsView = require './search-results-view'
 
 module.exports =
 class SearchInBufferView extends View
@@ -35,7 +34,12 @@ class SearchInBufferView extends View
     @on 'core:cancel', => @detach()
 
     @searchModel = new SearchModel
-    #@bufferSearchView = new BufferSearchResultsModel(@searchModel)
+    @searchResultsViews = []
+    rootView.eachEditor (editor) =>
+      if editor.attached and not editor.mini
+        view = new SearchResultsView(@searchModel, editor)
+        editor.underlayer.append(view)
+        @searchResultsViews.push(view) 
 
   detach: ->
     return unless @hasParent()
@@ -43,7 +47,7 @@ class SearchInBufferView extends View
     @detaching = true
     @miniEditor.setText('')
 
-    @bufferSearchView.unmarkRanges()
+    view.hide() for view in @searchResultsViews
 
     if @previouslyFocusedElement?.isOnDom()
       @previouslyFocusedElement.focus()
@@ -58,6 +62,8 @@ class SearchInBufferView extends View
     unless @hasParent()
       @previouslyFocusedElement = $(':focus')
       rootView.append(this)
+
+    view.show() for view in @searchResultsViews
     @miniEditor.focus()
 
   confirm: =>
@@ -75,10 +81,9 @@ class SearchInBufferView extends View
     pattern = @miniEditor.getText()
     buffer = editSession.buffer
 
-    @bufferSearchView.setEditor(editor)
-    @bufferSearch.search(buffer, pattern, @getFindOptions())
+    @searchModel.search(pattern, @getFindOptions())
 
-    bufferRange = @bufferSearch.findNext(editSession.getSelection().getBufferRange())
+    bufferRange = @searchModel.getResultsForEditorId(editor.id).findNext(editSession.getSelection().getBufferRange())
     editSession.setSelectedBufferRange(bufferRange, autoscroll: true) if bufferRange
 
   getFindOptions: ->

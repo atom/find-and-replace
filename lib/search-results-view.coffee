@@ -1,25 +1,41 @@
 _ = require 'underscore'
+{View} = require 'space-pen'
 Selection = require 'selection'
 SelectionView = require 'selection-view'
+SearchResultsModel = require './search-results-model'
 
+# Will be one of these created per editor.
 module.exports =
-class BufferSearchView
+class SearchResultsView extends View
+
+  @content: ->
+    @div class: 'search-results'
+
   # options - 
   #   editor: an Atom Editor!
-  constructor: (@bufferSearch, {@editor}={}) ->
+  initialize: (@searchModel, @editor) ->
     @searchResults = []
-    @bufferSearch.on 'search', @onSearch
 
-  setEditor: (@editor) ->
+    @model = new SearchResultsModel(@searchModel, @editor)
+    @model.on 'change:ranges', @onChangeRanges
 
-  onSearch: ({ranges}) =>
+    @editor.on 'editor:path-changed', @onPathChanged
+    @onPathChanged()
+
+  onChangeRanges: ({ranges}) =>
     @markRanges(ranges)
 
-  markRanges: (ranges) ->
-    @unmarkRanges()
-    @searchResults = (new SearchResultView(@editor, range) for range in ranges)
+  onPathChanged: =>
+    # will search and emit the change:ranges event -> update the interface
+    @model.setBuffer(@editor.activeEditSession.buffer)
 
-  unmarkRanges: ->
+  markRanges: (ranges) ->
+    @deleteRanges()
+    @searchResults = (new SearchResultView(@editor, range) for range in ranges)
+    @append(result.selectionView) for result in @searchResults
+    @searchResults
+
+  deleteRanges: ->
     result.destroy() for result in @searchResults
     @searchResults = []
 
@@ -29,7 +45,6 @@ class SearchResultView
     @marker = @editor.activeEditSession.markBufferRange(bufferRange, @getMarkerAttributes())
     @selection = new Selection(_.extend({editSession: @editor.activeEditSession, @marker}, @getMarkerAttributes()))
     @selectionView = new SelectionView({editor: @editor, @selection})
-    @editor.underlayer.append(@selectionView.addClass('search-result'))
 
     @editor.on 'editor:display-updated', @onDisplayUpdated 
 

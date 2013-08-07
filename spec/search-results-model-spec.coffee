@@ -1,8 +1,8 @@
 RootView = require 'root-view'
 SearchModel = require 'search-in-buffer/lib/search-model'
-BufferSearchResultsModel = require 'search-in-buffer/lib/buffer-search-results-model'
+SearchResultsModel = require 'search-in-buffer/lib/search-results-model'
 
-fdescribe 'BufferSearchResultsModel', ->
+fdescribe 'SearchResultsModel', ->
   [goToLine, editor, subject, buffer, searchModel] = []
 
   beforeEach ->
@@ -13,7 +13,7 @@ fdescribe 'BufferSearchResultsModel', ->
     buffer = editor.activeEditSession.buffer
 
     searchModel = new SearchModel()
-    subject = new BufferSearchResultsModel(searchModel)
+    subject = new SearchResultsModel(searchModel, editor)
 
   describe "search()", ->
     beforeEach ->

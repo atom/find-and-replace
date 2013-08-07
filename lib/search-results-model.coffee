@@ -1,16 +1,19 @@
 {EventEmitter} = require 'events'
 _ = require 'underscore'
 
+# Will be one of these per editor. We will swap the buffers in and out as the
+# user opens/closes buffers.
 module.exports =
-class BufferSearchResultsModel extends EventEmitter
+class SearchResultsModel extends EventEmitter
   # options - 
   #   regex: false
   #   caseSensitive: false
   #   inWord: false
   #   inSelection: false
-  constructor: (@searchModel) ->
+  constructor: (@searchModel, @editor) ->
     @ranges = []
     @searchModel.on 'change', @search
+    @searchModel.setResultsForEditorId(@editor.id, this)
 
   search: =>
     return unless @searchModel.regex
