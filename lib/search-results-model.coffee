@@ -11,40 +11,40 @@ class SearchResultsModel extends EventEmitter
   #   inWord: false
   #   inSelection: false
   constructor: (@searchModel, @editor) ->
-    @ranges = []
+    @markers = []
     @searchModel.on 'change', @search
     @searchModel.setResultsForId(@editor.id, this)
 
   search: =>
     return unless @searchModel.regex
-    @ranges = @findRanges(@buffer, @searchModel.regex, @searchModel.options)
-    @emit 'change:ranges', ranges: @ranges
+    @markers = @findAndMarkRanges(@buffer, @searchModel.regex, @searchModel.options)
+    @emit 'change:markers', markers: @markers
 
-  setBuffer: (buffer) ->
-    @unbindBuffer(@buffer)
-    @bindBuffer(@buffer = buffer)
+  setBuffer: (@buffer) ->
     @search()
 
   findNext: (range) ->
-    return null unless @ranges and @ranges.length
-    for foundRange in @ranges
-      return foundRange if foundRange.compare(range) > 0
-    @ranges[0]
+    return null unless @markers and @markers.length
+    for marker in @markers
+      return marker.getBufferRange() if marker.getBufferRange().compare(range) > 0
+    @markers[0].getBufferRange()
 
   findPrevious: (range) ->
 
   ### Internal ###
 
-  bindBuffer: (buffer) ->
-    return unless buffer
-    buffer.on 'contents-modified', @search
-  unbindBuffer: (buffer) ->
-    return unless buffer
-    buffer.off 'contents-modified', @search
-
-  findRanges: (buffer, regex, {inSelection}={}) -> 
-    ranges = []
+  findAndMarkRanges: (buffer, regex, {inSelection}={}) -> 
+    markerAttributes = @getMarkerAttributes()
+    editSession = @editor.activeEditSession
+    markers = []
     buffer.scanInRange regex, buffer.getRange(), ({range}) ->
-      ranges.push(range)
-    console.log ranges
-    ranges
+      marker = editSession.markBufferRange(range, markerAttributes)
+      markers.push(marker)
+    console.log 'searched; found', markers
+    markers
+
+  getMarkerAttributes: (attributes={}) ->
+    _.extend attributes, 
+      class: 'search-result'
+      displayBufferId: @editor.activeEditSession.displayBuffer.id
+      invalidationStrategy: 'between'

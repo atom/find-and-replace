@@ -17,7 +17,7 @@ class SearchResultsView extends View
     @searchResults = []
 
     @model = new SearchResultsModel(@searchModel, @editor)
-    @model.on 'change:ranges', @onChangeRanges
+    @model.on 'change:markers', @onChangeMarkers
 
     @searchModel.on 'activate', => @show()
     @searchModel.on 'deactivate', => @hide()
@@ -27,27 +27,26 @@ class SearchResultsView extends View
 
     @hide()
 
-  onChangeRanges: ({ranges}) =>
-    @markRanges(ranges)
+  onChangeMarkers: ({markers}) =>
+    @createMarkerViews(markers)
 
   onPathChanged: =>
-    # will search and emit the change:ranges event -> update the interface
+    # will search and emit the change:markers event -> update the interface
     @model.setBuffer(@editor.activeEditSession.buffer)
 
-  markRanges: (ranges) ->
-    @deleteRanges()
-    @searchResults = (new SearchResultView(@editor, range) for range in ranges)
+  createMarkerViews: (markers) ->
+    @deleteMarkerViews()
+    @searchResults = (new SearchResultView(@editor, marker) for marker in markers)
     @append(result.selectionView) for result in @searchResults
     @searchResults
 
-  deleteRanges: ->
+  deleteMarkerViews: ->
     result.destroy() for result in @searchResults
     @searchResults = []
 
 
 class SearchResultView
-  constructor: (@editor, bufferRange) ->
-    @marker = @editor.activeEditSession.markBufferRange(bufferRange, @getMarkerAttributes())
+  constructor: (@editor, @marker) ->
     @selection = new Selection(_.extend({editSession: @editor.activeEditSession, @marker}, @getMarkerAttributes()))
     @selectionView = new SelectionView({editor: @editor, @selection})
 
