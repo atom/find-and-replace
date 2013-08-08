@@ -1,5 +1,5 @@
 {EventEmitter} = require 'events'
-Range = require 'range'
+AtomRange = require 'range'
 _ = require 'underscore'
 
 # Will be one of these per editor. We will swap the buffers in and out as the
@@ -44,7 +44,7 @@ class SearchResultsModel extends EventEmitter
     @markers[0].getBufferRange()
 
   findPrevious: (initialBufferRange) ->
-    initialBufferRange = Range.fromObject(initialBufferRange)
+    initialBufferRange = AtomRange.fromObject(initialBufferRange)
     return null unless @markers and @markers.length
     for i in [@markers.length-1..0]
       marker = @markers[i]
