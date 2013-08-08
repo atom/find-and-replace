@@ -99,11 +99,7 @@ class SearchResultsModel extends EventEmitter
   findAndMarkRanges: ->
     markerAttributes = @getMarkerAttributes()
     editSession = @editor.activeEditSession
-
-    markers = (editSession.markBufferRange(range, markerAttributes) for range in @findRanges())
-
-    console.log 'searched; found', markers
-    markers
+    (editSession.markBufferRange(range, markerAttributes) for range in @findRanges())
 
   findRanges: ->
     return [] unless @searchModel.regex
