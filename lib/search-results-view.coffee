@@ -18,12 +18,25 @@ class SearchResultsView extends View
     @model.on 'change:markers', @addMarkerViews
     @model.on 'add:markers', @addMarkerViews
 
-    @searchModel.on 'activate', => @show()
-    @searchModel.on 'deactivate', => @hide()
+    @searchModel.on 'show:results', @onShowResults
+    @searchModel.on 'hide:results', @onHideResults
 
+    if @searchModel.resultsVisible
+      @onShowResults()
+    else
+      @onHideResults()
+
+  onHideResults: =>
+    view.remove() for view in @markerViews if @markerViews
+    @markerViews = []
     @hide()
 
+  onShowResults: =>
+    @addMarkerViews({markers: @model.markers})
+    @show()
+
   addMarkerViews: ({markers}) =>
-    searchResults = (new MarkerView({@editor, marker}) for marker in markers)
-    @append(result) for result in searchResults
+    return unless @searchModel.resultsVisible
+    @markerViews = (new MarkerView({@editor, marker}) for marker in markers)
+    @append(view) for view in @markerViews
     @editor.requestDisplayUpdate()

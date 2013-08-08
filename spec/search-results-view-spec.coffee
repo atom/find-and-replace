@@ -19,24 +19,40 @@ fdescribe 'SearchResultsView', ->
   describe "searching marks the results", ->
     beforeEach ->
       searchModel.setPattern('items')
+      searchModel.showResults()
 
     it "marks all ranges", ->
       expect(subject.children().length).toEqual 6
+      expect(subject.markerViews.length).toEqual 6
 
     it "cleans up after itself", ->
       searchModel.setPattern('notinthefilebro')
       expect(subject.children().length).toEqual 0
+      expect(subject.markerViews.length).toEqual 0
 
   describe "search model activation", ->
     beforeEach ->
       searchModel.setPattern('items')
 
-    it "activate() shows the results view", ->
+    it "creates views when shown", ->
+      expect(subject.children().length).toEqual 0
+      expect(subject.markerViews.length).toEqual 0
+
+      searchModel.showResults()
+
+      expect(subject.children().length).toEqual 6
+      expect(subject.markerViews.length).toEqual 6
+
+    it "showResults() shows the results view", ->
       spyOn subject, 'show'
-      searchModel.activate()
+      searchModel.showResults()
       expect(subject.show).toHaveBeenCalled()
 
-    it "deactivate() hides the results view", ->
+    it "hideResults() hides the results view and removes all the marker views", ->
+      searchModel.showResults()
       spyOn subject, 'hide'
-      searchModel.deactivate()
+      searchModel.hideResults()
       expect(subject.hide).toHaveBeenCalled()
+
+      expect(subject.children().length).toEqual 0
+      expect(subject.markerViews.length).toEqual 0

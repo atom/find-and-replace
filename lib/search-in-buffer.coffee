@@ -42,8 +42,8 @@ class SearchInBufferView extends View
     return unless @hasParent()
 
     @detaching = true
-    
-    @searchModel.deactivate()
+
+    @searchModel.hideResults()
 
     if @previouslyFocusedElement?.isOnDom()
       @previouslyFocusedElement.focus()
@@ -59,7 +59,7 @@ class SearchInBufferView extends View
       @previouslyFocusedElement = $(':focus')
       rootView.append(this)
 
-    @searchModel.activate()
+    @searchModel.showResults()
     @miniEditor.focus()
 
   confirm: =>

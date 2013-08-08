@@ -9,8 +9,8 @@ class SearchModel extends EventEmitter
   #   inWord: false
   #   inSelection: false
   constructor: (pattern, options) ->
-    @active = false
     @results = {}
+    @resultsVisible = false
     @search(pattern, options)
 
   search: (pattern, options={}) ->
@@ -22,12 +22,12 @@ class SearchModel extends EventEmitter
     @regex = @buildRegex(@pattern, @options)
     @emit 'change', this, regex: @regex
 
-  activate: ->
-    @active = true
-    @emit 'activate', this
-  deactivate: ->
-    @active = false
-    @emit 'deactivate', this
+  showResults: ->
+    @resultsVisible = true
+    @emit 'show:results', this
+  hideResults: ->
+    @resultsVisible = false
+    @emit 'hide:results', this
 
   setOptions: (options) ->
     @search(@pattern, options)
