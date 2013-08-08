@@ -3,6 +3,14 @@ _ = require 'underscore'
 
 # Will be one of these per editor. We will swap the buffers in and out as the
 # user opens/closes buffers.
+#
+# TODO/FIXME - This thing hooks the current buffer's contents-modified event.
+# It will run the search and keep the markers in memory even when the find box
+# is not open. This can be fixed by hooking the searchModel's 'activated' and
+# 'deactivated' events and unbinding from the buffer. But then the find-next
+# (cmd+g) behavior becomes a different code path. To keep things simple for
+# now, I'm going to leave it this way. If it's slow, we can implement the
+# optimization.
 module.exports =
 class SearchResultsModel extends EventEmitter
   # options - 
