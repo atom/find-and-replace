@@ -20,38 +20,85 @@ class SearchResultsModel extends EventEmitter
 
   search: =>
     return unless @searchModel.regex
-    @markers = @findAndMarkRanges(@buffer, @searchModel.regex, @searchModel.options)
+    @markers = @findAndMarkRanges()
     @emit 'change:markers', markers: @markers
 
-  setBuffer: (@buffer) ->
+  setBuffer: (buffer) ->
+    @unbindBuffer(buffer)
+    @bindBuffer(@buffer = buffer)
     @search()
 
   findNext: (range) ->
     return null unless @markers and @markers.length
     for marker in @markers
-      return marker.getBufferRange() if marker.getBufferRange().compare(range) > 0
+      return marker.getBufferRange() if marker.isValid() and marker.getBufferRange().compare(range) > 0
     @markers[0].getBufferRange()
 
   findPrevious: (range) ->
 
-  ### Internal ###
+  ### Event Handlers ###
 
   onPathChanged: =>
-    # will search and emit the change:markers event -> update the interface
     @setBuffer(@editor.activeEditSession.buffer)
 
-  findAndMarkRanges: (buffer, regex, {inSelection}={}) ->
+  onContentsModified: =>
+    return unless @searchModel.regex
+
+    rangesToAdd = []
+
+    ranges = @findRanges()
+    for range in ranges
+      matchingMarker = null
+      for marker in @markers
+        matchingMarker = marker if marker.getBufferRange().compare(range) == 0
+
+      if matchingMarker and not matchingMarker.isValid()
+        matchingMarker.bufferMarker.revalidate()
+      else if not matchingMarker
+        rangesToAdd.push(range)
+
+    @addMarkers(rangesToAdd) 
+
+  ### Internal ###
+
+  bindBuffer: (buffer) ->
+    return unless buffer
+    buffer.on 'contents-modified', @onContentsModified
+  unbindBuffer: (buffer) ->
+    return unless buffer
+    buffer.off 'contents-modified', @onContentsModified
+
+  addMarkers: (rangesToAdd) ->
+    markerAttributes = @getMarkerAttributes()
+    editSession = @editor.activeEditSession
+
+    markers = (editSession.markBufferRange(range, markerAttributes) for range in rangesToAdd)
+
+    @markers = @markers.concat(markers)
+    @markers.sort (left, right) -> left.getBufferRange().compare(right.getBufferRange())
+
+    @emit('add:markers', markers: markers)
+
+  findAndMarkRanges: ->
     @destroyMarkers()
 
     markerAttributes = @getMarkerAttributes()
     editSession = @editor.activeEditSession
 
-    markers = []
-    buffer.scanInRange regex, buffer.getRange(), ({range}) ->
-      marker = editSession.markBufferRange(range, markerAttributes)
-      markers.push(marker)
+    markers = (editSession.markBufferRange(range, markerAttributes) for range in @findRanges())
+
     console.log 'searched; found', markers
     markers
+
+  findRanges: ->
+    return [] unless @searchModel.regex
+
+    options = @searchModel.options #TODO: handle inSelection option
+
+    ranges = []
+    @buffer.scanInRange @searchModel.regex, @buffer.getRange(), ({range}) ->
+      ranges.push(range)
+    ranges
 
   destroyMarkers: ->
     marker.destroy() for marker in @markers
