@@ -22,6 +22,10 @@ fdescribe 'SearchResultsModel', ->
     it "finds all the matching ranges", ->
       expect(subject.markers.length).toEqual 6
 
+    it "runs empty search when nothing searched for", ->
+      searchModel.setPattern('')
+      expect(subject.markers.length).toEqual 0
+
   describe "findNext()", ->
     beforeEach ->
       searchModel.setPattern('items')

@@ -14,7 +14,7 @@ class SearchModel extends EventEmitter
     @search(pattern, options)
 
   search: (pattern, options={}) ->
-    return unless pattern
+    pattern = pattern or ''
     return if @pattern == pattern and _.isEqual(@options, options)
 
     [@pattern, @options] = [pattern, options]
@@ -44,6 +44,7 @@ class SearchModel extends EventEmitter
   ### Internal ###
 
   buildRegex: (pattern, options={}) ->
+    return null unless pattern
     flags = 'g'
     flags += 'i' unless options.caseSensitive
     new RegExp(pattern, flags)

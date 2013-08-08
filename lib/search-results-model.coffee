@@ -27,7 +27,6 @@ class SearchResultsModel extends EventEmitter
     @onPathChanged()
 
   search: =>
-    return unless @searchModel.regex
     @destroyMarkers()
     @markers = @findAndMarkRanges()
     @emit 'change:markers', markers: @markers
