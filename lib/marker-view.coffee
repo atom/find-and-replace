@@ -16,10 +16,10 @@ class MarkerView extends View
     @updateDisplayPosition = @isMarkerValid
 
     @subscribe @marker, 'changed', @onMarkerChanged
-    @subscribe @marker, 'destroyed', => @remove()
+    @subscribe @marker, 'destroyed', @remove
     @subscribe @editor, 'editor:display-updated', @onEditorDisplayUpdated
 
-  remove: ->
+  remove: =>
     @marker = null
     @editor = null
     super()
