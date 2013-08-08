@@ -1,3 +1,5 @@
+@import "octicon-mixins.less";
+
 .editor .marker .region {
   position: absolute;
   pointer-events: none;
@@ -15,5 +17,36 @@
   padding: 0 0px;
   margin: 0 0 0 -1px;
 }
+
 .search-in-buffer {
+  width: 400px;
+  margin-left: -200px;
+  .find-editor-container {
+    position: relative;
+    width: 300px;
+
+    .find-meta-container {
+      position: absolute;
+      right: 0;
+      top: .35em;
+      z-index: 2;
+    }
+    .results-message {
+      position: relative;
+      top: -1px;
+
+      font-size: .9em;
+      color: #555;
+      margin-right: 10px;
+    }
+    .icon-previous, .icon-next {
+      text-decoration: none;
+      color: #eee;
+      &:hover{
+        color: #fff;
+      }
+    }
+    .icon-previous { .octicon(chevron-left, 16px); }
+    .icon-next { .octicon(chevron-right, 16px); }
+  }
 }

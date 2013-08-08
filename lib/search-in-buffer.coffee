@@ -12,13 +12,17 @@ class SearchInBufferView extends View
   @activate: -> new SearchInBufferView
 
   @content: ->
-    @div class: 'search-in-buffer overlay from-top mini', =>
+    @div class: 'search-in-buffer overlay from-top', =>
       @div class: 'find-container', =>
         @div class: 'btn-group pull-right btn-toggle', =>
           @button outlet: 'regexOptionButton', class: 'btn btn-mini', '.*'
           @button outlet: 'caseSensitiveOptionButton', class: 'btn btn-mini', 'Aa'
 
         @div class: 'find-editor-container', =>
+          @div class: 'find-meta-container', =>
+            @span outlet: 'resultsMessage', class: 'results-message', '99 of 100'
+            @a href: '#', outlet: 'previousButton', class: 'icon-previous'
+            @a href: '#', outlet: 'nextButton', class: 'icon-next'
           @subview 'miniEditor', new Editor(mini: true)
 
   detaching: false
