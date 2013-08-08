@@ -3,7 +3,7 @@ SearchModel = require 'search-in-buffer/lib/search-model'
 SearchResultsModel = require 'search-in-buffer/lib/search-results-model'
 SearchResultsView = require 'search-in-buffer/lib/search-results-view'
 
-fdescribe 'SearchResultsView', ->
+describe 'SearchResultsView', ->
   [goToLine, editor, subject, buffer, searchModel] = []
 
   beforeEach ->
