@@ -46,6 +46,8 @@ class MarkerView extends View
       @appendRegion(1, { row: range.end.row, column: 0 }, range.end)
 
   appendRegion: (rows, start, end) ->
+    # FIXME: pixelPositionForScreenPosition is a major bottleneck with many
+    # markers on the page.
     { lineHeight, charWidth } = @editor
     css = @editor.pixelPositionForScreenPosition(start)
     css.height = lineHeight * rows
