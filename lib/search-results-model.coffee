@@ -20,6 +20,7 @@ class SearchResultsModel extends EventEmitter
 
   search: =>
     return unless @searchModel.regex
+    @destroyMarkers()
     @markers = @findAndMarkRanges()
     @emit 'change:markers', markers: @markers
 
@@ -80,8 +81,6 @@ class SearchResultsModel extends EventEmitter
     @emit('add:markers', markers: markers)
 
   findAndMarkRanges: ->
-    @destroyMarkers()
-
     markerAttributes = @getMarkerAttributes()
     editSession = @editor.activeEditSession
 
