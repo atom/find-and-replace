@@ -14,21 +14,29 @@ class MarkerView extends View
 
     @isMarkerValid = @marker.isValid()
     @updateDisplayPosition = @isMarkerValid
-    @marker.on 'changed', ({newHeadScreenPosition, newTailScreenPosition, valid}) =>
-      @updateDisplayPosition = valid
-      if valid != @isMarkerValid
-        # @isMarkerValid is an optimization so we dont call into show or hide unless necessary
-        if valid then @show() else @hide()
-        @isMarkerValid = valid
 
-    @marker.on 'destroyed', => @remove()
+    @subscribe @marker, 'changed', @onMarkerChanged
+    @subscribe @marker, 'destroyed', => @remove()
+    @subscribe @editor, 'editor:display-updated', @onEditorDisplayUpdated
 
-    @subscribe @editor, 'editor:display-updated', (eventProperties) =>
-      [first, last] = [@editor.firstRenderedScreenRow, @editor.lastRenderedScreenRow]
-      range = @getScreenRange()
-      if @updateDisplayPosition and (range.start.row >= first or range.end.row <= last)
-        @updateDisplay()
-        @updateDisplayPosition = false
+  remove: ->
+    @marker = null
+    @editor = null
+    super()
+
+  onMarkerChanged: ({valid}) =>
+    @updateDisplayPosition = valid
+    if valid != @isMarkerValid
+      # @isMarkerValid is an optimization so we dont call into show or hide unless necessary
+      if valid then @show() else @hide()
+      @isMarkerValid = valid
+
+  onEditorDisplayUpdated: (eventProperties) =>
+    [first, last] = [@editor.firstRenderedScreenRow, @editor.lastRenderedScreenRow]
+    range = @getScreenRange()
+    if @updateDisplayPosition and (range.start.row >= first or range.end.row <= last)
+      @updateDisplay()
+      @updateDisplayPosition = false
 
   updateDisplay: ->
     @clearRegions()
