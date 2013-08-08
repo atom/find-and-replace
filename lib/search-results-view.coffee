@@ -15,16 +15,15 @@ class SearchResultsView extends View
   #   editor: an Atom Editor!
   initialize: (@searchModel, @editor) ->
     @model = new SearchResultsModel(@searchModel, @editor)
-    @model.on 'change:markers', @onChangeMarkers
+    @model.on 'change:markers', @addMarkerViews
+    @model.on 'add:markers', @addMarkerViews
 
     @searchModel.on 'activate', => @show()
     @searchModel.on 'deactivate', => @hide()
 
     @hide()
 
-  onChangeMarkers: ({markers}) =>
-    @createMarkerViews(markers)
-
-  createMarkerViews: (markers) ->
+  addMarkerViews: ({markers}) =>
     searchResults = (new MarkerView({@editor, marker}) for marker in markers)
     @append(result) for result in searchResults
+    @editor.requestDisplayUpdate()
