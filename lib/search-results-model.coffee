@@ -37,20 +37,41 @@ class SearchResultsModel extends EventEmitter
     @bindBuffer(@buffer = buffer)
     @search()
 
+  getCurrentResult: ->
+    @generateCurrentResult()
+
   findNext: (initialBufferRange) ->
-    return null unless @markers and @markers.length
-    for marker in @markers
-      return marker.getBufferRange() if marker.isValid() and marker.getBufferRange().compare(initialBufferRange) > 0
-    @markers[0].getBufferRange()
+    if @markers and @markers.length
+      for i in [0...@markers.length]
+        marker = @markers[i]
+        return @setCurrentResultIndex(i) if marker.isValid() and marker.getBufferRange().compare(initialBufferRange) > 0
+
+    @findFirstValid()
 
   findPrevious: (initialBufferRange) ->
     initialBufferRange = AtomRange.fromObject(initialBufferRange)
-    return null unless @markers and @markers.length
-    for i in [@markers.length-1..0]
-      marker = @markers[i]
-      range = marker.getBufferRange()
-      return marker.getBufferRange() if marker.isValid() and range.compare(initialBufferRange) < 0 and not range.intersectsWith(initialBufferRange)
-    _.last(@markers).getBufferRange()
+
+    if @markers and @markers.length
+      for i in [@markers.length-1..0]
+        marker = @markers[i]
+        range = marker.getBufferRange()
+        return @setCurrentResultIndex(i) if marker.isValid() and range.compare(initialBufferRange) < 0 and not range.intersectsWith(initialBufferRange)
+
+    @findLastValid()
+
+  findFirstValid: ->
+    if @markers and @markers.length
+      for i in [0...@markers.length]
+        return @setCurrentResultIndex(i) if @markers[i].isValid()
+
+    @setCurrentResultIndex(null)
+
+  findLastValid: ->
+    if @markers and @markers.length
+      for i in [@markers.length-1..0]
+        return @setCurrentResultIndex(i) if @markers[i].isValid()
+        
+    @setCurrentResultIndex(null)
 
   ### Event Handlers ###
 
@@ -69,6 +90,7 @@ class SearchResultsModel extends EventEmitter
       true
 
     rangesToAdd = []
+    notifyOfChange = false
 
     ranges = @findRanges()
     for range in ranges
@@ -77,13 +99,48 @@ class SearchResultsModel extends EventEmitter
         matchingMarker = marker if isEqualToRange(marker, range)
 
       if matchingMarker and not matchingMarker.isValid()
+        notifyOfChange = true
         matchingMarker.bufferMarker.revalidate()
       else if not matchingMarker
+        notifyOfChange = true
         rangesToAdd.push(range)
 
-    @addMarkers(rangesToAdd) 
+    if notifyOfChange
+      @addMarkers(rangesToAdd) 
+      @notifyTotalResultsChanged()
 
   ### Internal ###
+
+  setCurrentResultIndex: (index) ->
+    return if @currentResultIndex == index
+    @currentResultIndex = index
+    @emitCurrentResult()
+
+  emitCurrentResult: ->
+    result = @generateCurrentResult()
+    @emit 'change:current-result', result
+    result
+
+  generateCurrentResult: ->
+    if @currentResultIndex?
+      marker = @markers[@currentResultIndex]
+      {
+        index: @currentResultIndex
+        range: marker.getBufferRange()
+        marker: marker
+        total: @countTotal()
+      }
+    else 
+      { total: @countTotal() }
+
+  notifyTotalResultsChanged: ->
+    @emitCurrentResult()
+
+  countTotal: ->
+    count = 0
+    for marker in @markers
+      count++ if marker.isValid()
+    count
 
   bindBuffer: (buffer) ->
     return unless buffer
@@ -102,6 +159,7 @@ class SearchResultsModel extends EventEmitter
     @markers.sort (left, right) -> left.getBufferRange().compare(right.getBufferRange())
 
     @emit('add:markers', markers: markers)
+    @emitCurrentResult()
 
   findAndMarkRanges: ->
     markerAttributes = @getMarkerAttributes()
@@ -120,6 +178,7 @@ class SearchResultsModel extends EventEmitter
 
   destroyMarkers: ->
     marker.destroy() for marker in @markers
+    @setCurrentResultIndex(null)
 
   getMarkerAttributes: (attributes={}) ->
     _.extend attributes, 
