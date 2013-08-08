@@ -50,6 +50,26 @@ fdescribe 'SearchResultsModel', ->
       range = subject.findNext([[1,22],[1,25]])
       expect(range).toEqual [[2,8],[2,13]]
 
+  describe "findPrevious()", ->
+    beforeEach ->
+      searchModel.setPattern('items')
+
+    it "wraps to the end", ->
+      range = subject.findPrevious([[0,0],[0,3]])
+      expect(range).toEqual [[5,16],[5,21]]
+
+    it "finds previous when between ranges", ->
+      range = subject.findPrevious([[2,22],[2,23]])
+      expect(range).toEqual [[2,8],[2,13]]
+
+    it "finds proper previous range when selection == range", ->
+      range = subject.findPrevious([[2,8],[2,13]])
+      expect(range).toEqual [[1,22],[1,27]]
+
+    it "finds proper previous range when selection inside of range", ->
+      range = subject.findPrevious([[1,22],[1,25]])
+      expect(range).toEqual [[5,16],[5,21]]
+
   describe "buffer modification", ->
     beforeEach ->
       searchModel.setPattern('items')

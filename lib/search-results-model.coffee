@@ -1,4 +1,5 @@
 {EventEmitter} = require 'events'
+Range = require 'range'
 _ = require 'underscore'
 
 # Will be one of these per editor. We will swap the buffers in and out as the
@@ -36,13 +37,20 @@ class SearchResultsModel extends EventEmitter
     @bindBuffer(@buffer = buffer)
     @search()
 
-  findNext: (range) ->
+  findNext: (initialBufferRange) ->
     return null unless @markers and @markers.length
     for marker in @markers
-      return marker.getBufferRange() if marker.isValid() and marker.getBufferRange().compare(range) > 0
+      return marker.getBufferRange() if marker.isValid() and marker.getBufferRange().compare(initialBufferRange) > 0
     @markers[0].getBufferRange()
 
-  findPrevious: (range) ->
+  findPrevious: (initialBufferRange) ->
+    initialBufferRange = Range.fromObject(initialBufferRange)
+    return null unless @markers and @markers.length
+    for i in [@markers.length-1..0]
+      marker = @markers[i]
+      range = marker.getBufferRange()
+      return marker.getBufferRange() if marker.isValid() and range.compare(initialBufferRange) < 0 and not range.intersectsWith(initialBufferRange)
+    _.last(@markers).getBufferRange()
 
   ### Event Handlers ###
 
