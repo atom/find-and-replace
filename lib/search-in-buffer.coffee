@@ -1,6 +1,7 @@
 {View} = require 'space-pen'
 Editor = require 'editor'
 $ = require 'jquery'
+_ = require 'underscore'
 Point = require 'point'
 SearchModel = require './search-model'
 SearchResultsView = require './search-results-view'
@@ -59,13 +60,13 @@ class SearchInBufferView extends View
       @previouslyFocusedElement = $(':focus')
       rootView.append(this)
 
-    @searchModel.showResults()
+    @miniEditor.selectAll()
     @miniEditor.focus()
+    _.nextTick => @searchModel.showResults()
 
   confirm: =>
     @search()
     @findNext()
-    #rootView.getActiveView().focus()
 
   showFind: =>
     @attach()
