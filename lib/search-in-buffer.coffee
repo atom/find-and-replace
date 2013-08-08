@@ -34,6 +34,9 @@ class SearchInBufferView extends View
     rootView.command 'search-in-buffer:find-previous', @findPrevious
     rootView.command 'search-in-buffer:find-next', @findNext
 
+    @previousButton.on 'click', => @findPrevious(); false
+    @nextButton.on 'click', => @findNext(); false
+
     #@miniEditor.on 'focusout', => @detach() unless @detaching
     @on 'core:confirm', => @confirm()
     @on 'core:cancel', => @detach()
