@@ -12,10 +12,14 @@ class MarkerView extends View
   initialize: ({@editor, @marker} = {}) ->
     @regions = []
 
-    @updateDisplayPosition = @marker.isValid()
+    @isMarkerValid = @marker.isValid()
+    @updateDisplayPosition = @isMarkerValid
     @marker.on 'changed', ({newHeadScreenPosition, newTailScreenPosition, valid}) =>
       @updateDisplayPosition = valid
-      if valid then @show() else @hide()
+      if valid != @isMarkerValid
+        # @isMarkerValid is an optimization so we dont call into show or hide unless necessary
+        if valid then @show() else @hide()
+        @isMarkerValid = valid
 
     @marker.on 'destroyed', => @remove()
 
