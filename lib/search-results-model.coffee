@@ -53,13 +53,21 @@ class SearchResultsModel extends EventEmitter
   onContentsModified: =>
     return unless @searchModel.regex
 
+    isEqualToRange = (marker, range) ->
+      # Using marker.getBufferRange().compare() was slow on large sets. This is faster.
+      first = marker.bufferMarker.tailPosition or marker.bufferMarker.headPosition
+      last = marker.bufferMarker.headPosition
+      return false unless range.start.column == first.column and range.start.row == first.row
+      return false unless range.end.column == last.column and range.end.row == last.row
+      true
+
     rangesToAdd = []
 
     ranges = @findRanges()
     for range in ranges
       matchingMarker = null
       for marker in @markers
-        matchingMarker = marker if marker.getBufferRange().compare(range) == 0
+        matchingMarker = marker if isEqualToRange(marker, range)
 
       if matchingMarker and not matchingMarker.isValid()
         matchingMarker.bufferMarker.revalidate()
