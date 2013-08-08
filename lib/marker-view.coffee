@@ -23,8 +23,12 @@ class MarkerView extends View
 
     @marker.on 'destroyed', => @remove()
 
-    @subscribe @editor, 'editor:display-updated', =>
-      @updateDisplay() if @updateDisplayPosition
+    @subscribe @editor, 'editor:display-updated', (eventProperties) =>
+      [first, last] = [@editor.firstRenderedScreenRow, @editor.lastRenderedScreenRow]
+      range = @getScreenRange()
+      if @updateDisplayPosition and (range.start.row >= first or range.end.row <= last)
+        @updateDisplay()
+        @updateDisplayPosition = false
 
   updateDisplay: ->
     @clearRegions()
