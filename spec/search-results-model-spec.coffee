@@ -124,14 +124,16 @@ fdescribe 'SearchResultsModel', ->
       buffer.insert([1, 23], "o")
       advanceClock(buffer.stoppedChangingDelay+2)
 
-      range = subject.findNext([[0,0],[0,3]]).range
-      expect(range).toEqual [[2,8],[2,13]]
+      result = subject.findNext([[0,0],[0,3]])
+      expect(result.range).toEqual [[2,8],[2,13]]
+      expect(result.total).toEqual 5
 
       buffer.delete([[1, 23], [1, 24]])
       advanceClock(buffer.stoppedChangingDelay+2)
 
-      range = subject.findNext([[0,0],[0,3]]).range
-      expect(range).toEqual [[1,22],[1,27]]
+      result = subject.findNext([[0,0],[0,3]])
+      expect(result.total).toEqual 6
+      expect(result.range).toEqual [[1,22],[1,27]]
       
     it "adds a new marker for a new result added into the buffer", ->
       subject.on 'add:markers', addHandler = jasmine.createSpy()
