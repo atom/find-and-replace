@@ -47,6 +47,9 @@ class SearchInBufferView extends View
     rootView.eachEditor (editor) =>
       if editor.attached and not editor.mini
         editor.underlayer.append(new SearchResultsView(@searchModel, editor))
+        # FIXME: I need an event after it has been removed. Thus the nextTick()
+        # Maybe an editor:detached?
+        editor.on 'editor:will-be-removed', => _.nextTick @onActiveItemChanged
 
     @onActiveItemChanged()
     @resultCounter.setModel(@searchModel)

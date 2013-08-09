@@ -44,6 +44,8 @@ class SearchModel
     @results[id] = searchResultsModel
   getResultsForId: (id) ->
     @results[id]
+  deleteResultsForId: (id) ->
+    delete @results[id]
   getActiveResultsModel: ->
     @results[@activeId]
     
