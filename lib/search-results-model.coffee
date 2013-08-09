@@ -1,4 +1,4 @@
-{EventEmitter} = require 'events'
+EventEmitter = require 'event-emitter'
 AtomRange = require 'range'
 _ = require 'underscore'
 
@@ -13,7 +13,9 @@ _ = require 'underscore'
 # for now, I'm going to leave it this way. If it's slow, we can implement the
 # optimization.
 module.exports =
-class SearchResultsModel extends EventEmitter
+class SearchResultsModel
+  _.extend @prototype, EventEmitter
+
   # options - 
   #   regex: false
   #   caseSensitive: false
@@ -31,7 +33,7 @@ class SearchResultsModel extends EventEmitter
   search: =>
     @destroyMarkers()
     @markers = @findAndMarkRanges()
-    @emit 'change:markers', markers: @markers
+    @trigger 'change:markers', markers: @markers
 
   setBuffer: (buffer) ->
     @unbindBuffer(buffer)
@@ -108,7 +110,7 @@ class SearchResultsModel extends EventEmitter
 
   emitCurrentResult: ->
     result = @generateCurrentResult()
-    @emit 'change:current-result', result
+    @trigger 'change:current-result', result
     result
 
   generateCurrentResult: ->
@@ -128,7 +130,7 @@ class SearchResultsModel extends EventEmitter
 
   bindBuffer: (buffer) ->
     return unless buffer
-    buffer.on 'contents-modified', @onContentsModifiedgenerateCurrentResult
+    buffer.on 'contents-modified', @onContentsModified
   unbindBuffer: (buffer) ->
     return unless buffer
     buffer.off 'contents-modified', @onContentsModified
@@ -141,7 +143,7 @@ class SearchResultsModel extends EventEmitter
     @markers = @markers.concat(markers)
     @markers.sort (left, right) -> left.getBufferRange().compare(right.getBufferRange())
 
-    @emit('add:markers', markers: markers)
+    @trigger 'add:markers', markers: markers
     @emitCurrentResult()
 
   findAndMarkRanges: ->

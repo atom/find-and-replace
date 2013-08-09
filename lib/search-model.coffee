@@ -1,8 +1,10 @@
-{EventEmitter} = require 'events'
+EventEmitter = require 'event-emitter'
 _ = require 'underscore'
 
 module.exports =
-class SearchModel extends EventEmitter
+class SearchModel
+  _.extend @prototype, EventEmitter
+
   # options - 
   #   regex: false
   #   caseSensitive: false
@@ -20,14 +22,14 @@ class SearchModel extends EventEmitter
     [@pattern, @options] = [pattern, options]
 
     @regex = @buildRegex(@pattern, @options)
-    @emit 'change', this, regex: @regex
+    @trigger 'change', this, regex: @regex
 
   showResults: ->
     @resultsVisible = true
-    @emit 'show:results', this
+    @trigger 'show:results', this
   hideResults: ->
     @resultsVisible = false
-    @emit 'hide:results', this
+    @trigger 'hide:results', this
 
   setOptions: (options) ->
     @search(@pattern, options)
@@ -35,11 +37,15 @@ class SearchModel extends EventEmitter
   setPattern: (pattern) ->
     @search(pattern, @options)
 
+  setActiveId: (id) ->
+    @activeId = id
+    @trigger 'change:active-id', this, {@activeId}
   setResultsForId: (id, searchResultsModel) ->
     @results[id] = searchResultsModel
-
   getResultsForId: (id) ->
     @results[id]
+  getActiveResultsModel: ->
+    @results[@activeId]
     
   ### Internal ###
 
