@@ -35,10 +35,22 @@ ffdescribe 'SearchInBufferView', ->
       beforeEach ->
         editor.trigger 'search-in-buffer:display-find'
 
-      it "attaches to the root view", ->
+        editor.attachToDom()
         subject.miniEditor.textInput 'items'
         subject.miniEditor.trigger 'core:confirm'
 
+      it "shows correct message in results view", ->
         expect(subject.resultCounter.text()).toEqual('1 of 6')
         expect(editor.getSelectedBufferRange()).toEqual [[1, 22], [1, 27]]
+
+      it "editor deletion is handled properly", ->
+        editor.remove()
+        waits 10
+
+        runs ->
+          expect(subject.resultCounter.text()).toEqual('')
+
+          # should not die on new search!
+          subject.miniEditor.textInput 'items'
+
 
