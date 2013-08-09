@@ -5,6 +5,7 @@ _ = require 'underscore'
 Point = require 'point'
 SearchModel = require './search-model'
 SearchResultsView = require './search-results-view'
+ResultCounterView = require './result-counter-view'
 
 module.exports =
 class SearchInBufferView extends View
@@ -20,7 +21,7 @@ class SearchInBufferView extends View
 
         @div class: 'find-editor-container', =>
           @div class: 'find-meta-container', =>
-            @span outlet: 'resultsMessage', class: 'results-message', '99 of 100'
+            @subview 'resultCounter', new ResultCounterView()
             @a href: '#', outlet: 'previousButton', class: 'icon-previous'
             @a href: '#', outlet: 'nextButton', class: 'icon-next'
           @subview 'miniEditor', new Editor(mini: true)
@@ -28,6 +29,8 @@ class SearchInBufferView extends View
   detaching: false
 
   initialize: ->
+    @searchModel = new SearchModel
+
     rootView.command 'search-in-buffer:display-find', @showFind
     rootView.command 'search-in-buffer:display-replace', @showReplace
 
@@ -37,16 +40,22 @@ class SearchInBufferView extends View
     @previousButton.on 'click', => @findPrevious(); false
     @nextButton.on 'click', => @findNext(); false
 
-    #@miniEditor.on 'focusout', => @detach() unless @detaching
-    @on 'core:confirm', => @confirm()
-    @on 'core:cancel', => @detach()
+    @on 'core:confirm', @confirm
+    @on 'core:cancel', @detach
 
-    @searchModel = new SearchModel
+    rootView.on 'pane:became-active', @onActiveItemChanged
     rootView.eachEditor (editor) =>
       if editor.attached and not editor.mini
         editor.underlayer.append(new SearchResultsView(@searchModel, editor))
 
-  detach: ->
+    @onActiveItemChanged()
+    @resultCounter.setModel(@searchModel)
+
+  onActiveItemChanged: =>
+    editor = rootView.getActiveView()
+    @searchModel.setActiveId(if editor then editor.id else null)
+
+  detach: =>
     return unless @hasParent()
 
     @detaching = true
@@ -91,10 +100,9 @@ class SearchInBufferView extends View
     @jumpToSearchResult('findNext')
 
   jumpToSearchResult: (functionName) ->
-    editor = rootView.getActiveView()
-    editSession = editor.activeEditSession
+    editSession = rootView.getActiveView().activeEditSession
 
-    bufferRange = @searchModel.getResultsForId(editor.id)[functionName](editSession.getSelectedBufferRange())
+    bufferRange = @searchModel.getActiveResultsModel()[functionName](editSession.getSelectedBufferRange()).range
     editSession.setSelectedBufferRange(bufferRange, autoscroll: true) if bufferRange
 
   getFindOptions: ->
@@ -104,4 +112,5 @@ class SearchInBufferView extends View
       inWord: false
       inSelection: false
     }
+
 

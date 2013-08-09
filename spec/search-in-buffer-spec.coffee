@@ -1,50 +1,44 @@
 RootView = require 'root-view'
-GoToLineView = require 'go-to-line/lib/go-to-line-view'
+SearchInBufferView = require 'search-in-buffer/lib/search-in-buffer'
 
-describe 'SearchInBufferView', ->
-  [goToLine, editor] = []
+ffdescribe 'SearchInBufferView', ->
+  [subject, editor] = []
 
   beforeEach ->
     window.rootView = new RootView
-    rootView.open('sample.js')
-    rootView.enableKeymap()
-    editor = rootView.getActiveView()
-    atom.activatePackage('search-in-buffer', immediate: true)
 
-    #goToLine = SearchInBufferView.activate()
-    editor.setCursorBufferPosition([1,0])
+  describe "with no editor", ->
+    beforeEach ->
+      subject = SearchInBufferView.activate()
 
-  describe "when editor:go-to-line is triggered", ->
-    it "attaches to the root view", ->
-      expect(true).toBeFalsy()
+    describe "when search-in-buffer:display-find is triggered", ->
+      it "attaches to the root view", ->
+        subject.showFind()
+        expect(subject.hasParent()).toBeTruthy()
+        expect(subject.resultCounter.text()).toEqual('')
 
-  xdescribe "when entering a line number", ->
-    it "only allows 0-9 to be entered in the mini editor", ->
-      expect(goToLine.miniEditor.getText()).toBe ''
-      goToLine.miniEditor.textInput 'a'
-      expect(goToLine.miniEditor.getText()).toBe ''
-      goToLine.miniEditor.textInput '40'
-      expect(goToLine.miniEditor.getText()).toBe '40'
+  describe "with an editor", ->
+    beforeEach ->
+      rootView.open('sample.js')
+      rootView.enableKeymap()
+      editor = rootView.getActiveView()
+      editor.attached = true #hack as I cant get attachToDom() to work
 
-  xdescribe "when core:confirm is triggered", ->
-    describe "when a line number has been entered", ->
-      it "moves the cursor to the first character of the line", ->
-        goToLine.miniEditor.textInput '3'
-        goToLine.miniEditor.trigger 'core:confirm'
-        expect(editor.getCursorBufferPosition()).toEqual [2, 4]
+      subject = SearchInBufferView.activate()
 
-    describe "when no line number has been entered", ->
-      it "closes the view and does not update the cursor position", ->
-        editor.trigger 'editor:go-to-line'
-        expect(goToLine.hasParent()).toBeTruthy()
-        goToLine.miniEditor.trigger 'core:confirm'
-        expect(goToLine.hasParent()).toBeFalsy()
-        expect(editor.getCursorBufferPosition()).toEqual [1, 0]
+    describe "when search-in-buffer:display-find is triggered", ->
+      it "attaches to the root view", ->
+        editor.trigger 'search-in-buffer:display-find'
+        expect(subject.hasParent()).toBeTruthy()
 
-  xdescribe "when core:cancel is triggered", ->
-    it "closes the view and does not update the cursor position", ->
-      editor.trigger 'editor:go-to-line'
-      expect(goToLine.hasParent()).toBeTruthy()
-      goToLine.miniEditor.trigger 'core:cancel'
-      expect(goToLine.hasParent()).toBeFalsy()
-      expect(editor.getCursorBufferPosition()).toEqual [1, 0]
+    describe "running a search", ->
+      beforeEach ->
+        editor.trigger 'search-in-buffer:display-find'
+
+      it "attaches to the root view", ->
+        subject.miniEditor.textInput 'items'
+        subject.miniEditor.trigger 'core:confirm'
+
+        expect(subject.resultCounter.text()).toEqual('1 of 6')
+        expect(editor.getSelectedBufferRange()).toEqual [[1, 22], [1, 27]]
+
