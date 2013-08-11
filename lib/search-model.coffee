@@ -55,4 +55,8 @@ class SearchModel
     return null unless pattern
     flags = 'g'
     flags += 'i' unless options.caseSensitive
+    pattern = @escapeRegex(pattern) unless options.regex
     new RegExp(pattern, flags)
+
+  escapeRegex: (pattern) ->
+    pattern.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&")

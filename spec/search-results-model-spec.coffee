@@ -33,6 +33,18 @@ fdescribe 'SearchResultsModel', ->
       searchModel.setPattern('')
       expect(subject.getCurrentResult()).toEqual total: 0
 
+  describe "search() with options", ->
+    beforeEach ->
+
+    describe "regex option", ->
+      it 'returns regex matches when on', ->
+        searchModel.search('items.', regex: true)
+        expect(subject.markers.length).toEqual 6
+
+      it 'returns only literal matches when off', ->
+        searchModel.search('items.', regex: false)
+        expect(subject.markers.length).toEqual 4
+
   describe "current result", ->
     beforeEach ->
       searchModel.setPattern('items')
