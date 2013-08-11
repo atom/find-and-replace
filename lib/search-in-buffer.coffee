@@ -59,7 +59,6 @@ class SearchInBufferView extends View
     @searchModel.setActiveId(if editor then editor.id else null)
 
   onCursorMoved: =>
-    console.log 'moved', @cursorMoveOriginatedHere
     if @cursorMoveOriginatedHere
       # HACK: I want to reset the current result whenever the cursor is moved
       # so it removes the '# of' from '2 of 100'. But I cant tell if I moved
