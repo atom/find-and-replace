@@ -50,4 +50,14 @@ ffdescribe 'SearchInBufferView', ->
         # should not die on new search!
         subject.miniEditor.textInput 'items'
 
+      # FIXME: when the cursor moves, I want this to pass. cursor:moved never
+      # gets called in tests
+      xit "removes the '# of' when user moves cursor", ->
+        editor.setCursorBufferPosition([10,1])
+        editor.setCursorBufferPosition([12,1])
+
+        waits 1000
+        runs ->
+          expect(subject.resultCounter.text()).toEqual('6 found')
+
 

@@ -43,15 +43,12 @@ class SearchInBufferView extends View
     @on 'core:confirm', @confirm
     @on 'core:cancel', @detach
 
-    rootView.on 'pane:became-active', @onActiveItemChanged
     rootView.on 'pane:became-active pane:active-item-changed editor:attached', @onActiveItemChanged
     rootView.eachEditor (editor) =>
       if editor.attached and not editor.mini
         editor.underlayer.append(new SearchResultsView(@searchModel, editor))
-        # FIXME: I need an event after it has been removed. Thus the nextTick()
-        # Maybe an editor:detached?
-        editor.on 'editor:will-be-removed', => _.nextTick @onActiveItemChanged
         editor.on 'editor:will-be-removed', @onActiveItemChanged
+        editor.on 'cursor:moved', @onCursorMoved
 
     @onActiveItemChanged()
     @resultCounter.setModel(@searchModel)
@@ -60,6 +57,17 @@ class SearchInBufferView extends View
     return unless rootView
     editor = rootView.getActiveView()
     @searchModel.setActiveId(if editor then editor.id else null)
+
+  onCursorMoved: =>
+    console.log 'moved', @cursorMoveOriginatedHere
+    if @cursorMoveOriginatedHere
+      # HACK: I want to reset the current result whenever the cursor is moved
+      # so it removes the '# of' from '2 of 100'. But I cant tell if I moved
+      # the cursor or the user did as it happens asynchronously. Thus this
+      # crappy boolean. Open to suggestions.
+      @cursorMoveOriginatedHere = false
+    else
+      @searchModel.getActiveResultsModel()?.setCurrentResultIndex(null)
 
   detach: =>
     return unless @hasParent()
@@ -107,8 +115,12 @@ class SearchInBufferView extends View
 
   jumpToSearchResult: (functionName) ->
     editSession = rootView.getActiveView().activeEditSession
-
     bufferRange = @searchModel.getActiveResultsModel()[functionName](editSession.getSelectedBufferRange()).range
+    @highlightSearchResult(bufferRange)
+
+  highlightSearchResult: (bufferRange) ->
+    @cursorMoveOriginatedHere = true # See HACK above.
+    editSession = rootView.getActiveView().activeEditSession
     editSession.setSelectedBufferRange(bufferRange, autoscroll: true) if bufferRange
 
   getFindOptions: ->
