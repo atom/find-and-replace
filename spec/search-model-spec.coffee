@@ -20,3 +20,14 @@ describe 'SearchModel', ->
       expect(spy).toHaveBeenCalled()
       expect(spy.mostRecentCall.args[0]).toEqual subject
       expect(spy.mostRecentCall.args[1]).toEqual regex: subject.regex
+
+  describe "search() with options", ->
+    beforeEach ->
+    describe "regex option", ->
+      it 'returns regex matches when on', ->
+        subject.search('items.', regex: true)
+        expect(subject.regex.test('items;')).toEqual(true)
+
+      it 'returns only literal matches when off', ->
+        subject.search('items.', regex: false)
+        expect(subject.regex.test('items;')).toEqual(false)
