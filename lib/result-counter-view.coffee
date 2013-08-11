@@ -20,7 +20,6 @@ class ResultCounterView extends View
   onChangeCurrentResult: (currentResult) =>
     if @resultsModel
       currentResult = currentResult or @resultsModel.getCurrentResult()
-      console.log currentResult
       if currentResult.index?
         @text("#{currentResult.index+1} of #{currentResult.total}")
       else

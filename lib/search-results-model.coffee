@@ -71,7 +71,6 @@ class SearchResultsModel
     @setCurrentResultIndex(if @markers.length then @markers.length-1 else null)
 
   destroy: =>
-    console.log('DESTROY')
     @searchModel.off 'change', @search
     @searchModel.deleteResultsForId(@editor.id)
     @editor = null
