@@ -45,12 +45,9 @@ ffdescribe 'SearchInBufferView', ->
 
       it "editor deletion is handled properly", ->
         editor.remove()
-        waits 10
+        expect(subject.resultCounter.text()).toEqual('')
 
-        runs ->
-          expect(subject.resultCounter.text()).toEqual('')
-
-          # should not die on new search!
-          subject.miniEditor.textInput 'items'
+        # should not die on new search!
+        subject.miniEditor.textInput 'items'
 
 
