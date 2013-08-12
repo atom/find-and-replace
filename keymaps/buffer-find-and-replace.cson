@@ -6,6 +6,8 @@
   'meta-G': 'buffer-find-and-replace:find-previous'
   
 '.buffer-find-and-replace .mini.editor input':
+  'tab': 'buffer-find-and-replace:focus-next'
+  'shift-tab': 'buffer-find-and-replace:focus-previous'
   'enter': 'core:confirm',
   'escape': 'core:cancel'
   'meta-w': 'core:cancel'

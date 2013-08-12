@@ -58,7 +58,12 @@ class BufferFindAndReplaceView extends View
     @replaceAllButton.on 'click', @replaceAll
 
     @findEditor.on 'core:confirm', @confirmFind
+    @findEditor.on 'buffer-find-and-replace:focus-next', @focusReplace
+    @findEditor.on 'buffer-find-and-replace:focus-previous', @focusReplace
+
     @replaceEditor.on 'core:confirm', @confirmReplace
+    @replaceEditor.on 'buffer-find-and-replace:focus-next', @focusFind
+    @replaceEditor.on 'buffer-find-and-replace:focus-previous', @focusFind
 
     @on 'core:cancel', @detach
 
@@ -117,7 +122,6 @@ class BufferFindAndReplaceView extends View
   confirmFind: =>
     @search()
     @findNext()
-
   confirmReplace: =>
     @search()
     @replaceNext()
@@ -125,16 +129,23 @@ class BufferFindAndReplaceView extends View
   showFind: =>
     @attach()
     @addClass('find-mode').removeClass('replace-mode')
-
     @findEditor.selectAll()
     @findEditor.focus()
-
   showReplace: =>
     @attach()
     @addClass('replace-mode').removeClass('find-mode')
-
     @replaceEditor.selectAll()
     @replaceEditor.focus()
+
+  focusFind: =>
+    @replaceEditor.clearSelections()
+    @findEditor.selectAll()
+    @findEditor.focus()
+  focusReplace: =>
+    if @hasClass('replace-mode')
+      @findEditor.clearSelections()
+      @replaceEditor.selectAll()
+      @replaceEditor.focus() 
 
   search: ->
     pattern = @findEditor.getText()
