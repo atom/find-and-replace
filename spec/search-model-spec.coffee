@@ -31,3 +31,13 @@ describe 'SearchModel', ->
       it 'returns only literal matches when off', ->
         subject.search('items.', regex: false)
         expect(subject.regex.test('items;')).toEqual(false)
+
+    describe "caseSensitive option", ->
+      it 'matches only same case when on', ->
+        subject.search('Items', caseSensitive: true)
+        expect(subject.regex.test('Items')).toEqual(true)
+        expect(subject.regex.test('items')).toEqual(false)
+
+      it 'matches diff case when off', ->
+        subject.search('Items', caseSensitive: false)
+        expect(subject.regex.test('items')).toEqual(true)
