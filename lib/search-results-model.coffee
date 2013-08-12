@@ -80,7 +80,7 @@ class SearchResultsModel
   onPathChanged: =>
     @setBuffer(@editor.activeEditSession.buffer)
 
-  onContentsModified: =>
+  onBufferContentsModified: =>
     return unless @searchModel.regex
 
     isEqualToRange = (marker, range) ->
@@ -137,10 +137,10 @@ class SearchResultsModel
 
   bindBuffer: (buffer) ->
     return unless buffer
-    buffer.on 'contents-modified', @onContentsModified
+    buffer.on 'contents-modified', @onBufferContentsModified
   unbindBuffer: (buffer) ->
     return unless buffer
-    buffer.off 'contents-modified', @onContentsModified
+    buffer.off 'contents-modified', @onBufferContentsModified
 
   addMarkers: (rangesToAdd) ->
     markerAttributes = @getMarkerAttributes()
