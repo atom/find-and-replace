@@ -1,0 +1,11 @@
+'.editor':
+  'meta-f': 'buffer-find-and-replace:display-find'
+  'alt-meta-f': 'buffer-find-and-replace:display-replace'
+
+  'meta-g': 'buffer-find-and-replace:find-next'
+  'meta-G': 'buffer-find-and-replace:find-previous'
+  
+'.buffer-find-and-replace .mini.editor input':
+  'enter': 'core:confirm',
+  'escape': 'core:cancel'
+  'meta-w': 'core:cancel'
