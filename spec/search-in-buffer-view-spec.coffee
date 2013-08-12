@@ -1,7 +1,7 @@
 RootView = require 'root-view'
 SearchInBufferView = require 'search-in-buffer/lib/search-in-buffer'
 
-describe 'SearchInBufferView', ->
+ffdescribe 'SearchInBufferView', ->
   [subject, editor] = []
 
   beforeEach ->
