@@ -45,8 +45,8 @@ describe 'SearchInBufferView', ->
         editor.trigger 'search-in-buffer:display-find'
 
         editor.attachToDom()
-        subject.miniEditor.textInput 'items'
-        subject.miniEditor.trigger 'core:confirm'
+        subject.findEditor.textInput 'items'
+        subject.findEditor.trigger 'core:confirm'
 
       it "shows correct message in results view", ->
         expect(subject.resultCounter.text()).toEqual('1 of 6')
@@ -57,7 +57,7 @@ describe 'SearchInBufferView', ->
         expect(subject.resultCounter.text()).toEqual('')
 
         # should not die on new search!
-        subject.miniEditor.textInput 'items'
+        subject.findEditor.textInput 'items'
 
       # FIXME: when the cursor moves, I want this to pass. cursor:moved never
       # gets called in tests
@@ -69,4 +69,16 @@ describe 'SearchInBufferView', ->
         runs ->
           expect(subject.resultCounter.text()).toEqual('6 found')
 
+    describe "running a replace", ->
+      beforeEach ->
+        editor.trigger 'search-in-buffer:display-replace'
+        editor.attachToDom()
+        subject.findEditor.textInput 'items'
+        subject.replaceEditor.textInput 'cats'
+        subject.replaceEditor.trigger 'core:confirm'
+
+      it "replaces one and finds next", ->
+        expect(subject.resultCounter.text()).toEqual('1 of 5')
+        expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
+        expect(editor.activeEditSession.getTextInBufferRange([[1, 22], [1, 27]])).toEqual 'cats)'
 

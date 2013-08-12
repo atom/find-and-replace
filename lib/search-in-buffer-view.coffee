@@ -54,7 +54,9 @@ class SearchInBufferView extends View
     @regexOptionButton.on 'click', @toggleRegexOption
     @caseSensitiveOptionButton.on 'click', @toggleCaseSensitiveOption
 
-    @on 'core:confirm', @confirm
+    @findEditor.on 'core:confirm', @confirmFind
+    @replaceEditor.on 'core:confirm', @confirmReplace
+
     @on 'core:cancel', @detach
 
     rootView.on 'pane:became-active pane:active-item-changed editor:attached', @onActiveItemChanged
@@ -109,9 +111,13 @@ class SearchInBufferView extends View
 
     _.nextTick => @searchModel.showResults()
 
-  confirm: =>
+  confirmFind: =>
     @search()
     @findNext()
+
+  confirmReplace: =>
+    @search()
+    @replaceNext()
 
   showFind: =>
     @attach()
@@ -130,6 +136,13 @@ class SearchInBufferView extends View
   search: ->
     pattern = @findEditor.getText()
     @searchModel.setPattern(pattern)
+
+  replaceNext: =>
+    replaceText = @replaceEditor.getText()
+    editSession = rootView.getActiveView().activeEditSession
+    currentBufferRange = editSession.getSelectedBufferRange()
+    bufferRange = @searchModel.getActiveResultsModel().replaceCurrentResultAndFindNext(replaceText, currentBufferRange).range
+    @highlightSearchResult(bufferRange)
 
   findPrevious: =>
     @jumpToSearchResult('findPrevious')
