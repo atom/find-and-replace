@@ -125,6 +125,7 @@ class SearchResultsModel
     @markers = _.without(@markers, marker)
   onMarkerChanged: (marker, {valid}) ->
     @destroyMarker(marker) unless valid
+    @emitCurrentResult()
 
   ### Internal ###
 

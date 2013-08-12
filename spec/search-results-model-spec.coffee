@@ -180,6 +180,17 @@ describe 'SearchResultsModel', ->
       result = subject.findNext([[0,0],[0,3]])
       expect(result.total).toEqual 6
       expect(result.range).toEqual [[1,22],[1,27]]
+
+    it "invalidation changes the total, and will emit an event", ->
+      subject.on 'change:current-result', handler = jasmine.createSpy()
+
+      buffer.insert([1, 23], "o")
+      advanceClock(buffer.stoppedChangingDelay+2)
+
+      expect(handler).toHaveBeenCalled()
+      result = handler.mostRecentCall.args[0]
+
+      expect(result.total).toEqual 5
       
     it "adds a new marker for a new result added into the buffer", ->
       subject.on 'add:markers', addHandler = jasmine.createSpy()
