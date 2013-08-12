@@ -9,20 +9,33 @@ ResultCounterView = require './result-counter-view'
 
 module.exports =
 class SearchInBufferView extends View
-  
+
   @content: ->
     @div class: 'search-in-buffer overlay from-top', =>
       @div class: 'find-container', =>
+        @label outlet: 'findLabel', 'Find'
+
         @div class: 'btn-group pull-right btn-toggle', =>
           @button outlet: 'regexOptionButton', class: 'btn btn-mini option-regex', '.*'
           @button outlet: 'caseSensitiveOptionButton', class: 'btn btn-mini option-case-sensitive', 'Aa'
+          @button outlet: 'inSelectionOptionButton', class: 'btn btn-mini option-in-selection', '"'
 
-        @div class: 'find-editor-container', =>
+        @div class: 'find-editor-container editor-container', =>
           @div class: 'find-meta-container', =>
             @subview 'resultCounter', new ResultCounterView()
             @a href: '#', outlet: 'previousButton', class: 'icon-previous'
             @a href: '#', outlet: 'nextButton', class: 'icon-next'
-          @subview 'miniEditor', new Editor(mini: true)
+          @subview 'findEditor', new Editor(mini: true)
+
+      @div outlet: 'replaceContainer', class: 'replace-container', =>
+        @label outlet: 'replaceLabel', 'Replace'
+
+        @div class: 'btn-group pull-right btn-toggle', =>
+          @button outlet: 'replaceNextButton', class: 'btn btn-mini btn-next', 'Next'
+          @button outlet: 'replaceAllButton', class: 'btn btn-mini btn-all', 'All'
+
+        @div class: 'replace-editor-container editor-container', =>
+          @subview 'replaceEditor', new Editor(mini: true)
 
   detaching: false
 
@@ -94,8 +107,6 @@ class SearchInBufferView extends View
       @previouslyFocusedElement = $(':focus')
       rootView.append(this)
 
-    @miniEditor.selectAll()
-    @miniEditor.focus()
     _.nextTick => @searchModel.showResults()
 
   confirm: =>
@@ -104,11 +115,20 @@ class SearchInBufferView extends View
 
   showFind: =>
     @attach()
+    @addClass('find-mode').removeClass('replace-mode')
+
+    @findEditor.selectAll()
+    @findEditor.focus()
 
   showReplace: =>
+    @attach()
+    @addClass('replace-mode').removeClass('find-mode')
+
+    @replaceEditor.selectAll()
+    @replaceEditor.focus()
 
   search: ->
-    pattern = @miniEditor.getText()
+    pattern = @findEditor.getText()
     @searchModel.setPattern(pattern)
 
   findPrevious: =>

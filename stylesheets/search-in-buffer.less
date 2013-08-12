@@ -1,5 +1,13 @@
 @import "octicon-mixins.less";
 
+@label-width: 50px;
+@editor-box-width: 350px;
+@button-width: 102px;
+@inner-margin: 10px;
+
+@find-mode-width: 2 + @inner-margin*3 + @editor-box-width + @button-width;
+@replace-mode-width: 2 + @inner-margin*4 + @label-width + @editor-box-width + @button-width;
+
 .editor .marker .region {
   position: absolute;
   pointer-events: none;
@@ -19,26 +27,46 @@
 }
 
 .search-in-buffer {
-  width: 400px;
-  margin-left: -200px;
+  padding-bottom: 0;
+
+  &.find-mode{
+    width: @find-mode-width;
+    margin-left: -@find-mode-width/2;
+    .replace-container, label { display: none; }
+  }
+
+  &.replace-mode{
+    width: @replace-mode-width;
+    margin-left: -@replace-mode-width/2;
+
+    .editor-container {
+      margin-left: @label-width + @inner-margin;
+    }
+  }
+
+  label {
+    float: left;
+    font-weight: normal;
+    color: #828282;
+    width: @label-width;
+    margin-right: @inner-margin;
+    text-align: right;
+    margin-top: 4px;
+  }
 
   .btn-toggle.btn-group {
     .btn {
       font-weight: bold;
       background: #303030;
       color: #b0b0b0;
-      font-size: 14px;
-      padding: 3px 8px;
+      font-size: 12px;
+      padding: 3px;
 
       border: none;
       border-left: 1px solid #2c2c2c;
 
       &:hover{ background: #353536; }
       &.enabled{ color: #66ccbb; background: #404040; }
-
-      &.option-regex{
-        font-size: 18px;
-      }
     }
     .btn:first-child {
       border-left: none;
@@ -51,32 +79,48 @@
     }
   }
 
-  .find-editor-container {
+  .editor-container {
     position: relative;
-    width: 300px;
+    width: @editor-box-width;
+  }
 
-    .find-meta-container {
-      position: absolute;
-      right: 0;
-      top: .35em;
-      z-index: 2;
+  .replace-container {
+    .btn-toggle.btn-group .btn {
+      width: @button-width/2;
     }
-    .result-counter {
-      position: relative;
-      top: -1px;
+  }
 
-      font-size: .9em;
-      color: #555;
-      margin-right: 10px;
+  .find-container {
+    .btn-toggle.btn-group .btn {
+      font-size: 14px;
+      width: @button-width/3;
+      &.option-regex{ font-size: 18px; }
     }
-    .icon-previous, .icon-next {
-      text-decoration: none;
-      color: #aaa;
-      &:hover{
-        color: #fff;
+
+    .find-editor-container {
+      .find-meta-container {
+        position: absolute;
+        right: 0;
+        top: .35em;
+        z-index: 2;
       }
+      .result-counter {
+        position: relative;
+        top: -1px;
+
+        font-size: .9em;
+        color: #555;
+        margin-right: 10px;
+      }
+      .icon-previous, .icon-next {
+        text-decoration: none;
+        color: #aaa;
+        &:hover{
+          color: #fff;
+        }
+      }
+      .icon-previous { .octicon(chevron-left, 16px); }
+      .icon-next { .octicon(chevron-right, 16px); }
     }
-    .icon-previous { .octicon(chevron-left, 16px); }
-    .icon-next { .octicon(chevron-right, 16px); }
   }
 }
