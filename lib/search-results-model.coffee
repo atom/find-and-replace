@@ -132,9 +132,6 @@ class SearchResultsModel
     else 
       { total: @markers.length }
 
-  notifyTotalResultsChanged: ->
-    @emitCurrentResult()
-
   bindBuffer: (buffer) ->
     return unless buffer
     buffer.on 'contents-modified', @onBufferContentsModified
