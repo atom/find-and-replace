@@ -70,7 +70,7 @@ describe 'SearchResultsModel', ->
       subject.on 'change:current-result', matchHandler = jasmine.createSpy()
 
       buffer.insert([1, 10], "items")
-      advanceClock(buffer.stoppedChangingDelay+2)
+      advanceClock(buffer.stoppedChangingDelay)
 
       expect(matchHandler).toHaveBeenCalled()
       arg = matchHandler.mostRecentCall.args[0]
@@ -161,21 +161,21 @@ describe 'SearchResultsModel', ->
 
     it "ranges move with the update", ->
       buffer.insert([1, 0], "xxx")
-      advanceClock(buffer.stoppedChangingDelay+2)
+      advanceClock(buffer.stoppedChangingDelay)
 
       range = subject.findNext([[0,0],[0,3]]).range
       expect(range).toEqual [[1,25],[1,30]]
 
     it "will not return an invalid result until revalidated", ->
       buffer.insert([1, 23], "o")
-      advanceClock(buffer.stoppedChangingDelay+2)
+      advanceClock(buffer.stoppedChangingDelay)
 
       result = subject.findNext([[0,0],[0,3]])
       expect(result.range).toEqual [[2,8],[2,13]]
       expect(result.total).toEqual 5
 
       buffer.delete([[1, 23], [1, 24]])
-      advanceClock(buffer.stoppedChangingDelay+2)
+      advanceClock(buffer.stoppedChangingDelay)
 
       result = subject.findNext([[0,0],[0,3]])
       expect(result.total).toEqual 6
@@ -185,7 +185,7 @@ describe 'SearchResultsModel', ->
       subject.on 'change:current-result', handler = jasmine.createSpy()
 
       buffer.insert([1, 23], "o")
-      advanceClock(buffer.stoppedChangingDelay+2)
+      advanceClock(buffer.stoppedChangingDelay)
 
       expect(handler).toHaveBeenCalled()
       result = handler.mostRecentCall.args[0]
@@ -196,7 +196,7 @@ describe 'SearchResultsModel', ->
       subject.on 'add:markers', addHandler = jasmine.createSpy()
 
       buffer.insert([1, 10], "items")
-      advanceClock(buffer.stoppedChangingDelay+2)
+      advanceClock(buffer.stoppedChangingDelay)
 
       expect(subject.markers.length).toEqual 7
       expect(addHandler).toHaveBeenCalled()
