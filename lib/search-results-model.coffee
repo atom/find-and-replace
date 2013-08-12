@@ -80,11 +80,12 @@ class SearchResultsModel
 
   replaceAll: (replacement='') ->
     @setCurrentResultIndex(null)
-    for marker in _.clone(@markers)
-      # FIXME? It might be more efficient to delete all the markers then use the
-      # replace() fn in buffer.scanRange()?
-      @buffer.change(marker.getBufferRange(), replacement)
-    @search()
+    @buffer.transact =>
+      for marker in _.clone(@markers)
+        # FIXME? It might be more efficient to delete all the markers then use the
+        # replace() fn in buffer.scanRange()? Or just a regex replacement?
+        @buffer.change(marker.getBufferRange(), replacement)
+      @search()
 
   destroy: =>
     @searchModel.off 'change', @search
