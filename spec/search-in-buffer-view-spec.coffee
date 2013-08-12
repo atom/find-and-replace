@@ -1,9 +1,8 @@
 RootView = require 'root-view'
 SearchInBufferView = require 'search-in-buffer/lib/search-in-buffer'
 
-ffdescribe 'SearchInBufferView', ->
+describe 'SearchInBufferView', ->
   [subject, editor] = []
-
   beforeEach ->
     window.rootView = new RootView
 
@@ -37,7 +36,6 @@ ffdescribe 'SearchInBufferView', ->
         editor.attachToDom()
 
       it "clicking an option button toggles its enabled class", ->
-        editor.trigger 'search-in-buffer:display-find'
         subject.toggleRegexOption()
         expect(subject.searchModel.getOption('regex')).toEqual true
         expect(subject.regexOptionButton).toHaveClass('enabled')
