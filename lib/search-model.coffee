@@ -33,6 +33,12 @@ class SearchModel
 
   setOptions: (options) ->
     @search(@pattern, options)
+  setOption: (key, value) ->
+    opts = {}
+    opts[key] = value
+    @search(@pattern, _.extend({}, @options, opts))
+  getOption: (key) ->
+    @options[key]
 
   setPattern: (pattern) ->
     @search(pattern, @options)

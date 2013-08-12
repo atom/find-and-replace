@@ -29,7 +29,13 @@ class SearchInBufferView extends View
   detaching: false
 
   initialize: ->
-    @searchModel = new SearchModel
+    @searchModel = new SearchModel '',
+      regex: false
+      caseSensitive: false
+      inWord: false
+      inSelection: false
+
+    @searchModel.on 'change', @onSearchModelChanged
 
     rootView.command 'search-in-buffer:display-find', @showFind
     rootView.command 'search-in-buffer:display-replace', @showReplace
@@ -39,6 +45,9 @@ class SearchInBufferView extends View
 
     @previousButton.on 'click', => @findPrevious(); false
     @nextButton.on 'click', => @findNext(); false
+
+    @regexOptionButton.on 'click', @toggleRegexOption
+    @caseSensitiveOptionButton.on 'click', @toggleCaseSensitiveOption
 
     @on 'core:confirm', @confirm
     @on 'core:cancel', @detach
@@ -67,6 +76,10 @@ class SearchInBufferView extends View
       @cursorMoveOriginatedHere = false
     else
       @searchModel.getActiveResultsModel()?.setCurrentResultIndex(null)
+
+  onSearchModelChanged: (model) =>
+    @setOptionButtonState(@regexOptionButton, model.getOption('regex'))
+    @setOptionButtonState(@caseSensitiveOptionButton, model.getOption('caseSensitive'))
 
   detach: =>
     return unless @hasParent()
@@ -104,7 +117,7 @@ class SearchInBufferView extends View
 
   search: ->
     pattern = @miniEditor.getText()
-    @searchModel.search(pattern, @getFindOptions())
+    @searchModel.setPattern(pattern)
 
   findPrevious: =>
     @jumpToSearchResult('findPrevious')
@@ -122,12 +135,13 @@ class SearchInBufferView extends View
     editSession = rootView.getActiveView().activeEditSession
     editSession.setSelectedBufferRange(bufferRange, autoscroll: true) if bufferRange
 
-  getFindOptions: ->
-    {
-      regex: false
-      caseSensitive: false
-      inWord: false
-      inSelection: false
-    }
+  toggleRegexOption: => @toggleOption('regex')
+  toggleCaseSensitiveOption: => @toggleOption('caseSensitive')
+  toggleOption: (optionName) ->
+    isset = @searchModel.getOption(optionName)
+    @searchModel.setOption(optionName, !isset)
+
+  setOptionButtonState: (optionButton, enabled) ->
+    optionButton[if enabled then 'addClass' else 'removeClass']('enabled')
 
 

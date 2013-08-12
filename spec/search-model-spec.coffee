@@ -21,6 +21,13 @@ describe 'SearchModel', ->
       expect(spy.mostRecentCall.args[0]).toEqual subject
       expect(spy.mostRecentCall.args[1]).toEqual regex: subject.regex
 
+  describe "setOption()", ->
+    it "kicks out an event", ->
+      subject.on 'change', spy = jasmine.createSpy()
+      subject.setOption('regex', true)
+      expect(spy).toHaveBeenCalled()
+      expect(subject.getOption('regex')).toEqual true
+
   describe "search() with options", ->
     beforeEach ->
     describe "regex option", ->
