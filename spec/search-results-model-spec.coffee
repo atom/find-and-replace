@@ -137,6 +137,24 @@ describe 'SearchResultsModel', ->
       expect(result.total).toEqual 5
       expect(buffer.getTextInRange([[1,22],[1,27]])).toEqual 'cats)'
 
+  describe "replaceAll()", ->
+    beforeEach ->
+      searchModel.setPattern('items')
+
+    it "will replace all and rerun the search", ->
+      subject.findNext([[0,0],[0,0]])
+      subject.replaceAll('cats')
+
+      expect(subject.getCurrentResult()).toEqual total: 0
+      expect(subject.markers.length).toEqual 0
+
+    it "will replace all and find matches within the replacement", ->
+      subject.findNext([[0,0],[0,0]])
+      subject.replaceAll('itemsandthings')
+
+      expect(subject.getCurrentResult()).toEqual total: 6
+      console.log buffer.getText()
+
   describe "buffer modification", ->
     beforeEach ->
       searchModel.setPattern('items')

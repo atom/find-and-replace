@@ -69,7 +69,7 @@ class SearchResultsModel
   findLastValid: ->
     @setCurrentResultIndex(if @markers.length then @markers.length-1 else null)
 
-  replaceCurrentResultAndFindNext: (replacement, currentBufferRange) ->
+  replaceCurrentResultAndFindNext: (replacement='', currentBufferRange) ->
     if @currentResultIndex?
       bufferRange = @markers[@currentResultIndex].getBufferRange()
     else
@@ -78,7 +78,13 @@ class SearchResultsModel
     @buffer.change(bufferRange, replacement)
     @findNext(bufferRange)
 
-  replaceAll: (replacement) ->
+  replaceAll: (replacement='') ->
+    @setCurrentResultIndex(null)
+    for marker in _.clone(@markers)
+      # FIXME? It might be more efficient to delete all the markers then use the
+      # replace() fn in buffer.scanRange()?
+      @buffer.change(marker.getBufferRange(), replacement)
+    @search()
 
   destroy: =>
     @searchModel.off 'change', @search
