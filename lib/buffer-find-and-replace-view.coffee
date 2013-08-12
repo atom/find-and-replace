@@ -108,7 +108,7 @@ class BufferFindAndReplaceView extends View
     else
       rootView.focus()
 
-    super
+    super()
 
     @detaching = false
 

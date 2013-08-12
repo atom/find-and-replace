@@ -1,5 +1,6 @@
 RootView = require 'root-view'
 BufferFindAndReplaceView = require 'buffer-find-and-replace/lib/buffer-find-and-replace-view'
+BufferFindAndReplace = require 'buffer-find-and-replace/lib/buffer-find-and-replace'
 
 describe 'BufferFindAndReplaceView', ->
   [subject, editor] = []
@@ -8,7 +9,7 @@ describe 'BufferFindAndReplaceView', ->
 
   describe "with no editor", ->
     beforeEach ->
-      subject = BufferFindAndReplaceView.activate()
+      subject = BufferFindAndReplace.activate()
 
     describe "when buffer-find-and-replace:display-find is triggered", ->
       it "attaches to the root view", ->
@@ -23,12 +24,24 @@ describe 'BufferFindAndReplaceView', ->
       editor = rootView.getActiveView()
       editor.attached = true #hack as I cant get attachToDom() to work
 
-      subject = BufferFindAndReplaceView.activate()
+      subject = BufferFindAndReplace.activate()
 
     describe "when buffer-find-and-replace:display-find is triggered", ->
       it "attaches to the root view", ->
         editor.trigger 'buffer-find-and-replace:display-find'
         expect(subject.hasParent()).toBeTruthy()
+
+    describe "when core:cancel is triggered", ->
+      beforeEach ->
+        editor.trigger 'buffer-find-and-replace:display-find'
+
+      it "detaches from the root view when cancel on findEditor", ->
+        subject.findEditor.trigger 'core:cancel'
+        expect(subject.hasParent()).toBeFalsy()
+
+      it "detaches from the root view when cancel on replaceEditor", ->
+        subject.replaceEditor.trigger 'core:cancel'
+        expect(subject.hasParent()).toBeFalsy()
 
     describe "option buttons", ->
       beforeEach ->
