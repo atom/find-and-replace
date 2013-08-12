@@ -2,7 +2,7 @@ RootView = require 'root-view'
 SearchModel = require 'search-in-buffer/lib/search-model'
 SearchResultsModel = require 'search-in-buffer/lib/search-results-model'
 
-fdescribe 'SearchResultsModel', ->
+describe 'SearchResultsModel', ->
   [goToLine, editor, subject, buffer, searchModel] = []
 
   beforeEach ->
@@ -120,6 +120,22 @@ fdescribe 'SearchResultsModel', ->
     it "finds proper previous range when selection inside of range", ->
       range = subject.findPrevious([[1,22],[1,25]]).range
       expect(range).toEqual [[5,16],[5,21]]
+
+  describe "replaceCurrentResultAndFindNext()", ->
+    beforeEach ->
+      searchModel.setPattern('items')
+
+    it "will replace the first thing it can find from the specified current buffer range", ->
+      result = subject.replaceCurrentResultAndFindNext('cats', [[2,22],[2,23]])
+      expect(result.range).toEqual [[3,16],[3,21]]
+      expect(result.total).toEqual 5
+
+    it "will replace current result", ->
+      result = subject.findNext([[0,0],[0,0]])
+      result = subject.replaceCurrentResultAndFindNext('cats', [[10,2],[10,2]])
+      expect(result.range).toEqual [[2,8],[2,13]]
+      expect(result.total).toEqual 5
+      expect(buffer.getTextInRange([[1,22],[1,27]])).toEqual 'cats)'
 
   describe "buffer modification", ->
     beforeEach ->

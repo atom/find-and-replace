@@ -69,6 +69,17 @@ class SearchResultsModel
   findLastValid: ->
     @setCurrentResultIndex(if @markers.length then @markers.length-1 else null)
 
+  replaceCurrentResultAndFindNext: (replacement, currentBufferRange) ->
+    if @currentResultIndex?
+      bufferRange = @markers[@currentResultIndex].getBufferRange()
+    else
+      bufferRange = @findNext(currentBufferRange).range
+
+    @buffer.change(bufferRange, replacement)
+    @findNext(bufferRange)
+
+  replaceAll: (replacement) ->
+
   destroy: =>
     @searchModel.off 'change', @search
     @searchModel.deleteResultsForId(@editor.id)
