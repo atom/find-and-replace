@@ -23,7 +23,6 @@ class SearchResultsModel
   #   inSelection: false
   constructor: (@searchModel, @editor) ->
     @markers = []
-    @invalidMarkers = []
     @currentResultIndex = null
     @searchModel.on 'change', @search
     @searchModel.setResultsForId(@editor.id, this)
