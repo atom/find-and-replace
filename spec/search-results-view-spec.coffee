@@ -1,7 +1,7 @@
 RootView = require 'root-view'
-SearchModel = require 'search-in-buffer/lib/search-model'
-SearchResultsModel = require 'search-in-buffer/lib/search-results-model'
-SearchResultsView = require 'search-in-buffer/lib/search-results-view'
+SearchModel = require 'buffer-find-and-replace/lib/search-model'
+SearchResultsModel = require 'buffer-find-and-replace/lib/search-results-model'
+SearchResultsView = require 'buffer-find-and-replace/lib/search-results-view'
 
 describe 'SearchResultsView', ->
   [goToLine, editor, subject, buffer, searchModel] = []

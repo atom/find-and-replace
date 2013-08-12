@@ -8,10 +8,10 @@ SearchResultsView = require './search-results-view'
 ResultCounterView = require './result-counter-view'
 
 module.exports =
-class SearchInBufferView extends View
+class BufferFindAndReplaceView extends View
 
   @content: ->
-    @div class: 'search-in-buffer overlay from-top', =>
+    @div class: 'buffer-find-and-replace overlay from-top', =>
       @div class: 'find-container', =>
         @label outlet: 'findLabel', 'Find'
 
@@ -42,11 +42,11 @@ class SearchInBufferView extends View
   initialize: (@searchModel) ->
     @searchModel.on 'change', @onSearchModelChanged
 
-    rootView.command 'search-in-buffer:display-find', @showFind
-    rootView.command 'search-in-buffer:display-replace', @showReplace
+    rootView.command 'buffer-find-and-replace:display-find', @showFind
+    rootView.command 'buffer-find-and-replace:display-replace', @showReplace
 
-    rootView.command 'search-in-buffer:find-previous', @findPrevious
-    rootView.command 'search-in-buffer:find-next', @findNext
+    rootView.command 'buffer-find-and-replace:find-previous', @findPrevious
+    rootView.command 'buffer-find-and-replace:find-next', @findNext
 
     @previousButton.on 'click', => @findPrevious(); false
     @nextButton.on 'click', => @findNext(); false

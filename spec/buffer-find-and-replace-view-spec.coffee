@@ -1,16 +1,16 @@
 RootView = require 'root-view'
-SearchInBufferView = require 'search-in-buffer/lib/search-in-buffer'
+BufferFindAndReplaceView = require 'buffer-find-and-replace/lib/buffer-find-and-replace-view'
 
-describe 'SearchInBufferView', ->
+describe 'BufferFindAndReplaceView', ->
   [subject, editor] = []
   beforeEach ->
     window.rootView = new RootView
 
   describe "with no editor", ->
     beforeEach ->
-      subject = SearchInBufferView.activate()
+      subject = BufferFindAndReplaceView.activate()
 
-    describe "when search-in-buffer:display-find is triggered", ->
+    describe "when buffer-find-and-replace:display-find is triggered", ->
       it "attaches to the root view", ->
         subject.showFind()
         expect(subject.hasParent()).toBeTruthy()
@@ -23,16 +23,16 @@ describe 'SearchInBufferView', ->
       editor = rootView.getActiveView()
       editor.attached = true #hack as I cant get attachToDom() to work
 
-      subject = SearchInBufferView.activate()
+      subject = BufferFindAndReplaceView.activate()
 
-    describe "when search-in-buffer:display-find is triggered", ->
+    describe "when buffer-find-and-replace:display-find is triggered", ->
       it "attaches to the root view", ->
-        editor.trigger 'search-in-buffer:display-find'
+        editor.trigger 'buffer-find-and-replace:display-find'
         expect(subject.hasParent()).toBeTruthy()
 
     describe "option buttons", ->
       beforeEach ->
-        editor.trigger 'search-in-buffer:display-find'
+        editor.trigger 'buffer-find-and-replace:display-find'
         editor.attachToDom()
 
       it "clicking an option button toggles its enabled class", ->
@@ -42,7 +42,7 @@ describe 'SearchInBufferView', ->
 
     describe "running a search", ->
       beforeEach ->
-        editor.trigger 'search-in-buffer:display-find'
+        editor.trigger 'buffer-find-and-replace:display-find'
 
         editor.attachToDom()
         subject.findEditor.textInput 'items'
@@ -71,7 +71,7 @@ describe 'SearchInBufferView', ->
 
     describe "running a replace", ->
       beforeEach ->
-        editor.trigger 'search-in-buffer:display-replace'
+        editor.trigger 'buffer-find-and-replace:display-replace'
         editor.attachToDom()
         subject.findEditor.textInput 'items'
         subject.replaceEditor.textInput 'cats'

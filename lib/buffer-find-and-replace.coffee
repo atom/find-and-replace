@@ -1,9 +1,9 @@
 SearchModel = require './search-model'
-SearchInBufferView = require './search-in-buffer-view'
+BufferFindAndReplaceView = require './buffer-find-and-replace-view'
 
 module.exports =
   activate: -> 
-    new SearchInBufferView new SearchModel '',
+    new BufferFindAndReplaceView new SearchModel '',
       regex: false
       caseSensitive: false
       inWord: false

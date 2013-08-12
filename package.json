@@ -1,4 +1,4 @@
 {
-  "main": "./lib/search-in-buffer",
+  "main": "./lib/buffer-find-and-replace",
   "description": "Find and replace in the open buffer"
 }
