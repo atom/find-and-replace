@@ -16,8 +16,8 @@ class SearchInBufferView extends View
     @div class: 'search-in-buffer overlay from-top', =>
       @div class: 'find-container', =>
         @div class: 'btn-group pull-right btn-toggle', =>
-          @button outlet: 'regexOptionButton', class: 'btn btn-mini', '.*'
-          @button outlet: 'caseSensitiveOptionButton', class: 'btn btn-mini', 'Aa'
+          @button outlet: 'regexOptionButton', class: 'btn btn-mini option-regex', '.*'
+          @button outlet: 'caseSensitiveOptionButton', class: 'btn btn-mini option-case-sensitive', 'Aa'
 
         @div class: 'find-editor-container', =>
           @div class: 'find-meta-container', =>

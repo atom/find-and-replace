@@ -22,9 +22,33 @@
   width: 400px;
   margin-left: -200px;
 
-  .btn-toggle.btn-group{
-    .btn.enabled{
-      color: #0ff;
+  .btn-toggle.btn-group {
+    .btn {
+      font-weight: bold;
+      background: #303030;
+      color: #b0b0b0;
+      font-size: 14px;
+      padding: 3px 8px;
+
+      border: none;
+      border-left: 1px solid #2e2e2e;
+
+      &:hover{ background: #353536; }
+      &.enabled{ color: #66ccbb; background: #404040; }
+
+      &.option-regex{
+        font-size: 18px;
+      }
+    }
+    .btn:first-child {
+      border-left: none;
+      border-bottom-left-radius: 2px;
+      border-top-left-radius: 2px;
+    }
+    .btn:last-child {
+      border-left: none;
+      border-bottom-right-radius: 2px;
+      border-top-right-radius: 2px;
     }
   }
 
