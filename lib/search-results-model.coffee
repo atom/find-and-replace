@@ -46,7 +46,7 @@ class SearchResultsModel
     @generateCurrentResult()
 
   findNext: (initialBufferRange) ->
-    initialBufferRange = @currentBufferRange(initialBufferRange)
+    initialBufferRange = @currentBufferRange(initialBufferRange, 'first')
     if @markers and @markers.length
       for i in [0...@markers.length]
         marker = @markers[i]
@@ -55,7 +55,7 @@ class SearchResultsModel
     @findFirstValid()
 
   findPrevious: (initialBufferRange) ->
-    initialBufferRange = @currentBufferRange(initialBufferRange)
+    initialBufferRange = @currentBufferRange(initialBufferRange, 'last')
     if @markers and @markers.length
       for i in [@markers.length-1..0]
         marker = @markers[i]
@@ -178,8 +178,8 @@ class SearchResultsModel
     @trigger 'add:markers', markers: markers
     @emitCurrentResult()
 
-  currentBufferRange: (bufferRange) ->
-    bufferRange ?= @editor.getSelectedBufferRange()
+  currentBufferRange: (bufferRange, firstOrLast='first') ->
+    bufferRange = _[firstOrLast](@editor.getSelectedBufferRanges()) unless bufferRange?
     AtomRange.fromObject(bufferRange)
 
   findAndMarkRanges: ->
@@ -188,13 +188,19 @@ class SearchResultsModel
 
   findRanges: ->
     return [] unless @searchModel.regex
-
-    options = @searchModel.options #TODO: handle inSelection option
-
     ranges = []
-    @buffer.scanInRange @searchModel.regex, @buffer.getRange(), ({range}) ->
-      ranges.push(range)
+    for rangeToSearch in @getRangesToSearch()
+      @buffer.scanInRange @searchModel.regex, rangeToSearch, ({range}) ->
+        ranges.push(range)
     ranges
+
+  getRangesToSearch: ->
+    if @searchModel.options.inSelection
+      selectedBufferRanges = @editor.getSelectedBufferRanges()
+      # only search in selection if there is a selection somewhere.
+      for range in selectedBufferRanges
+        rangesToSearch = selectedBufferRanges unless range.isEmpty()
+    rangesToSearch or [@buffer.getRange()]
 
   destroyMarkers: ->
     @destroyMarker(marker) for marker in @markers

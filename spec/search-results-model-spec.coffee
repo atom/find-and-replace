@@ -45,6 +45,37 @@ describe 'SearchResultsModel', ->
         searchModel.search('items.', regex: false)
         expect(subject.markers.length).toEqual 4
 
+    describe "inSelection option", ->
+      it 'returns only matches in the current selection', ->
+        editor.setSelectedBufferRange([[0,1],[3,15]])
+        searchModel.search('items', inSelection: true)
+        expect(subject.markers.length).toEqual 3
+
+        editor.setSelectedBufferRange(subject.findNext().range)
+        expect(editor.getSelectedBufferRange()).toEqual [[1,22],[1,27]]
+        editor.setSelectedBufferRange(subject.findNext().range)
+        expect(editor.getSelectedBufferRange()).toEqual [[2,8],[2,13]]
+        expect(subject.markers.length).toEqual 3
+
+      it 'handles multiple selections', ->
+        editor.setSelectedBufferRange([[0,1],[3,15]])
+        editor.addSelectionForBufferRange([[5,1],[9,5]])
+        searchModel.search('items', inSelection: true)
+        expect(subject.markers.length).toEqual 4
+
+        editor.setSelectedBufferRange(subject.findNext().range)
+        editor.setSelectedBufferRange(subject.findNext().range)
+        editor.setSelectedBufferRange(subject.findNext().range)
+        editor.setSelectedBufferRange(subject.findNext().range)
+        expect(editor.getSelectedBufferRange()).toEqual [[5,16],[5,21]]
+        expect(subject.markers.length).toEqual 4
+
+      it 'handles empty selections', ->
+        editor.setCursorBufferPosition([0,1])
+        editor.addCursorAtBufferPosition([2,5])
+        searchModel.search('items', inSelection: true)
+        expect(subject.markers.length).toEqual 6
+
   describe "current result", ->
     beforeEach ->
       searchModel.setPattern('items')
