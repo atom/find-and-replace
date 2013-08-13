@@ -49,6 +49,9 @@ class BufferFindAndReplaceView extends View
     rootView.command 'buffer-find-and-replace:find-previous', @findPrevious
     rootView.command 'buffer-find-and-replace:find-next', @findNext
 
+    rootView.command 'buffer-find-and-replace:toggle-regex-option', @toggleRegexOption
+    rootView.command 'buffer-find-and-replace:toggle-case-sensitive-option', @toggleCaseSensitiveOption
+
     @previousButton.on 'click', => @findPrevious(); false
     @nextButton.on 'click', => @findNext(); false
 
@@ -187,12 +190,8 @@ class BufferFindAndReplaceView extends View
     editSession = rootView.getActiveView().activeEditSession
     editSession.setSelectedBufferRange(bufferRange, autoscroll: true) if bufferRange
 
-  toggleRegexOption: => 
-    @toggleOption('regex')
-    @focusFind()
-  toggleCaseSensitiveOption: => 
-    @toggleOption('caseSensitive')
-    @focusFind()
+  toggleRegexOption: => @toggleOption('regex')
+  toggleCaseSensitiveOption: => @toggleOption('caseSensitive')
   toggleOption: (optionName) ->
     isset = @searchModel.getOption(optionName)
     @searchModel.setOption(optionName, !isset)

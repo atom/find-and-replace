@@ -11,3 +11,5 @@
   'enter': 'core:confirm',
   'escape': 'core:cancel'
   'meta-w': 'core:cancel'
+  'alt-meta-/': 'buffer-find-and-replace:toggle-regex-option'
+  'alt-meta-c': 'buffer-find-and-replace:toggle-case-sensitive-option'
