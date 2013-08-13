@@ -161,7 +161,7 @@ describe 'SearchResultsModel', ->
         old = buffer.getText()
         result = subject.replaceCurrentResultAndFindNext('not gonna do it', [[5,16],[5,21]])
         expect(buffer.getText()).toEqual old
-        expect(result).toEqual null
+        expect(result).toEqual total: 0
 
   describe "replaceAll()", ->
 

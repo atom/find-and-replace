@@ -6,6 +6,7 @@ Point = require 'point'
 SearchModel = require './search-model'
 SearchResultsView = require './search-results-view'
 ResultCounterView = require './result-counter-view'
+shell = require 'shell'
 
 module.exports =
 class BufferFindAndReplaceView extends View
@@ -155,12 +156,16 @@ class BufferFindAndReplaceView extends View
     replaceText = @replaceEditor.getText()
     editSession = rootView.getActiveView().activeEditSession
     currentBufferRange = editSession.getSelectedBufferRange()
-    bufferRange = @searchModel.getActiveResultsModel().replaceCurrentResultAndFindNext(replaceText, currentBufferRange).range
-    @highlightSearchResult(bufferRange)
+    currentResult = @searchModel.getActiveResultsModel().replaceCurrentResultAndFindNext(replaceText, currentBufferRange)
+
+    if currentResult.range
+      @highlightSearchResult(currentResult.range)
+    else
+      shell.beep()
 
   replaceAll: =>
     replaceText = @replaceEditor.getText()
-    @searchModel.getActiveResultsModel().replaceAll(replaceText)
+    shell.beep() unless @searchModel.getActiveResultsModel().replaceAll(replaceText)
 
   findPrevious: =>
     @jumpToSearchResult('findPrevious')
@@ -170,8 +175,11 @@ class BufferFindAndReplaceView extends View
 
   jumpToSearchResult: (functionName) ->
     editSession = rootView.getActiveView().activeEditSession
-    bufferRange = @searchModel.getActiveResultsModel()[functionName](editSession.getSelectedBufferRange()).range
-    @highlightSearchResult(bufferRange)
+    currentResult = @searchModel.getActiveResultsModel()[functionName](editSession.getSelectedBufferRange())
+    if currentResult.range
+      @highlightSearchResult(currentResult.range)
+    else
+      shell.beep()
 
   highlightSearchResult: (bufferRange) ->
     @cursorMoveOriginatedHere = true # See HACK above.

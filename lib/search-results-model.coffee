@@ -67,7 +67,7 @@ class SearchResultsModel
     @setCurrentResultIndex(if @markers.length then @markers.length-1 else null)
 
   replaceCurrentResultAndFindNext: (replacement='', currentBufferRange) ->
-    return null unless @markers.length
+    return {total: 0} unless @markers.length
 
     if @currentResultIndex?
       bufferRange = @markers[@currentResultIndex].getBufferRange()
