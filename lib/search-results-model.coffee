@@ -46,6 +46,7 @@ class SearchResultsModel
     @generateCurrentResult()
 
   findNext: (initialBufferRange) ->
+    initialBufferRange = @currentBufferRange(initialBufferRange)
     if @markers and @markers.length
       for i in [0...@markers.length]
         marker = @markers[i]
@@ -54,8 +55,7 @@ class SearchResultsModel
     @findFirstValid()
 
   findPrevious: (initialBufferRange) ->
-    initialBufferRange = AtomRange.fromObject(initialBufferRange)
-
+    initialBufferRange = @currentBufferRange(initialBufferRange)
     if @markers and @markers.length
       for i in [@markers.length-1..0]
         marker = @markers[i]
@@ -71,6 +71,7 @@ class SearchResultsModel
     @setCurrentResultIndex(if @markers.length then @markers.length-1 else null)
 
   replaceCurrentResultAndFindNext: (replacement='', currentBufferRange) ->
+    currentBufferRange = @currentBufferRange(currentBufferRange)
     return {total: 0} unless @markers.length
 
     if @currentResultIndex?
@@ -176,6 +177,10 @@ class SearchResultsModel
 
     @trigger 'add:markers', markers: markers
     @emitCurrentResult()
+
+  currentBufferRange: (bufferRange) ->
+    bufferRange ?= @editor.getSelectedBufferRange()
+    AtomRange.fromObject(bufferRange)
 
   findAndMarkRanges: ->
     markerAttributes = @getMarkerAttributes()

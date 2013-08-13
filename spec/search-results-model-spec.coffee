@@ -109,6 +109,11 @@ describe 'SearchResultsModel', ->
       range = subject.findNext([[1,22],[1,25]]).range
       expect(range).toEqual [[2,8],[2,13]]
 
+    it "can use the current selection", ->
+      editor.setSelectedBufferRange([[2,22],[2,23]])
+      range = subject.findNext().range
+      expect(range).toEqual [[2,34],[2,39]]
+
   describe "findPrevious()", ->
     beforeEach ->
       searchModel.setPattern('items')
