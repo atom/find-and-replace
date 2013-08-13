@@ -1,7 +1,8 @@
 EventEmitter = require 'event-emitter'
 _ = require 'underscore'
 
-# Holds the current search pattern and search options.
+# Holds the current search pattern and search options. Does not run the search
+# on a buffer. Just holds the parameter state. See SearchResultsModel
 module.exports =
 class SearchModel
   _.extend @prototype, EventEmitter
