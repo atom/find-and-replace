@@ -77,6 +77,14 @@ describe 'SearchResultsModel', ->
 
       expect(arg.total).toEqual 7
 
+    it "handles invalidation of the current result marker", ->
+      subject.setCurrentResultIndex(0)
+      expect(subject.getCurrentResult().index).toEqual 0
+
+      subject.markers[0].bufferMarker.invalidate()
+
+      expect(subject.getCurrentResult().index).not.toEqual 0
+
   describe "findNext()", ->
     beforeEach ->
       searchModel.setPattern('items')
@@ -136,6 +144,13 @@ describe 'SearchResultsModel', ->
       expect(result.range).toEqual [[2,8],[2,13]]
       expect(result.total).toEqual 5
       expect(buffer.getTextInRange([[1,22],[1,27]])).toEqual 'cats)'
+
+    it "will replace the last one and wrap to find the first", ->
+      result = subject.findNext([[5,0],[5,0]])
+      result = subject.replaceCurrentResultAndFindNext('cats', [[5,16],[5,21]])
+      expect(result.range).toEqual [[1,22],[1,27]]
+      expect(result.total).toEqual 5
+      expect(buffer.getTextInRange([[5,16],[5,21]])).toEqual 'cats.'
 
   describe "replaceAll()", ->
     beforeEach ->

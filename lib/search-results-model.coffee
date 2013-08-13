@@ -41,6 +41,8 @@ class SearchResultsModel
     @bindBuffer(@buffer = buffer)
     @search()
 
+  clearCurrentResult: ->
+    @setCurrentResultIndex(null)
   getCurrentResult: ->
     @generateCurrentResult()
 
@@ -122,7 +124,10 @@ class SearchResultsModel
     @addMarkers(rangesToAdd) if rangesToAdd.length
 
   onMarkerDestroyed: (marker) ->
+    index = _.indexOf(@markers, marker)
     @markers = _.without(@markers, marker)
+    @clearCurrentResult() if index == @currentResultIndex
+
   onMarkerChanged: (marker, {valid}) ->
     @destroyMarker(marker) unless valid
     @emitCurrentResult()
