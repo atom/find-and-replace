@@ -1,5 +1,6 @@
 {View} = require 'space-pen'
 
+# Updates the result counter label inside the editor box.
 module.exports =
 class ResultCounterView extends View
   @content: ->  

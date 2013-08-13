@@ -4,6 +4,7 @@ Selection = require 'selection'
 MarkerView = require './marker-view'
 SearchResultsModel = require './search-results-model'
 
+# Creates marker views for search results model.
 # Will be one of these created per editor.
 module.exports =
 class SearchResultsView extends View

@@ -2,6 +2,9 @@ EventEmitter = require 'event-emitter'
 AtomRange = require 'range'
 _ = require 'underscore'
 
+# Holds the markers for search results for a given buffer. Continually updates
+# search results as the user types and markers are invalidated.
+#
 # Will be one of these per editor. We will swap the buffers in and out as the
 # user opens/closes buffers.
 #

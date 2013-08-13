@@ -1,10 +1,12 @@
 EventEmitter = require 'event-emitter'
 _ = require 'underscore'
 
+# Holds the current search pattern and search options.
 module.exports =
 class SearchModel
   _.extend @prototype, EventEmitter
 
+  # pattern - string to search for
   # options - 
   #   regex: false
   #   caseSensitive: false
@@ -43,6 +45,7 @@ class SearchModel
   setPattern: (pattern) ->
     @search(pattern, @options)
 
+  # Use activeId to specify the active editor.
   setActiveId: (id) ->
     @activeId = id
     @trigger 'change:active-id', this, {@activeId}
