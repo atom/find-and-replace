@@ -130,45 +130,65 @@ describe 'SearchResultsModel', ->
       expect(range).toEqual [[5,16],[5,21]]
 
   describe "replaceCurrentResultAndFindNext()", ->
-    beforeEach ->
-      searchModel.setPattern('items')
+    describe "when there are matches", ->
+      beforeEach ->
+        searchModel.setPattern('items')
 
-    it "will replace the first thing it can find from the specified current buffer range", ->
-      result = subject.replaceCurrentResultAndFindNext('cats', [[2,22],[2,23]])
-      expect(result.range).toEqual [[3,16],[3,21]]
-      expect(result.total).toEqual 5
+      it "will replace the first thing it can find from the specified current buffer range", ->
+        result = subject.replaceCurrentResultAndFindNext('cats', [[2,22],[2,23]])
+        expect(result.range).toEqual [[3,16],[3,21]]
+        expect(result.total).toEqual 5
 
-    it "will replace current result", ->
-      result = subject.findNext([[0,0],[0,0]])
-      result = subject.replaceCurrentResultAndFindNext('cats', [[10,2],[10,2]])
-      expect(result.range).toEqual [[2,8],[2,13]]
-      expect(result.total).toEqual 5
-      expect(buffer.getTextInRange([[1,22],[1,27]])).toEqual 'cats)'
+      it "will replace current result", ->
+        result = subject.findNext([[0,0],[0,0]])
+        result = subject.replaceCurrentResultAndFindNext('cats', [[10,2],[10,2]])
+        expect(result.range).toEqual [[2,8],[2,13]]
+        expect(result.total).toEqual 5
+        expect(buffer.getTextInRange([[1,22],[1,27]])).toEqual 'cats)'
 
-    it "will replace the last one and wrap to find the first", ->
-      result = subject.findNext([[5,0],[5,0]])
-      result = subject.replaceCurrentResultAndFindNext('cats', [[5,16],[5,21]])
-      expect(result.range).toEqual [[1,22],[1,27]]
-      expect(result.total).toEqual 5
-      expect(buffer.getTextInRange([[5,16],[5,21]])).toEqual 'cats.'
+      it "will replace the last one and wrap to find the first", ->
+        result = subject.findNext([[5,0],[5,0]])
+        result = subject.replaceCurrentResultAndFindNext('cats', [[5,16],[5,21]])
+        expect(result.range).toEqual [[1,22],[1,27]]
+        expect(result.total).toEqual 5
+        expect(buffer.getTextInRange([[5,16],[5,21]])).toEqual 'cats.'
+
+    describe "when there are no matches", ->
+      beforeEach ->
+        searchModel.setPattern('nope, not there')
+
+      it "doesn't break or replace anything", ->
+        old = buffer.getText()
+        result = subject.replaceCurrentResultAndFindNext('not gonna do it', [[5,16],[5,21]])
+        expect(buffer.getText()).toEqual old
+        expect(result).toEqual null
 
   describe "replaceAll()", ->
-    beforeEach ->
-      searchModel.setPattern('items')
 
-    it "will replace all and rerun the search", ->
-      subject.findNext([[0,0],[0,0]])
-      subject.replaceAll('cats')
+    describe "when there are no matches", ->
+      beforeEach ->
+        searchModel.setPattern('nope, not there')
 
-      expect(subject.getCurrentResult()).toEqual total: 0
-      expect(subject.markers.length).toEqual 0
+      it "doesn't break or replace anything", ->
+        old = buffer.getText()
+        expect(subject.replaceAll('not gonna do it')).toEqual false
+        expect(buffer.getText()).toEqual old
 
-    it "will replace all and find matches within the replacement", ->
-      subject.findNext([[0,0],[0,0]])
-      subject.replaceAll('itemsandthings')
+    describe "when there are matches", ->
+      beforeEach ->
+        searchModel.setPattern('items')
 
-      expect(subject.getCurrentResult()).toEqual total: 6
-      console.log buffer.getText()
+      it "will replace all and rerun the search", ->
+        subject.findNext([[0,0],[0,0]])
+        subject.replaceAll('cats')
+
+        expect(subject.getCurrentResult()).toEqual total: 0
+        expect(subject.markers.length).toEqual 0
+
+      it "will replace all and find matches within the replacement", ->
+        subject.findNext([[0,0],[0,0]])
+        expect(subject.replaceAll('itemsandthings')).toEqual true
+        expect(subject.getCurrentResult()).toEqual total: 6
 
   describe "buffer modification", ->
     beforeEach ->

@@ -67,6 +67,8 @@ class SearchResultsModel
     @setCurrentResultIndex(if @markers.length then @markers.length-1 else null)
 
   replaceCurrentResultAndFindNext: (replacement='', currentBufferRange) ->
+    return null unless @markers.length
+
     if @currentResultIndex?
       bufferRange = @markers[@currentResultIndex].getBufferRange()
     else
@@ -76,6 +78,7 @@ class SearchResultsModel
     @findNext(bufferRange)
 
   replaceAll: (replacement='') ->
+    return false unless @markers.length
     @setCurrentResultIndex(null)
     @buffer.transact =>
       for marker in _.clone(@markers)
@@ -83,6 +86,7 @@ class SearchResultsModel
         # replace() fn in buffer.scanRange()? Or just a regex replacement?
         @buffer.change(marker.getBufferRange(), replacement)
       @search()
+    true
 
   destroy: =>
     @searchModel.off 'change', @search
