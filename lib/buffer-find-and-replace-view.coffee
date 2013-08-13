@@ -141,10 +141,10 @@ class BufferFindAndReplaceView extends View
     @findEditor.selectAll()
     @findEditor.focus()
   focusReplace: =>
-    if @hasClass('replace-mode')
-      @findEditor.clearSelections()
-      @replaceEditor.selectAll()
-      @replaceEditor.focus() 
+    return unless @hasClass('replace-mode')
+    @findEditor.clearSelections()
+    @replaceEditor.selectAll()
+    @replaceEditor.focus()
 
   search: ->
     pattern = @findEditor.getText()
