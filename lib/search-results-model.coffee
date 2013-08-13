@@ -16,11 +16,6 @@ module.exports =
 class SearchResultsModel
   _.extend @prototype, EventEmitter
 
-  # options - 
-  #   regex: false
-  #   caseSensitive: false
-  #   inWord: false
-  #   inSelection: false
   constructor: (@searchModel, @editor) ->
     @markers = []
     @currentResultIndex = null
