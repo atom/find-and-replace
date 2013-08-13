@@ -53,6 +53,11 @@ describe 'BufferFindAndReplaceView', ->
         expect(subject.searchModel.getOption('regex')).toEqual true
         expect(subject.regexOptionButton).toHaveClass('enabled')
 
+      it "clicking inSelection option button toggles its enabled class", ->
+        subject.toggleInSelectionOption()
+        expect(subject.searchModel.getOption('inSelection')).toEqual true
+        expect(subject.inSelectionOptionButton).toHaveClass('enabled')
+
     describe "running a search", ->
       beforeEach ->
         editor.trigger 'buffer-find-and-replace:display-find'

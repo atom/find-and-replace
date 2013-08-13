@@ -51,12 +51,14 @@ class BufferFindAndReplaceView extends View
 
     rootView.command 'buffer-find-and-replace:toggle-regex-option', @toggleRegexOption
     rootView.command 'buffer-find-and-replace:toggle-case-sensitive-option', @toggleCaseSensitiveOption
+    rootView.command 'buffer-find-and-replace:toggle-in-selection-option', @toggleInSelectionOption
 
     @previousButton.on 'click', => @findPrevious(); false
     @nextButton.on 'click', => @findNext(); false
 
     @regexOptionButton.on 'click', @toggleRegexOption
     @caseSensitiveOptionButton.on 'click', @toggleCaseSensitiveOption
+    @inSelectionOptionButton.on 'click', @toggleInSelectionOption
 
     @replaceNextButton.on 'click', @replaceNext
     @replaceAllButton.on 'click', @replaceAll
@@ -102,6 +104,7 @@ class BufferFindAndReplaceView extends View
   onSearchModelChanged: (model) =>
     @setOptionButtonState(@regexOptionButton, model.getOption('regex'))
     @setOptionButtonState(@caseSensitiveOptionButton, model.getOption('caseSensitive'))
+    @setOptionButtonState(@inSelectionOptionButton, model.getOption('inSelection'))
 
   detach: =>
     return unless @hasParent()
@@ -192,6 +195,7 @@ class BufferFindAndReplaceView extends View
 
   toggleRegexOption: => @toggleOption('regex')
   toggleCaseSensitiveOption: => @toggleOption('caseSensitive')
+  toggleInSelectionOption: => @toggleOption('inSelection')
   toggleOption: (optionName) ->
     isset = @searchModel.getOption(optionName)
     @searchModel.setOption(optionName, !isset)
