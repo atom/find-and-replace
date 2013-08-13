@@ -15,6 +15,7 @@ class SearchResultsView extends View
   # options - 
   #   editor: an Atom Editor!
   initialize: (@searchModel, @editor) ->
+    @markerViews = []
     @model = new SearchResultsModel(@searchModel, @editor)
     @model.on 'change:markers', @replaceMarkerViews
     @model.on 'add:markers', @addMarkerViews
