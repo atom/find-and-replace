@@ -130,13 +130,11 @@ class BufferFindAndReplaceView extends View
   showFind: =>
     @attach()
     @addClass('find-mode').removeClass('replace-mode')
-    @findEditor.selectAll()
-    @findEditor.focus()
+    @focusFind()
   showReplace: =>
     @attach()
     @addClass('replace-mode').removeClass('find-mode')
-    @replaceEditor.selectAll()
-    @replaceEditor.focus()
+    @focusReplace()
 
   focusFind: =>
     @replaceEditor.clearSelections()
