@@ -1,6 +1,7 @@
 EventEmitter = require 'event-emitter'
 AtomRange = require 'range'
 _ = require 'underscore'
+shell = require 'shell'
 
 # Runs the search on a buffer. Holds the markers for search results for a
 # given buffer. Continually updates search results as the user types and
@@ -28,6 +29,12 @@ class SearchResultsModel
 
     @editor.on 'editor:path-changed', @onPathChanged
     @editor.on 'editor:will-be-removed', @destroy
+
+    @editor.command 'buffer-find-and-replace:find-next', @selectNextResult
+    @editor.command 'buffer-find-and-replace:find-previous', @selectPreviousResult
+    @editor.command 'buffer-find-and-replace:replace-next', (e, {replacement}) => @replaceCurrentResultAndSelectNextResult(replacement)
+    @editor.command 'buffer-find-and-replace:replace-all', (e, {replacement}) => @replaceAllResults(replacement)
+
     @onPathChanged()
 
   search: =>
@@ -35,15 +42,26 @@ class SearchResultsModel
     @markers = @findAndMarkRanges()
     @trigger 'change:markers', markers: @markers
 
-  setBuffer: (buffer) ->
-    @unbindBuffer(buffer)
-    @bindBuffer(@buffer = buffer)
-    @search()
-
   clearCurrentResult: ->
     @setCurrentResultIndex(null)
   getCurrentResult: ->
     @generateCurrentResult()
+
+  selectNextResult: =>
+    @selectResult('findNext')
+
+  selectPreviousResult: =>
+    @selectResult('findPrevious')
+
+  replaceAllResults: (replacement) =>
+    shell.beep() unless @replaceAll(replacement)
+
+  replaceCurrentResultAndSelectNextResult: (replacement) =>
+    currentResult = @replaceCurrentResultAndFindNext(replacement)
+    if currentResult.range
+      @selectBufferRange(currentResult.range)
+    else
+      shell.beep()
 
   findNext: (initialBufferRange) ->
     initialBufferRange = @currentBufferRange(initialBufferRange, 'first')
@@ -137,6 +155,22 @@ class SearchResultsModel
     @emitCurrentResult()
 
   ### Internal ###
+
+  setBuffer: (buffer) ->
+    @unbindBuffer(buffer)
+    @bindBuffer(@buffer = buffer)
+    @search()
+
+  selectResult: (functionName) ->
+    currentResult = @[functionName]()
+    if currentResult.range
+      @selectBufferRange(currentResult.range)
+    else
+      shell.beep() # FIXME: this is more of a view thing, but it's in here...
+
+  selectBufferRange: (bufferRange) ->
+    editSession = @editor.activeEditSession
+    editSession.setSelectedBufferRange(bufferRange, autoscroll: true) if bufferRange
 
   setCurrentResultIndex: (index) ->
     return @generateCurrentResult() if @currentResultIndex == index

@@ -278,3 +278,15 @@ describe 'SearchResultsModel', ->
       range = subject.findNext([[1,20],[1,20]]).range
       expect(range).toEqual [[1,27],[1,32]]
 
+    beforeEach ->
+      searchModel.setPattern('items')
+
+    it "handles the find-next event", ->
+      editor.setSelectedBufferRange([[2,22],[2,23]])
+      editor.trigger('buffer-find-and-replace:find-next')
+      expect(editor.getSelectedBufferRange()).toEqual [[2,34],[2,39]]
+
+    it "handles the find-previous event", ->
+      editor.setSelectedBufferRange([[2,40],[2,40]])
+      range = editor.trigger('buffer-find-and-replace:find-previous')
+      expect(editor.getSelectedBufferRange()).toEqual [[2,34],[2,39]]

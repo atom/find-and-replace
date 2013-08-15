@@ -93,10 +93,14 @@ describe 'BufferFindAndReplaceView', ->
         editor.attachToDom()
         subject.findEditor.textInput 'items'
         subject.replaceEditor.textInput 'cats'
-        subject.replaceEditor.trigger 'core:confirm'
 
       it "replaces one and finds next", ->
+        subject.replaceEditor.trigger 'core:confirm'
         expect(subject.resultCounter.text()).toEqual('1 of 5')
         expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
         expect(editor.activeEditSession.getTextInBufferRange([[1, 22], [1, 27]])).toEqual 'cats)'
 
+      it "replaces all", ->
+        subject.replaceAll()
+        expect(subject.resultCounter.text()).toEqual('0 found')
+        expect(editor.activeEditSession.getTextInBufferRange([[1, 22], [1, 27]])).toEqual 'cats)'

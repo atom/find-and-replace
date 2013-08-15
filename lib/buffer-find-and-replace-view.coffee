@@ -46,9 +46,6 @@ class BufferFindAndReplaceView extends View
     rootView.command 'buffer-find-and-replace:display-find', @showFind
     rootView.command 'buffer-find-and-replace:display-replace', @showReplace
 
-    rootView.command 'buffer-find-and-replace:find-previous', @findPrevious
-    rootView.command 'buffer-find-and-replace:find-next', @findNext
-
     rootView.command 'buffer-find-and-replace:toggle-regex-option', @toggleRegexOption
     rootView.command 'buffer-find-and-replace:toggle-case-sensitive-option', @toggleCaseSensitiveOption
     rootView.command 'buffer-find-and-replace:toggle-in-selection-option', @toggleInSelectionOption
@@ -160,38 +157,22 @@ class BufferFindAndReplaceView extends View
     @searchModel.setPattern(pattern)
 
   replaceNext: =>
-    replaceText = @replaceEditor.getText()
-    editSession = rootView.getActiveView().activeEditSession
-    currentBufferRange = editSession.getSelectedBufferRange()
-    currentResult = @searchModel.getActiveResultsModel().replaceCurrentResultAndFindNext(replaceText, currentBufferRange)
-
-    if currentResult.range
-      @highlightSearchResult(currentResult.range)
-    else
-      shell.beep()
+    @search()
+    replacement = @replaceEditor.getText()
+    rootView.getActiveView().trigger('buffer-find-and-replace:replace-next', {replacement})
 
   replaceAll: =>
-    replaceText = @replaceEditor.getText()
-    shell.beep() unless @searchModel.getActiveResultsModel().replaceAll(replaceText)
+    @search()
+    replacement = @replaceEditor.getText()
+    rootView.getActiveView().trigger('buffer-find-and-replace:replace-all', {replacement})
 
   findPrevious: =>
-    @jumpToSearchResult('findPrevious')
+    @cursorMoveOriginatedHere = true # See HACK above.
+    rootView.getActiveView().trigger('buffer-find-and-replace:find-previous')
 
   findNext: =>
-    @jumpToSearchResult('findNext')
-
-  jumpToSearchResult: (functionName) ->
-    editSession = rootView.getActiveView().activeEditSession
-    currentResult = @searchModel.getActiveResultsModel()[functionName](editSession.getSelectedBufferRange())
-    if currentResult.range
-      @highlightSearchResult(currentResult.range)
-    else
-      shell.beep()
-
-  highlightSearchResult: (bufferRange) ->
     @cursorMoveOriginatedHere = true # See HACK above.
-    editSession = rootView.getActiveView().activeEditSession
-    editSession.setSelectedBufferRange(bufferRange, autoscroll: true) if bufferRange
+    rootView.getActiveView().trigger('buffer-find-and-replace:find-next')
 
   toggleRegexOption: => @toggleOption('regex')
   toggleCaseSensitiveOption: => @toggleOption('caseSensitive')
