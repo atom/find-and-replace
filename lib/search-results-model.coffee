@@ -25,7 +25,9 @@ class SearchResultsModel
     @markers = []
     @currentResultIndex = null
     @searchModel.on 'change', @search
-    @searchModel.setResultsForId(@editor.id, this)
+
+    # FIXME: I feel a little dirty
+    @editor.searchResults = this
 
     @editor.on 'editor:path-changed', @onPathChanged
     @editor.on 'editor:will-be-removed', @destroy

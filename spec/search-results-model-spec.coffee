@@ -278,6 +278,7 @@ describe 'SearchResultsModel', ->
       range = subject.findNext([[1,20],[1,20]]).range
       expect(range).toEqual [[1,27],[1,32]]
 
+  describe "handling editor events", ->
     beforeEach ->
       searchModel.setPattern('items')
 

@@ -8,10 +8,9 @@ class ResultCounterView extends View
 
   initialize: ->
 
-  setModel: (@searchModel) ->
-    @setResultsModel(@searchModel.getActiveResultsModel())
-    @searchModel.on 'change:active-id', (model, {activeId}) =>
-      @setResultsModel(@searchModel.getActiveResultsModel())
+  setModel: (@model) ->
+    @model.on 'core:active-view-changed', (e, {activeView}) =>
+      @setResultsModel(activeView?.searchResults or null)
 
   setResultsModel: (resultsModel) ->
     @unbindResultsModel(@resultsModel)
