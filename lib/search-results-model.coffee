@@ -116,7 +116,6 @@ class SearchResultsModel
 
   destroy: =>
     @searchModel.off 'change', @search
-    @searchModel.deleteResultsForId(@editor.id)
     @editor = null
     @searchModel = null
 

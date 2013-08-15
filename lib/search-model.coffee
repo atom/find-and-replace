@@ -45,19 +45,6 @@ class SearchModel
 
   setPattern: (pattern) ->
     @search(pattern, @options)
-
-  # Use activeId to specify the active editor.
-  setActiveId: (id) ->
-    @activeId = id
-    @trigger 'change:active-id', this, {@activeId}
-  setResultsForId: (id, searchResultsModel) ->
-    @results[id] = searchResultsModel
-  getResultsForId: (id) ->
-    @results[id]
-  deleteResultsForId: (id) ->
-    delete @results[id]
-  getActiveResultsModel: ->
-    @results[@activeId]
     
   ### Internal ###
 
