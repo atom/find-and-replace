@@ -96,7 +96,7 @@ class BufferFindAndReplaceView extends View
       # crappy boolean. Open to suggestions.
       @cursorMoveOriginatedHere = false
     else
-      @searchModel.getActiveResultsModel()?.clearCurrentResult()
+      rootView.getActiveView().trigger('buffer-find-and-replace:clear-current-result')
 
   onSearchModelChanged: (model) =>
     @setOptionButtonState(@regexOptionButton, model.getOption('regex'))

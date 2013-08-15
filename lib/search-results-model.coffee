@@ -34,6 +34,7 @@ class SearchResultsModel
 
     @editor.command 'buffer-find-and-replace:find-next', @selectNextResult
     @editor.command 'buffer-find-and-replace:find-previous', @selectPreviousResult
+    @editor.command 'buffer-find-and-replace:clear-current-result', @clearCurrentResult
     @editor.command 'buffer-find-and-replace:replace-next', (e, {replacement}) => @replaceCurrentResultAndSelectNextResult(replacement)
     @editor.command 'buffer-find-and-replace:replace-all', (e, {replacement}) => @replaceAllResults(replacement)
 
@@ -44,7 +45,7 @@ class SearchResultsModel
     @markers = @findAndMarkRanges()
     @trigger 'change:markers', markers: @markers
 
-  clearCurrentResult: ->
+  clearCurrentResult: =>
     @setCurrentResultIndex(null)
   getCurrentResult: ->
     @generateCurrentResult()
