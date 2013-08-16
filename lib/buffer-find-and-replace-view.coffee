@@ -166,10 +166,12 @@ class BufferFindAndReplaceView extends View
     @currentEditor().trigger('find-and-replace:replace-all', {replacement})
 
   findPrevious: =>
+    @search()
     @cursorMoveOriginatedHere = true # See HACK above.
     @currentEditor().trigger('find-and-replace:find-previous')
 
   findNext: =>
+    @search()
     @cursorMoveOriginatedHere = true # See HACK above.
     @currentEditor().trigger('find-and-replace:find-next')
 
