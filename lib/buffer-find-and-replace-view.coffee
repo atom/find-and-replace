@@ -11,7 +11,7 @@ module.exports =
 class BufferFindAndReplaceView extends View
 
   @content: ->
-    @div class: 'buffer-find-and-replace overlay from-top', =>
+    @div class: 'buffer-find-and-replace tool-panel', =>
       @div class: 'find-container', =>
         @label outlet: 'findLabel', 'Find'
 
@@ -106,24 +106,12 @@ class BufferFindAndReplaceView extends View
     @setOptionButtonState(@inSelectionOptionButton, model.getOption('inSelection'))
 
   detach: =>
-    return unless @hasParent()
-
-    @detaching = true
     @deactivate()
-
-    if @previouslyFocusedElement?.isOnDom()
-      @previouslyFocusedElement.focus()
-    else
-      rootView.focus()
-
+    rootView.focus()
     super()
-    @detaching = false
 
   attach: =>
-    unless @hasParent()
-      @previouslyFocusedElement = $(':focus')
-      rootView.append(this)
-
+    rootView.vertical.append(this)
     @activate()
 
   confirmFind: =>
