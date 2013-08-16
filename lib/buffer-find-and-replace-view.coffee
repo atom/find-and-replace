@@ -50,8 +50,14 @@ class BufferFindAndReplaceView extends View
     rootView.command 'find-and-replace:toggle-case-sensitive-option', @toggleCaseSensitiveOption
     rootView.command 'find-and-replace:toggle-in-selection-option', @toggleInSelectionOption
 
-    @previousButton.on 'click', => @findPrevious(); false
-    @nextButton.on 'click', => @findNext(); false
+    @previousButton.on 'click', =>
+      @findEditor.focus()
+      @findPrevious()
+      false
+    @nextButton.on 'click', =>
+      @findEditor.focus()
+      @findNext()
+      false
 
     @regexOptionButton.on 'click', @toggleRegexOption
     @caseSensitiveOptionButton.on 'click', @toggleCaseSensitiveOption
