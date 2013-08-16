@@ -47,6 +47,7 @@ class SearchResultsModel
 
   clearCurrentResult: =>
     @setCurrentResultIndex(null)
+
   getCurrentResult: ->
     @generateCurrentResult()
 

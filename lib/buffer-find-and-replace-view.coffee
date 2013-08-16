@@ -130,6 +130,7 @@ class BufferFindAndReplaceView extends View
   confirmFind: =>
     @search()
     @findNext()
+
   confirmReplace: =>
     @search()
     @replaceNext()
@@ -138,6 +139,7 @@ class BufferFindAndReplaceView extends View
     @attach()
     @addClass('find-mode').removeClass('replace-mode')
     @focusFind()
+
   showReplace: =>
     @attach()
     @addClass('replace-mode').removeClass('find-mode')
@@ -147,6 +149,7 @@ class BufferFindAndReplaceView extends View
     @replaceEditor.clearSelections()
     @findEditor.selectAll()
     @findEditor.focus()
+
   focusReplace: =>
     return unless @hasClass('replace-mode')
     @findEditor.clearSelections()
@@ -176,8 +179,11 @@ class BufferFindAndReplaceView extends View
     rootView.getActiveView().trigger('find-and-replace:find-next')
 
   toggleRegexOption: => @toggleOption('regex')
+
   toggleCaseSensitiveOption: => @toggleOption('caseSensitive')
+
   toggleInSelectionOption: => @toggleOption('inSelection')
+
   toggleOption: (optionName) ->
     isset = @searchModel.getOption(optionName)
     @searchModel.setOption(optionName, !isset)
