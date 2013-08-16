@@ -43,6 +43,7 @@ class SearchResultsModel
   search: =>
     @destroyMarkers()
     @markers = @findAndMarkRanges()
+    @emitCurrentResult()
     @trigger 'markers-changed', markers: @markers
 
   clearCurrentResult: =>

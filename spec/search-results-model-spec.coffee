@@ -30,8 +30,12 @@ describe 'SearchResultsModel', ->
     it "resets current result on new search", ->
       expect(subject.getCurrentResult()).toEqual total: 6
 
+      subject.on 'current-result-changed', currentResultChangedHandler = jasmine.createSpy('currentResultChangedHandler')
+
       searchModel.setPattern('')
       expect(subject.getCurrentResult()).toEqual total: 0
+
+      expect(currentResultChangedHandler).toHaveBeenCalled()
 
   describe "search() with options", ->
     beforeEach ->
