@@ -74,7 +74,7 @@ class SearchResultsModel
         marker = @markers[i]
         return @setCurrentResultIndex(i) if marker.getBufferRange().compare(initialBufferRange) > 0
 
-    @findFirstValid()
+    @findFirst()
 
   findPrevious: (initialBufferRange) ->
     initialBufferRange = @currentBufferRange(initialBufferRange, 'last')
@@ -84,12 +84,12 @@ class SearchResultsModel
         range = marker.getBufferRange()
         return @setCurrentResultIndex(i) if range.compare(initialBufferRange) < 0 and not range.intersectsWith(initialBufferRange)
 
-    @findLastValid()
+    @findLast()
 
-  findFirstValid: ->
+  findFirst: ->
     @setCurrentResultIndex(if @markers.length then 0 else null)
 
-  findLastValid: ->
+  findLast: ->
     @setCurrentResultIndex(if @markers.length then @markers.length-1 else null)
 
   replaceCurrentResultAndFindNext: (replacement='', currentBufferRange) ->
