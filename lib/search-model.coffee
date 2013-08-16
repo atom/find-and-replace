@@ -27,13 +27,6 @@ class SearchModel
     @regex = @buildRegex(@pattern, @options)
     @trigger 'change', this, regex: @regex
 
-  showResults: ->
-    @resultsVisible = true
-    @trigger 'show:results', this
-  hideResults: ->
-    @resultsVisible = false
-    @trigger 'hide:results', this
-
   setOptions: (options) ->
     @search(@pattern, options)
   setOption: (key, value) ->
