@@ -6,7 +6,6 @@ Point = require 'point'
 SearchModel = require './search-model'
 SearchResultsView = require './search-results-view'
 ResultCounterView = require './result-counter-view'
-shell = require 'shell'
 
 module.exports =
 class BufferFindAndReplaceView extends View
