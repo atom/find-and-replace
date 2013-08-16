@@ -284,10 +284,10 @@ describe 'SearchResultsModel', ->
 
     it "handles the find-next event", ->
       editor.setSelectedBufferRange([[2,22],[2,23]])
-      editor.trigger('buffer-find-and-replace:find-next')
+      editor.trigger('find-and-replace:find-next')
       expect(editor.getSelectedBufferRange()).toEqual [[2,34],[2,39]]
 
     it "handles the find-previous event", ->
       editor.setSelectedBufferRange([[2,40],[2,40]])
-      range = editor.trigger('buffer-find-and-replace:find-previous')
+      range = editor.trigger('find-and-replace:find-previous')
       expect(editor.getSelectedBufferRange()).toEqual [[2,34],[2,39]]

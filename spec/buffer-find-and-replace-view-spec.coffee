@@ -11,7 +11,7 @@ describe 'BufferFindAndReplaceView', ->
     beforeEach ->
       subject = BufferFindAndReplace.activate()
 
-    describe "when buffer-find-and-replace:display-find is triggered", ->
+    describe "when find-and-replace:display-find is triggered", ->
       it "attaches to the root view", ->
         subject.showFind()
         expect(subject.hasParent()).toBeTruthy()
@@ -26,14 +26,14 @@ describe 'BufferFindAndReplaceView', ->
 
       subject = BufferFindAndReplace.activate()
 
-    describe "when buffer-find-and-replace:display-find is triggered", ->
+    describe "when find-and-replace:display-find is triggered", ->
       it "attaches to the root view", ->
-        editor.trigger 'buffer-find-and-replace:display-find'
+        editor.trigger 'find-and-replace:display-find'
         expect(subject.hasParent()).toBeTruthy()
 
     describe "when core:cancel is triggered", ->
       beforeEach ->
-        editor.trigger 'buffer-find-and-replace:display-find'
+        editor.trigger 'find-and-replace:display-find'
 
       it "detaches from the root view when cancel on findEditor", ->
         subject.findEditor.trigger 'core:cancel'
@@ -45,7 +45,7 @@ describe 'BufferFindAndReplaceView', ->
 
     describe "option buttons", ->
       beforeEach ->
-        editor.trigger 'buffer-find-and-replace:display-find'
+        editor.trigger 'find-and-replace:display-find'
         editor.attachToDom()
 
       it "clicking an option button toggles its enabled class", ->
@@ -60,7 +60,7 @@ describe 'BufferFindAndReplaceView', ->
 
     describe "running a search", ->
       beforeEach ->
-        editor.trigger 'buffer-find-and-replace:display-find'
+        editor.trigger 'find-and-replace:display-find'
 
         rootView.attachToDom()
         subject.findEditor.textInput 'items'
@@ -89,7 +89,7 @@ describe 'BufferFindAndReplaceView', ->
 
     describe "running a replace", ->
       beforeEach ->
-        editor.trigger 'buffer-find-and-replace:display-replace'
+        editor.trigger 'find-and-replace:display-replace'
         editor.attachToDom()
         subject.findEditor.textInput 'items'
         subject.replaceEditor.textInput 'cats'

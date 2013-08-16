@@ -1,16 +1,16 @@
 '.editor':
-  'meta-f': 'buffer-find-and-replace:display-find'
-  'alt-meta-f': 'buffer-find-and-replace:display-replace'
+  'meta-f': 'find-and-replace:display-find'
+  'alt-meta-f': 'find-and-replace:display-replace'
 
-  'meta-g': 'buffer-find-and-replace:find-next'
-  'meta-G': 'buffer-find-and-replace:find-previous'
+  'meta-g': 'find-and-replace:find-next'
+  'meta-G': 'find-and-replace:find-previous'
   
 '.buffer-find-and-replace .mini.editor input':
-  'tab': 'buffer-find-and-replace:focus-next'
-  'shift-tab': 'buffer-find-and-replace:focus-previous'
+  'tab': 'find-and-replace:focus-next'
+  'shift-tab': 'find-and-replace:focus-previous'
   'enter': 'core:confirm',
   'escape': 'core:cancel'
   'meta-w': 'core:cancel'
-  'alt-meta-/': 'buffer-find-and-replace:toggle-regex-option'
-  'alt-meta-c': 'buffer-find-and-replace:toggle-case-sensitive-option'
-  'alt-meta-s': 'buffer-find-and-replace:toggle-in-selection-option'
+  'alt-meta-/': 'find-and-replace:toggle-regex-option'
+  'alt-meta-c': 'find-and-replace:toggle-case-sensitive-option'
+  'alt-meta-s': 'find-and-replace:toggle-in-selection-option'

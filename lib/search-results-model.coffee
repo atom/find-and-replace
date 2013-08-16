@@ -32,11 +32,11 @@ class SearchResultsModel
     @editor.on 'editor:path-changed', @onPathChanged
     @editor.on 'editor:will-be-removed', @destroy
 
-    @editor.command 'buffer-find-and-replace:find-next', @selectNextResult
-    @editor.command 'buffer-find-and-replace:find-previous', @selectPreviousResult
-    @editor.command 'buffer-find-and-replace:clear-current-result', @clearCurrentResult
-    @editor.command 'buffer-find-and-replace:replace-next', (e, {replacement}) => @replaceCurrentResultAndSelectNextResult(replacement)
-    @editor.command 'buffer-find-and-replace:replace-all', (e, {replacement}) => @replaceAllResults(replacement)
+    @editor.command 'find-and-replace:find-next', @selectNextResult
+    @editor.command 'find-and-replace:find-previous', @selectPreviousResult
+    @editor.command 'find-and-replace:clear-current-result', @clearCurrentResult
+    @editor.command 'find-and-replace:replace-next', (e, {replacement}) => @replaceCurrentResultAndSelectNextResult(replacement)
+    @editor.command 'find-and-replace:replace-all', (e, {replacement}) => @replaceAllResults(replacement)
 
     @onPathChanged()
 

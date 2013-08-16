@@ -44,12 +44,12 @@ class BufferFindAndReplaceView extends View
   initialize: (@searchModel) ->
     @searchModel.on 'change', @onSearchModelChanged
 
-    rootView.command 'buffer-find-and-replace:display-find', @showFind
-    rootView.command 'buffer-find-and-replace:display-replace', @showReplace
+    rootView.command 'find-and-replace:display-find', @showFind
+    rootView.command 'find-and-replace:display-replace', @showReplace
 
-    rootView.command 'buffer-find-and-replace:toggle-regex-option', @toggleRegexOption
-    rootView.command 'buffer-find-and-replace:toggle-case-sensitive-option', @toggleCaseSensitiveOption
-    rootView.command 'buffer-find-and-replace:toggle-in-selection-option', @toggleInSelectionOption
+    rootView.command 'find-and-replace:toggle-regex-option', @toggleRegexOption
+    rootView.command 'find-and-replace:toggle-case-sensitive-option', @toggleCaseSensitiveOption
+    rootView.command 'find-and-replace:toggle-in-selection-option', @toggleInSelectionOption
 
     @previousButton.on 'click', => @findPrevious(); false
     @nextButton.on 'click', => @findNext(); false
@@ -62,14 +62,14 @@ class BufferFindAndReplaceView extends View
     @replaceAllButton.on 'click', @replaceAll
 
     @findEditor.on 'core:confirm', @confirmFind
-    @findEditor.on 'buffer-find-and-replace:focus-next', @focusReplace
-    @findEditor.on 'buffer-find-and-replace:focus-previous', @focusReplace
+    @findEditor.on 'find-and-replace:focus-next', @focusReplace
+    @findEditor.on 'find-and-replace:focus-previous', @focusReplace
     @findLabel.on 'click', @focusFind
     @resultCounter.on 'click', @focusFind
 
     @replaceEditor.on 'core:confirm', @confirmReplace
-    @replaceEditor.on 'buffer-find-and-replace:focus-next', @focusFind
-    @replaceEditor.on 'buffer-find-and-replace:focus-previous', @focusFind
+    @replaceEditor.on 'find-and-replace:focus-next', @focusFind
+    @replaceEditor.on 'find-and-replace:focus-previous', @focusFind
     @replaceLabel.on 'click', @focusReplace
 
     @on 'core:cancel', @detach
@@ -99,7 +99,7 @@ class BufferFindAndReplaceView extends View
       # crappy boolean. Open to suggestions.
       @cursorMoveOriginatedHere = false
     else
-      rootView.getActiveView().trigger('buffer-find-and-replace:clear-current-result')
+      rootView.getActiveView().trigger('find-and-replace:clear-current-result')
 
   onSearchModelChanged: (model) =>
     @setOptionButtonState(@regexOptionButton, model.getOption('regex'))
@@ -160,20 +160,20 @@ class BufferFindAndReplaceView extends View
   replaceNext: =>
     @search()
     replacement = @replaceEditor.getText()
-    rootView.getActiveView().trigger('buffer-find-and-replace:replace-next', {replacement})
+    rootView.getActiveView().trigger('find-and-replace:replace-next', {replacement})
 
   replaceAll: =>
     @search()
     replacement = @replaceEditor.getText()
-    rootView.getActiveView().trigger('buffer-find-and-replace:replace-all', {replacement})
+    rootView.getActiveView().trigger('find-and-replace:replace-all', {replacement})
 
   findPrevious: =>
     @cursorMoveOriginatedHere = true # See HACK above.
-    rootView.getActiveView().trigger('buffer-find-and-replace:find-previous')
+    rootView.getActiveView().trigger('find-and-replace:find-previous')
 
   findNext: =>
     @cursorMoveOriginatedHere = true # See HACK above.
-    rootView.getActiveView().trigger('buffer-find-and-replace:find-next')
+    rootView.getActiveView().trigger('find-and-replace:find-next')
 
   toggleRegexOption: => @toggleOption('regex')
   toggleCaseSensitiveOption: => @toggleOption('caseSensitive')
