@@ -6,7 +6,6 @@ Point = require 'point'
 SearchModel = require './search-model'
 SearchResultsView = require './search-results-view'
 ResultCounterView = require './result-counter-view'
-shell = require 'shell'
 
 module.exports =
 class BufferFindAndReplaceView extends View
@@ -39,19 +38,17 @@ class BufferFindAndReplaceView extends View
           @subview 'replaceEditor', new Editor(mini: true)
 
   detaching: false
+  active: false
 
   initialize: (@searchModel) ->
     @searchModel.on 'change', @onSearchModelChanged
 
-    rootView.command 'buffer-find-and-replace:display-find', @showFind
-    rootView.command 'buffer-find-and-replace:display-replace', @showReplace
+    rootView.command 'find-and-replace:display-find', @showFind
+    rootView.command 'find-and-replace:display-replace', @showReplace
 
-    rootView.command 'buffer-find-and-replace:find-previous', @findPrevious
-    rootView.command 'buffer-find-and-replace:find-next', @findNext
-
-    rootView.command 'buffer-find-and-replace:toggle-regex-option', @toggleRegexOption
-    rootView.command 'buffer-find-and-replace:toggle-case-sensitive-option', @toggleCaseSensitiveOption
-    rootView.command 'buffer-find-and-replace:toggle-in-selection-option', @toggleInSelectionOption
+    rootView.command 'find-and-replace:toggle-regex-option', @toggleRegexOption
+    rootView.command 'find-and-replace:toggle-case-sensitive-option', @toggleCaseSensitiveOption
+    rootView.command 'find-and-replace:toggle-in-selection-option', @toggleInSelectionOption
 
     @previousButton.on 'click', => @findPrevious(); false
     @nextButton.on 'click', => @findNext(); false
@@ -64,32 +61,34 @@ class BufferFindAndReplaceView extends View
     @replaceAllButton.on 'click', @replaceAll
 
     @findEditor.on 'core:confirm', @confirmFind
-    @findEditor.on 'buffer-find-and-replace:focus-next', @focusReplace
-    @findEditor.on 'buffer-find-and-replace:focus-previous', @focusReplace
+    @findEditor.on 'find-and-replace:focus-next', @focusReplace
+    @findEditor.on 'find-and-replace:focus-previous', @focusReplace
     @findLabel.on 'click', @focusFind
     @resultCounter.on 'click', @focusFind
 
     @replaceEditor.on 'core:confirm', @confirmReplace
-    @replaceEditor.on 'buffer-find-and-replace:focus-next', @focusFind
-    @replaceEditor.on 'buffer-find-and-replace:focus-previous', @focusFind
+    @replaceEditor.on 'find-and-replace:focus-next', @focusFind
+    @replaceEditor.on 'find-and-replace:focus-previous', @focusFind
     @replaceLabel.on 'click', @focusReplace
 
     @on 'core:cancel', @detach
 
-    rootView.on 'pane:became-active pane:active-item-changed editor:attached', @onActiveItemChanged
+    @searchResultsViews = []
+    rootView.on 'pane:became-active pane:became-inactive pane:removed', @onActiveItemChanged
     rootView.eachEditor (editor) =>
       if editor.attached and not editor.mini
-        editor.underlayer.append(new SearchResultsView(@searchModel, editor))
-        editor.on 'editor:will-be-removed', @onActiveItemChanged
+        view = new SearchResultsView(@searchModel, editor, {@active})
+        @searchResultsViews.push(view)
+        editor.underlayer.append(view)
         editor.on 'cursor:moved', @onCursorMoved
 
+    @resultCounter.setModel(this)
     @onActiveItemChanged()
-    @resultCounter.setModel(@searchModel)
 
   onActiveItemChanged: =>
-    return unless rootView
+    return unless window.rootView
     editor = rootView.getActiveView()
-    @searchModel.setActiveId(if editor then editor.id else null)
+    @trigger('active-editor-changed', editor: editor)
 
   onCursorMoved: =>
     if @cursorMoveOriginatedHere
@@ -99,7 +98,7 @@ class BufferFindAndReplaceView extends View
       # crappy boolean. Open to suggestions.
       @cursorMoveOriginatedHere = false
     else
-      @searchModel.getActiveResultsModel()?.clearCurrentResult()
+      rootView.getActiveView().trigger('find-and-replace:clear-current-result')
 
   onSearchModelChanged: (model) =>
     @setOptionButtonState(@regexOptionButton, model.getOption('regex'))
@@ -110,8 +109,7 @@ class BufferFindAndReplaceView extends View
     return unless @hasParent()
 
     @detaching = true
-
-    @searchModel.hideResults()
+    @deactivate()
 
     if @previouslyFocusedElement?.isOnDom()
       @previouslyFocusedElement.focus()
@@ -119,7 +117,6 @@ class BufferFindAndReplaceView extends View
       rootView.focus()
 
     super()
-
     @detaching = false
 
   attach: =>
@@ -127,11 +124,12 @@ class BufferFindAndReplaceView extends View
       @previouslyFocusedElement = $(':focus')
       rootView.append(this)
 
-    _.nextTick => @searchModel.showResults()
+    @activate()
 
   confirmFind: =>
     @search()
     @findNext()
+
   confirmReplace: =>
     @search()
     @replaceNext()
@@ -140,6 +138,7 @@ class BufferFindAndReplaceView extends View
     @attach()
     @addClass('find-mode').removeClass('replace-mode')
     @focusFind()
+
   showReplace: =>
     @attach()
     @addClass('replace-mode').removeClass('find-mode')
@@ -149,6 +148,7 @@ class BufferFindAndReplaceView extends View
     @replaceEditor.clearSelections()
     @findEditor.selectAll()
     @findEditor.focus()
+
   focusReplace: =>
     return unless @hasClass('replace-mode')
     @findEditor.clearSelections()
@@ -160,47 +160,42 @@ class BufferFindAndReplaceView extends View
     @searchModel.setPattern(pattern)
 
   replaceNext: =>
-    replaceText = @replaceEditor.getText()
-    editSession = rootView.getActiveView().activeEditSession
-    currentBufferRange = editSession.getSelectedBufferRange()
-    currentResult = @searchModel.getActiveResultsModel().replaceCurrentResultAndFindNext(replaceText, currentBufferRange)
-
-    if currentResult.range
-      @highlightSearchResult(currentResult.range)
-    else
-      shell.beep()
+    @search()
+    replacement = @replaceEditor.getText()
+    rootView.getActiveView().trigger('find-and-replace:replace-next', {replacement})
 
   replaceAll: =>
-    replaceText = @replaceEditor.getText()
-    shell.beep() unless @searchModel.getActiveResultsModel().replaceAll(replaceText)
+    @search()
+    replacement = @replaceEditor.getText()
+    rootView.getActiveView().trigger('find-and-replace:replace-all', {replacement})
 
   findPrevious: =>
-    @jumpToSearchResult('findPrevious')
+    @cursorMoveOriginatedHere = true # See HACK above.
+    rootView.getActiveView().trigger('find-and-replace:find-previous')
 
   findNext: =>
-    @jumpToSearchResult('findNext')
-
-  jumpToSearchResult: (functionName) ->
-    editSession = rootView.getActiveView().activeEditSession
-    currentResult = @searchModel.getActiveResultsModel()[functionName](editSession.getSelectedBufferRange())
-    if currentResult.range
-      @highlightSearchResult(currentResult.range)
-    else
-      shell.beep()
-
-  highlightSearchResult: (bufferRange) ->
     @cursorMoveOriginatedHere = true # See HACK above.
-    editSession = rootView.getActiveView().activeEditSession
-    editSession.setSelectedBufferRange(bufferRange, autoscroll: true) if bufferRange
+    rootView.getActiveView().trigger('find-and-replace:find-next')
 
   toggleRegexOption: => @toggleOption('regex')
+
   toggleCaseSensitiveOption: => @toggleOption('caseSensitive')
+
   toggleInSelectionOption: => @toggleOption('inSelection')
+
   toggleOption: (optionName) ->
     isset = @searchModel.getOption(optionName)
     @searchModel.setOption(optionName, !isset)
 
   setOptionButtonState: (optionButton, enabled) ->
     optionButton[if enabled then 'addClass' else 'removeClass']('enabled')
+
+  activate: ->
+    @active = true
+    view.activate() for view in @searchResultsViews
+
+  deactivate: ->
+    @active = false
+    view.deactivate() for view in @searchResultsViews
 
 

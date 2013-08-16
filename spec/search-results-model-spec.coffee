@@ -81,7 +81,7 @@ describe 'SearchResultsModel', ->
       searchModel.setPattern('items')
 
     it "findNext() sets the currentResult", ->
-      subject.on 'change:current-result', matchHandler = jasmine.createSpy()
+      subject.on 'current-result-changed', matchHandler = jasmine.createSpy()
 
       subject.findNext([[0,0],[0,3]])
 
@@ -98,7 +98,7 @@ describe 'SearchResultsModel', ->
       expect(arg.total).toEqual 6
 
     it "a total change sets the currentResult", ->
-      subject.on 'change:current-result', matchHandler = jasmine.createSpy()
+      subject.on 'current-result-changed', matchHandler = jasmine.createSpy()
 
       buffer.insert([1, 10], "items")
       advanceClock(buffer.stoppedChangingDelay)
@@ -253,7 +253,7 @@ describe 'SearchResultsModel', ->
       expect(result.range).toEqual [[1,22],[1,27]]
 
     it "invalidation changes the total, and will emit an event", ->
-      subject.on 'change:current-result', handler = jasmine.createSpy()
+      subject.on 'current-result-changed', handler = jasmine.createSpy()
 
       buffer.insert([1, 23], "o")
       advanceClock(buffer.stoppedChangingDelay)
@@ -264,7 +264,7 @@ describe 'SearchResultsModel', ->
       expect(result.total).toEqual 5
       
     it "adds a new marker for a new result added into the buffer", ->
-      subject.on 'add:markers', addHandler = jasmine.createSpy()
+      subject.on 'markers-added', addHandler = jasmine.createSpy()
 
       buffer.insert([1, 10], "items")
       advanceClock(buffer.stoppedChangingDelay)
@@ -278,3 +278,16 @@ describe 'SearchResultsModel', ->
       range = subject.findNext([[1,20],[1,20]]).range
       expect(range).toEqual [[1,27],[1,32]]
 
+  describe "handling editor events", ->
+    beforeEach ->
+      searchModel.setPattern('items')
+
+    it "handles the find-next event", ->
+      editor.setSelectedBufferRange([[2,22],[2,23]])
+      editor.trigger('find-and-replace:find-next')
+      expect(editor.getSelectedBufferRange()).toEqual [[2,34],[2,39]]
+
+    it "handles the find-previous event", ->
+      editor.setSelectedBufferRange([[2,40],[2,40]])
+      range = editor.trigger('find-and-replace:find-previous')
+      expect(editor.getSelectedBufferRange()).toEqual [[2,34],[2,39]]

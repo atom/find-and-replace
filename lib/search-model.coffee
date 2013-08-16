@@ -27,37 +27,19 @@ class SearchModel
     @regex = @buildRegex(@pattern, @options)
     @trigger 'change', this, regex: @regex
 
-  showResults: ->
-    @resultsVisible = true
-    @trigger 'show:results', this
-  hideResults: ->
-    @resultsVisible = false
-    @trigger 'hide:results', this
-
   setOptions: (options) ->
     @search(@pattern, options)
+
   setOption: (key, value) ->
     opts = {}
     opts[key] = value
     @search(@pattern, _.extend({}, @options, opts))
+
   getOption: (key) ->
     @options[key]
 
   setPattern: (pattern) ->
     @search(pattern, @options)
-
-  # Use activeId to specify the active editor.
-  setActiveId: (id) ->
-    @activeId = id
-    @trigger 'change:active-id', this, {@activeId}
-  setResultsForId: (id, searchResultsModel) ->
-    @results[id] = searchResultsModel
-  getResultsForId: (id) ->
-    @results[id]
-  deleteResultsForId: (id) ->
-    delete @results[id]
-  getActiveResultsModel: ->
-    @results[@activeId]
     
   ### Internal ###
 
