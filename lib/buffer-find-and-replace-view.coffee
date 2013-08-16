@@ -39,6 +39,7 @@ class BufferFindAndReplaceView extends View
           @subview 'replaceEditor', new Editor(mini: true)
 
   detaching: false
+  active: false
 
   initialize: (@searchModel) ->
     @searchModel.on 'change', @onSearchModelChanged
@@ -73,10 +74,13 @@ class BufferFindAndReplaceView extends View
 
     @on 'core:cancel', @detach
 
+    @searchResultsViews = []
     rootView.on 'pane:became-active pane:became-inactive pane:removed', @onActiveItemChanged
     rootView.eachEditor (editor) =>
       if editor.attached and not editor.mini
-        editor.underlayer.append(new SearchResultsView(@searchModel, editor))
+        view = new SearchResultsView(@searchModel, editor, {@active})
+        @searchResultsViews.push(view)
+        editor.underlayer.append(view)
         editor.on 'cursor:moved', @onCursorMoved
 
     @resultCounter.setModel(this)
@@ -85,7 +89,6 @@ class BufferFindAndReplaceView extends View
   onActiveItemChanged: =>
     return unless window.rootView
     editor = rootView.getActiveView()
-    console.log 'active editor changed', editor
     @trigger('active-editor-changed', editor: editor)
 
   onCursorMoved: =>
@@ -107,8 +110,7 @@ class BufferFindAndReplaceView extends View
     return unless @hasParent()
 
     @detaching = true
-
-    @searchModel.hideResults()
+    @deactivate()
 
     if @previouslyFocusedElement?.isOnDom()
       @previouslyFocusedElement.focus()
@@ -116,7 +118,6 @@ class BufferFindAndReplaceView extends View
       rootView.focus()
 
     super()
-
     @detaching = false
 
   attach: =>
@@ -124,7 +125,7 @@ class BufferFindAndReplaceView extends View
       @previouslyFocusedElement = $(':focus')
       rootView.append(this)
 
-    _.nextTick => @searchModel.showResults()
+    @activate()
 
   confirmFind: =>
     @search()
@@ -183,5 +184,13 @@ class BufferFindAndReplaceView extends View
 
   setOptionButtonState: (optionButton, enabled) ->
     optionButton[if enabled then 'addClass' else 'removeClass']('enabled')
+
+  activate: ->
+    @active = true
+    view.activate() for view in @searchResultsViews
+
+  deactivate: ->
+    @active = false
+    view.deactivate() for view in @searchResultsViews
 
 
