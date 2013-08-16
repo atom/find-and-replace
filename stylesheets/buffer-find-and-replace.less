@@ -1,3 +1,4 @@
+@import "ui-colors";
 @import "octicon-mixins.less";
 
 @label-width: 50px;
@@ -16,7 +17,7 @@
 
 .editor .search-results .marker .region {
   background-color: transparent;
-  border: 1px solid #ddd;
+  border: 1px solid #ddd; // need syntax color here..
   border-radius: 2px;
 
   -webkit-box-sizing: content-box;
@@ -47,7 +48,7 @@
   label {
     float: left;
     font-weight: normal;
-    color: #828282;
+    color: @text-color-subtle-1;
     width: @label-width;
     margin-right: @inner-margin;
     text-align: right;
@@ -110,14 +111,14 @@
         top: -1px;
 
         font-size: .9em;
-        color: #555;
+        color: @text-color-subtle-2;
         margin-right: 10px;
       }
       .icon-previous, .icon-next {
         text-decoration: none;
-        color: #aaa;
+        color: @text-color-3;
         &:hover{
-          color: #fff;
+          color: @text-color-1;
         }
       }
       .icon-previous { .octicon(chevron-left, 16px); }

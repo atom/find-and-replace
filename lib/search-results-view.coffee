@@ -12,27 +12,38 @@ class SearchResultsView extends View
   @content: ->
     @div class: 'search-results'
 
-  initialize: (@searchModel, @editor) ->
+  initialize: (@searchModel, @editor, {active}={}) ->
     @markerViews = []
     @model = new SearchResultsModel(@searchModel, @editor)
-    @model.on 'change:markers', @replaceMarkerViews
-    @model.on 'add:markers', @addMarkerViews
+    @model.on 'markers-changed', @replaceMarkerViews
+    @model.on 'markers-added', @addMarkerViews
 
-    @searchModel.on 'show:results', @onShowResults
-    @searchModel.on 'hide:results', @onHideResults
+    # The pane knows when the user changes focus to a different editor (split).
+    # Ideally, the editor would have events for this, but tis not the case.
+    @subscribe @editor.getPane(), 'pane:became-active pane:became-inactive', @updateInterface
 
-    if @searchModel.resultsVisible
-      @onShowResults()
-    else
-      @onHideResults()
+    @setActive(active or false)
 
-  onHideResults: =>
+  setActive: (@active) ->
+    @updateInterface()
+
+  activate: -> @setActive(true)
+
+  deactivate: -> @setActive(false)
+
+  isEditorActive: ->
+    @editor.getPane().isActive()
+
+  hide: =>
     @removeMarkerViews()
-    @hide()
+    super()
 
-  onShowResults: =>
+  show: =>
     @addMarkerViews({markers: @model.markers})
-    @show()
+    super()
+
+  updateInterface: =>
+    if @active and @isEditorActive() then @show() else @hide()
 
   removeMarkerViews: ->
     return unless @markerViews
@@ -40,7 +51,7 @@ class SearchResultsView extends View
     @markerViews = []
 
   addMarkerViews: ({markers}) =>
-    return unless @searchModel.resultsVisible
+    return unless @active
     @markerViews = (new MarkerView({@editor, marker}) for marker in markers)
     @append(view) for view in @markerViews
     @editor.requestDisplayUpdate()

@@ -1,6 +1,7 @@
 EventEmitter = require 'event-emitter'
 AtomRange = require 'range'
 _ = require 'underscore'
+shell = require 'shell'
 
 # Runs the search on a buffer. Holds the markers for search results for a
 # given buffer. Continually updates search results as the user types and
@@ -24,26 +25,47 @@ class SearchResultsModel
     @markers = []
     @currentResultIndex = null
     @searchModel.on 'change', @search
-    @searchModel.setResultsForId(@editor.id, this)
+
+    # FIXME: I feel a little dirty
+    @editor.searchResults = this
 
     @editor.on 'editor:path-changed', @onPathChanged
     @editor.on 'editor:will-be-removed', @destroy
+
+    @editor.command 'find-and-replace:find-next', @selectNextResult
+    @editor.command 'find-and-replace:find-previous', @selectPreviousResult
+    @editor.command 'find-and-replace:clear-current-result', @clearCurrentResult
+    @editor.command 'find-and-replace:replace-next', (e, {replacement}) => @replaceCurrentResultAndSelectNextResult(replacement)
+    @editor.command 'find-and-replace:replace-all', (e, {replacement}) => @replaceAllResults(replacement)
+
     @onPathChanged()
 
   search: =>
     @destroyMarkers()
     @markers = @findAndMarkRanges()
-    @trigger 'change:markers', markers: @markers
+    @trigger 'markers-changed', markers: @markers
 
-  setBuffer: (buffer) ->
-    @unbindBuffer(buffer)
-    @bindBuffer(@buffer = buffer)
-    @search()
-
-  clearCurrentResult: ->
+  clearCurrentResult: =>
     @setCurrentResultIndex(null)
+
   getCurrentResult: ->
     @generateCurrentResult()
+
+  selectNextResult: =>
+    @selectResult('findNext')
+
+  selectPreviousResult: =>
+    @selectResult('findPrevious')
+
+  replaceAllResults: (replacement) =>
+    shell.beep() unless @replaceAll(replacement)
+
+  replaceCurrentResultAndSelectNextResult: (replacement) =>
+    currentResult = @replaceCurrentResultAndFindNext(replacement)
+    if currentResult.range
+      @selectBufferRange(currentResult.range)
+    else
+      shell.beep()
 
   findNext: (initialBufferRange) ->
     initialBufferRange = @currentBufferRange(initialBufferRange, 'first')
@@ -52,7 +74,7 @@ class SearchResultsModel
         marker = @markers[i]
         return @setCurrentResultIndex(i) if marker.getBufferRange().compare(initialBufferRange) > 0
 
-    @findFirstValid()
+    @findFirst()
 
   findPrevious: (initialBufferRange) ->
     initialBufferRange = @currentBufferRange(initialBufferRange, 'last')
@@ -62,12 +84,12 @@ class SearchResultsModel
         range = marker.getBufferRange()
         return @setCurrentResultIndex(i) if range.compare(initialBufferRange) < 0 and not range.intersectsWith(initialBufferRange)
 
-    @findLastValid()
+    @findLast()
 
-  findFirstValid: ->
+  findFirst: ->
     @setCurrentResultIndex(if @markers.length then 0 else null)
 
-  findLastValid: ->
+  findLast: ->
     @setCurrentResultIndex(if @markers.length then @markers.length-1 else null)
 
   replaceCurrentResultAndFindNext: (replacement='', currentBufferRange) ->
@@ -95,7 +117,6 @@ class SearchResultsModel
 
   destroy: =>
     @searchModel.off 'change', @search
-    @searchModel.deleteResultsForId(@editor.id)
     @editor = null
     @searchModel = null
 
@@ -138,6 +159,22 @@ class SearchResultsModel
 
   ### Internal ###
 
+  setBuffer: (buffer) ->
+    @unbindBuffer(buffer)
+    @bindBuffer(@buffer = buffer)
+    @search()
+
+  selectResult: (functionName) ->
+    currentResult = @[functionName]()
+    if currentResult.range
+      @selectBufferRange(currentResult.range)
+    else
+      shell.beep() # FIXME: this is more of a view thing, but it's in here...
+
+  selectBufferRange: (bufferRange) ->
+    editSession = @editor.activeEditSession
+    editSession.setSelectedBufferRange(bufferRange, autoscroll: true) if bufferRange
+
   setCurrentResultIndex: (index) ->
     return @generateCurrentResult() if @currentResultIndex == index
     @currentResultIndex = index
@@ -145,7 +182,7 @@ class SearchResultsModel
 
   emitCurrentResult: ->
     result = @generateCurrentResult()
-    @trigger 'change:current-result', result
+    @trigger 'current-result-changed', result
     result
 
   generateCurrentResult: ->
@@ -175,7 +212,7 @@ class SearchResultsModel
     @markers = @markers.concat(markers)
     @markers.sort (left, right) -> left.getBufferRange().compare(right.getBufferRange())
 
-    @trigger 'add:markers', markers: markers
+    @trigger 'markers-added', markers: markers
     @emitCurrentResult()
 
   currentBufferRange: (bufferRange, firstOrLast='first') ->
