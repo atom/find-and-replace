@@ -62,7 +62,7 @@ describe 'BufferFindAndReplaceView', ->
       beforeEach ->
         editor.trigger 'buffer-find-and-replace:display-find'
 
-        editor.attachToDom()
+        rootView.attachToDom()
         subject.findEditor.textInput 'items'
         subject.findEditor.trigger 'core:confirm'
 
@@ -70,17 +70,12 @@ describe 'BufferFindAndReplaceView', ->
         expect(subject.resultCounter.text()).toEqual('1 of 6')
         expect(editor.getSelectedBufferRange()).toEqual [[1, 22], [1, 27]]
 
-      # FIXME: works in app, not in tests. _.nextTick issue??
-      xit "editor deletion is handled properly", ->
-        console.log 'doing it'
-        editor.remove()
-        #advanceClock 10
-        waits 1000
-        runs ->
-          expect(subject.resultCounter.text()).toEqual('')
+      it "editor deletion is handled properly", ->
+        editor.getPane().remove()
+        expect(subject.resultCounter.text()).toEqual('')
 
-          # should not die on new search!
-          subject.findEditor.textInput 'items'
+        # should not die on new search!
+        subject.findEditor.textInput 'items'
 
       # FIXME: when the cursor moves, I want this to pass. cursor:moved never
       # gets called in tests

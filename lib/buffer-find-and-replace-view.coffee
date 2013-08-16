@@ -73,11 +73,10 @@ class BufferFindAndReplaceView extends View
 
     @on 'core:cancel', @detach
 
-    rootView.on 'pane:became-active pane:active-item-changed editor:attached', @onActiveItemChanged
+    rootView.on 'pane:became-active pane:became-inactive pane:removed', @onActiveItemChanged
     rootView.eachEditor (editor) =>
       if editor.attached and not editor.mini
         editor.underlayer.append(new SearchResultsView(@searchModel, editor))
-        editor.on 'editor:will-be-removed', => (_.nextTick => @onActiveItemChanged())
         editor.on 'cursor:moved', @onCursorMoved
 
     @resultCounter.setModel(this)
@@ -86,7 +85,8 @@ class BufferFindAndReplaceView extends View
   onActiveItemChanged: =>
     return unless window.rootView
     editor = rootView.getActiveView()
-    @trigger('core:active-view-changed', activeView: editor)
+    console.log 'active editor changed', editor
+    @trigger('active-editor-changed', editor: editor)
 
   onCursorMoved: =>
     if @cursorMoveOriginatedHere
