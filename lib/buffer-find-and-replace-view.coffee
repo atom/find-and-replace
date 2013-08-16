@@ -90,6 +90,7 @@ class BufferFindAndReplaceView extends View
 
     @resultCounter.setModel(this)
     @onActiveItemChanged()
+    @onSearchModelChanged(@searchModel)
 
   onActiveItemChanged: =>
     return unless window.rootView

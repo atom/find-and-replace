@@ -18,6 +18,9 @@ class SearchModel
     @resultsVisible = false
     @search(pattern, options)
 
+  serialize: ->
+    { @options }
+    
   search: (pattern, options={}) ->
     pattern = pattern or ''
     return if @pattern == pattern and _.isEqual(@options, options)
