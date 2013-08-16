@@ -93,7 +93,7 @@ class BufferFindAndReplaceView extends View
 
   onActiveItemChanged: =>
     return unless window.rootView
-    editor = rootView.getActiveView()
+    editor = @currentEditor()
     @trigger('active-editor-changed', editor: editor)
 
   onCursorMoved: =>
@@ -104,7 +104,7 @@ class BufferFindAndReplaceView extends View
       # crappy boolean. Open to suggestions.
       @cursorMoveOriginatedHere = false
     else
-      rootView.getActiveView().trigger('find-and-replace:clear-current-result')
+      @currentEditor().trigger('find-and-replace:clear-current-result')
 
   onSearchModelChanged: (model) =>
     @setOptionButtonState(@regexOptionButton, model.getOption('regex'))
@@ -123,6 +123,8 @@ class BufferFindAndReplaceView extends View
   confirmFind: =>
     @search()
     @findNext()
+    editor = @currentEditor()
+    editor.focus() if editor and editor.searchResults and editor.searchResults.getCurrentResult().total
 
   confirmReplace: =>
     @search()
@@ -156,20 +158,20 @@ class BufferFindAndReplaceView extends View
   replaceNext: =>
     @search()
     replacement = @replaceEditor.getText()
-    rootView.getActiveView().trigger('find-and-replace:replace-next', {replacement})
+    @currentEditor().trigger('find-and-replace:replace-next', {replacement})
 
   replaceAll: =>
     @search()
     replacement = @replaceEditor.getText()
-    rootView.getActiveView().trigger('find-and-replace:replace-all', {replacement})
+    @currentEditor().trigger('find-and-replace:replace-all', {replacement})
 
   findPrevious: =>
     @cursorMoveOriginatedHere = true # See HACK above.
-    rootView.getActiveView().trigger('find-and-replace:find-previous')
+    @currentEditor().trigger('find-and-replace:find-previous')
 
   findNext: =>
     @cursorMoveOriginatedHere = true # See HACK above.
-    rootView.getActiveView().trigger('find-and-replace:find-next')
+    @currentEditor().trigger('find-and-replace:find-next')
 
   toggleRegexOption: => @toggleOption('regex')
 
@@ -191,5 +193,8 @@ class BufferFindAndReplaceView extends View
   deactivate: ->
     @active = false
     view.deactivate() for view in @searchResultsViews
+
+  currentEditor: ->
+    rootView.getActiveView()
 
 
