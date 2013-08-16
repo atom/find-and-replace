@@ -81,7 +81,7 @@ describe 'SearchResultsModel', ->
       searchModel.setPattern('items')
 
     it "findNext() sets the currentResult", ->
-      subject.on 'change:current-result', matchHandler = jasmine.createSpy()
+      subject.on 'current-result-changed', matchHandler = jasmine.createSpy()
 
       subject.findNext([[0,0],[0,3]])
 
@@ -98,7 +98,7 @@ describe 'SearchResultsModel', ->
       expect(arg.total).toEqual 6
 
     it "a total change sets the currentResult", ->
-      subject.on 'change:current-result', matchHandler = jasmine.createSpy()
+      subject.on 'current-result-changed', matchHandler = jasmine.createSpy()
 
       buffer.insert([1, 10], "items")
       advanceClock(buffer.stoppedChangingDelay)
@@ -253,7 +253,7 @@ describe 'SearchResultsModel', ->
       expect(result.range).toEqual [[1,22],[1,27]]
 
     it "invalidation changes the total, and will emit an event", ->
-      subject.on 'change:current-result', handler = jasmine.createSpy()
+      subject.on 'current-result-changed', handler = jasmine.createSpy()
 
       buffer.insert([1, 23], "o")
       advanceClock(buffer.stoppedChangingDelay)
@@ -264,7 +264,7 @@ describe 'SearchResultsModel', ->
       expect(result.total).toEqual 5
       
     it "adds a new marker for a new result added into the buffer", ->
-      subject.on 'add:markers', addHandler = jasmine.createSpy()
+      subject.on 'markers-added', addHandler = jasmine.createSpy()
 
       buffer.insert([1, 10], "items")
       advanceClock(buffer.stoppedChangingDelay)

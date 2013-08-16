@@ -15,8 +15,8 @@ class SearchResultsView extends View
   initialize: (@searchModel, @editor, {active}={}) ->
     @markerViews = []
     @model = new SearchResultsModel(@searchModel, @editor)
-    @model.on 'change:markers', @replaceMarkerViews
-    @model.on 'add:markers', @addMarkerViews
+    @model.on 'markers-changed', @replaceMarkerViews
+    @model.on 'markers-added', @addMarkerViews
 
     # The pane knows when the user changes focus to a different editor (split).
     # Ideally, the editor would have events for this, but tis not the case.

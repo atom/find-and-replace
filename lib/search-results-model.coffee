@@ -43,7 +43,7 @@ class SearchResultsModel
   search: =>
     @destroyMarkers()
     @markers = @findAndMarkRanges()
-    @trigger 'change:markers', markers: @markers
+    @trigger 'markers-changed', markers: @markers
 
   clearCurrentResult: =>
     @setCurrentResultIndex(null)
@@ -181,7 +181,7 @@ class SearchResultsModel
 
   emitCurrentResult: ->
     result = @generateCurrentResult()
-    @trigger 'change:current-result', result
+    @trigger 'current-result-changed', result
     result
 
   generateCurrentResult: ->
@@ -211,7 +211,7 @@ class SearchResultsModel
     @markers = @markers.concat(markers)
     @markers.sort (left, right) -> left.getBufferRange().compare(right.getBufferRange())
 
-    @trigger 'add:markers', markers: markers
+    @trigger 'markers-added', markers: markers
     @emitCurrentResult()
 
   currentBufferRange: (bufferRange, firstOrLast='first') ->

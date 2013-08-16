@@ -29,8 +29,8 @@ class ResultCounterView extends View
 
   bindResultsModel: (resultsModel) ->
     return unless resultsModel
-    resultsModel.on 'change:current-result', @onChangeCurrentResult
+    resultsModel.on 'current-result-changed', @onChangeCurrentResult
 
   unbindResultsModel: (resultsModel) ->
     return unless resultsModel
-    resultsModel.off 'change:current-result', @onChangeCurrentResult
+    resultsModel.off 'current-result-changed', @onChangeCurrentResult
