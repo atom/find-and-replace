@@ -7,20 +7,23 @@ module.exports =
 class SearchModel
   _.extend @prototype, EventEmitter
 
+  HISTORY_MAX = 25
+
   # pattern - string to search for
   # options - 
   #   regex: false
   #   caseSensitive: false
   #   inWord: false
   #   inSelection: false
-  constructor: (@options={}) ->
+  constructor: (@options={}, @history=[]) ->
+    @pattern = ''
     @results = {}
-    @history = []
-    @historyIndex = -1
+    @historyIndex = @history.length
     @resultsVisible = false
 
   serialize: ->
     options: @options
+    history: @history[-HISTORY_MAX..]
 
   setOptions: (options) ->
     @search(@pattern, options)
