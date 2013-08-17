@@ -10,7 +10,7 @@ module.exports =
       inWord: false
       inSelection: false
 
-    @searchModel = new SearchModel('', options)
+    @searchModel = new SearchModel(options)
     @view = new BufferFindAndReplaceView(@searchModel)
 
   deactivate: ->

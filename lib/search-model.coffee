@@ -13,22 +13,14 @@ class SearchModel
   #   caseSensitive: false
   #   inWord: false
   #   inSelection: false
-  constructor: (pattern, options) ->
+  constructor: (@options={}) ->
     @results = {}
+    @history = []
+    @historyIndex = -1
     @resultsVisible = false
-    @search(pattern, options)
 
   serialize: ->
-    { @options }
-    
-  search: (pattern, options={}) ->
-    pattern = pattern or ''
-    return if @pattern == pattern and _.isEqual(@options, options)
-
-    [@pattern, @options] = [pattern, options]
-
-    @regex = @buildRegex(@pattern, @options)
-    @trigger 'change', this, regex: @regex
+    options: @options
 
   setOptions: (options) ->
     @search(@pattern, options)
@@ -43,8 +35,36 @@ class SearchModel
 
   setPattern: (pattern) ->
     @search(pattern, @options)
+
+  searchPreviousInHistory: ->
+    if @historyIndex > 0
+      @historyIndex--
+      pattern = @history[@historyIndex]
+      @trigger('history-index-changed', this, { pattern, @historyIndex })
+      @search(pattern, @options, addToHistory: false)
+
+  searchNextInHistory: ->
+    if @historyIndex < @history.length
+      @historyIndex++
+      pattern = @history[@historyIndex] or ''
+      @trigger('history-index-changed', this, { pattern, @historyIndex })
+      @search(pattern, @options, addToHistory: false)
     
   ### Internal ###
+
+  search: (pattern, options={}, {addToHistory}={}) ->
+    addToHistory ?= true
+
+    pattern = pattern or ''
+    return if @pattern == pattern and _.isEqual(@options, options)
+
+    [@pattern, @options] = [pattern, options]
+
+    @addToHistory(pattern) if addToHistory
+
+    @regex = @buildRegex(@pattern, @options)
+
+    @trigger 'change', this, { @regex, @historyIndex, @history }
 
   buildRegex: (pattern, options={}) ->
     return null unless pattern
@@ -55,3 +75,9 @@ class SearchModel
 
   escapeRegex: (pattern) ->
     pattern.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&")
+
+  addToHistory: (pattern) ->
+    @history.push(pattern) if _.last(@history) != pattern
+    @historyIndex = @history.length-1
+
+    @trigger 'history-added', this, { @history, index: @historyIndex }

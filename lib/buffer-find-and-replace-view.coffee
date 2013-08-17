@@ -50,6 +50,9 @@ class BufferFindAndReplaceView extends View
     rootView.command 'find-and-replace:toggle-case-sensitive-option', @toggleCaseSensitiveOption
     rootView.command 'find-and-replace:toggle-in-selection-option', @toggleInSelectionOption
 
+    rootView.on 'find-and-replace:search-next-in-history', => @searchModel.searchNextInHistory()
+    rootView.on 'find-and-replace:search-previous-in-history', => @searchModel.searchPreviousInHistory()
+
     @previousButton.on 'click', =>
       @findEditor.focus()
       @findPrevious()
@@ -88,9 +91,16 @@ class BufferFindAndReplaceView extends View
         editor.underlayer.append(view)
         editor.on 'cursor:moved', @onCursorMoved
 
+    @findEditor.on 'keyup', (e) =>
+      # When the user types something in the find box, we dont want to lose it
+      # when they cycle through the history. Whatever they last typed will end
+      # up as the find box's text when the user gets all the way to the end of
+      # the history. Sublime effs this up and it maddens me.
+      @unsearchedPattern = @findEditor.getText() if e.keyCode > 46 # Only printable chars
+
     @resultCounter.setModel(this)
     @onActiveItemChanged()
-    @onSearchModelChanged(@searchModel)
+    @updateOptionButtons()
 
   onActiveItemChanged: =>
     return unless window.rootView
@@ -107,10 +117,13 @@ class BufferFindAndReplaceView extends View
     else
       @currentEditor().trigger('find-and-replace:clear-current-result')
 
-  onSearchModelChanged: (model) =>
-    @setOptionButtonState(@regexOptionButton, model.getOption('regex'))
-    @setOptionButtonState(@caseSensitiveOptionButton, model.getOption('caseSensitive'))
-    @setOptionButtonState(@inSelectionOptionButton, model.getOption('inSelection'))
+  onSearchModelChanged: (model, args) =>
+    @updateOptionButtons()
+
+    pattern = model.pattern or ''
+    pattern = @unsearchedPattern if @unsearchedPattern and args.historyIndex == args.history.length and @unsearchedPattern != _.last(args.history)
+
+    @findEditor.setText(pattern)
 
   detach: =>
     @deactivate()
@@ -188,6 +201,11 @@ class BufferFindAndReplaceView extends View
 
   setOptionButtonState: (optionButton, enabled) ->
     optionButton[if enabled then 'addClass' else 'removeClass']('enabled')
+
+  updateOptionButtons: ->
+    @setOptionButtonState(@regexOptionButton, @searchModel.getOption('regex'))
+    @setOptionButtonState(@caseSensitiveOptionButton, @searchModel.getOption('caseSensitive'))
+    @setOptionButtonState(@inSelectionOptionButton, @searchModel.getOption('inSelection'))
 
   activate: ->
     @active = true
