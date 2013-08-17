@@ -38,6 +38,7 @@ class SearchModel
 
   setPattern: (pattern) ->
     @search(pattern, @options)
+    @addToHistory(pattern) if _.last(@history) != pattern
 
   searchPreviousInHistory: ->
     if @historyIndex > 0

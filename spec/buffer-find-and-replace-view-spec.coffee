@@ -115,8 +115,6 @@ describe 'BufferFindAndReplaceView', ->
 
         expect(subject.searchModel.history.length).toEqual 3
         expect(subject.searchModel.historyIndex).toEqual 2
-        expect(subject.searchModel.isAtTheTopOfTheHistory()).toEqual true
-        expect(subject.searchModel.getTopOfTheHistory()).toEqual 'three'
 
       it "can navigate back to the first thing in the history stack then back to the last thing in the history", ->
         subject.findEditor.trigger 'find-and-replace:search-previous-in-history'
@@ -142,7 +140,7 @@ describe 'BufferFindAndReplaceView', ->
 
       it "keeps text I havent searched for yet so i can come back to it", ->
         text = 'something I want to search for but havent yet'
-        subject.setUnsearchedPattern text
+        subject.unsearchedPattern = text
 
         subject.findEditor.trigger 'find-and-replace:search-previous-in-history'
         expect(subject.findEditor.getText()).toEqual 'two'
@@ -171,3 +169,16 @@ describe 'BufferFindAndReplaceView', ->
         expect(subject.findEditor.getText()).toEqual 'three'
         subject.findEditor.trigger 'find-and-replace:search-next-in-history'
         expect(subject.findEditor.getText()).toEqual text
+
+      it "adds the previous search into the history when search is run", ->
+        subject.findEditor.trigger 'find-and-replace:search-previous-in-history'
+        expect(subject.findEditor.getText()).toEqual 'two'
+
+        subject.findEditor.trigger 'find-and-replace:search-previous-in-history'
+        expect(subject.findEditor.getText()).toEqual 'one'
+
+        subject.findEditor.trigger 'core:confirm'
+
+        expect(subject.searchModel.history.length).toEqual 4
+        expect(_.last(subject.searchModel.history)).toEqual 'one'
+
