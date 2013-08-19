@@ -30,8 +30,12 @@ describe 'SearchResultsModel', ->
     it "resets current result on new search", ->
       expect(subject.getCurrentResult()).toEqual total: 6
 
+      subject.on 'current-result-changed', currentResultChangedHandler = jasmine.createSpy('currentResultChangedHandler')
+
       searchModel.setPattern('')
       expect(subject.getCurrentResult()).toEqual total: 0
+
+      expect(currentResultChangedHandler).toHaveBeenCalled()
 
   describe "search() with options", ->
     beforeEach ->
@@ -225,6 +229,33 @@ describe 'SearchResultsModel', ->
         subject.findNext([[0,0],[0,0]])
         expect(subject.replaceAll('itemsandthings')).toEqual true
         expect(subject.getCurrentResult()).toEqual total: 6
+
+  describe "cursor moving", ->
+    beforeEach ->
+      searchModel.setPattern('items')
+
+    it "moving cursor into result sets the current result", ->
+      editor.setCursorBufferPosition([1,23])
+      subject.onCursorMoved()
+
+      expect(subject.currentResultIndex).toEqual 0
+
+      editor.setCursorBufferPosition([1,10])
+      subject.onCursorMoved()
+
+      expect(subject.currentResultIndex).toEqual null
+
+      editor.setCursorBufferPosition([2,10])
+      subject.onCursorMoved()
+
+      expect(subject.currentResultIndex).toEqual 1
+
+    it "finding next finds the correct match", ->
+      editor.setCursorBufferPosition([2,0])
+      subject.selectNextResult()
+      subject.onCursorMoved() # will happen in the app behind a timeout, doing it manually here. 
+
+      expect(subject.currentResultIndex).toEqual 1
 
   describe "buffer modification", ->
     beforeEach ->

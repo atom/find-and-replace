@@ -11,7 +11,7 @@ module.exports =
 class BufferFindAndReplaceView extends View
 
   @content: ->
-    @div class: 'buffer-find-and-replace overlay from-top', =>
+    @div class: 'buffer-find-and-replace tool-panel', =>
       @div class: 'find-container', =>
         @label outlet: 'findLabel', 'Find'
 
@@ -50,8 +50,19 @@ class BufferFindAndReplaceView extends View
     rootView.command 'find-and-replace:toggle-case-sensitive-option', @toggleCaseSensitiveOption
     rootView.command 'find-and-replace:toggle-in-selection-option', @toggleInSelectionOption
 
-    @previousButton.on 'click', => @findPrevious(); false
-    @nextButton.on 'click', => @findNext(); false
+    rootView.command 'find-and-replace:set-selection-as-search-pattern', @setSelectionAsSearchPattern
+
+    rootView.on 'find-and-replace:search-next-in-history', => @searchModel.searchNextInHistory()
+    rootView.on 'find-and-replace:search-previous-in-history', => @searchModel.searchPreviousInHistory()
+
+    @previousButton.on 'click', =>
+      @findEditor.focus()
+      @findPrevious()
+      false
+    @nextButton.on 'click', =>
+      @findEditor.focus()
+      @findNext()
+      false
 
     @regexOptionButton.on 'click', @toggleRegexOption
     @caseSensitiveOptionButton.on 'click', @toggleCaseSensitiveOption
@@ -80,55 +91,45 @@ class BufferFindAndReplaceView extends View
         view = new SearchResultsView(@searchModel, editor, {@active})
         @searchResultsViews.push(view)
         editor.underlayer.append(view)
-        editor.on 'cursor:moved', @onCursorMoved
+
+    @findEditor.on 'keyup', (e) =>
+      # When the user types something in the find box, we dont want to lose it
+      # when they cycle through the history. Whatever they last typed will end
+      # up as the find box's text when the user gets all the way to the end of
+      # the history. Sublime effs this up and it maddens me.
+      @unsearchedPattern = @findEditor.getText() if e.keyCode > 46 # Only printable chars
 
     @resultCounter.setModel(this)
     @onActiveItemChanged()
+    @updateOptionButtons()
 
   onActiveItemChanged: =>
     return unless window.rootView
-    editor = rootView.getActiveView()
+    editor = @currentEditor()
     @trigger('active-editor-changed', editor: editor)
 
-  onCursorMoved: =>
-    if @cursorMoveOriginatedHere
-      # HACK: I want to reset the current result whenever the cursor is moved
-      # so it removes the '# of' from '2 of 100'. But I cant tell if I moved
-      # the cursor or the user did as it happens asynchronously. Thus this
-      # crappy boolean. Open to suggestions.
-      @cursorMoveOriginatedHere = false
-    else
-      rootView.getActiveView().trigger('find-and-replace:clear-current-result')
+  onSearchModelChanged: (model, args) =>
+    @updateOptionButtons()
 
-  onSearchModelChanged: (model) =>
-    @setOptionButtonState(@regexOptionButton, model.getOption('regex'))
-    @setOptionButtonState(@caseSensitiveOptionButton, model.getOption('caseSensitive'))
-    @setOptionButtonState(@inSelectionOptionButton, model.getOption('inSelection'))
+    pattern = model.pattern or ''
+    pattern = @unsearchedPattern if @unsearchedPattern and args.historyIndex == args.history.length and @unsearchedPattern != _.last(args.history)
+
+    @findEditor.setText(pattern)
 
   detach: =>
-    return unless @hasParent()
-
-    @detaching = true
     @deactivate()
-
-    if @previouslyFocusedElement?.isOnDom()
-      @previouslyFocusedElement.focus()
-    else
-      rootView.focus()
-
+    rootView.focus()
     super()
-    @detaching = false
 
   attach: =>
-    unless @hasParent()
-      @previouslyFocusedElement = $(':focus')
-      rootView.append(this)
-
+    rootView.vertical.append(this)
     @activate()
 
   confirmFind: =>
     @search()
     @findNext()
+    editor = @currentEditor()
+    editor.focus() if editor and editor.searchResults and editor.searchResults.getCurrentResult().total
 
   confirmReplace: =>
     @search()
@@ -162,20 +163,30 @@ class BufferFindAndReplaceView extends View
   replaceNext: =>
     @search()
     replacement = @replaceEditor.getText()
-    rootView.getActiveView().trigger('find-and-replace:replace-next', {replacement})
+    @currentEditor().trigger('find-and-replace:replace-next', {replacement})
 
   replaceAll: =>
     @search()
     replacement = @replaceEditor.getText()
-    rootView.getActiveView().trigger('find-and-replace:replace-all', {replacement})
+    @currentEditor().trigger('find-and-replace:replace-all', {replacement})
 
   findPrevious: =>
-    @cursorMoveOriginatedHere = true # See HACK above.
-    rootView.getActiveView().trigger('find-and-replace:find-previous')
+    @search()
+    @currentEditor().trigger('find-and-replace:find-previous')
 
   findNext: =>
-    @cursorMoveOriginatedHere = true # See HACK above.
-    rootView.getActiveView().trigger('find-and-replace:find-next')
+    @search()
+    @currentEditor().trigger('find-and-replace:find-next')
+
+  setSelectionAsSearchPattern: =>
+    editor = @currentEditor()
+    pattern = editor.getSelectedText()
+
+    if pattern
+      @searchModel.setPattern(pattern)
+      _.last(editor.getSelectionViews()).highlight()
+
+    null
 
   toggleRegexOption: => @toggleOption('regex')
 
@@ -190,6 +201,11 @@ class BufferFindAndReplaceView extends View
   setOptionButtonState: (optionButton, enabled) ->
     optionButton[if enabled then 'addClass' else 'removeClass']('enabled')
 
+  updateOptionButtons: ->
+    @setOptionButtonState(@regexOptionButton, @searchModel.getOption('regex'))
+    @setOptionButtonState(@caseSensitiveOptionButton, @searchModel.getOption('caseSensitive'))
+    @setOptionButtonState(@inSelectionOptionButton, @searchModel.getOption('inSelection'))
+
   activate: ->
     @active = true
     view.activate() for view in @searchResultsViews
@@ -197,5 +213,8 @@ class BufferFindAndReplaceView extends View
   deactivate: ->
     @active = false
     view.deactivate() for view in @searchResultsViews
+
+  currentEditor: ->
+    rootView.getActiveView()
 
 

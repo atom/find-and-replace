@@ -5,6 +5,8 @@
   'meta-g': 'find-and-replace:find-next'
   'meta-G': 'find-and-replace:find-previous'
   
+  'meta-e': 'find-and-replace:set-selection-as-search-pattern'
+
 '.buffer-find-and-replace .mini.editor input':
   'tab': 'find-and-replace:focus-next'
   'shift-tab': 'find-and-replace:focus-previous'
@@ -14,3 +16,7 @@
   'alt-meta-/': 'find-and-replace:toggle-regex-option'
   'alt-meta-c': 'find-and-replace:toggle-case-sensitive-option'
   'alt-meta-s': 'find-and-replace:toggle-in-selection-option'
+
+'.buffer-find-and-replace .find-container .mini.editor input':
+  'up': 'find-and-replace:search-previous-in-history'
+  'down': 'find-and-replace:search-next-in-history'

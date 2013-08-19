@@ -104,3 +104,81 @@ describe 'BufferFindAndReplaceView', ->
         subject.replaceAll()
         expect(subject.resultCounter.text()).toEqual('0 found')
         expect(editor.activeEditSession.getTextInBufferRange([[1, 22], [1, 27]])).toEqual 'cats)'
+
+    describe "history", ->
+      beforeEach ->
+        subject.attach()
+
+        subject.searchModel.setPattern('one')
+        subject.searchModel.setPattern('two')
+        subject.searchModel.setPattern('three')
+
+        expect(subject.searchModel.history.length).toEqual 3
+        expect(subject.searchModel.historyIndex).toEqual 2
+
+      it "can navigate back to the first thing in the history stack then back to the last thing in the history", ->
+        subject.findEditor.trigger 'find-and-replace:search-previous-in-history'
+        expect(subject.findEditor.getText()).toEqual 'two'
+
+        subject.findEditor.trigger 'find-and-replace:search-previous-in-history'
+        expect(subject.findEditor.getText()).toEqual 'one'
+
+        subject.findEditor.trigger 'find-and-replace:search-previous-in-history'
+        expect(subject.findEditor.getText()).toEqual 'one'
+
+        subject.findEditor.trigger 'find-and-replace:search-next-in-history'
+        expect(subject.findEditor.getText()).toEqual 'two'
+
+        subject.findEditor.trigger 'find-and-replace:search-next-in-history'
+        expect(subject.findEditor.getText()).toEqual 'three'
+
+        subject.findEditor.trigger 'find-and-replace:search-next-in-history'
+        expect(subject.findEditor.getText()).toEqual ''
+
+        subject.findEditor.trigger 'find-and-replace:search-next-in-history'
+        expect(subject.findEditor.getText()).toEqual ''
+
+      it "keeps text I havent searched for yet so i can come back to it", ->
+        text = 'something I want to search for but havent yet'
+        subject.unsearchedPattern = text
+
+        subject.findEditor.trigger 'find-and-replace:search-previous-in-history'
+        expect(subject.findEditor.getText()).toEqual 'two'
+
+        subject.findEditor.trigger 'find-and-replace:search-next-in-history'
+        expect(subject.findEditor.getText()).toEqual 'three'
+
+        subject.findEditor.trigger 'find-and-replace:search-next-in-history'
+        expect(subject.findEditor.getText()).toEqual text
+
+        subject.findEditor.trigger 'find-and-replace:search-next-in-history'
+        expect(subject.findEditor.getText()).toEqual text
+
+        subject.findEditor.trigger 'find-and-replace:search-previous-in-history'
+        expect(subject.findEditor.getText()).toEqual 'three'
+        subject.findEditor.trigger 'find-and-replace:search-previous-in-history'
+        expect(subject.findEditor.getText()).toEqual 'two'
+        subject.findEditor.trigger 'find-and-replace:search-previous-in-history'
+        expect(subject.findEditor.getText()).toEqual 'one'
+        subject.findEditor.trigger 'find-and-replace:search-previous-in-history'
+        expect(subject.findEditor.getText()).toEqual 'one'
+
+        subject.findEditor.trigger 'find-and-replace:search-next-in-history'
+        expect(subject.findEditor.getText()).toEqual 'two'
+        subject.findEditor.trigger 'find-and-replace:search-next-in-history'
+        expect(subject.findEditor.getText()).toEqual 'three'
+        subject.findEditor.trigger 'find-and-replace:search-next-in-history'
+        expect(subject.findEditor.getText()).toEqual text
+
+      it "adds the previous search into the history when search is run", ->
+        subject.findEditor.trigger 'find-and-replace:search-previous-in-history'
+        expect(subject.findEditor.getText()).toEqual 'two'
+
+        subject.findEditor.trigger 'find-and-replace:search-previous-in-history'
+        expect(subject.findEditor.getText()).toEqual 'one'
+
+        subject.findEditor.trigger 'core:confirm'
+
+        expect(subject.searchModel.history.length).toEqual 4
+        expect(_.last(subject.searchModel.history)).toEqual 'one'
+
