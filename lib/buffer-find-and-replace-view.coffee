@@ -50,6 +50,8 @@ class BufferFindAndReplaceView extends View
     rootView.command 'find-and-replace:toggle-case-sensitive-option', @toggleCaseSensitiveOption
     rootView.command 'find-and-replace:toggle-in-selection-option', @toggleInSelectionOption
 
+    rootView.command 'find-and-replace:set-selection-as-search-pattern', @setSelectionAsSearchPattern
+
     rootView.on 'find-and-replace:search-next-in-history', => @searchModel.searchNextInHistory()
     rootView.on 'find-and-replace:search-previous-in-history', => @searchModel.searchPreviousInHistory()
 
@@ -188,6 +190,16 @@ class BufferFindAndReplaceView extends View
     @search()
     @cursorMoveOriginatedHere = true # See HACK above.
     @currentEditor().trigger('find-and-replace:find-next')
+
+  setSelectionAsSearchPattern: =>
+    editor = @currentEditor()
+    pattern = editor.getSelectedText()
+
+    if pattern
+      @searchModel.setPattern(pattern)
+      _.last(editor.getSelectionViews()).highlight()
+
+    null
 
   toggleRegexOption: => @toggleOption('regex')
 
