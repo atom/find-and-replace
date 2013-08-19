@@ -1,5 +1,5 @@
 EventEmitter = require 'event-emitter'
-AtomRange = require 'range'
+{Range} = require 'telepath'
 _ = require 'underscore'
 shell = require 'shell'
 
@@ -234,7 +234,7 @@ class SearchResultsModel
 
   currentBufferRange: (bufferRange, firstOrLast='first') ->
     bufferRange = _[firstOrLast](@editor.getSelectedBufferRanges()) unless bufferRange?
-    AtomRange.fromObject(bufferRange)
+    Range.fromObject(bufferRange)
 
   findAndMarkRanges: ->
     markerAttributes = @getMarkerAttributes()
