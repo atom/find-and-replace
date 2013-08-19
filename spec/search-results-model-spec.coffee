@@ -230,6 +230,33 @@ describe 'SearchResultsModel', ->
         expect(subject.replaceAll('itemsandthings')).toEqual true
         expect(subject.getCurrentResult()).toEqual total: 6
 
+  describe "cursor moving", ->
+    beforeEach ->
+      searchModel.setPattern('items')
+
+    it "moving cursor into result sets the current result", ->
+      editor.setCursorBufferPosition([1,23])
+      subject.onCursorMoved()
+
+      expect(subject.currentResultIndex).toEqual 0
+
+      editor.setCursorBufferPosition([1,10])
+      subject.onCursorMoved()
+
+      expect(subject.currentResultIndex).toEqual null
+
+      editor.setCursorBufferPosition([2,10])
+      subject.onCursorMoved()
+
+      expect(subject.currentResultIndex).toEqual 1
+
+    it "finding next finds the correct match", ->
+      editor.setCursorBufferPosition([2,0])
+      subject.selectNextResult()
+      subject.onCursorMoved() # will happen in the app behind a timeout, doing it manually here. 
+
+      expect(subject.currentResultIndex).toEqual 1
+
   describe "buffer modification", ->
     beforeEach ->
       searchModel.setPattern('items')
