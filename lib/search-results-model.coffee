@@ -127,18 +127,18 @@ class SearchResultsModel
     @setBuffer(@editor.activeEditSession.buffer)
 
   onCursorMoved: =>
-    isWithinMarker = (pos, marker) ->
+    isWithinMarker = (bufferPosition, marker) ->
       # Using marker.getBufferRange() was slow on large sets. This is faster -- no object creation.
       start = marker.bufferMarker.tailPosition or marker.bufferMarker.headPosition
       end = marker.bufferMarker.headPosition
-      return false unless pos.column >= start.column and pos.column <= end.column
-      return false unless pos.row >= start.row and pos.row <= end.row
+      return false unless bufferPosition.column >= start.column and bufferPosition.column <= end.column
+      return false unless bufferPosition.row >= start.row and bufferPosition.row <= end.row
       true
 
-    pos = @editor.getCursorBufferPosition()
+    bufferPosition = @editor.getCursorBufferPosition()
     for i in [0...@markers.length]
       marker = @markers[i]
-      return @setCurrentResultIndex(i) if isWithinMarker(pos, marker)
+      return @setCurrentResultIndex(i) if isWithinMarker(bufferPosition, marker)
 
     @clearCurrentResult()
 
