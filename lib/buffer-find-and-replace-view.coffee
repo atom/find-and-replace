@@ -91,7 +91,6 @@ class BufferFindAndReplaceView extends View
         view = new SearchResultsView(@searchModel, editor, {@active})
         @searchResultsViews.push(view)
         editor.underlayer.append(view)
-        editor.on 'cursor:moved', @onCursorMoved
 
     @findEditor.on 'keyup', (e) =>
       # When the user types something in the find box, we dont want to lose it
@@ -108,16 +107,6 @@ class BufferFindAndReplaceView extends View
     return unless window.rootView
     editor = @currentEditor()
     @trigger('active-editor-changed', editor: editor)
-
-  onCursorMoved: =>
-    if @cursorMoveOriginatedHere
-      # HACK: I want to reset the current result whenever the cursor is moved
-      # so it removes the '# of' from '2 of 100'. But I cant tell if I moved
-      # the cursor or the user did as it happens asynchronously. Thus this
-      # crappy boolean. Open to suggestions.
-      @cursorMoveOriginatedHere = false
-    else
-      @currentEditor().trigger('find-and-replace:clear-current-result')
 
   onSearchModelChanged: (model, args) =>
     @updateOptionButtons()
@@ -183,12 +172,10 @@ class BufferFindAndReplaceView extends View
 
   findPrevious: =>
     @search()
-    @cursorMoveOriginatedHere = true # See HACK above.
     @currentEditor().trigger('find-and-replace:find-previous')
 
   findNext: =>
     @search()
-    @cursorMoveOriginatedHere = true # See HACK above.
     @currentEditor().trigger('find-and-replace:find-next')
 
   setSelectionAsSearchPattern: =>
