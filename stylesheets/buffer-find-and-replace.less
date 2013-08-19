@@ -28,21 +28,22 @@
 }
 
 .buffer-find-and-replace {
-  padding-bottom: 0;
+  padding: @inner-margin;
 
-  &.find-mode{
-    width: @find-mode-width;
-    margin-left: -@find-mode-width/2;
+  background-color: @background-color-2;
+  border-top: 1px solid rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0 1px 0 @highlight-background-color-1;
+
+  &.find-mode {
     .replace-container, label { display: none; }
   }
 
-  &.replace-mode{
-    width: @replace-mode-width;
-    margin-left: -@replace-mode-width/2;
+  &.replace-mode {
+    // margin between the find and replace containers
+    .find-container { margin-bottom: @inner-margin; }
 
-    .editor-container {
-      margin-left: @label-width + @inner-margin;
-    }
+    // make room for the labels
+    .editor-container { margin-left: @label-width + @inner-margin; }
   }
 
   label {
@@ -82,7 +83,11 @@
 
   .editor-container {
     position: relative;
-    width: @editor-box-width;
+    margin-right: @button-width + @inner-margin;
+
+    .editor.editor-colors.mini.is-focused{
+      background-color: @highlight-background-color-1;
+    }
   }
 
   .replace-container {
