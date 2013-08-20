@@ -1,5 +1,5 @@
 SearchModel = require './search-model'
-BufferFindAndReplaceView = require './buffer-find-and-replace-view'
+BufferFindAndReplaceView = require './buffer/buffer-find-and-replace-view'
 
 module.exports =
   activate: (state) -> 
