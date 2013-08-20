@@ -3,8 +3,8 @@ Editor = require 'editor'
 $ = require 'jquery'
 _ = require 'underscore'
 {Point} = require 'telepath'
-SearchModel = require './search-model'
-SearchResultsView = require './search-results-view'
+SearchModel = require '../search-model'
+SearchResultsView = require '../search-results-view'
 ResultCounterView = require './result-counter-view'
 
 module.exports =
