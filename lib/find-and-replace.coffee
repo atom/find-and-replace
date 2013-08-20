@@ -3,18 +3,25 @@ BufferFindAndReplaceView = require './buffer/buffer-find-and-replace-view'
 
 module.exports =
   activate: (state) -> 
-    options = state?.options
-    options ?=
-      regex: false
-      caseSensitive: false
-      inWord: false
-      inSelection: false
-
-    @searchModel = new SearchModel(options, state?.history ? [])
-    @view = new BufferFindAndReplaceView(@searchModel)
+    @activateForBuffer(state?.buffer)
 
   deactivate: ->
-    @view?.remove()
+    @deactivateForBuffer()
 
   serialize: ->
-    @searchModel.serialize()
+    buffer: @bufferFindAndReplaceSearchModel.serialize()
+
+  activateForBuffer: (bufferFindAndReplaceState={}) ->
+    history = bufferFindAndReplaceState?.history ? []
+    options = bufferFindAndReplaceState.options
+    options ?=
+      regex: false
+      inWord: false
+      inSelection: false
+      caseSensitive: false
+
+    @bufferFindAndReplaceSearchModel = new SearchModel(options, history)
+    @bufferFindAndReplaceView = new BufferFindAndReplaceView(@bufferFindAndReplaceSearchModel)
+
+  deactivateForBuffer: ->
+    @bufferFindAndReplaceView?.remove()

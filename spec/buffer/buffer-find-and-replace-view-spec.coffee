@@ -1,6 +1,6 @@
 RootView = require 'root-view'
 BufferFindAndReplaceView = require 'find-and-replace/lib/buffer/buffer-find-and-replace-view'
-BufferFindAndReplace = require 'find-and-replace/lib/find-and-replace'
+FindAndReplace = require 'find-and-replace/lib/find-and-replace'
 
 describe 'BufferFindAndReplaceView', ->
   [subject, editor] = []
@@ -9,7 +9,7 @@ describe 'BufferFindAndReplaceView', ->
 
   describe "with no editor", ->
     beforeEach ->
-      subject = BufferFindAndReplace.activate()
+      subject = FindAndReplace.activateForBuffer()
 
     describe "when find-and-replace:display-find is triggered", ->
       it "attaches to the root view", ->
@@ -24,7 +24,7 @@ describe 'BufferFindAndReplaceView', ->
       editor = rootView.getActiveView()
       editor.attached = true #hack as I cant get attachToDom() to work
 
-      subject = BufferFindAndReplace.activate()
+      subject = FindAndReplace.activateForBuffer()
 
     describe "when find-and-replace:display-find is triggered", ->
       it "attaches to the root view", ->
