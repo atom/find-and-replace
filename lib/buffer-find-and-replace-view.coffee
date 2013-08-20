@@ -89,6 +89,8 @@ class BufferFindAndReplaceView extends View
     rootView.eachEditor (editor) =>
       if editor.attached and not editor.mini
         view = new SearchResultsView(@searchModel, editor, {@active})
+        view.on 'destroyed', =>
+          @searchResultsViews = _.without(@searchResultsViews, view)
         @searchResultsViews.push(view)
         editor.underlayer.append(view)
 

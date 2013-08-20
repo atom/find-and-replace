@@ -17,6 +17,7 @@ class SearchResultsView extends View
     @model = new SearchResultsModel(@searchModel, @editor)
     @model.on 'markers-changed', @replaceMarkerViews
     @model.on 'markers-added', @addMarkerViews
+    @model.on 'destroyed', @destroy
 
     # The pane knows when the user changes focus to a different editor (split).
     # Ideally, the editor would have events for this, but tis not the case.
@@ -26,6 +27,12 @@ class SearchResultsView extends View
 
   setActive: (@active) ->
     @updateInterface()
+
+  destroy: =>
+    @unsubscribe()
+    @removeMarkerViews()
+    @trigger 'destroyed'
+    @remove()
 
   activate: -> @setActive(true)
 

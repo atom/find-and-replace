@@ -105,6 +105,15 @@ describe 'BufferFindAndReplaceView', ->
         expect(subject.resultCounter.text()).toEqual('0 found')
         expect(editor.activeEditSession.getTextInBufferRange([[1, 22], [1, 27]])).toEqual 'cats)'
 
+    describe "removing the results model", ->
+      beforeEach ->
+
+      it "replaces one and finds next", ->
+        editor.searchResults.destroy()
+        expect(subject.searchResultsViews.length).toEqual 0
+
+        editor.trigger 'find-and-replace:display-replace'
+
     describe "history", ->
       beforeEach ->
         subject.attach()
@@ -181,4 +190,3 @@ describe 'BufferFindAndReplaceView', ->
 
         expect(subject.searchModel.history.length).toEqual 4
         expect(_.last(subject.searchModel.history)).toEqual 'one'
-

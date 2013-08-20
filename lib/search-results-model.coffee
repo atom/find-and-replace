@@ -117,9 +117,14 @@ class SearchResultsModel
     true
 
   destroy: =>
+    @editor.off 'cursor:moved', @onCursorMoved
+    @editor.off 'editor:path-changed', @onPathChanged
+    @editor.off 'editor:will-be-removed', @destroy
+
     @searchModel.off 'change', @search
     @editor = null
     @searchModel = null
+    @trigger 'destroyed', this
 
   ### Event Handlers ###
 
