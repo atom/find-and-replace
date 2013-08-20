@@ -116,7 +116,8 @@ describe 'SearchResultsModel', ->
       subject.setCurrentResultIndex(0)
       expect(subject.getCurrentResult().index).toEqual 0
 
-      subject.markers[0].bufferMarker.invalidate()
+      spyOn(subject.markers[0].bufferMarker, 'isValid').andReturn false
+      subject.markers[0].bufferMarker.emit 'changed', isValid: false
 
       expect(subject.getCurrentResult().index).not.toEqual 0
 
