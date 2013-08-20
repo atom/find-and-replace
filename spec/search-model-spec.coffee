@@ -19,7 +19,7 @@ describe 'SearchModel', ->
       subject.setPattern('items')
       expect(spy).toHaveBeenCalled()
       expect(spy.mostRecentCall.args[0]).toEqual subject
-      expect(spy.mostRecentCall.args[1]).toEqual regex: subject.regex
+      expect(spy.mostRecentCall.args[1].regex).toEqual subject.regex
 
   describe "setOption()", ->
     it "kicks out an event", ->

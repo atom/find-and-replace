@@ -1,5 +1,5 @@
 EventEmitter = require 'event-emitter'
-AtomRange = require 'range'
+{Range} = require 'telepath'
 _ = require 'underscore'
 shell = require 'shell'
 
@@ -129,8 +129,8 @@ class SearchResultsModel
   onCursorMoved: =>
     isWithinMarker = (bufferPosition, marker) ->
       # Using marker.getBufferRange() was slow on large sets. This is faster -- no object creation.
-      start = marker.bufferMarker.tailPosition or marker.bufferMarker.headPosition
-      end = marker.bufferMarker.headPosition
+      start = marker.bufferMarker.getTailPosition()
+      end = marker.bufferMarker.getHeadPosition()
       return false unless bufferPosition.column >= start.column and bufferPosition.column <= end.column
       return false unless bufferPosition.row >= start.row and bufferPosition.row <= end.row
       true
@@ -147,10 +147,10 @@ class SearchResultsModel
 
     isEqualToRange = (marker, range) ->
       # Using marker.getBufferRange().compare() was slow on large sets. This is faster.
-      first = marker.bufferMarker.tailPosition or marker.bufferMarker.headPosition
-      last = marker.bufferMarker.headPosition
-      return false unless range.start.column == first.column and range.start.row == first.row
-      return false unless range.end.column == last.column and range.end.row == last.row
+      start = marker.bufferMarker.getTailPosition()
+      end = marker.bufferMarker.getHeadPosition()
+      return false unless range.start.column == start.column and range.start.row == start.row
+      return false unless range.end.column == end.column and range.end.row == end.row
       true
 
     rangesToAdd = []
@@ -170,8 +170,8 @@ class SearchResultsModel
     @markers = _.without(@markers, marker)
     @clearCurrentResult() if index == @currentResultIndex
 
-  onMarkerChanged: (marker, {valid}) ->
-    @destroyMarker(marker) unless valid
+  onMarkerChanged: (marker, options={}) ->
+    @destroyMarker(marker) unless options.isValid
     @emitCurrentResult()
 
   ### Internal ###
@@ -234,7 +234,7 @@ class SearchResultsModel
 
   currentBufferRange: (bufferRange, firstOrLast='first') ->
     bufferRange = _[firstOrLast](@editor.getSelectedBufferRanges()) unless bufferRange?
-    AtomRange.fromObject(bufferRange)
+    Range.fromObject(bufferRange)
 
   findAndMarkRanges: ->
     markerAttributes = @getMarkerAttributes()
@@ -272,5 +272,5 @@ class SearchResultsModel
   getMarkerAttributes: (attributes={}) ->
     _.extend attributes, 
       class: 'search-result'
-      displayBufferId: @editor.activeEditSession.displayBuffer.id
-      invalidationStrategy: 'between'
+      invalidation: 'inside'
+      replicate: false
