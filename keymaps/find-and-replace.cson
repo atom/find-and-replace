@@ -1,3 +1,6 @@
+'body':
+  'meta-F': 'find-and-replace:display-find-in-project'
+
 '.editor':
   'meta-f': 'find-and-replace:display-find'
   'alt-meta-f': 'find-and-replace:display-replace'
@@ -7,7 +10,7 @@
   
   'meta-e': 'find-and-replace:set-selection-as-search-pattern'
 
-'.buffer-find-and-replace .mini.editor input':
+'.find-and-replace .mini.editor input':
   'tab': 'find-and-replace:focus-next'
   'shift-tab': 'find-and-replace:focus-previous'
   'enter': 'core:confirm',
@@ -18,5 +21,9 @@
   'alt-meta-s': 'find-and-replace:toggle-in-selection-option'
 
 '.buffer-find-and-replace .find-container .mini.editor input':
+  'up': 'find-and-replace:search-previous-in-history'
+  'down': 'find-and-replace:search-next-in-history'
+
+'.project-find-and-replace .find-container .mini.editor input':
   'up': 'find-and-replace:search-previous-in-history'
   'down': 'find-and-replace:search-next-in-history'

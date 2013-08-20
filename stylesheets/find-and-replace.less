@@ -27,13 +27,58 @@
   margin: -1px 0 0 -1px;
 }
 
-.buffer-find-and-replace {
+.find-and-replace {
   padding: @inner-margin;
 
   background-color: @background-color-2;
   border-top: 1px solid rgba(0, 0, 0, 0.5);
   box-shadow: inset 0 1px 0 @background-color-highlight-1;
 
+  label {
+    float: left;
+    font-weight: normal;
+    color: @text-color-subtle-1;
+    width: @label-width;
+    margin-right: @inner-margin;
+    text-align: right;
+    margin-top: 4px;
+  }
+
+  .find-container {
+    .btn-toggle.btn-group .btn {
+      font-size: 14px;
+      width: @button-width/3;
+      font-family: monospace;
+      &.option-regex{ font-size: 18px; }
+    }
+  }
+
+  .replace-container {
+    .btn-toggle.btn-group .btn {
+      width: @button-width/2;
+    }
+  }
+
+  .editor-container {
+    position: relative;
+    margin-right: @button-width + @inner-margin;
+
+    .editor.editor-colors.mini.is-focused{
+      background-color: @background-color-highlight-1;
+    }
+  }
+}
+
+.project-find-and-replace {
+  // margin between the find and replace containers
+  .find-container { margin-bottom: @inner-margin; }
+
+  // make room for the labels
+  .editor-container { margin-left: @label-width + @inner-margin; }
+}
+
+
+.buffer-find-and-replace {
   &.find-mode {
     .replace-container, label { display: none; }
   }
@@ -46,39 +91,7 @@
     .editor-container { margin-left: @label-width + @inner-margin; }
   }
 
-  label {
-    float: left;
-    font-weight: normal;
-    color: @text-color-subtle-1;
-    width: @label-width;
-    margin-right: @inner-margin;
-    text-align: right;
-    margin-top: 4px;
-  }
-
-  .editor-container {
-    position: relative;
-    margin-right: @button-width + @inner-margin;
-
-    .editor.editor-colors.mini.is-focused{
-      background-color: @background-color-highlight-1;
-    }
-  }
-
-  .replace-container {
-    .btn-toggle.btn-group .btn {
-      width: @button-width/2;
-    }
-  }
-
   .find-container {
-    .btn-toggle.btn-group .btn {
-      font-size: 14px;
-      width: @button-width/3;
-      font-family: monospace;
-      &.option-regex{ font-size: 18px; }
-    }
-
     .find-editor-container {
       .find-meta-container {
         position: absolute;

@@ -11,7 +11,7 @@ module.exports =
 class BufferFindAndReplaceView extends View
 
   @content: ->
-    @div class: 'buffer-find-and-replace tool-panel', =>
+    @div class: 'find-and-replace buffer-find-and-replace tool-panel', =>
       @div class: 'find-container', =>
         @label outlet: 'findLabel', 'Find'
 
