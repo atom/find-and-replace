@@ -24,12 +24,12 @@ class MarkerView extends View
     @editor = null
     super()
 
-  onMarkerChanged: ({valid}) =>
-    @updateDisplayPosition = valid
-    if valid != @isMarkerValid
+  onMarkerChanged: ({isValid}) =>
+    @updateDisplayPosition = isValid
+    if isValid != @isMarkerValid
       # @isMarkerValid is an optimization so we dont call into show or hide unless necessary
-      if valid then @show() else @hide()
-      @isMarkerValid = valid
+      if isValid then @show() else @hide()
+      @isMarkerValid = isValid
 
   onEditorDisplayUpdated: (eventProperties) =>
     [first, last] = [@editor.firstRenderedScreenRow, @editor.lastRenderedScreenRow]

@@ -170,8 +170,8 @@ class SearchResultsModel
     @markers = _.without(@markers, marker)
     @clearCurrentResult() if index == @currentResultIndex
 
-  onMarkerChanged: (marker, {isValid}) ->
-    @destroyMarker(marker) unless isValid
+  onMarkerChanged: (marker, options={}) ->
+    @destroyMarker(marker) unless options.isValid
     @emitCurrentResult()
 
   ### Internal ###
@@ -272,5 +272,5 @@ class SearchResultsModel
   getMarkerAttributes: (attributes={}) ->
     _.extend attributes, 
       class: 'search-result'
-      displayBufferId: @editor.activeEditSession.displayBuffer.id
-      invalidationStrategy: 'between'
+      invalidation: 'inside'
+      replicate: false
