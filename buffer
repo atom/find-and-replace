@@ -1,8 +1,8 @@
 RootView = require 'root-view'
-BufferFindAndReplaceView = require 'buffer-find-and-replace/lib/buffer-find-and-replace-view'
-BufferFindAndReplace = require 'buffer-find-and-replace/lib/buffer-find-and-replace'
+BufferFindAndReplaceView = require 'find-and-replace/lib/buffer-find-and-replace-view'
+BufferFindAndReplace = require 'find-and-replace/lib/buffer-find-and-replace'
 
-describe 'BufferFindAndReplaceView', ->
+fdescribe 'BufferFindAndReplaceView', ->
   [subject, editor] = []
   beforeEach ->
     window.rootView = new RootView
