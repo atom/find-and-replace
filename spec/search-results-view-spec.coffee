@@ -3,7 +3,7 @@ SearchModel = require 'find-and-replace/lib/search-model'
 SearchResultsModel = require 'find-and-replace/lib/search-results-model'
 SearchResultsView = require 'find-and-replace/lib/search-results-view'
 
-fdescribe 'SearchResultsView', ->
+describe 'SearchResultsView', ->
   [goToLine, editor, subject, buffer, searchModel] = []
 
   beforeEach ->

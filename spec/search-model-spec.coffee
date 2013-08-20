@@ -1,7 +1,7 @@
 RootView = require 'root-view'
 SearchModel = require 'find-and-replace/lib/search-model'
 
-fdescribe 'SearchModel', ->
+describe 'SearchModel', ->
   [goToLine, editor, subject, buffer] = []
 
   beforeEach ->
