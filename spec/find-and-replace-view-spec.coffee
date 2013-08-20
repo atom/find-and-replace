@@ -1,7 +1,7 @@
 RootView = require 'root-view'
 FindAndReplace = require 'find-and-replace/lib/find-and-replace'
 
-fdescribe 'FindAndReplace', ->
+describe 'FindAndReplace', ->
   [subject, editor] = []
   beforeEach ->
     window.rootView = new RootView
