@@ -2,13 +2,27 @@
 Editor = require 'editor'
 $ = require 'jquery'
 _ = require 'underscore'
-SearchModel = require '../search-model'
+PreviewList = require './preview-list'
+SearchResult = require './search-result'
+EditSession = require 'edit-session'
 
 module.exports =
 class ProjectFindAndReplaceView extends View
 
   @content: ->
     @div class: 'find-and-replace project-find-and-replace tool-panel', =>
+
+      @div class: 'loading is-loading', outlet: 'loadingMessage', =>
+        @span 'Searching...'
+
+      @div class: 'header', outlet: 'previewHeader', =>
+        @button outlet: 'collapseAll', class: 'btn btn-mini pull-right', 'Collapse All'
+        @button outlet: 'expandAll', class: 'btn btn-mini pull-right', 'Expand All'
+        @span outlet: 'previewCount', class: 'preview-count'
+
+      @subview 'previewList', new PreviewList(rootView)
+      @ul class: 'error-messages', outlet: 'errorMessages'
+
       @div class: 'find-container', =>
         @label outlet: 'findLabel', 'Find'
 
@@ -23,7 +37,7 @@ class ProjectFindAndReplaceView extends View
   detaching: false
   active: false
 
-  initialize: (@searchModel) ->
+  initialize: (@project, @searchModel) ->
     @searchModel.on 'change', @onSearchModelChanged
     @updateOptionButtons()
 
@@ -47,6 +61,11 @@ class ProjectFindAndReplaceView extends View
 
     @on 'core:cancel', @detach
 
+    @previewList.hide()
+    @previewHeader.hide()
+    @errorMessages.hide()
+    @loadingMessage.hide()
+
     @findEditor.on 'keyup', (e) =>
       # When the user types something in the find box, we dont want to lose it
       # when they cycle through the history. Whatever they last typed will end
@@ -63,6 +82,10 @@ class ProjectFindAndReplaceView extends View
     console.log 'search', pattern
     @findEditor.setText(pattern)
 
+  destroy: ->
+    @previewList.destroy()
+    @remove()
+
   detach: =>
     rootView.focus()
     super()
@@ -71,7 +94,7 @@ class ProjectFindAndReplaceView extends View
     rootView.vertical.append(this)
 
   confirmFind: =>
-    @search()
+    @searchAndDisplayResults()
 
   showFind: =>
     @attach()
@@ -83,8 +106,50 @@ class ProjectFindAndReplaceView extends View
     @findEditor.focus()
 
   search: ->
+    deferred = $.Deferred()
+
     pattern = @findEditor.getText()
     @searchModel.setPattern(pattern)
+
+    results = []
+    if @searchModel.regex
+      promise = project.scan @searchModel.regex, ({path, range}) =>
+        results.push(new SearchResult(
+          project: project
+          path: path
+          bufferRange: range
+        ))
+      promise.done -> deferred.resolve(results)
+
+    deferred.promise()
+
+  searchAndDisplayResults: ->
+    @loadingMessage.show()
+    @previewList.hide()
+    @previewHeader.hide()
+    @errorMessages.empty()
+
+    activePaneItem = rootView.getActivePaneItem()
+    editSession = activePaneItem if activePaneItem instanceof EditSession
+
+    deferred = @search()
+    deferred.done (results, errorMessages=[]) =>
+      @loadingMessage.hide()
+
+      if errorMessages.length > 0
+        @flashError()
+        @errorMessages.show()
+        @errorMessages.append $$ ->
+          @li errorMessage for errorMessage in errorMessages
+      else if results.length
+        @previewHeader.show()
+        @previewList.populate(results)
+        @previewList.focus()
+        @previewCount.text("#{_.pluralize(results.length, 'match', 'matches')} in #{_.pluralize(@previewList.getPathCount(), 'file')}").show()
+      else
+        @previewCount.text("No matches found").show()
+
+    deferred
 
   toggleRegexOption: => @toggleOption('regex')
 
@@ -103,5 +168,3 @@ class ProjectFindAndReplaceView extends View
     @setOptionButtonState(@regexOptionButton, @searchModel.getOption('regex'))
     @setOptionButtonState(@caseSensitiveOptionButton, @searchModel.getOption('caseSensitive'))
     @setOptionButtonState(@inSelectionOptionButton, @searchModel.getOption('inSelection'))
-
-

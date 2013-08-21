@@ -40,7 +40,7 @@ module.exports =
       caseSensitive: false
 
     @projectFindAndReplaceSearchModel = new SearchModel(options, history)
-    @projectFindAndReplaceView = new ProjectFindAndReplaceView(@projectFindAndReplaceSearchModel)
+    @projectFindAndReplaceView = new ProjectFindAndReplaceView(project, @projectFindAndReplaceSearchModel)
 
-  deactivateForBuffer: ->
-    @projectFindAndReplaceView?.remove()
+  deactivateForProject: ->
+    @projectFindAndReplaceView?.destroy()
