@@ -1,5 +1,6 @@
 @import "ui-colors";
-@import "octicon-mixins.less";
+@import "octicon-utf-codes";
+@import "octicon-mixins";
 
 @label-width: 50px;
 @editor-box-width: 350px;
@@ -69,15 +70,6 @@
   }
 }
 
-.project-find-and-replace {
-  // margin between the find and replace containers
-  .find-container { margin-bottom: @inner-margin; }
-
-  // make room for the labels
-  .editor-container { margin-left: @label-width + @inner-margin; }
-}
-
-
 .buffer-find-and-replace {
   &.find-mode {
     .replace-container, label { display: none; }
@@ -117,5 +109,229 @@
       .icon-previous { .octicon(chevron-left, 16px); }
       .icon-next { .octicon(chevron-right, 16px); }
     }
+  }
+}
+
+.project-find-and-replace {
+  // margin between the find and replace containers
+  .find-container { margin-bottom: @inner-margin; }
+
+  // make room for the labels
+  .editor-container { margin-left: @label-width + @inner-margin; }
+
+  .is-loading {
+    margin-bottom: 10px;
+    text-align: center;
+
+    span {
+      padding: 5px 10px 5px 10px;
+      background-color: #111111;
+      text-align: center;
+      border-radius: 3px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-top: 1px solid rgba(0,0,0,1);
+      border-left: 1px solid rgba(0,0,0,1);
+
+      .octicon(hourglass, 1.1em);
+
+      &:before {
+        margin-right: 5px;
+      }
+    }
+  }
+
+  .preview-count {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 11px;
+    -webkit-user-select: none;
+  }
+
+  .header:after {
+    content: ".";
+    display: block;
+    visibility: hidden;
+    clear: both;
+    height: 0;
+  }
+
+  .expand-collapse {
+    float: right;
+    -webkit-user-select: none;
+    margin: 0;
+
+    li {
+      display: inline-block;
+      cursor: pointer;
+      font-size: 11px;
+      margin-left: 5px;
+      padding: 5px 10px;
+      border-radius: 3px;
+      line-height: normal;
+    }
+  }
+
+  .prompt-and-editor {
+    display: -webkit-flex;
+
+    .editor {
+      position: relative;
+      -webkit-flex: 1;
+    }
+  }
+
+  .error-messages {
+    list-style-type: none;
+    margin: 0;
+    padding: 5px 1em;
+    color: white;
+  }
+}
+
+.preview-list {
+  max-height: 300px;
+  overflow: auto;
+  margin: 0 0 10px 0;
+  position: relative;
+  cursor: default;
+
+  .path {
+    position: relative;
+    -webkit-user-select: none;
+  }
+
+  .path-details {
+    .octicon(chevron-down, 12px);
+
+    &:before {
+      margin-right: 5px;
+      margin-left: 5px;
+      position: relative;
+      top: 0;
+    }
+  }
+
+  .is-collapsed .path-details:before {
+    content: @chevron-right;
+  }
+
+  .path-name {
+    .octicon(file-text);
+
+    &:before {
+      margin-right: 5px;
+      position: relative;
+      top: 1px;
+    }
+  }
+
+  .path.readme .path-name:before {
+    content: @book;
+  }
+
+  .search-result {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 10px;
+  }
+
+  .line-number {
+    margin-right: 1ex;
+    text-align: right;
+    display: inline-block;
+  }
+
+  .path-match-number {
+    padding-left: 8px;
+  }
+
+  .preview {
+    word-break: break-all;
+
+    .match {
+      -webkit-border-radius: 2px;
+      padding: 1px;
+    }
+  }
+
+  .matches {
+    list-style-type: none;
+    margin: 0;
+  }
+}
+
+// FIXME: most of this should be ripped out. It uses like 20 colors.
+.project-find-and-replace .header {
+  background-image: -webkit-linear-gradient(@background-color-highlight-2, @background-color-highlight-1);
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  padding: 5px;
+  box-shadow:
+    inset 0 1px 0 @background-color-highlight-1,
+    inset 0 -1px 0 rgba(255, 255, 255, 0.02);
+  margin-bottom: 0;
+  border-top-right-radius: 3px;
+  border-top-left-radius: 3px;
+  color: @text-color-3;
+}
+
+.project-find-and-replace .preview-list {
+  //background-color: @dark-background-color-2;
+  color: #6d736f;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid @border-color-1;
+  border-right: 1px solid @border-color-1;
+
+  .path.selected .path-details,
+  li.operation.selected {
+    background-color: @background-color-highlight-1;
+  }
+
+  &:focus .path.selected .path-details,
+  &:focus li.operation.selected {
+    background-color: @background-color-highlight-1;
+  }
+
+  .path {
+    color: @text-color-2;
+    border-top: 1px solid rgba(255, 255, 255, 0.02);
+  }
+
+  .path:hover .path-name {
+    color: @text-color-1;
+  }
+
+  .path:before {
+    color: @text-color-subtle-2;
+  }
+
+  .path:hover:before {
+    color: @text-color-1;
+  }
+
+  .path:first-child {
+    border-top: none;
+  }
+
+  .line-number {
+    color: rgba(255, 255, 255, 0.3);
+    font-family: monospace;
+  }
+
+  .path-match-number {
+    color: rgba(255, 255, 255, 0.3);
+  }
+
+  .preview .match {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #cca300;
+  }
+
+  li.operation {
+    color: @text-color-subtle-1;
+  }
+
+  li.operation:hover,
+  .command-panel li.operation.selected .preview {
+    color: @text-color-1;
   }
 }
