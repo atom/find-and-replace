@@ -54,6 +54,9 @@ class ProjectFindAndReplaceView extends View
     @caseSensitiveOptionButton.on 'click', @toggleCaseSensitiveOption
     @inSelectionOptionButton.on 'click', @toggleInSelectionOption
 
+    @expandAll.on 'click', @onExpandAll
+    @collapseAll.on 'click', @onCollapseAll
+
     @findEditor.on 'core:confirm', @confirmFind
     @findEditor.on 'find-and-replace:focus-next', @focusReplace
     @findEditor.on 'find-and-replace:focus-previous', @focusReplace
@@ -150,6 +153,14 @@ class ProjectFindAndReplaceView extends View
         @previewCount.text("No matches found").show()
 
     deferred
+
+  onExpandAll: (event) =>
+    @previewList.expandAllPaths()
+    @previewList.focus()
+
+  onCollapseAll: (event) =>
+    @previewList.collapseAllPaths()
+    @previewList.focus()
 
   toggleRegexOption: => @toggleOption('regex')
 
