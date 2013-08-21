@@ -1,13 +1,16 @@
+'body':
+  'meta-F': 'find-and-replace:display-find-in-project'
+
 '.editor':
   'meta-f': 'find-and-replace:display-find'
   'alt-meta-f': 'find-and-replace:display-replace'
 
   'meta-g': 'find-and-replace:find-next'
   'meta-G': 'find-and-replace:find-previous'
-  
+
   'meta-e': 'find-and-replace:set-selection-as-search-pattern'
 
-'.buffer-find-and-replace .mini.editor input':
+'.find-and-replace .mini.editor input':
   'tab': 'find-and-replace:focus-next'
   'shift-tab': 'find-and-replace:focus-previous'
   'enter': 'core:confirm',
@@ -20,3 +23,14 @@
 '.buffer-find-and-replace .find-container .mini.editor input':
   'up': 'find-and-replace:search-previous-in-history'
   'down': 'find-and-replace:search-next-in-history'
+
+'.project-find-and-replace .find-container .mini.editor input':
+  'up': 'find-and-replace:search-previous-in-history'
+  'down': 'find-and-replace:search-next-in-history'
+
+'.project-find-and-replace .preview-list':
+  'enter': 'core:confirm'
+  'left': 'find-and-replace:collapse-result'
+  'ctrl-[': 'find-and-replace:collapse-result'
+  'right': 'find-and-replace:expand-result'
+  'ctrl-]': 'find-and-replace:expand-result'
