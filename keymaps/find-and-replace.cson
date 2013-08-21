@@ -7,7 +7,7 @@
 
   'meta-g': 'find-and-replace:find-next'
   'meta-G': 'find-and-replace:find-previous'
-  
+
   'meta-e': 'find-and-replace:set-selection-as-search-pattern'
 
 '.find-and-replace .mini.editor input':
@@ -27,3 +27,10 @@
 '.project-find-and-replace .find-container .mini.editor input':
   'up': 'find-and-replace:search-previous-in-history'
   'down': 'find-and-replace:search-next-in-history'
+
+'.project-find-and-replace .preview-list':
+  'enter': 'core:confirm'
+  'left': 'find-and-replace:collapse-result'
+  'ctrl-[': 'find-and-replace:collapse-result'
+  'right': 'find-and-replace:expand-result'
+  'ctrl-]': 'find-and-replace:expand-result'

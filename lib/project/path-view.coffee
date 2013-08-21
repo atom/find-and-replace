@@ -16,11 +16,11 @@ class PathView extends View
 
   initialize: ({@previewList, resultCount}) ->
     @pathDetails.on 'mousedown', => @toggle(true)
-    @subscribe @previewList, 'command-panel:collapse-result', =>
+    @subscribe @previewList, 'find-and-replace:collapse-result', =>
       if @isSelected()
         @collapse()
         @previewList.renderResults()
-    @subscribe @previewList, 'command-panel:expand-result', =>
+    @subscribe @previewList, 'find-and-replace:expand-result', =>
       @expand() if @isSelected()
     @subscribe @previewList, 'core:confirm', =>
       if @hasClass('selected')

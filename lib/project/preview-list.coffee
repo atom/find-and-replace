@@ -20,8 +20,8 @@ class PreviewList extends ScrollView
     @on 'core:move-up', => @selectPreviousResult(); false
     @on 'scroll', =>
       @renderResults() if @scrollBottom() >= @prop('scrollHeight')
-    @command 'command-panel:collapse-all', => @collapseAllPaths()
-    @command 'command-panel:expand-all', => @expandAllPaths()
+    @command 'find-and-replace:collapse-all', => @collapseAllPaths()
+    @command 'find-and-replace:expand-all', => @expandAllPaths()
 
   expandAllPaths: ->
     @children().each (index, element) -> $(element).view().expand()
@@ -69,7 +69,7 @@ class PreviewList extends ScrollView
     nextView = selectedView.next().view()
 
     if selectedView instanceof PathView
-      nextView = selectedView.find('.result:first').view() unless selectedView.hasClass('is-collapsed')
+      nextView = selectedView.find('.search-result:first').view() unless selectedView.hasClass('is-collapsed')
     else
       nextView ?= selectedView.closest('.path').next().view()
 
@@ -84,7 +84,7 @@ class PreviewList extends ScrollView
 
     if selectedView instanceof PathView
       if previousView? and not previousView.hasClass('is-collapsed')
-        previousView = previousView.find('.result:last').view()
+        previousView = previousView.find('.search-result:last').view()
     else
       previousView ?= selectedView.closest('.path').view()
 
@@ -106,9 +106,6 @@ class PreviewList extends ScrollView
     result.destroy() for result in @getResults()
     @results = null
 
-  getSelectedResult: ->
-    @find('.result.selected').view()?.result
-
   scrollTo: (top, bottom) ->
     @scrollBottom(bottom) if bottom > @scrollBottom()
     @scrollTop(top) if top < @scrollTop()
@@ -123,7 +120,7 @@ class PreviewList extends ScrollView
     if lastPath.hasClass('is-collapsed')
       lastPath.addClass('selected')
     else
-      lastPath.find('.result:last').addClass('selected')
+      lastPath.find('.search-result:last').addClass('selected')
 
   scrollToTop: ->
     super()
