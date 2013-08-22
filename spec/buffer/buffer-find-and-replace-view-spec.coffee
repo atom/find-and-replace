@@ -1,192 +1,175 @@
+$ = require 'jquery'
 RootView = require 'root-view'
-BufferFindAndReplaceView = require 'find-and-replace/lib/buffer/buffer-find-and-replace-view'
-FindAndReplace = require 'find-and-replace/lib/find-and-replace'
 
 describe 'BufferFindAndReplaceView', ->
-  [subject, editor] = []
+  [editor, view] = []
+
   beforeEach ->
-    window.rootView = new RootView
+    window.rootView = new RootView()
+    rootView.open('sample.js')
+    rootView.enableKeymap()
+    rootView.attachToDom()
+    editor = rootView.getActiveView()
+    pack = atom.activatePackage("find-and-replace")
+    view = pack.mainModule.bufferFindAndReplaceView
 
-  describe "with no editor", ->
+  describe "when find-and-replace:display-find is triggered", ->
+    it "attaches BufferFindAndReplaceView to the root view", ->
+      editor.trigger 'find-and-replace:display-find'
+      expect(rootView.find('.find-and-replace')).toExist()
+
+  describe "when core:cancel is triggered", ->
+    it "detaches from the root view", ->
+      editor.trigger 'find-and-replace:display-find'
+      $(document.activeElement).trigger 'core:cancel'
+      expect(rootView.find('.find-and-replace')).not.toExist()
+
+  describe "finding", ->
     beforeEach ->
-      subject = FindAndReplace.activateForBuffer()
+      editor.setCursorBufferPosition([2,0])
+      editor.trigger 'find-and-replace:display-find'
+      view.findEditor.setText 'items'
+      $(document.activeElement).trigger 'core:confirm'
 
-    describe "when find-and-replace:display-find is triggered", ->
-      it "attaches to the root view", ->
-        subject.showFind()
-        expect(subject.hasParent()).toBeTruthy()
-        expect(subject.resultCounter.text()).toEqual('')
+    it "selects the first match following the cursor", ->
+      expect(view.resultCounter.text()).toEqual('2 of 6')
+      expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
 
-  describe "with an editor", ->
+    it "selects the next match when the next match button is pressed", ->
+      $('.find-and-replace .icon-next').click()
+      expect(view.resultCounter.text()).toEqual('3 of 6')
+      expect(editor.getSelectedBufferRange()).toEqual [[2, 34], [2, 39]]
+
+    it "selects the next match when the 'find-and-replace:focus-next' event is triggered", ->
+      editor.trigger('find-and-replace:find-next')
+      expect(view.resultCounter.text()).toEqual('3 of 6')
+      expect(editor.getSelectedBufferRange()).toEqual [[2, 34], [2, 39]]
+
+    it "selects the previous match when the previous match button is pressed", ->
+      $('.find-and-replace .icon-previous').click()
+      expect(view.resultCounter.text()).toEqual('1 of 6')
+      expect(editor.getSelectedBufferRange()).toEqual [[1, 27], [1, 22]]
+
+    it "selects the previous match when the 'find-and-replace:focus-previous' event is triggered", ->
+      editor.trigger('find-and-replace:find-previous')
+      expect(view.resultCounter.text()).toEqual('1 of 6')
+      expect(editor.getSelectedBufferRange()).toEqual [[1, 27], [1, 22]]
+
+    it "replaces results counter with number of results found when user moves cursor outside a marker", ->
+      editor.moveCursorDown()
+      expect(view.resultCounter.text()).toBe '6 found'
+      editor.moveCursorUp()
+      expect(view.resultCounter.text()).toBe '2 of 6'
+
+    describe "when the active editor changes", ->
+      it "detaches the view when there are no more active editors", ->
+        editor.trigger 'core:close'
+        expect(rootView.find('.find-and-replace')).not.toExist()
+
+  describe "replacing", ->
     beforeEach ->
-      rootView.open('sample.js')
-      rootView.enableKeymap()
-      editor = rootView.getActiveView()
-      rootView.attachToDom()
+      editor.setCursorBufferPosition([2,0])
+      editor.trigger 'find-and-replace:display-replace'
+      view.findEditor.setText('items')
+      view.replaceEditor.setText('cats')
 
-      subject = FindAndReplace.activateForBuffer()
+    describe "replace next", ->
+      describe "when core:confirm is triggered", ->
+        it "replaces the match after the cursor and selects the next match", ->
+          view.replaceEditor.trigger 'core:confirm'
+          expect(view.resultCounter.text()).toEqual('2 of 5')
+          expect(editor.lineForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
+          expect(editor.getSelectedBufferRange()).toEqual [[2, 33], [2, 38]]
 
-    ffdescribe "when find-and-replace:display-find is triggered", ->
-      it "attaches to the root view", ->
-        editor.trigger 'find-and-replace:display-find'
-        expect(subject.hasParent()).toBeTruthy()
+      describe "when the replace next button is pressed", ->
+        it "replaces the match after the cursor and selects the next match", ->
+          $('.find-and-replace .btn-next').click()
+          expect(view.resultCounter.text()).toEqual('2 of 5')
+          expect(editor.lineForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
+          expect(editor.getSelectedBufferRange()).toEqual [[2, 33], [2, 38]]
 
-    describe "when core:cancel is triggered", ->
-      beforeEach ->
-        editor.trigger 'find-and-replace:display-find'
+      describe "when the 'find-and-replace:replace-next' event is triggered", ->
+        it "replaces the match after the cursor and selects the next match", ->
+          editor.trigger 'find-and-replace:replace-next'
+          expect(view.resultCounter.text()).toEqual('2 of 5')
+          expect(editor.lineForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
+          expect(editor.getSelectedBufferRange()).toEqual [[2, 33], [2, 38]]
 
-      it "detaches from the root view when cancel on findEditor", ->
-        subject.findEditor.trigger 'core:cancel'
-        expect(subject.hasParent()).toBeFalsy()
+    describe "replace all", ->
+      describe "when the replace all button is pressed", ->
+        it "replaces the match after the cursor and selects the next match", ->
+          $('.find-and-replace .btn-all').click()
+          expect(view.resultCounter.text()).toEqual('0 found')
+          expect(editor.getText()).not.toMatch /items/
+          expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 0]]
 
-      it "detaches from the root view when cancel on replaceEditor", ->
-        subject.replaceEditor.trigger 'core:cancel'
-        expect(subject.hasParent()).toBeFalsy()
+      describe "when the 'find-and-replace:replace-next' event is triggered", ->
+        it "replaces the match after the cursor and selects the next match", ->
+          editor.trigger 'find-and-replace:replace-all'
+          expect(view.resultCounter.text()).toEqual('0 found')
+          expect(editor.getText()).not.toMatch /items/
+          expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 0]]
 
-    describe "option buttons", ->
-      beforeEach ->
-        editor.trigger 'find-and-replace:display-find'
-        editor.attachToDom()
+  describe "history", ->
+    beforeEach ->
+      editor.trigger 'find-and-replace:display-find'
+      view.searchModel.setPattern('one')
+      view.searchModel.setPattern('two')
+      view.searchModel.setPattern('three')
 
-      it "clicking an option button toggles its enabled class", ->
-        subject.toggleRegexOption()
-        expect(subject.searchModel.getOption('regex')).toEqual true
-        expect(subject.regexOptionButton).toHaveClass('enabled')
+      expect(view.searchModel.history.length).toEqual 3
+      expect(view.searchModel.historyIndex).toEqual 2
 
-      it "clicking inSelection option button toggles its enabled class", ->
-        subject.toggleInSelectionOption()
-        expect(subject.searchModel.getOption('inSelection')).toEqual true
-        expect(subject.inSelectionOptionButton).toHaveClass('enabled')
+    it "can navigate the entire history stack", ->
+      expect(view.findEditor.getText()).toEqual 'three'
 
-    describe "running a search", ->
-      beforeEach ->
-        editor.trigger 'find-and-replace:display-find'
+      view.findEditor.trigger 'find-and-replace:search-previous-in-history'
+      expect(view.findEditor.getText()).toEqual 'two'
 
-        rootView.attachToDom()
-        subject.findEditor.textInput 'items'
-        subject.findEditor.trigger 'core:confirm'
+      view.findEditor.trigger 'find-and-replace:search-previous-in-history'
+      expect(view.findEditor.getText()).toEqual 'one'
 
-      it "shows correct message in results view", ->
-        expect(subject.resultCounter.text()).toEqual('1 of 6')
-        expect(editor.getSelectedBufferRange()).toEqual [[1, 22], [1, 27]]
+      view.findEditor.trigger 'find-and-replace:search-previous-in-history'
+      expect(view.findEditor.getText()).toEqual 'one'
 
-      it "editor deletion is handled properly", ->
-        editor.getPane().remove()
-        expect(subject.resultCounter.text()).toEqual('')
+      view.findEditor.trigger 'find-and-replace:search-next-in-history'
+      expect(view.findEditor.getText()).toEqual 'two'
 
-        # should not die on new search!
-        subject.findEditor.textInput 'items'
+      view.findEditor.trigger 'find-and-replace:search-next-in-history'
+      expect(view.findEditor.getText()).toEqual 'three'
 
-      # FIXME: when the cursor moves, I want this to pass. cursor:moved never
-      # gets called in tests
-      xit "removes the '# of' when user moves cursor", ->
-        editor.setCursorBufferPosition([10,1])
-        editor.setCursorBufferPosition([12,1])
+      view.findEditor.trigger 'find-and-replace:search-next-in-history'
+      expect(view.findEditor.getText()).toEqual ''
 
-        waits 1000
-        runs ->
-          expect(subject.resultCounter.text()).toEqual('6 found')
+      view.findEditor.trigger 'find-and-replace:search-next-in-history'
+      expect(view.findEditor.getText()).toEqual ''
 
-    describe "running a replace", ->
-      beforeEach ->
-        editor.trigger 'find-and-replace:display-replace'
-        editor.attachToDom()
-        subject.findEditor.textInput 'items'
-        subject.replaceEditor.textInput 'cats'
+    it "maintains current unsearched text in the history", ->
+      text = 'something I want to search for but havent yet'
+      view.findEditor.setText(text)
 
-      it "replaces one and finds next", ->
-        subject.replaceEditor.trigger 'core:confirm'
-        expect(subject.resultCounter.text()).toEqual('1 of 5')
-        expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
-        expect(editor.activeEditSession.getTextInBufferRange([[1, 22], [1, 27]])).toEqual 'cats)'
+      view.findEditor.trigger 'find-and-replace:search-previous-in-history'
+      expect(view.findEditor.getText()).toEqual 'two'
 
-      it "replaces all", ->
-        subject.replaceAll()
-        expect(subject.resultCounter.text()).toEqual('0 found')
-        expect(editor.activeEditSession.getTextInBufferRange([[1, 22], [1, 27]])).toEqual 'cats)'
+      view.findEditor.trigger 'find-and-replace:search-next-in-history'
+      expect(view.findEditor.getText()).toEqual 'three'
 
-    describe "removing the results model", ->
-      beforeEach ->
+      view.findEditor.trigger 'find-and-replace:search-next-in-history'
+      expect(view.findEditor.getText()).toEqual text
 
-      it "replaces one and finds next", ->
-        editor.searchResults.destroy()
-        expect(subject.searchResultsViews.length).toEqual 0
+      view.findEditor.trigger 'find-and-replace:search-next-in-history'
+      expect(view.findEditor.getText()).toEqual text
 
-        editor.trigger 'find-and-replace:display-replace'
+      view.findEditor.trigger 'find-and-replace:search-previous-in-history'
+      expect(view.findEditor.getText()).toEqual 'three'
 
-    describe "history", ->
-      beforeEach ->
-        subject.attach()
+    it "adds confirmed patterns to the history", ->
+      view.findEditor.setText("cool stuff")
+      view.findEditor.trigger 'core:confirm'
 
-        subject.searchModel.setPattern('one')
-        subject.searchModel.setPattern('two')
-        subject.searchModel.setPattern('three')
+      view.findEditor.setText("cooler stuff")
+      view.findEditor.trigger 'find-and-replace:search-previous-in-history'
+      expect(view.findEditor.getText()).toEqual 'cool stuff'
 
-        expect(subject.searchModel.history.length).toEqual 3
-        expect(subject.searchModel.historyIndex).toEqual 2
-
-      it "can navigate back to the first thing in the history stack then back to the last thing in the history", ->
-        subject.findEditor.trigger 'find-and-replace:search-previous-in-history'
-        expect(subject.findEditor.getText()).toEqual 'two'
-
-        subject.findEditor.trigger 'find-and-replace:search-previous-in-history'
-        expect(subject.findEditor.getText()).toEqual 'one'
-
-        subject.findEditor.trigger 'find-and-replace:search-previous-in-history'
-        expect(subject.findEditor.getText()).toEqual 'one'
-
-        subject.findEditor.trigger 'find-and-replace:search-next-in-history'
-        expect(subject.findEditor.getText()).toEqual 'two'
-
-        subject.findEditor.trigger 'find-and-replace:search-next-in-history'
-        expect(subject.findEditor.getText()).toEqual 'three'
-
-        subject.findEditor.trigger 'find-and-replace:search-next-in-history'
-        expect(subject.findEditor.getText()).toEqual ''
-
-        subject.findEditor.trigger 'find-and-replace:search-next-in-history'
-        expect(subject.findEditor.getText()).toEqual ''
-
-      it "keeps text I havent searched for yet so i can come back to it", ->
-        text = 'something I want to search for but havent yet'
-        subject.unsearchedPattern = text
-
-        subject.findEditor.trigger 'find-and-replace:search-previous-in-history'
-        expect(subject.findEditor.getText()).toEqual 'two'
-
-        subject.findEditor.trigger 'find-and-replace:search-next-in-history'
-        expect(subject.findEditor.getText()).toEqual 'three'
-
-        subject.findEditor.trigger 'find-and-replace:search-next-in-history'
-        expect(subject.findEditor.getText()).toEqual text
-
-        subject.findEditor.trigger 'find-and-replace:search-next-in-history'
-        expect(subject.findEditor.getText()).toEqual text
-
-        subject.findEditor.trigger 'find-and-replace:search-previous-in-history'
-        expect(subject.findEditor.getText()).toEqual 'three'
-        subject.findEditor.trigger 'find-and-replace:search-previous-in-history'
-        expect(subject.findEditor.getText()).toEqual 'two'
-        subject.findEditor.trigger 'find-and-replace:search-previous-in-history'
-        expect(subject.findEditor.getText()).toEqual 'one'
-        subject.findEditor.trigger 'find-and-replace:search-previous-in-history'
-        expect(subject.findEditor.getText()).toEqual 'one'
-
-        subject.findEditor.trigger 'find-and-replace:search-next-in-history'
-        expect(subject.findEditor.getText()).toEqual 'two'
-        subject.findEditor.trigger 'find-and-replace:search-next-in-history'
-        expect(subject.findEditor.getText()).toEqual 'three'
-        subject.findEditor.trigger 'find-and-replace:search-next-in-history'
-        expect(subject.findEditor.getText()).toEqual text
-
-      it "adds the previous search into the history when search is run", ->
-        subject.findEditor.trigger 'find-and-replace:search-previous-in-history'
-        expect(subject.findEditor.getText()).toEqual 'two'
-
-        subject.findEditor.trigger 'find-and-replace:search-previous-in-history'
-        expect(subject.findEditor.getText()).toEqual 'one'
-
-        subject.findEditor.trigger 'core:confirm'
-
-        expect(subject.searchModel.history.length).toEqual 4
-        expect(_.last(subject.searchModel.history)).toEqual 'one'
+      view.findEditor.trigger 'find-and-replace:search-previous-in-history'
+      expect(view.findEditor.getText()).toEqual 'three'
