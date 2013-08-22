@@ -128,7 +128,6 @@ class BufferFindAndReplaceView extends View
     @activate()
 
   confirmFind: =>
-    @search()
     @findNext()
     editor = @currentEditor()
     editor.focus() if editor and editor.searchResults and editor.searchResults.getCurrentResult().total
