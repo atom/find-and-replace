@@ -106,9 +106,10 @@ class BufferFindAndReplaceView extends View
     @updateOptionButtons()
 
   onActiveItemChanged: =>
-    return unless window.rootView
-    editor = @currentEditor()
-    @trigger('active-editor-changed', editor: editor)
+    if editor = @currentEditor()
+      @trigger('active-editor-changed', editor: editor)
+    else
+      @detach()
 
   onSearchModelChanged: (model, args) =>
     @updateOptionButtons()
@@ -217,5 +218,3 @@ class BufferFindAndReplaceView extends View
 
   currentEditor: ->
     rootView.getActiveView()
-
-
