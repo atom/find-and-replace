@@ -22,11 +22,11 @@ describe 'BufferFindAndReplaceView', ->
       rootView.open('sample.js')
       rootView.enableKeymap()
       editor = rootView.getActiveView()
-      editor.attached = true #hack as I cant get attachToDom() to work
+      rootView.attachToDom()
 
       subject = FindAndReplace.activateForBuffer()
 
-    describe "when find-and-replace:display-find is triggered", ->
+    ffdescribe "when find-and-replace:display-find is triggered", ->
       it "attaches to the root view", ->
         editor.trigger 'find-and-replace:display-find'
         expect(subject.hasParent()).toBeTruthy()
