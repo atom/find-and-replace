@@ -148,8 +148,7 @@ class SearchResultsModel
     @clearCurrentResult()
 
   onBufferContentsModified: =>
-    return unless @searchModel.regex
-
+    return
     isEqualToRange = (marker, range) ->
       # Using marker.getBufferRange().compare() was slow on large sets. This is faster.
       start = marker.bufferMarker.getTailPosition()
@@ -216,7 +215,7 @@ class SearchResultsModel
         marker: marker
         total: @markers.length
       }
-    else 
+    else
       { total: @markers.length }
 
   bindBuffer: (buffer) ->
@@ -246,10 +245,9 @@ class SearchResultsModel
     (@createMarker(range, markerAttributes) for range in @findRanges())
 
   findRanges: ->
-    return [] unless @searchModel.regex
     ranges = []
     for rangeToSearch in @getRangesToSearch()
-      @buffer.scanInRange @searchModel.regex, rangeToSearch, ({range}) ->
+      @buffer.scanInRange @searchModel.getRegex(), rangeToSearch, ({range}) ->
         ranges.push(range)
     ranges
 
@@ -275,7 +273,7 @@ class SearchResultsModel
     marker
 
   getMarkerAttributes: (attributes={}) ->
-    _.extend attributes, 
+    _.extend attributes,
       class: 'search-result'
       invalidation: 'inside'
       replicate: false

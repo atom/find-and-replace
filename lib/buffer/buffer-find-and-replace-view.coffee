@@ -41,28 +41,43 @@ class BufferFindAndReplaceView extends View
   active: false
 
   initialize: (@searchModel) ->
+    @handleEvents()
+    @resultCounter.setModel(this)
+    @onActiveItemChanged()
+    @updateOptionButtons()
+
+  handleEvents: ->
     @searchModel.on 'change', @onSearchModelChanged
 
     rootView.command 'find-and-replace:display-find', @showFind
-    rootView.command 'find-and-replace:display-replace', @showReplace
+    @on 'core:cancel', @detach
 
+    @findEditor.on 'core:confirm', => @search()
+
+    @previousButton.on 'click', => @selectPrevious()
+    @nextButton.on 'click', => @selectNext()
+
+    @replaceEditor.on 'core:confirm', @replaceNext
+
+    rootView.on 'find-and-replace:search-next-in-history', =>
+      @storeUnsearchedPattern()
+      @searchModel.searchNextInHistory()
+
+    rootView.on 'find-and-replace:search-previous-in-history', =>
+      @storeUnsearchedPattern()
+      @searchModel.searchPreviousInHistory()
+
+    # # #
+    @findEditor.on 'find-and-replace:focus-next', @focusReplace
+    @findEditor.on 'find-and-replace:focus-previous', @focusReplace
+    @findLabel.on 'click', @focusFind
+    @resultCounter.on 'click', @focusFind
+
+    rootView.command 'find-and-replace:display-replace', @showReplace
     rootView.command 'find-and-replace:toggle-regex-option', @toggleRegexOption
     rootView.command 'find-and-replace:toggle-case-sensitive-option', @toggleCaseSensitiveOption
     rootView.command 'find-and-replace:toggle-in-selection-option', @toggleInSelectionOption
-
     rootView.command 'find-and-replace:set-selection-as-search-pattern', @setSelectionAsSearchPattern
-
-    rootView.on 'find-and-replace:search-next-in-history', => @searchModel.searchNextInHistory()
-    rootView.on 'find-and-replace:search-previous-in-history', => @searchModel.searchPreviousInHistory()
-
-    @previousButton.on 'click', =>
-      @findEditor.focus()
-      @findPrevious()
-      false
-    @nextButton.on 'click', =>
-      @findEditor.focus()
-      @findNext()
-      false
 
     @regexOptionButton.on 'click', @toggleRegexOption
     @caseSensitiveOptionButton.on 'click', @toggleCaseSensitiveOption
@@ -71,18 +86,10 @@ class BufferFindAndReplaceView extends View
     @replaceNextButton.on 'click', @replaceNext
     @replaceAllButton.on 'click', @replaceAll
 
-    @findEditor.on 'core:confirm', @confirmFind
-    @findEditor.on 'find-and-replace:focus-next', @focusReplace
-    @findEditor.on 'find-and-replace:focus-previous', @focusReplace
-    @findLabel.on 'click', @focusFind
-    @resultCounter.on 'click', @focusFind
-
-    @replaceEditor.on 'core:confirm', @confirmReplace
     @replaceEditor.on 'find-and-replace:focus-next', @focusFind
     @replaceEditor.on 'find-and-replace:focus-previous', @focusFind
     @replaceLabel.on 'click', @focusReplace
 
-    @on 'core:cancel', @detach
 
     @searchResultsViews = []
     rootView.on 'pane:became-active pane:became-inactive pane:removed', @onActiveItemChanged
@@ -94,16 +101,24 @@ class BufferFindAndReplaceView extends View
         @searchResultsViews.push(view)
         editor.underlayer.append(view)
 
-    @findEditor.on 'keyup', (e) =>
-      # When the user types something in the find box, we dont want to lose it
-      # when they cycle through the history. Whatever they last typed will end
-      # up as the find box's text when the user gets all the way to the end of
-      # the history. Sublime effs this up and it maddens me.
-      @unsearchedPattern = @findEditor.getText() if e.keyCode > 46 # Only printable chars
+  search: ->
+    @storePattern()
+    @currentEditor().trigger('find-and-replace:find-next')
 
-    @resultCounter.setModel(this)
-    @onActiveItemChanged()
-    @updateOptionButtons()
+  selectNext: ->
+    @currentEditor().trigger('find-and-replace:find-next')
+
+  selectPrevious: ->
+    @currentEditor().trigger('find-and-replace:find-previous')
+
+  storePattern: ->
+    pattern = @findEditor.getText()
+    @searchModel.setPattern(pattern)
+
+  storeUnsearchedPattern: ->
+    if @findEditor.getText() != @searchModel.currentHistoryPattern()
+      @searchModel.moveToEndOfHistory()
+      @unsearchedPattern = @findEditor.getText()
 
   onActiveItemChanged: =>
     if editor = @currentEditor()
@@ -111,12 +126,10 @@ class BufferFindAndReplaceView extends View
     else
       @detach()
 
-  onSearchModelChanged: (model, args) =>
+  onSearchModelChanged: ({history, historyIndex}) =>
     @updateOptionButtons()
-
-    pattern = model.pattern or ''
-    pattern = @unsearchedPattern if @unsearchedPattern and args.historyIndex == args.history.length and @unsearchedPattern != _.last(args.history)
-
+    pattern = @searchModel.pattern
+    pattern = @unsearchedPattern if @unsearchedPattern and historyIndex == history.length and @unsearchedPattern != _.last(history)
     @findEditor.setText(pattern)
 
   detach: =>
@@ -127,15 +140,6 @@ class BufferFindAndReplaceView extends View
   attach: =>
     rootView.vertical.append(this)
     @activate()
-
-  confirmFind: =>
-    @findNext()
-    editor = @currentEditor()
-    editor.focus() if editor and editor.searchResults and editor.searchResults.getCurrentResult().total
-
-  confirmReplace: =>
-    @search()
-    @replaceNext()
 
   showFind: =>
     @attach()
@@ -158,27 +162,15 @@ class BufferFindAndReplaceView extends View
     @replaceEditor.selectAll()
     @replaceEditor.focus()
 
-  search: ->
-    pattern = @findEditor.getText()
-    @searchModel.setPattern(pattern)
-
   replaceNext: =>
-    @search()
+    @storePattern()
     replacement = @replaceEditor.getText()
     @currentEditor().trigger('find-and-replace:replace-next', {replacement})
 
   replaceAll: =>
-    @search()
+    @storePattern()
     replacement = @replaceEditor.getText()
     @currentEditor().trigger('find-and-replace:replace-all', {replacement})
-
-  findPrevious: =>
-    @search()
-    @currentEditor().trigger('find-and-replace:find-previous')
-
-  findNext: =>
-    @search()
-    @currentEditor().trigger('find-and-replace:find-next')
 
   setSelectionAsSearchPattern: =>
     editor = @currentEditor()
