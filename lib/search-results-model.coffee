@@ -42,9 +42,10 @@ class SearchResultsModel
 
   search: =>
     @destroyMarkers()
-    @markers = @findAndMarkRanges()
-    @emitCurrentResult()
-    @trigger 'markers-changed', markers: @markers
+    if @searchModel.pattern?.length
+      @markers = @findAndMarkRanges()
+      @emitCurrentResult()
+      @trigger 'markers-changed', markers: @markers
 
   clearCurrentResult: =>
     @setCurrentResultIndex(null)
