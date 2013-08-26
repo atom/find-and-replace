@@ -47,8 +47,8 @@ class ProjectFindAndReplaceView extends View
     rootView.command 'find-and-replace:toggle-case-sensitive-option', @toggleCaseSensitiveOption
     rootView.command 'find-and-replace:toggle-in-selection-option', @toggleInSelectionOption
 
-    rootView.on 'find-and-replace:search-next-in-history', => @searchModel.searchNextInHistory()
-    rootView.on 'find-and-replace:search-previous-in-history', => @searchModel.searchPreviousInHistory()
+    rootView.on 'find-and-replace:search-next-in-history', '.project-find-and-replace', => @searchModel.searchNextInHistory()
+    rootView.on 'find-and-replace:search-previous-in-history', '.project-find-and-replace', => @searchModel.searchPreviousInHistory()
 
     @regexOptionButton.on 'click', @toggleRegexOption
     @caseSensitiveOptionButton.on 'click', @toggleCaseSensitiveOption
@@ -82,7 +82,6 @@ class ProjectFindAndReplaceView extends View
     pattern = model.pattern or ''
     pattern = @unsearchedPattern if @unsearchedPattern and args.historyIndex == args.history.length and @unsearchedPattern != _.last(args.history)
 
-    console.log 'search', pattern
     @findEditor.setText(pattern)
 
   destroy: ->

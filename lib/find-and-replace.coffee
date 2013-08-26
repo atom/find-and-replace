@@ -3,7 +3,7 @@ BufferFindAndReplaceView = require './buffer/buffer-find-and-replace-view'
 ProjectFindAndReplaceView = require './project/project-find-and-replace-view'
 
 module.exports =
-  activate: (state) -> 
+  activate: (state) ->
     @activateForBuffer(state?.buffer)
     @activateForProject(state?.project)
 
@@ -24,8 +24,8 @@ module.exports =
       inSelection: false
       caseSensitive: false
 
-    @bufferFindAndReplaceSearchModel = new SearchModel(options, history)
-    @bufferFindAndReplaceView = new BufferFindAndReplaceView(@bufferFindAndReplaceSearchModel)
+    @bufferFindAndReplaceSearchModel = new SearchModel(options)
+    @bufferFindAndReplaceView = new BufferFindAndReplaceView(@bufferFindAndReplaceSearchModel, history)
 
   deactivateForBuffer: ->
     @bufferFindAndReplaceView?.remove()

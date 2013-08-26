@@ -112,8 +112,10 @@ describe 'BufferFindAndReplaceView', ->
           expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 0]]
 
   describe "history", ->
+    [oneRange, twoRange, threeRange] = []
     beforeEach ->
       editor.trigger 'find-and-replace:display-find'
+      editor.setText("zero\none\ntwo\nthree\n")
       bufferFindAndReplaceView.findEditor.setText('one')
       bufferFindAndReplaceView.findEditor.trigger 'core:confirm'
       bufferFindAndReplaceView.findEditor.setText('two')
@@ -124,61 +126,53 @@ describe 'BufferFindAndReplaceView', ->
     it "can navigate the entire history stack", ->
       expect(bufferFindAndReplaceView.findEditor.getText()).toEqual 'three'
 
-      bufferFindAndReplaceView.findEditor.trigger 'find-and-replace:search-previous-in-history'
-      expect(bufferFindAndReplaceView.findEditor.getText()).toEqual 'two'
+      bufferFindAndReplaceView.findEditor.trigger 'core:move-down'
+      expect(bufferFindAndReplaceView.findEditor.getText()).toEqual ''
 
-      bufferFindAndReplaceView.findEditor.trigger 'find-and-replace:search-previous-in-history'
-      expect(bufferFindAndReplaceView.findEditor.getText()).toEqual 'one'
+      bufferFindAndReplaceView.findEditor.trigger 'core:move-down'
+      expect(bufferFindAndReplaceView.findEditor.getText()).toEqual ''
 
-      bufferFindAndReplaceView.findEditor.trigger 'find-and-replace:search-previous-in-history'
-      expect(bufferFindAndReplaceView.findEditor.getText()).toEqual 'one'
-
-      bufferFindAndReplaceView.findEditor.trigger 'find-and-replace:search-next-in-history'
-      expect(bufferFindAndReplaceView.findEditor.getText()).toEqual 'two'
-
-      bufferFindAndReplaceView.findEditor.trigger 'find-and-replace:search-next-in-history'
+      bufferFindAndReplaceView.findEditor.trigger 'core:move-up'
       expect(bufferFindAndReplaceView.findEditor.getText()).toEqual 'three'
 
-      bufferFindAndReplaceView.findEditor.trigger 'find-and-replace:search-next-in-history'
-      expect(bufferFindAndReplaceView.findEditor.getText()).toEqual ''
-
-      bufferFindAndReplaceView.findEditor.trigger 'find-and-replace:search-next-in-history'
-      expect(bufferFindAndReplaceView.findEditor.getText()).toEqual ''
-
-    it "doesn't add the most recent history item mulitple times", ->
-      bufferFindAndReplaceView.findEditor.trigger 'find-and-replace:search-next-in-history'
-      expect(bufferFindAndReplaceView.findEditor.getText()).toEqual ''
-
-      bufferFindAndReplaceView.findEditor.trigger 'find-and-replace:search-previous-in-history'
-      expect(bufferFindAndReplaceView.findEditor.getText()).toEqual 'three'
-
-      bufferFindAndReplaceView.findEditor.trigger 'find-and-replace:search-previous-in-history'
+      bufferFindAndReplaceView.findEditor.trigger 'core:move-up'
       expect(bufferFindAndReplaceView.findEditor.getText()).toEqual 'two'
 
+      bufferFindAndReplaceView.findEditor.trigger 'core:move-up'
+      expect(bufferFindAndReplaceView.findEditor.getText()).toEqual 'one'
 
-    it "maintains current unsearched text in the history", ->
+      bufferFindAndReplaceView.findEditor.trigger 'core:move-up'
+      expect(bufferFindAndReplaceView.findEditor.getText()).toEqual 'one'
+
+      bufferFindAndReplaceView.findEditor.trigger 'core:move-down'
+      expect(bufferFindAndReplaceView.findEditor.getText()).toEqual 'two'
+
+    it "retains the current unsearched text", ->
       text = 'something I want to search for but havent yet'
       bufferFindAndReplaceView.findEditor.setText(text)
 
-      bufferFindAndReplaceView.findEditor.trigger 'find-and-replace:search-previous-in-history'
+      bufferFindAndReplaceView.findEditor.trigger 'core:move-up'
       expect(bufferFindAndReplaceView.findEditor.getText()).toEqual 'three'
 
-      bufferFindAndReplaceView.findEditor.trigger 'find-and-replace:search-next-in-history'
+      bufferFindAndReplaceView.findEditor.trigger 'core:move-down'
       expect(bufferFindAndReplaceView.findEditor.getText()).toEqual text
 
-      bufferFindAndReplaceView.findEditor.trigger 'find-and-replace:search-next-in-history'
-      expect(bufferFindAndReplaceView.findEditor.getText()).toEqual text
-
-      bufferFindAndReplaceView.findEditor.trigger 'find-and-replace:search-previous-in-history'
+      bufferFindAndReplaceView.findEditor.trigger 'core:move-up'
       expect(bufferFindAndReplaceView.findEditor.getText()).toEqual 'three'
+
+      bufferFindAndReplaceView.findEditor.trigger 'core:move-down'
+      bufferFindAndReplaceView.findEditor.trigger 'core:confirm'
+
+      bufferFindAndReplaceView.findEditor.trigger 'core:move-down'
+      expect(bufferFindAndReplaceView.findEditor.getText()).toEqual ''
 
     it "adds confirmed patterns to the history", ->
       bufferFindAndReplaceView.findEditor.setText("cool stuff")
       bufferFindAndReplaceView.findEditor.trigger 'core:confirm'
 
       bufferFindAndReplaceView.findEditor.setText("cooler stuff")
-      bufferFindAndReplaceView.findEditor.trigger 'find-and-replace:search-previous-in-history'
+      bufferFindAndReplaceView.findEditor.trigger 'core:move-up'
       expect(bufferFindAndReplaceView.findEditor.getText()).toEqual 'cool stuff'
 
-      bufferFindAndReplaceView.findEditor.trigger 'find-and-replace:search-previous-in-history'
+      bufferFindAndReplaceView.findEditor.trigger 'core:move-up'
       expect(bufferFindAndReplaceView.findEditor.getText()).toEqual 'three'

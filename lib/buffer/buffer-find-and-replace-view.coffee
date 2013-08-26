@@ -6,6 +6,7 @@ _ = require 'underscore'
 SearchModel = require '../search-model'
 SearchResultsView = require '../search-results-view'
 ResultCounterView = require './result-counter-view'
+History = require '../history'
 
 module.exports =
 class BufferFindAndReplaceView extends View
@@ -40,7 +41,8 @@ class BufferFindAndReplaceView extends View
   detaching: false
   active: false
 
-  initialize: (@searchModel) ->
+  initialize: (@searchModel, history) ->
+    @findHistory = new History(@findEditor, history)
     @handleEvents()
     @resultCounter.setModel(this)
     @onActiveItemChanged()
@@ -53,19 +55,9 @@ class BufferFindAndReplaceView extends View
     @on 'core:cancel', @detach
 
     @findEditor.on 'core:confirm', => @search()
-
     @previousButton.on 'click', => @selectPrevious()
     @nextButton.on 'click', => @selectNext()
-
     @replaceEditor.on 'core:confirm', @replaceNext
-
-    rootView.on 'find-and-replace:search-next-in-history', =>
-      @storeUnsearchedPattern()
-      @searchModel.searchNextInHistory()
-
-    rootView.on 'find-and-replace:search-previous-in-history', =>
-      @storeUnsearchedPattern()
-      @searchModel.searchPreviousInHistory()
 
     # # #
     @findEditor.on 'find-and-replace:focus-next', @focusReplace
@@ -115,11 +107,6 @@ class BufferFindAndReplaceView extends View
     pattern = @findEditor.getText()
     @searchModel.setPattern(pattern)
 
-  storeUnsearchedPattern: ->
-    if @findEditor.getText() != @searchModel.currentHistoryPattern()
-      @searchModel.moveToEndOfHistory()
-      @unsearchedPattern = @findEditor.getText()
-
   onActiveItemChanged: =>
     if editor = @currentEditor()
       @trigger('active-editor-changed', editor: editor)
@@ -128,9 +115,7 @@ class BufferFindAndReplaceView extends View
 
   onSearchModelChanged: ({history, historyIndex}) =>
     @updateOptionButtons()
-    pattern = @searchModel.pattern
-    pattern = @unsearchedPattern if @unsearchedPattern and historyIndex == history.length and @unsearchedPattern != _.last(history)
-    @findEditor.setText(pattern)
+    @findEditor.setText(@searchModel.pattern)
 
   detach: =>
     @deactivate()

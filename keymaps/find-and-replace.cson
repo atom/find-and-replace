@@ -20,14 +20,6 @@
   'alt-meta-c': 'find-and-replace:toggle-case-sensitive-option'
   'alt-meta-s': 'find-and-replace:toggle-in-selection-option'
 
-'.buffer-find-and-replace .find-container .mini.editor input':
-  'up': 'find-and-replace:search-previous-in-history'
-  'down': 'find-and-replace:search-next-in-history'
-
-'.project-find-and-replace .find-container .mini.editor input':
-  'up': 'find-and-replace:search-previous-in-history'
-  'down': 'find-and-replace:search-next-in-history'
-
 '.project-find-and-replace .preview-list':
   'enter': 'core:confirm'
   'left': 'find-and-replace:collapse-result'
