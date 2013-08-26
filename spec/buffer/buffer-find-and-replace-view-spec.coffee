@@ -67,6 +67,22 @@ describe 'BufferFindAndReplaceView', ->
           editor.trigger 'core:close'
           expect(rootView.find('.find-and-replace')).not.toExist()
 
+    describe "when regex is toggled", ->
+      it "toggles regex via an event and finds text matching the pattern", ->
+        editor.setCursorBufferPosition([2,0])
+        bufferFindAndReplaceView.trigger 'find-and-replace:toggle-regex-option'
+        bufferFindAndReplaceView.findEditor.setText 'i[t]em+s'
+        $(document.activeElement).trigger 'core:confirm'
+        expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
+
+      it "toggles regex via a button and finds text matching the pattern", ->
+        editor.setCursorBufferPosition([2,0])
+        bufferFindAndReplaceView.regexOptionButton.click()
+        bufferFindAndReplaceView.findEditor.setText 'i[t]em+s'
+        $(document.activeElement).trigger 'core:confirm'
+        expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
+
+
   describe "replacing", ->
     beforeEach ->
       editor.setCursorBufferPosition([2,0])

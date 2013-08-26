@@ -53,35 +53,31 @@ class BufferFindAndReplaceView extends View
 
     rootView.command 'find-and-replace:show', @showFind
     @on 'core:cancel', @detach
+    @on 'click', @focusFind
 
     @findEditor.on 'core:confirm', => @search()
     @previousButton.on 'click', => @selectPrevious()
     @nextButton.on 'click', => @selectNext()
     @replaceEditor.on 'core:confirm', @replaceNext
 
-    # # #
-    @findEditor.on 'find-and-replace:focus-next', @focusReplace
-    @findEditor.on 'find-and-replace:focus-previous', @focusReplace
-    @findLabel.on 'click', @focusFind
-    @resultCounter.on 'click', @focusFind
-
-    rootView.command 'find-and-replace:display-replace', @showReplace
-    rootView.command 'find-and-replace:toggle-regex-option', @toggleRegexOption
-    rootView.command 'find-and-replace:toggle-case-sensitive-option', @toggleCaseSensitiveOption
-    rootView.command 'find-and-replace:toggle-in-selection-option', @toggleInSelectionOption
-    rootView.command 'find-and-replace:set-selection-as-search-pattern', @setSelectionAsSearchPattern
+    @command 'find-and-replace:toggle-regex-option', @toggleRegexOption
+    @command 'find-and-replace:toggle-case-sensitive-option', @toggleCaseSensitiveOption
+    @command 'find-and-replace:toggle-in-selection-option', @toggleInSelectionOption
+    @command 'find-and-replace:set-selection-as-search-pattern', @setSelectionAsSearchPattern
 
     @regexOptionButton.on 'click', @toggleRegexOption
     @caseSensitiveOptionButton.on 'click', @toggleCaseSensitiveOption
     @inSelectionOptionButton.on 'click', @toggleInSelectionOption
 
+    # # #
+    @findEditor.on 'find-and-replace:focus-next', @focusReplace
+    @findEditor.on 'find-and-replace:focus-previous', @focusReplace
+    rootView.command 'find-and-replace:display-replace', @showReplace
     @replaceNextButton.on 'click', @replaceNext
     @replaceAllButton.on 'click', @replaceAll
-
     @replaceEditor.on 'find-and-replace:focus-next', @focusFind
     @replaceEditor.on 'find-and-replace:focus-previous', @focusFind
     @replaceLabel.on 'click', @focusReplace
-
 
     @searchResultsViews = []
     rootView.on 'pane:became-active pane:became-inactive pane:removed', @onActiveItemChanged

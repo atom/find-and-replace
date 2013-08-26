@@ -41,5 +41,9 @@ class SearchModel
   getRegex: ->
     flags = 'g'
     flags += 'i' unless @options.caseSensitive
-    escapedPattern = _.escapeRegExp(@pattern ? '') unless @options.regex
-    new RegExp(escapedPattern, flags)
+
+    if @options.regex
+      new RegExp(@pattern, flags)
+    else
+      escapedPattern = _.escapeRegExp(@pattern)
+      new RegExp(escapedPattern, flags)
