@@ -82,6 +82,30 @@ describe 'BufferFindAndReplaceView', ->
         $(document.activeElement).trigger 'core:confirm'
         expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
 
+    describe "when case sensitivity is toggled", ->
+      beforeEach ->
+        editor.setText "-----\nwords\nWORDs\n"
+        editor.setCursorBufferPosition([0,0])
+
+      it "toggles case sensitivity via an event and finds text matching the pattern", ->
+        bufferFindAndReplaceView.findEditor.setText 'WORDs'
+        $(document.activeElement).trigger 'core:confirm'
+        expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 5]]
+
+        editor.setCursorBufferPosition([0,0])
+        bufferFindAndReplaceView.trigger 'find-and-replace:toggle-case-sensitive-option'
+        $(document.activeElement).trigger 'core:confirm'
+        expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 5]]
+
+      it "toggles case sensitiviAty via a button and finds text matching the pattern", ->
+        bufferFindAndReplaceView.findEditor.setText 'WORDs'
+        $(document.activeElement).trigger 'core:confirm'
+        expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 5]]
+
+        editor.setCursorBufferPosition([0,0])
+        bufferFindAndReplaceView.caseSensitiveOptionButton.click()
+        $(document.activeElement).trigger 'core:confirm'
+        expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 5]]
 
   describe "replacing", ->
     beforeEach ->

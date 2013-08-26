@@ -53,7 +53,7 @@ class BufferFindAndReplaceView extends View
 
     rootView.command 'find-and-replace:show', @showFind
     @on 'core:cancel', @detach
-    @on 'click', @focusFind
+    @on 'click', => @focusFind()
 
     @findEditor.on 'core:confirm', => @search()
     @previousButton.on 'click', => @selectPrevious()
@@ -165,7 +165,8 @@ class BufferFindAndReplaceView extends View
 
   toggleRegexOption: => @toggleOption('regex')
 
-  toggleCaseSensitiveOption: => @toggleOption('caseSensitive')
+  toggleCaseSensitiveOption: =>
+    @toggleOption('caseSensitive')
 
   toggleInSelectionOption: => @toggleOption('inSelection')
 
