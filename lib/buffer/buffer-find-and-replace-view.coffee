@@ -51,7 +51,7 @@ class BufferFindAndReplaceView extends View
   handleEvents: ->
     @searchModel.on 'change', @onSearchModelChanged
 
-    rootView.command 'find-and-replace:display-find', @showFind
+    rootView.command 'find-and-replace:show', @showFind
     @on 'core:cancel', @detach
 
     @findEditor.on 'core:confirm', => @search()

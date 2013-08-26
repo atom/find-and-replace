@@ -2,7 +2,7 @@
   'meta-F': 'find-and-replace:display-find-in-project'
 
 '.editor':
-  'meta-f': 'find-and-replace:display-find'
+  'meta-f': 'find-and-replace:show'
   'alt-meta-f': 'find-and-replace:display-replace'
 
   'meta-g': 'find-and-replace:find-next'

@@ -13,21 +13,21 @@ describe 'BufferFindAndReplaceView', ->
     pack = atom.activatePackage("find-and-replace")
     bufferFindAndReplaceView = pack.mainModule.bufferFindAndReplaceView
 
-  describe "when find-and-replace:display-find is triggered", ->
+  describe "when find-and-replace:show is triggered", ->
     it "attaches BufferFindAndReplaceView to the root view", ->
-      editor.trigger 'find-and-replace:display-find'
+      editor.trigger 'find-and-replace:show'
       expect(rootView.find('.find-and-replace')).toExist()
 
   describe "when core:cancel is triggered", ->
     it "detaches from the root view", ->
-      editor.trigger 'find-and-replace:display-find'
+      editor.trigger 'find-and-replace:show'
       $(document.activeElement).trigger 'core:cancel'
       expect(rootView.find('.find-and-replace')).not.toExist()
 
   describe "finding", ->
     beforeEach ->
       editor.setCursorBufferPosition([2,0])
-      editor.trigger 'find-and-replace:display-find'
+      editor.trigger 'find-and-replace:show'
       bufferFindAndReplaceView.findEditor.setText 'items'
       $(document.activeElement).trigger 'core:confirm'
 
@@ -114,7 +114,7 @@ describe 'BufferFindAndReplaceView', ->
   describe "history", ->
     [oneRange, twoRange, threeRange] = []
     beforeEach ->
-      editor.trigger 'find-and-replace:display-find'
+      editor.trigger 'find-and-replace:show'
       editor.setText("zero\none\ntwo\nthree\n")
       bufferFindAndReplaceView.findEditor.setText('one')
       bufferFindAndReplaceView.findEditor.trigger 'core:confirm'
