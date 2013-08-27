@@ -1,7 +1,7 @@
 $ = require 'jquery'
 RootView = require 'root-view'
 
-describe 'BufferFindAndReplaceView', ->
+fdescribe 'BufferFindAndReplaceView', ->
   [editor, bufferFindAndReplaceView] = []
 
   beforeEach ->
@@ -24,7 +24,7 @@ describe 'BufferFindAndReplaceView', ->
       $(document.activeElement).trigger 'core:cancel'
       expect(rootView.find('.find-and-replace')).not.toExist()
 
-  describe "finding", ->
+  ffdescribe "finding", ->
     beforeEach ->
       editor.setCursorBufferPosition([2,0])
       editor.trigger 'find-and-replace:show'
@@ -50,7 +50,7 @@ describe 'BufferFindAndReplaceView', ->
       expect(bufferFindAndReplaceView.resultCounter.text()).toEqual('1 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[1, 27], [1, 22]]
 
-    it "selects the previous match when the 'find-and-replace:focus-previous' event is triggered", ->
+    fffit "selects the previous match when the 'find-and-replace:focus-previous' event is triggered", ->
       editor.trigger('find-and-replace:find-previous')
       expect(bufferFindAndReplaceView.resultCounter.text()).toEqual('1 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[1, 27], [1, 22]]

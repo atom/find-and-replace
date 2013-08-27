@@ -15,8 +15,6 @@ class SearchModel
   #   inSelection: false
   constructor: (@options={}) ->
     @pattern = ''
-    @results = {}
-    @resultsVisible = false
 
   serialize: ->
     options: @options
@@ -36,7 +34,20 @@ class SearchModel
 
   update: ->
     regex = @getRegex()
-    @trigger 'change', { regex }
+    @trigger 'change'
+
+  getMarkers: (editSession) ->
+    buffer = editSession.getBuffer()
+    markers = []
+    markerAttributes =
+      class: 'find-result'
+      invalidation: 'inside'
+      replicate: false
+
+    buffer.scanInRange @getRegex(), buffer.getRange(), ({range}) ->
+      markers.push editSession.markBufferRange(range, markerAttributes)
+
+    markers
 
   getRegex: ->
     flags = 'g'

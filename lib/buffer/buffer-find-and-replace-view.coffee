@@ -1,11 +1,11 @@
 {View} = require 'space-pen'
 Editor = require 'editor'
+EditSession = require 'edit-session'
 $ = require 'jquery'
 _ = require 'underscore'
 {Point} = require 'telepath'
 SearchModel = require '../search-model'
 SearchResultsView = require '../search-results-view'
-ResultCounterView = require './result-counter-view'
 History = require '../history'
 
 module.exports =
@@ -14,8 +14,6 @@ class BufferFindAndReplaceView extends View
   @content: ->
     @div class: 'find-and-replace buffer-find-and-replace tool-panel', =>
       @div class: 'find-container', =>
-        @label outlet: 'findLabel', 'Find'
-
         @div class: 'btn-group pull-right btn-toggle', =>
           @button outlet: 'regexOptionButton', class: 'btn btn-mini option-regex', '.*'
           @button outlet: 'caseSensitiveOptionButton', class: 'btn btn-mini option-case-sensitive', 'Aa'
@@ -23,7 +21,7 @@ class BufferFindAndReplaceView extends View
 
         @div class: 'find-editor-container editor-container', =>
           @div class: 'find-meta-container', =>
-            @subview 'resultCounter', new ResultCounterView()
+            @span outlet: 'resultCounter', class: 'result-counter', ''
             @a href: '#', outlet: 'previousButton', class: 'icon-previous'
             @a href: '#', outlet: 'nextButton', class: 'icon-next'
           @subview 'findEditor', new Editor(mini: true)
@@ -44,21 +42,22 @@ class BufferFindAndReplaceView extends View
   initialize: (@searchModel, history) ->
     @findHistory = new History(@findEditor, history)
     @handleEvents()
-    @resultCounter.setModel(this)
-    @onActiveItemChanged()
+    @activeEditSessionChanged()
     @updateOptionButtons()
 
   handleEvents: ->
-    @searchModel.on 'change', @onSearchModelChanged
+    @searchModel.on 'change', @searchModelChanged
 
     rootView.command 'find-and-replace:show', @showFind
     @on 'core:cancel', @detach
     @on 'click', => @focusFind()
 
     @findEditor.on 'core:confirm', => @search()
+
     @previousButton.on 'click', => @selectPrevious()
     @nextButton.on 'click', => @selectNext()
-    @replaceEditor.on 'core:confirm', @replaceNext
+    rootView.command 'find-and-replace:find-next', @selectNext
+    rootView.command 'find-and-replace:find-previous', @selectPrevious
 
     @command 'find-and-replace:toggle-regex-option', @toggleRegexOption
     @command 'find-and-replace:toggle-case-sensitive-option', @toggleCaseSensitiveOption
@@ -70,6 +69,7 @@ class BufferFindAndReplaceView extends View
     @inSelectionOptionButton.on 'click', @toggleInSelectionOption
 
     # # #
+    @replaceEditor.on 'core:confirm', @replaceNext
     @findEditor.on 'find-and-replace:focus-next', @focusReplace
     @findEditor.on 'find-and-replace:focus-previous', @focusReplace
     rootView.command 'find-and-replace:display-replace', @showReplace
@@ -79,37 +79,56 @@ class BufferFindAndReplaceView extends View
     @replaceEditor.on 'find-and-replace:focus-previous', @focusFind
     @replaceLabel.on 'click', @focusReplace
 
-    @searchResultsViews = []
-    rootView.on 'pane:became-active pane:became-inactive pane:removed', @onActiveItemChanged
-    rootView.eachEditor (editor) =>
-      if editor.attached and not editor.mini
-        view = new SearchResultsView(@searchModel, editor, {@active})
-        view.on 'destroyed', =>
-          @searchResultsViews = _.without(@searchResultsViews, view)
-        @searchResultsViews.push(view)
-        editor.underlayer.append(view)
+    # @searchResultsViews = []
+    # rootView.on 'pane:became-active pane:became-inactive pane:removed', @activeEditSessionChanged
+    # rootView.eachEditor (editor) =>
+      # return if editor.mini or not editor.attached
+    #     view = new SearchResultsView(@searchModel, editor, {@active})
+    #     view.on 'destroyed', =>
+    #       @searchResultsViews = _.without(@searchResultsViews, view)
+    #     @searchResultsViews.push(view)
+    #     editor.underlayer.append(view)
 
   search: ->
     @storePattern()
-    @currentEditor().trigger('find-and-replace:find-next')
+    @markers = @searchModel.getMarkers(@editSession)
 
-  selectNext: ->
-    @currentEditor().trigger('find-and-replace:find-next')
+    cursorPosition = @editSession.getCursorBufferPosition()
+    @markerIndex = @firstMarkerGreaterThanPosition(cursorPosition)
+    @selectMarkerAtIndex(@markerIndex)
 
-  selectPrevious: ->
-    @currentEditor().trigger('find-and-replace:find-previous')
+  firstMarkerGreaterThanPosition: (bufferPosition) ->
+    for marker, index in @markers
+      markerStartPosition = marker.bufferMarker.getStartPosition()
+      return index if markerStartPosition.isGreaterThanOrEqual(bufferPosition)
+
+  selectMarkerAtIndex: (markerIndex) ->
+    marker = @markers[@markerIndex]
+    @editSession.setSelectedBufferRange marker.getBufferRange()
+    @resultCounter.text("#{markerIndex + 1} of #{@markers.length}")
+
+  selectNext: =>
+    @markerIndex = ++@markerIndex % @markers.length
+    @selectMarkerAtIndex(@markerIndex)
+
+  selectPrevious: =>
+    --@markerIndex
+    @markerIndex = @markers.length - 1 if markerIndex < 0
+    @selectMarkerAtIndex(@markerIndex)
 
   storePattern: ->
     pattern = @findEditor.getText()
     @searchModel.setPattern(pattern)
 
-  onActiveItemChanged: =>
-    if editor = @currentEditor()
-      @trigger('active-editor-changed', editor: editor)
+  activeEditSessionChanged: =>
+    paneItem = rootView.getActivePaneItem()
+    if paneItem instanceof EditSession
+      @editSession = paneItem
+      @search()
     else
       @detach()
 
-  onSearchModelChanged: ({history, historyIndex}) =>
+  searchModelChanged: =>
     @updateOptionButtons()
     @findEditor.setText(@searchModel.pattern)
 
@@ -183,12 +202,12 @@ class BufferFindAndReplaceView extends View
     @setOptionButtonState(@inSelectionOptionButton, @searchModel.getOption('inSelection'))
 
   activate: ->
-    @active = true
-    view.activate() for view in @searchResultsViews
+    # @active = true
+    # view.activate() for view in @searchResultsViews
 
   deactivate: ->
-    @active = false
-    view.deactivate() for view in @searchResultsViews
+    # @active = false
+    # view.deactivate() for view in @searchResultsViews
 
   currentEditor: ->
     rootView.getActiveView()
