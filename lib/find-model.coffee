@@ -7,11 +7,13 @@ module.exports =
 class FindModel
   _.extend @prototype, EventEmitter
 
-  constructor: (@options={}) ->
+  constructor: (options={}) ->
+    @options = _.extend(@optionDefaults(), options)
     @pattern = ''
 
     @activePaneItemChanged()
-    rootView.on 'pane-container:active-pane-item-changed', => @activePaneItemChanged()
+    rootView.on 'pane-container:active-pane-item-changed', =>
+      @activePaneItemChanged()
 
   activePaneItemChanged: ->
     @editSession = null
@@ -21,6 +23,12 @@ class FindModel
 
   serialize: ->
     options: @options
+
+  optionDefaults: ->
+    regex: false
+    inWord: false
+    inSelection: false
+    caseSensitive: false
 
   setOption: (key, value) ->
     return if @options[key] == value
@@ -56,7 +64,8 @@ class FindModel
     @trigger 'markers-updated', @markers
 
   updateMarkers: ->
-    @markers = []
+    @destroyMarkers()
+
     return if not @editSession? or not @pattern
 
     buffer = @editSession.getBuffer()
@@ -67,3 +76,7 @@ class FindModel
 
     buffer.scanInRange @getRegex(), buffer.getRange(), ({range}) =>
       @markers.push @editSession.markBufferRange(range, markerAttributes)
+
+  destroyMarkers: ->
+    marker.destroy() for marker in @markers ? []
+    @markers = []

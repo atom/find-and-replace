@@ -22,10 +22,20 @@ fdescribe 'FindView', ->
       expect(rootView.find('.find-and-replace')).toExist()
 
   describe "when core:cancel is triggered", ->
-    it "detaches from the root view", ->
+    beforeEach ->
       editor.trigger 'find-and-replace:show'
+      findView.findEditor.setText 'items'
+      $(document.activeElement).trigger 'core:confirm'
+
+    it "detaches from the root view", ->
       $(document.activeElement).trigger 'core:cancel'
       expect(rootView.find('.find-and-replace')).not.toExist()
+
+    it "removes highlighted matches", ->
+      findResultsView = editor.find('.search-results')
+
+      $(document.activeElement).trigger 'core:cancel'
+      expect(findResultsView.parent()).not.toExist()
 
   describe "finding", ->
     beforeEach ->
@@ -65,25 +75,59 @@ fdescribe 'FindView', ->
     describe "when the active pane item changes", ->
       describe "when a new edit session is activated", ->
         it "udpates the result view and selects the correct text", ->
-          rootView.open('coffee.coffee')
-          expect(findView.resultCounter.text()).toEqual('1 of 6')
+          rootView.open('sample.coffee')
+          expect(findView.resultCounter.text()).toEqual('1 of 7')
           expect(editor.getSelectedBufferRange()).toEqual [[1, 9], [1, 14]]
 
+        it "highlights the found text in the new edit session", ->
+          findResultsView = editor.find('.search-results')
+
+          rootView.open('sample.coffee')
+          expect(findResultsView.children().length).toEqual 7
+
       describe "when all active pane items are closed", ->
-        it "updates the result view", ->
+        it "updates the result count", ->
           editor.trigger 'core:close'
-          console.log "----"
           expect(findView.resultCounter.text()).toEqual('no results')
 
+        it "removes all highlights", ->
+          findResultsView = editor.find('.search-results')
+
+          editor.trigger 'core:close'
+          expect(findResultsView.children().length).toEqual 0
+
       describe "when the active pane item is not an edit session", ->
-        it "updates the result view", ->
+        [anotherOpener] = []
+
+        beforeEach ->
           anotherOpener = (pathToOpen, options) -> $('another')
           Project.registerOpener(anotherOpener)
 
+        afterEach ->
+          Project.unregisterOpener(anotherOpener)
+
+        it "updates the result view", ->
           rootView.open "another"
           expect(findView.resultCounter.text()).toEqual('no results')
 
-          Project.unregisterOpener(anotherOpener)
+        it "removes all highlights", ->
+          findResultsView = editor.find('.search-results')
+
+          rootView.open "another"
+          expect(findResultsView.children().length).toEqual 0
+
+      describe "when a new edit session is activated on a different pane", ->
+        it "updates the result view and selects the correct text", ->
+          newEditor = editor.splitRight(project.open('sample.coffee'))
+          expect(findView.resultCounter.text()).toEqual('1 of 7')
+          expect(newEditor.getSelectedBufferRange()).toEqual [[1, 9], [1, 14]]
+
+        it "highlights the found text in the new edit session (and removes the highlights from the other)", ->
+          findResultsView = editor.find('.search-results')
+
+          expect(findResultsView.children().length).toEqual 6
+          newEditor = editor.splitRight(project.open('sample.coffee'))
+          expect(findResultsView.children().length).toEqual 7
 
     describe "when regex is toggled", ->
       it "toggles regex via an event and finds text matching the pattern", ->
@@ -124,6 +168,20 @@ fdescribe 'FindView', ->
         findView.caseSensitiveOptionButton.click()
         $(document.activeElement).trigger 'core:confirm'
         expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 5]]
+
+    describe "highlighting search results", ->
+      [findResultsView] = []
+      beforeEach ->
+        findResultsView = editor.find('.search-results')
+
+      it "only highlights matches", ->
+        expect(findResultsView.parent()[0]).toBe editor.underlayer[0]
+        expect(findResultsView.children().length).toEqual 6
+
+        findView.findEditor.setText 'notinthefilebro'
+        $(document.activeElement).trigger 'core:confirm'
+
+        expect(findResultsView.children().length).toEqual 0
 
   describe "replacing", ->
     beforeEach ->

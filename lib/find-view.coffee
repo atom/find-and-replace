@@ -1,6 +1,7 @@
 {View} = require 'space-pen'
 Editor = require 'editor'
 FindModel = require './find-model'
+FindResultsView = require './find-results-view'
 History = require './history'
 
 module.exports =
@@ -33,6 +34,7 @@ class FindView extends View
 
   initialize: (@findModel, history) ->
     @findHistory = new History(@findEditor, history)
+    @findResultsView = new FindResultsView(@findModel)
     @handleEvents()
     @updateOptionButtons()
 
@@ -71,9 +73,11 @@ class FindView extends View
     @findEditor.focus()
 
   attach: =>
+    @findResultsView.attach()
     rootView.vertical.append(this)
 
   detach: =>
+    @findResultsView.detach()
     rootView.focus()
     super()
 
