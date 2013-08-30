@@ -4,7 +4,7 @@ SearchModel = require '../search-model'
 History = require '../history'
 
 module.exports =
-class BufferFindAndReplaceView extends View
+class FindView extends View
 
   @content: ->
     @div class: 'find-and-replace buffer-find-and-replace tool-panel', =>

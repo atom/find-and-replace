@@ -1,5 +1,5 @@
 SearchModel = require './search-model'
-BufferFindAndReplaceView = require './buffer/buffer-find-and-replace-view'
+FindView = require './find-view'
 ProjectFindAndReplaceView = require './project/project-find-and-replace-view'
 
 module.exports =
@@ -25,10 +25,10 @@ module.exports =
       caseSensitive: false
 
     @bufferFindAndReplaceSearchModel = new SearchModel(options)
-    @bufferFindAndReplaceView = new BufferFindAndReplaceView(@bufferFindAndReplaceSearchModel, history)
+    @findView = new FindView(@bufferFindAndReplaceSearchModel, history)
 
   deactivateForBuffer: ->
-    @bufferFindAndReplaceView?.remove()
+    @findView?.remove()
 
   activateForProject: (projectFindAndReplaceState={}) ->
     history = projectFindAndReplaceState?.history ? []
