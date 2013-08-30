@@ -4,7 +4,7 @@ RootView = require 'root-view'
 Project = require 'project'
 {View} = require 'space-pen'
 
-fdescribe 'BufferFindAndReplaceView', ->
+describe 'BufferFindAndReplaceView', ->
   [editor, bufferFindAndReplaceView] = []
 
   beforeEach ->
@@ -58,25 +58,30 @@ fdescribe 'BufferFindAndReplaceView', ->
       expect(bufferFindAndReplaceView.resultCounter.text()).toEqual('1 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[1, 27], [1, 22]]
 
-    it "replaces results counter with number of results found when user moves cursor outside a marker", ->
+    it "replaces results counter with number of results found when user moves the cursor", ->
       editor.moveCursorDown()
       expect(bufferFindAndReplaceView.resultCounter.text()).toBe '6 found'
-      editor.moveCursorUp()
-      expect(bufferFindAndReplaceView.resultCounter.text()).toBe '2 of 6'
 
     describe "when the active pane item changes", ->
+      describe "when a new edit session is activated", ->
+        it "udpates the result view and selects the correct text", ->
+          rootView.open('coffee.coffee')
+          expect(bufferFindAndReplaceView.resultCounter.text()).toEqual('1 of 6')
+          expect(editor.getSelectedBufferRange()).toEqual [[1, 9], [1, 14]]
+
       describe "when all active pane items are closed", ->
-        it "detaches the view", ->
+        it "updates the result view", ->
           editor.trigger 'core:close'
-          expect(rootView.find('.find-and-replace')).not.toExist()
+          console.log "----"
+          expect(bufferFindAndReplaceView.resultCounter.text()).toEqual('no results')
 
       describe "when the active pane item is not an edit session", ->
-        it "detaches the view", ->
+        it "updates the result view", ->
           anotherOpener = (pathToOpen, options) -> $('another')
           Project.registerOpener(anotherOpener)
 
           rootView.open "another"
-          expect(rootView.find('.find-and-replace')).not.toExist()
+          expect(bufferFindAndReplaceView.resultCounter.text()).toEqual('no results')
 
           Project.unregisterOpener(anotherOpener)
 

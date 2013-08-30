@@ -1,11 +1,6 @@
 {View} = require 'space-pen'
 Editor = require 'editor'
-EditSession = require 'edit-session'
-$ = require 'jquery'
-_ = require 'underscore'
-{Point} = require 'telepath'
 SearchModel = require '../search-model'
-SearchResultsView = require '../search-results-view'
 History = require '../history'
 
 module.exports =
@@ -36,27 +31,20 @@ class BufferFindAndReplaceView extends View
         @div class: 'replace-editor-container editor-container', =>
           @subview 'replaceEditor', new Editor(mini: true)
 
-  detaching: false
-  active: false
-
   initialize: (@searchModel, history) ->
-    @markerIndex = 0
-
     @findHistory = new History(@findEditor, history)
     @handleEvents()
     @updateOptionButtons()
 
   handleEvents: ->
-    @searchModel.on 'change', @searchModelChanged
-
     rootView.command 'find-and-replace:show', @showFind
     @on 'core:cancel', @detach
     @on 'click', => @focusFind()
-
     @findEditor.on 'core:confirm', => @search()
 
     @previousButton.on 'click', => @selectPrevious()
     @nextButton.on 'click', => @selectNext()
+
     rootView.command 'find-and-replace:find-next', @selectNext
     rootView.command 'find-and-replace:find-previous', @selectPrevious
 
@@ -69,121 +57,81 @@ class BufferFindAndReplaceView extends View
     @caseSensitiveOptionButton.on 'click', @toggleCaseSensitiveOption
     @inSelectionOptionButton.on 'click', @toggleInSelectionOption
 
-    # # #
-    @replaceEditor.on 'core:confirm', @replaceNext
-    @findEditor.on 'find-and-replace:focus-next', @focusReplace
-    @findEditor.on 'find-and-replace:focus-previous', @focusReplace
-    rootView.command 'find-and-replace:display-replace', @showReplace
-    @replaceNextButton.on 'click', @replaceNext
-    @replaceAllButton.on 'click', @replaceAll
-    @replaceEditor.on 'find-and-replace:focus-next', @focusFind
-    @replaceEditor.on 'find-and-replace:focus-previous', @focusFind
-    @replaceLabel.on 'click', @focusReplace
-
-    rootView.on 'pane-container:active-pane-item-changed', (event, item) =>
-      if item instanceof EditSession
-        @editSession = item
-        @search()
-      else
-        @detach()
-
-  search: ->
-    @storePattern()
-    @markers = @searchModel.getMarkers(@editSession)
-    return if @markers.length == 0
-
-    cursorPosition = @editSession.getCursorBufferPosition()
-    @markerIndex = @firstMarkerIndexGreaterThanPosition(cursorPosition)
-    @selectMarkerAtIndex(@markerIndex)
-
-  firstMarkerIndexGreaterThanPosition: (bufferPosition) ->
-    for marker, index in @markers
-      markerStartPosition = marker.bufferMarker.getStartPosition()
-      return index if markerStartPosition.isGreaterThanOrEqual(bufferPosition)
-
-    0
-
-  selectMarkerAtIndex: (markerIndex) ->
-    marker = @markers[@markerIndex]
-    @editSession.setSelectedBufferRange marker.getBufferRange()
-    @resultCounter.text("#{markerIndex + 1} of #{@markers.length}")
-
-  selectNext: =>
-    @markerIndex = ++@markerIndex % @markers.length
-    @selectMarkerAtIndex(@markerIndex)
-
-  selectPrevious: =>
-    @markerIndex--
-    @markerIndex = @markers.length - 1 if @markerIndex < 0
-    @selectMarkerAtIndex(@markerIndex)
-
-  storePattern: ->
-    pattern = @findEditor.getText()
-    @searchModel.setPattern(pattern)
-
-  searchModelChanged: =>
-    @updateOptionButtons()
-    @findEditor.setText(@searchModel.pattern)
-
-  detach: =>
-    @deactivate()
-    rootView.focus()
-    super()
-
-  attach: =>
-    paneItem = rootView.getActivePaneItem()
-    if paneItem instanceof EditSession
-      console.log "wtf"
-      @editSession = paneItem
-      rootView.vertical.append(this)
-      @activate()
+    @searchModel.on 'change', @searchModelChanged
+    @searchModel.on 'markers-updated', @markersUpdated
 
   showFind: =>
     @attach()
     @addClass('find-mode').removeClass('replace-mode')
     @focusFind()
 
-  showReplace: =>
-    @attach()
-    @addClass('replace-mode').removeClass('find-mode')
-    @focusReplace()
-
   focusFind: =>
-    @replaceEditor.clearSelections()
+    @replaceEditor.selectAll()
     @findEditor.selectAll()
     @findEditor.focus()
 
-  focusReplace: =>
-    return unless @hasClass('replace-mode')
-    @findEditor.clearSelections()
-    @replaceEditor.selectAll()
-    @replaceEditor.focus()
+  attach: =>
+    rootView.vertical.append(this)
 
-  replaceNext: =>
-    @storePattern()
-    replacement = @replaceEditor.getText()
-    @currentEditor().trigger('find-and-replace:replace-next', {replacement})
+  detach: =>
+    rootView.focus()
+    super()
 
-  replaceAll: =>
-    @storePattern()
-    replacement = @replaceEditor.getText()
-    @currentEditor().trigger('find-and-replace:replace-all', {replacement})
+  search: ->
+    @searchModel.setPattern(@findEditor.getText())
+    @searchModel.search()
+
+  markersUpdated: (@markers) =>
+    rootView.one 'cursor:moved', => @updateResultCounter()
+
+    @updateResultCounter()
+    if markers.length > 0
+      cursorPosition = @searchModel.getEditSession().getCursorBufferPosition()
+      @currentMarkerIndex = @firstMarkerIndexGreaterThanPosition(cursorPosition)
+      @selectMarkerAtIndex(@currentMarkerIndex)
+
+  updateResultCounter: ->
+    if not @markers? or @markers.length == 0
+      text = "no results"
+    else if @markers.length == 1
+      text = "1 found"
+    else
+      text = "#{@markers.length} found"
+
+    @resultCounter.text text
+
+  searchModelChanged: =>
+    @updateOptionButtons()
+    @findEditor.setText(@searchModel.pattern)
+
+  firstMarkerIndexGreaterThanPosition: (bufferPosition) ->
+    for marker, index in @markers
+      markerStartPosition = marker.bufferMarker.getStartPosition()
+      return index if markerStartPosition.isGreaterThanOrEqual(bufferPosition)
+    0
+
+  selectMarkerAtIndex: (markerIndex) ->
+    marker = @markers[markerIndex]
+    @searchModel.getEditSession().setSelectedBufferRange marker.getBufferRange()
+    @resultCounter.text("#{markerIndex + 1} of #{@markers.length}")
+
+  selectNext: =>
+    @currentMarkerIndex = ++@currentMarkerIndex % @markers.length
+    @selectMarkerAtIndex(@currentMarkerIndex)
+
+  selectPrevious: =>
+    @currentMarkerIndex--
+    @currentMarkerIndex = @markers.length - 1 if @currentMarkerIndex < 0
+    @selectMarkerAtIndex(@currentMarkerIndex)
 
   setSelectionAsSearchPattern: =>
-    editor = @currentEditor()
-    pattern = editor.getSelectedText()
+    editSession = @searchModel.getEditSession()
 
-    if pattern
+    if pattern = editSession.getSelectedText()
       @searchModel.setPattern(pattern)
-      _.last(editor.getSelectionViews()).highlight()
-
-    null
 
   toggleRegexOption: => @toggleOption('regex')
-
-  toggleCaseSensitiveOption: =>
-    @toggleOption('caseSensitive')
-
+  toggleCaseSensitiveOption: => @toggleOption('caseSensitive')
   toggleInSelectionOption: => @toggleOption('inSelection')
 
   toggleOption: (optionName) ->
@@ -198,13 +146,35 @@ class BufferFindAndReplaceView extends View
     @setOptionButtonState(@caseSensitiveOptionButton, @searchModel.getOption('caseSensitive'))
     @setOptionButtonState(@inSelectionOptionButton, @searchModel.getOption('inSelection'))
 
-  activate: ->
-    # @active = true
-    # view.activate() for view in @searchResultsViews
-
-  deactivate: ->
-    # @active = false
-    # view.deactivate() for view in @searchResultsViews
-
-  currentEditor: ->
-    rootView.getActiveView()
+  # handleReplaceEvents: ->
+  #   @replaceEditor.on 'core:confirm', @replaceNext
+  #   @findEditor.on 'find-and-replace:focus-next', @focusReplace
+  #   @findEditor.on 'find-and-replace:focus-previous', @focusReplace
+  #   rootView.command 'find-and-replace:display-replace', @showReplace
+  #   @replaceNextButton.on 'click', @replaceNext
+  #   @replaceAllButton.on 'click', @replaceAll
+  #   @replaceEditor.on 'find-and-replace:focus-next', @focusFind
+  #   @replaceEditor.on 'find-and-replace:focus-previous', @focusFind
+  #   @replaceLabel.on 'click', @focusReplace
+  #
+  #
+  # showReplace: =>
+  #   @attach()
+  #   @addClass('replace-mode').removeClass('find-mode')
+  #   @focusReplace()
+  #
+  # focusReplace: =>
+  #   return unless @hasClass('replace-mode')
+  #   @findEditor.clearSelections()
+  #   @replaceEditor.selectAll()
+  #   @replaceEditor.focus()
+  #
+  # replaceNext: =>
+  #   @storePattern()
+  #   replacement = @replaceEditor.getText()
+  #   @currentEditor().trigger('find-and-replace:replace-next', {replacement})
+  #
+  # replaceAll: =>
+  #   @storePattern()
+  #   replacement = @replaceEditor.getText()
+  #   @currentEditor().trigger('find-and-replace:replace-all', {replacement})

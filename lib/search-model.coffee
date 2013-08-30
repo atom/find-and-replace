@@ -1,20 +1,23 @@
 EventEmitter = require 'event-emitter'
 _ = require 'underscore'
+EditSession = require 'edit-session'
 require 'underscore-extensions'
 
-# Holds the current search pattern and search options. Does not run the search
-# on a buffer. Just holds the parameter state. See {SearchResultsModel}
 module.exports =
 class SearchModel
   _.extend @prototype, EventEmitter
 
-  # options -
-  #   regex: false
-  #   caseSensitive: false
-  #   inWord: false
-  #   inSelection: false
   constructor: (@options={}) ->
     @pattern = ''
+
+    @activePaneItemChanged()
+    rootView.on 'pane-container:active-pane-item-changed', => @activePaneItemChanged()
+
+  activePaneItemChanged: ->
+    @editSession = null
+    paneItem = rootView.getActivePaneItem()
+    @editSession = paneItem if paneItem instanceof EditSession
+    @search()
 
   serialize: ->
     options: @options
@@ -32,22 +35,8 @@ class SearchModel
     @pattern = pattern
     @update()
 
-  update: ->
-    regex = @getRegex()
-    @trigger 'change'
-
-  getMarkers: (editSession) ->
-    buffer = editSession.getBuffer()
-    markers = []
-    markerAttributes =
-      class: 'find-result'
-      invalidation: 'inside'
-      replicate: false
-
-    buffer.scanInRange @getRegex(), buffer.getRange(), ({range}) ->
-      markers.push editSession.markBufferRange(range, markerAttributes)
-
-    markers
+  getEditSession: ->
+    @editSession
 
   getRegex: ->
     flags = 'g'
@@ -58,3 +47,23 @@ class SearchModel
     else
       escapedPattern = _.escapeRegExp(@pattern)
       new RegExp(escapedPattern, flags)
+
+  update: ->
+    @trigger 'change'
+
+  search: ->
+    @updateMarkers()
+    @trigger 'markers-updated', @markers
+
+  updateMarkers: ->
+    @markers = []
+    return if not @editSession? or not @pattern
+
+    buffer = @editSession.getBuffer()
+    markerAttributes =
+      class: 'find-result'
+      invalidation: 'inside'
+      replicate: false
+
+    buffer.scanInRange @getRegex(), buffer.getRange(), ({range}) =>
+      @markers.push @editSession.markBufferRange(range, markerAttributes)
