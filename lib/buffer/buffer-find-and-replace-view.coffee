@@ -40,9 +40,10 @@ class BufferFindAndReplaceView extends View
   active: false
 
   initialize: (@searchModel, history) ->
+    @markerIndex = 0
+
     @findHistory = new History(@findEditor, history)
     @handleEvents()
-    @activeEditSessionChanged()
     @updateOptionButtons()
 
   handleEvents: ->
@@ -79,28 +80,28 @@ class BufferFindAndReplaceView extends View
     @replaceEditor.on 'find-and-replace:focus-previous', @focusFind
     @replaceLabel.on 'click', @focusReplace
 
-    # @searchResultsViews = []
-    # rootView.on 'pane:became-active pane:became-inactive pane:removed', @activeEditSessionChanged
-    # rootView.eachEditor (editor) =>
-      # return if editor.mini or not editor.attached
-    #     view = new SearchResultsView(@searchModel, editor, {@active})
-    #     view.on 'destroyed', =>
-    #       @searchResultsViews = _.without(@searchResultsViews, view)
-    #     @searchResultsViews.push(view)
-    #     editor.underlayer.append(view)
+    rootView.on 'pane-container:active-pane-item-changed', (event, item) =>
+      if item instanceof EditSession
+        @editSession = item
+        @search()
+      else
+        @detach()
 
   search: ->
     @storePattern()
     @markers = @searchModel.getMarkers(@editSession)
+    return if @markers.length == 0
 
     cursorPosition = @editSession.getCursorBufferPosition()
-    @markerIndex = @firstMarkerGreaterThanPosition(cursorPosition)
+    @markerIndex = @firstMarkerIndexGreaterThanPosition(cursorPosition)
     @selectMarkerAtIndex(@markerIndex)
 
-  firstMarkerGreaterThanPosition: (bufferPosition) ->
+  firstMarkerIndexGreaterThanPosition: (bufferPosition) ->
     for marker, index in @markers
       markerStartPosition = marker.bufferMarker.getStartPosition()
       return index if markerStartPosition.isGreaterThanOrEqual(bufferPosition)
+
+    0
 
   selectMarkerAtIndex: (markerIndex) ->
     marker = @markers[@markerIndex]
@@ -112,21 +113,13 @@ class BufferFindAndReplaceView extends View
     @selectMarkerAtIndex(@markerIndex)
 
   selectPrevious: =>
-    --@markerIndex
-    @markerIndex = @markers.length - 1 if markerIndex < 0
+    @markerIndex--
+    @markerIndex = @markers.length - 1 if @markerIndex < 0
     @selectMarkerAtIndex(@markerIndex)
 
   storePattern: ->
     pattern = @findEditor.getText()
     @searchModel.setPattern(pattern)
-
-  activeEditSessionChanged: =>
-    paneItem = rootView.getActivePaneItem()
-    if paneItem instanceof EditSession
-      @editSession = paneItem
-      @search()
-    else
-      @detach()
 
   searchModelChanged: =>
     @updateOptionButtons()
@@ -138,8 +131,12 @@ class BufferFindAndReplaceView extends View
     super()
 
   attach: =>
-    rootView.vertical.append(this)
-    @activate()
+    paneItem = rootView.getActivePaneItem()
+    if paneItem instanceof EditSession
+      console.log "wtf"
+      @editSession = paneItem
+      rootView.vertical.append(this)
+      @activate()
 
   showFind: =>
     @attach()

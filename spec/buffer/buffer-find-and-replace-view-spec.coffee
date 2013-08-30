@@ -1,5 +1,8 @@
+path = require 'path'
 $ = require 'jquery'
 RootView = require 'root-view'
+Project = require 'project'
+{View} = require 'space-pen'
 
 fdescribe 'BufferFindAndReplaceView', ->
   [editor, bufferFindAndReplaceView] = []
@@ -24,7 +27,7 @@ fdescribe 'BufferFindAndReplaceView', ->
       $(document.activeElement).trigger 'core:cancel'
       expect(rootView.find('.find-and-replace')).not.toExist()
 
-  ffdescribe "finding", ->
+  describe "finding", ->
     beforeEach ->
       editor.setCursorBufferPosition([2,0])
       editor.trigger 'find-and-replace:show'
@@ -50,7 +53,7 @@ fdescribe 'BufferFindAndReplaceView', ->
       expect(bufferFindAndReplaceView.resultCounter.text()).toEqual('1 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[1, 27], [1, 22]]
 
-    fffit "selects the previous match when the 'find-and-replace:focus-previous' event is triggered", ->
+    it "selects the previous match when the 'find-and-replace:focus-previous' event is triggered", ->
       editor.trigger('find-and-replace:find-previous')
       expect(bufferFindAndReplaceView.resultCounter.text()).toEqual('1 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[1, 27], [1, 22]]
@@ -61,11 +64,21 @@ fdescribe 'BufferFindAndReplaceView', ->
       editor.moveCursorUp()
       expect(bufferFindAndReplaceView.resultCounter.text()).toBe '2 of 6'
 
-    describe "when the active editor changes", ->
-      describe "when no more editors exist", ->
-        it "detaches the view when there are no more active editors", ->
+    describe "when the active pane item changes", ->
+      describe "when all active pane items are closed", ->
+        it "detaches the view", ->
           editor.trigger 'core:close'
           expect(rootView.find('.find-and-replace')).not.toExist()
+
+      describe "when the active pane item is not an edit session", ->
+        it "detaches the view", ->
+          anotherOpener = (pathToOpen, options) -> $('another')
+          Project.registerOpener(anotherOpener)
+
+          rootView.open "another"
+          expect(rootView.find('.find-and-replace')).not.toExist()
+
+          Project.unregisterOpener(anotherOpener)
 
     describe "when regex is toggled", ->
       it "toggles regex via an event and finds text matching the pattern", ->

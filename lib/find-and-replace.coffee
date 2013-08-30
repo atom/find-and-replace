@@ -5,15 +5,15 @@ ProjectFindAndReplaceView = require './project/project-find-and-replace-view'
 module.exports =
   activate: (state) ->
     @activateForBuffer(state?.buffer)
-    @activateForProject(state?.project)
+    # @activateForProject(state?.project)
 
   deactivate: ->
     @deactivateForBuffer()
-    @deactivateForProject()
+    # @deactivateForProject()
 
   serialize: ->
     buffer: @bufferFindAndReplaceSearchModel.serialize()
-    project: @projectFindAndReplaceSearchModel.serialize()
+    # project: @projectFindAndReplaceSearchModel.serialize()
 
   activateForBuffer: (bufferFindAndReplaceState={}) ->
     history = bufferFindAndReplaceState?.history ? []
