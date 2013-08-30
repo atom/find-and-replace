@@ -4,7 +4,7 @@ RootView = require 'root-view'
 Project = require 'project'
 {View} = require 'space-pen'
 
-describe 'FindView', ->
+fdescribe 'FindView', ->
   [editor, findView] = []
 
   beforeEach ->

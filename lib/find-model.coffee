@@ -4,7 +4,7 @@ EditSession = require 'edit-session'
 require 'underscore-extensions'
 
 module.exports =
-class SearchModel
+class FindModel
   _.extend @prototype, EventEmitter
 
   constructor: (@options={}) ->

@@ -1,9 +1,8 @@
 RootView = require 'root-view'
-SearchModel = require 'find-and-replace/lib/search-model'
-SearchResultsModel = require 'find-and-replace/lib/search-results-model'
-SearchResultsView = require 'find-and-replace/lib/search-results-view'
+FindModel = require 'find-and-replace/lib/find-model'
+FindResultsView = require 'find-and-replace/lib/find-results-view'
 
-describe 'SearchResultsView', ->
+describe 'FindResultsView', ->
   [goToLine, editor, subject, buffer, searchModel] = []
 
   beforeEach ->
@@ -13,8 +12,8 @@ describe 'SearchResultsView', ->
     editor = rootView.getActiveView()
     buffer = editor.activeEditSession.buffer
 
-    searchModel = new SearchModel()
-    subject = new SearchResultsView(searchModel, editor)
+    searchModel = new FindModel()
+    subject = new FindResultsView(searchModel, editor)
 
   describe "searching marks the results", ->
     beforeEach ->

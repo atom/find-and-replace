@@ -1,5 +1,5 @@
 RootView = require 'root-view'
-FindAndReplace = require 'find-and-replace/lib/find-and-replace'
+FindAndReplace = require 'find-and-replace/lib/find'
 
 describe 'ProjectFindAndReplaceView', ->
   [subject, previewList] = []
@@ -22,4 +22,3 @@ describe 'ProjectFindAndReplaceView', ->
 
       runs ->
         expect(previewList.find('.search-result').length).toBeGreaterThan 0
-

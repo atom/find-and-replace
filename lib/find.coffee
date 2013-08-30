@@ -1,6 +1,6 @@
-SearchModel = require './search-model'
+FindModel = require './find-model'
 FindView = require './find-view'
-ProjectFindAndReplaceView = require './project/project-find-and-replace-view'
+# ProjectFindAndReplaceView = require './project/project-find-and-replace-view'
 
 module.exports =
   activate: (state) ->
@@ -12,20 +12,20 @@ module.exports =
     # @deactivateForProject()
 
   serialize: ->
-    buffer: @bufferFindAndReplaceSearchModel.serialize()
+    buffer: @findModel.serialize()
     # project: @projectFindAndReplaceSearchModel.serialize()
 
-  activateForBuffer: (bufferFindAndReplaceState={}) ->
-    history = bufferFindAndReplaceState?.history ? []
-    options = bufferFindAndReplaceState.options
+  activateForBuffer: (findState={}) ->
+    history = findState?.history ? []
+    options = findState.options
     options ?=
       regex: false
       inWord: false
       inSelection: false
       caseSensitive: false
 
-    @bufferFindAndReplaceSearchModel = new SearchModel(options)
-    @findView = new FindView(@bufferFindAndReplaceSearchModel, history)
+    @findModel = new FindModel(options)
+    @findView = new FindView(@findModel, history)
 
   deactivateForBuffer: ->
     @findView?.remove()
@@ -39,7 +39,7 @@ module.exports =
       inSelection: false
       caseSensitive: false
 
-    @projectFindAndReplaceSearchModel = new SearchModel(options, history)
+    @projectFindAndReplaceSearchModel = new FindModel(options, history)
     @projectFindAndReplaceView = new ProjectFindAndReplaceView(project, @projectFindAndReplaceSearchModel)
 
   deactivateForProject: ->

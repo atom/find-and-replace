@@ -2,19 +2,18 @@ _ = require 'underscore'
 {View} = require 'space-pen'
 Selection = require 'selection'
 MarkerView = require './marker-view'
-SearchResultsModel = require './search-results-model'
+# SearchResultsModel = require './search-results-model'
 
-# Creates marker views for search results model.
-# Will be one of these created per editor.
 module.exports =
-class SearchResultsView extends View
+class FindResultsView extends View
 
   @content: ->
     @div class: 'search-results'
 
-  initialize: (@searchModel, @editor, {active}={}) ->
+  initialize: (@editor, @findModel) ->
+    @findModel.on 'markers-updated', @markersUpdated
     @markerViews = []
-    @model = new SearchResultsModel(@searchModel, @editor)
+    @model = new SearchResultsModel(@findModel, @editor)
     @model.on 'markers-changed', @replaceMarkerViews
     @model.on 'markers-added', @addMarkerViews
     @model.on 'destroyed', @destroy
@@ -24,6 +23,8 @@ class SearchResultsView extends View
     @subscribe @editor.getPane(), 'pane:became-active pane:became-inactive', @updateInterface
 
     @setActive(active or false)
+
+  markersUpdated: (@markers) =>
 
   setActive: (@active) ->
     @updateInterface()
@@ -66,4 +67,3 @@ class SearchResultsView extends View
   replaceMarkerViews: (options) =>
     @removeMarkerViews()
     @addMarkerViews(options)
-

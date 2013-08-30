@@ -1,7 +1,7 @@
 {View} = require 'space-pen'
 Editor = require 'editor'
-SearchModel = require '../search-model'
-History = require '../history'
+FindModel = require './find-model'
+History = require './history'
 
 module.exports =
 class FindView extends View
@@ -31,7 +31,7 @@ class FindView extends View
         @div class: 'replace-editor-container editor-container', =>
           @subview 'replaceEditor', new Editor(mini: true)
 
-  initialize: (@searchModel, history) ->
+  initialize: (@findModel, history) ->
     @findHistory = new History(@findEditor, history)
     @handleEvents()
     @updateOptionButtons()
@@ -57,8 +57,8 @@ class FindView extends View
     @caseSensitiveOptionButton.on 'click', @toggleCaseSensitiveOption
     @inSelectionOptionButton.on 'click', @toggleInSelectionOption
 
-    @searchModel.on 'change', @searchModelChanged
-    @searchModel.on 'markers-updated', @markersUpdated
+    @findModel.on 'change', @findModelChanged
+    @findModel.on 'markers-updated', @markersUpdated
 
   showFind: =>
     @attach()
@@ -78,15 +78,15 @@ class FindView extends View
     super()
 
   search: ->
-    @searchModel.setPattern(@findEditor.getText())
-    @searchModel.search()
+    @findModel.setPattern(@findEditor.getText())
+    @findModel.search()
 
   markersUpdated: (@markers) =>
     rootView.one 'cursor:moved', => @updateResultCounter()
 
     @updateResultCounter()
     if markers.length > 0
-      cursorPosition = @searchModel.getEditSession().getCursorBufferPosition()
+      cursorPosition = @findModel.getEditSession().getCursorBufferPosition()
       @currentMarkerIndex = @firstMarkerIndexGreaterThanPosition(cursorPosition)
       @selectMarkerAtIndex(@currentMarkerIndex)
 
@@ -100,9 +100,9 @@ class FindView extends View
 
     @resultCounter.text text
 
-  searchModelChanged: =>
+  findModelChanged: =>
     @updateOptionButtons()
-    @findEditor.setText(@searchModel.pattern)
+    @findEditor.setText(@findModel.pattern)
 
   firstMarkerIndexGreaterThanPosition: (bufferPosition) ->
     for marker, index in @markers
@@ -112,7 +112,7 @@ class FindView extends View
 
   selectMarkerAtIndex: (markerIndex) ->
     marker = @markers[markerIndex]
-    @searchModel.getEditSession().setSelectedBufferRange marker.getBufferRange()
+    @findModel.getEditSession().setSelectedBufferRange marker.getBufferRange()
     @resultCounter.text("#{markerIndex + 1} of #{@markers.length}")
 
   selectNext: =>
@@ -125,26 +125,26 @@ class FindView extends View
     @selectMarkerAtIndex(@currentMarkerIndex)
 
   setSelectionAsSearchPattern: =>
-    editSession = @searchModel.getEditSession()
+    editSession = @findModel.getEditSession()
 
     if pattern = editSession.getSelectedText()
-      @searchModel.setPattern(pattern)
+      @findModel.setPattern(pattern)
 
   toggleRegexOption: => @toggleOption('regex')
   toggleCaseSensitiveOption: => @toggleOption('caseSensitive')
   toggleInSelectionOption: => @toggleOption('inSelection')
 
   toggleOption: (optionName) ->
-    isset = @searchModel.getOption(optionName)
-    @searchModel.setOption(optionName, !isset)
+    isset = @findModel.getOption(optionName)
+    @findModel.setOption(optionName, !isset)
 
   setOptionButtonState: (optionButton, enabled) ->
     optionButton[if enabled then 'addClass' else 'removeClass']('enabled')
 
   updateOptionButtons: ->
-    @setOptionButtonState(@regexOptionButton, @searchModel.getOption('regex'))
-    @setOptionButtonState(@caseSensitiveOptionButton, @searchModel.getOption('caseSensitive'))
-    @setOptionButtonState(@inSelectionOptionButton, @searchModel.getOption('inSelection'))
+    @setOptionButtonState(@regexOptionButton, @findModel.getOption('regex'))
+    @setOptionButtonState(@caseSensitiveOptionButton, @findModel.getOption('caseSensitive'))
+    @setOptionButtonState(@inSelectionOptionButton, @findModel.getOption('inSelection'))
 
   # handleReplaceEvents: ->
   #   @replaceEditor.on 'core:confirm', @replaceNext

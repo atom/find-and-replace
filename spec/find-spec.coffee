@@ -1,5 +1,5 @@
 RootView = require 'root-view'
-FindAndReplace = require 'find-and-replace/lib/find-and-replace'
+FindAndReplace = require 'find-and-replace/lib/find'
 
 describe 'FindAndReplace', ->
   [subject, editor] = []
@@ -12,8 +12,8 @@ describe 'FindAndReplace', ->
 
       it "loads with no state and serializes the search model", ->
         FindAndReplace.activate()
-        FindAndReplace.bufferFindAndReplaceSearchModel.setPattern('one')
-        FindAndReplace.bufferFindAndReplaceSearchModel.setOption('regex', true)
+        FindAndReplace.findModel.setPattern('one')
+        FindAndReplace.findModel.setOption('regex', true)
 
         state = FindAndReplace.serialize()
         expect(state.buffer).toEqual
@@ -24,9 +24,9 @@ describe 'FindAndReplace', ->
             inSelection: false
             caseSensitive: false
 
-      it "loads with state and populates the searchModel", ->
+      it "loads with state and populates the findModel", ->
         FindAndReplace.activate
-          buffer: 
+          buffer:
             history: ['one']
             options:
               regex: true
@@ -34,8 +34,8 @@ describe 'FindAndReplace', ->
               inSelection: false
               caseSensitive: false
 
-        expect(FindAndReplace.bufferFindAndReplaceSearchModel.history).toEqual ['one']
-        expect(FindAndReplace.bufferFindAndReplaceSearchModel.options.regex).toEqual true
+        expect(FindAndReplace.findModel.history).toEqual ['one']
+        expect(FindAndReplace.findModel.options.regex).toEqual true
 
     describe "Project find and replace", ->
       beforeEach ->
@@ -54,7 +54,7 @@ describe 'FindAndReplace', ->
             inSelection: false
             caseSensitive: false
 
-      it "loads with state and populates the searchModel", ->
+      it "loads with state and populates the findModel", ->
         FindAndReplace.activate
           project:
             history: ['two']

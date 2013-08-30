@@ -12,7 +12,7 @@ shell = require 'shell'
 #
 # TODO/FIXME - This thing hooks the current buffer's contents-modified event.
 # It will run the search and keep the markers in memory even when the find box
-# is not open. This can be fixed by hooking the searchModel's 'show:results'
+# is not open. This can be fixed by hooking the findModel's 'show:results'
 # and 'hide:results' events and unbinding from the buffer. But then the find-
 # next (cmd+g) behavior becomes a different code path. To keep things simple
 # for now, I'm going to leave it this way. If it's slow, we can implement the
@@ -21,10 +21,10 @@ module.exports =
 class SearchResultsModel
   _.extend @prototype, EventEmitter
 
-  constructor: (@searchModel, @editor) ->
+  constructor: (@findModel, @editor) ->
     @markers = []
     @currentResultIndex = null
-    @searchModel.on 'change', @search
+    @findModel.on 'change', @search
 
     # FIXME: I feel a little dirty
     @editor.searchResults = this
@@ -42,7 +42,7 @@ class SearchResultsModel
 
   search: =>
     @destroyMarkers()
-    if @searchModel.pattern?.length
+    if @findModel.pattern?.length
       @markers = @findAndMarkRanges()
       @emitCurrentResult()
       @trigger 'markers-changed', markers: @markers
@@ -122,9 +122,9 @@ class SearchResultsModel
     @editor.off 'editor:path-changed', @onPathChanged
     @editor.off 'editor:will-be-removed', @destroy
 
-    @searchModel.off 'change', @search
+    @findModel.off 'change', @search
     @editor = null
-    @searchModel = null
+    @findModel = null
     @trigger 'destroyed', this
 
   ### Event Handlers ###
@@ -248,12 +248,12 @@ class SearchResultsModel
   findRanges: ->
     ranges = []
     for rangeToSearch in @getRangesToSearch()
-      @buffer.scanInRange @searchModel.getRegex(), rangeToSearch, ({range}) ->
+      @buffer.scanInRange @findModel.getRegex(), rangeToSearch, ({range}) ->
         ranges.push(range)
     ranges
 
   getRangesToSearch: ->
-    if @searchModel.options.inSelection
+    if @findModel.options.inSelection
       selectedBufferRanges = @editor.getSelectedBufferRanges()
       # only search in selection if there is a selection somewhere.
       for range in selectedBufferRanges

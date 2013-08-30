@@ -1,4 +1,4 @@
 {
-  "main": "./lib/find-and-replace",
+  "main": "./lib/find",
   "description": "Find and replace both in the current buffer and within a project."
 }
