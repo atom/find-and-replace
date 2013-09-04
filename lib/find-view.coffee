@@ -148,9 +148,9 @@ class FindView extends View
     0
 
   selectMarkerAtIndex: (markerIndex) ->
-    marker = @markers[markerIndex]
-    @findModel.getEditSession().setSelectedBufferRange marker.getBufferRange()
-    @resultCounter.text("#{markerIndex + 1} of #{@markers.length}")
+    if marker = @markers[markerIndex]
+      @findModel.getEditSession().setSelectedBufferRange marker.getBufferRange()
+      @resultCounter.text("#{markerIndex + 1} of #{@markers.length}")
 
   findNext: =>
     if @findEditor.getText() == @findModel.pattern and @findModel.isValid()
