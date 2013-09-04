@@ -153,10 +153,16 @@ class FindView extends View
     @resultCounter.text("#{markerIndex + 1} of #{@markers.length}")
 
   findNext: =>
-    @currentMarkerIndex = ++@currentMarkerIndex % @markers.length
-    @selectMarkerAtIndex(@currentMarkerIndex)
+    if @findEditor.getText() == @findModel.pattern
+      @currentMarkerIndex = ++@currentMarkerIndex % @markers.length
+      @selectMarkerAtIndex(@currentMarkerIndex)
+    else
+      @search()
 
   findPrevious: =>
+    if @findEditor.getText() != @findModel.pattern
+      @search()
+
     @currentMarkerIndex--
     @currentMarkerIndex = @markers.length - 1 if @currentMarkerIndex < 0
     @selectMarkerAtIndex(@currentMarkerIndex)

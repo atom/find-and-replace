@@ -62,6 +62,13 @@ fdescribe 'FindView', ->
       expect(findView.resultCounter.text()).toEqual('3 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[2, 34], [2, 39]]
 
+    it "will re-run search if 'find-and-replace:find-next' is triggered after changing the findEditor's text", ->
+      findView.findEditor.setText 'sort'
+      findView.findEditor.trigger 'find-and-replace:find-next'
+
+      expect(findView.resultCounter.text()).toEqual('3 of 5')
+      expect(editor.getSelectedBufferRange()).toEqual [[8, 11], [8, 15]]
+
     it "selects the previous match when the previous match button is pressed", ->
       $('.find-and-replace .icon-previous').click()
       expect(findView.resultCounter.text()).toEqual('1 of 6')
@@ -71,6 +78,13 @@ fdescribe 'FindView', ->
       editor.trigger('find-and-replace:find-previous')
       expect(findView.resultCounter.text()).toEqual('1 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[1, 27], [1, 22]]
+
+    it "will re-run search if 'find-and-replace:find-previous' is triggered after changing the findEditor's text", ->
+      findView.findEditor.setText 'sort'
+      findView.findEditor.trigger 'find-and-replace:find-previous'
+
+      expect(findView.resultCounter.text()).toEqual('2 of 5')
+      expect(editor.getSelectedBufferRange()).toEqual [[1, 6], [1, 10]]
 
     it "replaces results counter with number of results found when user moves the cursor", ->
       editor.moveCursorDown()
