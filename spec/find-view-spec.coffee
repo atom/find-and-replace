@@ -163,6 +163,25 @@ fdescribe 'FindView', ->
           newEditor = editor.splitRight(project.open('sample.coffee'))
           expect(findResultsView.children().length).toEqual 0
 
+    describe "when finding within a selection", ->
+      beforeEach ->
+        editor.setSelectedBufferRange [[2, 0], [4, 0]]
+        findView.focus()
+
+      it "toggles find within a selction via and event and only finds matches within the selection", ->
+        findView.trigger 'find-and-replace:toggle-in-selection-option'
+        findView.findEditor.setText 'items'
+        $(document.activeElement).trigger 'core:confirm'
+        expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
+        expect(findView.resultCounter.text()).toEqual('1 of 3')
+
+      it "toggles find within a selction via and button and only finds matches within the selection", ->
+        findView.inSelectionOptionButton.click()
+        findView.findEditor.setText 'items'
+        $(document.activeElement).trigger 'core:confirm'
+        expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
+        expect(findView.resultCounter.text()).toEqual('1 of 3')
+
     describe "when regex is toggled", ->
       beforeEach ->
         findView.focus()

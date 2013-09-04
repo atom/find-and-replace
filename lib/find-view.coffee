@@ -171,13 +171,9 @@ class FindView extends View
     if pattern = @findModel.getEditSession().getSelectedText()
       @findEditor.setText(pattern)
 
-  toggleRegexOption: => @toggleOption('regex')
-  toggleCaseSensitiveOption: => @toggleOption('caseSensitive')
-  toggleInSelectionOption: => @toggleOption('inSelection')
-
-  toggleOption: (optionName) ->
-    isset = @findModel.getOption(optionName)
-    @findModel.setOption(optionName, !isset)
+  toggleRegexOption: => @findModel.toggleOption('regex')
+  toggleCaseSensitiveOption: => @findModel.toggleOption('caseSensitive')
+  toggleInSelectionOption: => @findModel.toggleOption('inSelection')
 
   setOptionButtonState: (optionButton, enabled) ->
     optionButton[if enabled then 'addClass' else 'removeClass']('enabled')

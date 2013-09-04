@@ -35,9 +35,9 @@ class FindModel
     inSelection: false
     caseSensitive: false
 
-  setOption: (key, value) ->
-    return if @options[key] == value
-    @options[key] = value
+  toggleOption: (optionName) ->
+    currentState = @getOption(optionName)
+    @options[optionName] = !currentState
     @update()
 
   getOption: (key) ->
@@ -106,7 +106,11 @@ class FindModel
       invalidation: 'inside'
       replicate: false
 
-    bufferRange = [[0,0],[Infinity,Infinity]]
+    if @getOption('inSelection')
+      bufferRange = @editSession.getSelectedBufferRange()
+    else
+      bufferRange = [[0,0],[Infinity,Infinity]]
+
     @editSession.scanInBufferRange @getRegex(), bufferRange, ({range}) =>
       @markers.push @editSession.markBufferRange(range, markerAttributes)
 
