@@ -10,10 +10,10 @@ class FindModel
   constructor: (options={}) ->
     @options = _.extend(@optionDefaults(), options)
     @pattern = ''
+    @replacePattern = ''
 
     @activePaneItemChanged()
-    rootView.on 'pane-container:active-pane-item-changed', =>
-      @activePaneItemChanged()
+    rootView.on 'pane-container:active-pane-item-changed', => @activePaneItemChanged()
 
   activePaneItemChanged: ->
     @editSession = null
@@ -43,6 +43,11 @@ class FindModel
     @pattern = pattern
     @update()
 
+  setReplacePattern: (replacePattern='') ->
+    return if @replacePattern == replacePattern
+    @replacePattern = replacePattern
+    @update()
+
   getEditSession: ->
     @editSession
 
@@ -63,20 +68,59 @@ class FindModel
     @updateMarkers()
     @trigger 'markers-updated', @markers
 
+  replace: ->
+    @updateMarkers()
+    @replaceCurrentMarkerText()
+    @trigger 'markers-updated', @markers
+
+  replaceAll: ->
+    @updateMarkers()
+    loop
+      break unless @replaceCurrentMarkerText()?
+    @trigger 'markers-updated', @markers
+
+  replaceCurrentMarkerText: ->
+    return unless @markers.length > 0
+
+    marker = @markers[@currentMarkerIndex]
+    bufferRange = marker.getBufferRange()
+    @editSession.setTextInBufferRange(bufferRange, @replacePattern)
+    @markers = @markers.filter (marker) -> marker.isValid()
+    @currentMarkerIndex = @firstMarkerIndexAfterCursor()
+
   updateMarkers: ->
     @destroyMarkers()
 
     return if not @editSession? or not @pattern
 
-    buffer = @editSession.getBuffer()
     markerAttributes =
       class: 'find-result'
       invalidation: 'inside'
       replicate: false
 
-    buffer.scanInRange @getRegex(), buffer.getRange(), ({range}) =>
+    bufferRange = [[0,0],[Infinity,Infinity]]
+    @editSession.scanInBufferRange @getRegex(), bufferRange, ({range}) =>
       @markers.push @editSession.markBufferRange(range, markerAttributes)
+
+    @currentMarkerIndex = @firstMarkerIndexAfterCursor()
 
   destroyMarkers: ->
     marker.destroy() for marker in @markers ? []
     @markers = []
+
+  # incrementCurrentMarkerIndex: =>
+  #   @currentMarkerIndex = ++@currentMarkerIndex % @markers.length
+  #
+  # decrementCurrentMarkerIndex: =>
+  #   @currentMarkerIndex--
+  #   @currentMarkerIndex = @markers.length - 1 if @currentMarkerIndex < 0
+
+  firstMarkerIndexAfterCursor: ->
+    selection = @editSession.getSelection()
+    {start, end} = selection.getBufferRange()
+    start = end if selection.isReversed()
+
+    for marker, index in @markers
+      markerStartPosition = marker.bufferMarker.getStartPosition()
+      return index if markerStartPosition.isGreaterThanOrEqual(start)
+    0

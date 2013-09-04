@@ -39,16 +39,11 @@ class FindView extends View
     @updateOptionButtons()
 
   handleEvents: ->
-    rootView.command 'find-and-replace:show', @showFind
+    @handleFindEvents()
+    @handleReplaceEvents()
+
     @on 'core:cancel', @detach
-    @on 'click', => @focusFind()
-    @findEditor.on 'core:confirm', => @search()
-
-    @previousButton.on 'click', => @selectPrevious()
-    @nextButton.on 'click', => @selectNext()
-
-    rootView.command 'find-and-replace:find-next', @selectNext
-    rootView.command 'find-and-replace:find-previous', @selectPrevious
+    @on 'click', => @focus()
 
     @command 'find-and-replace:toggle-regex-option', @toggleRegexOption
     @command 'find-and-replace:toggle-case-sensitive-option', @toggleCaseSensitiveOption
@@ -62,15 +57,40 @@ class FindView extends View
     @findModel.on 'change', @findModelChanged
     @findModel.on 'markers-updated', @markersUpdated
 
+  handleFindEvents: ->
+    rootView.command 'find-and-replace:show', @showFind
+    @findEditor.on 'core:confirm', => @search()
+    @nextButton.on 'click', => @findNext()
+    @previousButton.on 'click', => @findPrevious()
+    rootView.command 'find-and-replace:find-next', @findNext
+    rootView.command 'find-and-replace:find-previous', @findPrevious
+
+  handleReplaceEvents: ->
+    rootView.command 'find-and-replace:show-replace', @showReplace
+    @replaceEditor.on 'core:confirm', @replace
+    @replaceNextButton.on 'click', @replaceNext
+    @replaceAllButton.on 'click', @replaceAll
+    rootView.command 'find-and-replace:replace-next', @replaceNext
+    rootView.command 'find-and-replace:replace-all', @replaceAll
+
   showFind: =>
     @attach()
     @addClass('find-mode').removeClass('replace-mode')
-    @focusFind()
+    @focus()
 
-  focusFind: =>
+  showReplace: =>
+    @attach()
+    @addClass('replace-mode').removeClass('find-mode')
+    @focus()
+
+  focus: =>
     @replaceEditor.selectAll()
     @findEditor.selectAll()
-    @findEditor.focus()
+
+    if @hasClass('find-mode')
+      @findEditor.focus()
+    else
+      @replaceEditor.focus()
 
   attach: =>
     @findResultsView.attach()
@@ -84,6 +104,19 @@ class FindView extends View
   search: ->
     @findModel.setPattern(@findEditor.getText())
     @findModel.search()
+
+  replace: =>
+    @replaceNext()
+
+  replaceNext: =>
+    @findModel.setPattern(@findEditor.getText())
+    @findModel.setReplacePattern(@replaceEditor.getText())
+    @findModel.replace()
+
+  replaceAll: =>
+    @findModel.setPattern(@findEditor.getText())
+    @findModel.setReplacePattern(@replaceEditor.getText())
+    @findModel.replaceAll()
 
   markersUpdated: (@markers) =>
     rootView.one 'cursor:moved', => @updateResultCounter()
@@ -119,11 +152,11 @@ class FindView extends View
     @findModel.getEditSession().setSelectedBufferRange marker.getBufferRange()
     @resultCounter.text("#{markerIndex + 1} of #{@markers.length}")
 
-  selectNext: =>
+  findNext: =>
     @currentMarkerIndex = ++@currentMarkerIndex % @markers.length
     @selectMarkerAtIndex(@currentMarkerIndex)
 
-  selectPrevious: =>
+  findPrevious: =>
     @currentMarkerIndex--
     @currentMarkerIndex = @markers.length - 1 if @currentMarkerIndex < 0
     @selectMarkerAtIndex(@currentMarkerIndex)
@@ -149,36 +182,3 @@ class FindView extends View
     @setOptionButtonState(@regexOptionButton, @findModel.getOption('regex'))
     @setOptionButtonState(@caseSensitiveOptionButton, @findModel.getOption('caseSensitive'))
     @setOptionButtonState(@inSelectionOptionButton, @findModel.getOption('inSelection'))
-
-  # handleReplaceEvents: ->
-  #   @replaceEditor.on 'core:confirm', @replaceNext
-  #   @findEditor.on 'find-and-replace:focus-next', @focusReplace
-  #   @findEditor.on 'find-and-replace:focus-previous', @focusReplace
-  #   rootView.command 'find-and-replace:display-replace', @showReplace
-  #   @replaceNextButton.on 'click', @replaceNext
-  #   @replaceAllButton.on 'click', @replaceAll
-  #   @replaceEditor.on 'find-and-replace:focus-next', @focusFind
-  #   @replaceEditor.on 'find-and-replace:focus-previous', @focusFind
-  #   @replaceLabel.on 'click', @focusReplace
-  #
-  #
-  # showReplace: =>
-  #   @attach()
-  #   @addClass('replace-mode').removeClass('find-mode')
-  #   @focusReplace()
-  #
-  # focusReplace: =>
-  #   return unless @hasClass('replace-mode')
-  #   @findEditor.clearSelections()
-  #   @replaceEditor.selectAll()
-  #   @replaceEditor.focus()
-  #
-  # replaceNext: =>
-  #   @storePattern()
-  #   replacement = @replaceEditor.getText()
-  #   @currentEditor().trigger('find-and-replace:replace-next', {replacement})
-  #
-  # replaceAll: =>
-  #   @storePattern()
-  #   replacement = @replaceEditor.getText()
-  #   @currentEditor().trigger('find-and-replace:replace-all', {replacement})

@@ -48,12 +48,16 @@ fdescribe 'FindView', ->
       expect(findView.resultCounter.text()).toEqual('2 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
 
+      findView.findEditor.trigger 'core:confirm'
+      expect(findView.resultCounter.text()).toEqual('3 of 6')
+      expect(editor.getSelectedBufferRange()).toEqual [[2, 34], [2, 39]]
+
     it "selects the next match when the next match button is pressed", ->
       $('.find-and-replace .icon-next').click()
       expect(findView.resultCounter.text()).toEqual('3 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[2, 34], [2, 39]]
 
-    it "selects the next match when the 'find-and-replace:focus-next' event is triggered", ->
+    it "selects the next match when the 'find-and-replace:find-next' event is triggered", ->
       editor.trigger('find-and-replace:find-next')
       expect(findView.resultCounter.text()).toEqual('3 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[2, 34], [2, 39]]
@@ -63,7 +67,7 @@ fdescribe 'FindView', ->
       expect(findView.resultCounter.text()).toEqual('1 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[1, 27], [1, 22]]
 
-    it "selects the previous match when the 'find-and-replace:focus-previous' event is triggered", ->
+    it "selects the previous match when the 'find-and-replace:find-previous' event is triggered", ->
       editor.trigger('find-and-replace:find-previous')
       expect(findView.resultCounter.text()).toEqual('1 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[1, 27], [1, 22]]
@@ -186,7 +190,7 @@ fdescribe 'FindView', ->
   describe "replacing", ->
     beforeEach ->
       editor.setCursorBufferPosition([2,0])
-      editor.trigger 'find-and-replace:display-replace'
+      editor.trigger 'find-and-replace:show-replace'
       findView.findEditor.setText('items')
       findView.replaceEditor.setText('cats')
 
@@ -197,6 +201,11 @@ fdescribe 'FindView', ->
           expect(findView.resultCounter.text()).toEqual('2 of 5')
           expect(editor.lineForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
           expect(editor.getSelectedBufferRange()).toEqual [[2, 33], [2, 38]]
+
+          findView.replaceEditor.trigger 'core:confirm'
+          expect(findView.resultCounter.text()).toEqual('2 of 4')
+          expect(editor.lineForBufferRow(2)).toBe "    if (cats.length <= 1) return cats;"
+          expect(editor.getSelectedBufferRange()).toEqual [[3, 16], [3, 21]]
 
       describe "when the replace next button is pressed", ->
         it "replaces the match after the cursor and selects the next match", ->
@@ -214,17 +223,20 @@ fdescribe 'FindView', ->
 
     describe "replace all", ->
       describe "when the replace all button is pressed", ->
-        it "replaces the match after the cursor and selects the next match", ->
+        it "replaces all matched text", ->
           $('.find-and-replace .btn-all').click()
-          expect(findView.resultCounter.text()).toEqual('0 found')
+          expect(findView.resultCounter.text()).toEqual('no results')
           expect(editor.getText()).not.toMatch /items/
+          window.x = editor.getText()
+          expect(editor.getText().match(/\bcats\b/g).length).toMatch 6
           expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 0]]
 
-      describe "when the 'find-and-replace:replace-next' event is triggered", ->
-        it "replaces the match after the cursor and selects the next match", ->
+      describe "when the 'find-and-replace:replace-all' event is triggered", ->
+        it "replaces all matched text", ->
           editor.trigger 'find-and-replace:replace-all'
-          expect(findView.resultCounter.text()).toEqual('0 found')
+          expect(findView.resultCounter.text()).toEqual('no results')
           expect(editor.getText()).not.toMatch /items/
+          expect(editor.getText().match(/\bcats\b/g).length).toMatch 6
           expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 0]]
 
   describe "history", ->
