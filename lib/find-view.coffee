@@ -48,7 +48,6 @@ class FindView extends View
     @command 'find-and-replace:toggle-regex-option', @toggleRegexOption
     @command 'find-and-replace:toggle-case-sensitive-option', @toggleCaseSensitiveOption
     @command 'find-and-replace:toggle-in-selection-option', @toggleInSelectionOption
-    @command 'find-and-replace:set-selection-as-search-pattern', @setSelectionAsSearchPattern
 
     @regexOptionButton.on 'click', @toggleRegexOption
     @caseSensitiveOptionButton.on 'click', @toggleCaseSensitiveOption
@@ -59,7 +58,7 @@ class FindView extends View
 
   handleFindEvents: ->
     rootView.command 'find-and-replace:show', @showFind
-    @findEditor.on 'core:confirm', => @search()
+    @findEditor.on 'core:confirm', => @findAll()
     @nextButton.on 'click', => @findNext()
     @previousButton.on 'click', => @findPrevious()
     rootView.command 'find-and-replace:find-next', @findNext
@@ -102,9 +101,24 @@ class FindView extends View
     rootView.focus()
     super()
 
-  search: ->
+  findAll: ->
     @findModel.setPattern(@findEditor.getText())
-    @findModel.search()
+    @findModel.findAll()
+
+  findNext: =>
+    if @findEditor.getText() == @findModel.pattern and @findModel.isValid()
+      @currentMarkerIndex = ++@currentMarkerIndex % @markers.length
+      @selectMarkerAtIndex(@currentMarkerIndex)
+    else
+      @findAll()
+
+  findPrevious: =>
+    if @findEditor.getText() != @findModel.pattern and @findModel.isValid()
+      @findAll()
+
+    @currentMarkerIndex--
+    @currentMarkerIndex = @markers.length - 1 if @currentMarkerIndex < 0
+    @selectMarkerAtIndex(@currentMarkerIndex)
 
   replace: =>
     @replaceNext()
@@ -151,21 +165,6 @@ class FindView extends View
     if marker = @markers[markerIndex]
       @findModel.getEditSession().setSelectedBufferRange marker.getBufferRange()
       @resultCounter.text("#{markerIndex + 1} of #{@markers.length}")
-
-  findNext: =>
-    if @findEditor.getText() == @findModel.pattern and @findModel.isValid()
-      @currentMarkerIndex = ++@currentMarkerIndex % @markers.length
-      @selectMarkerAtIndex(@currentMarkerIndex)
-    else
-      @search()
-
-  findPrevious: =>
-    if @findEditor.getText() != @findModel.pattern and @findModel.isValid()
-      @search()
-
-    @currentMarkerIndex--
-    @currentMarkerIndex = @markers.length - 1 if @currentMarkerIndex < 0
-    @selectMarkerAtIndex(@currentMarkerIndex)
 
   setSelectionAsFindPattern: =>
     if pattern = @findModel.getEditSession().getSelectedText()

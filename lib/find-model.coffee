@@ -69,7 +69,7 @@ class FindModel
   update: ->
     @trigger 'change'
 
-  search: ->
+  findAll: ->
     @updateMarkers()
     @trigger 'markers-updated', @markers
     @markers
