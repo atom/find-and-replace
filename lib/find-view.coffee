@@ -104,6 +104,7 @@ class FindView extends View
   findAll: ->
     @findModel.setPattern(@findEditor.getText())
     @findModel.findAll()
+    rootView.focus()
 
   findNext: =>
     if @findEditor.getText() == @findModel.pattern and @findModel.isValid()

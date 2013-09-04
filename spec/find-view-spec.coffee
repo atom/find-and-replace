@@ -26,6 +26,7 @@ fdescribe 'FindView', ->
       editor.trigger 'find-and-replace:show'
       findView.findEditor.setText 'items'
       $(document.activeElement).trigger 'core:confirm'
+      findView.focus()
 
     it "detaches from the root view", ->
       $(document.activeElement).trigger 'core:cancel'
@@ -51,6 +52,7 @@ fdescribe 'FindView', ->
       findView.findEditor.trigger 'core:confirm'
       expect(findView.resultCounter.text()).toEqual('3 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[2, 34], [2, 39]]
+      expect(editor.find(':focus')).toExist()
 
     it "selects the next match when the next match button is pressed", ->
       $('.find-and-replace .icon-next').click()
@@ -162,6 +164,9 @@ fdescribe 'FindView', ->
           expect(findResultsView.children().length).toEqual 0
 
     describe "when regex is toggled", ->
+      beforeEach ->
+        findView.focus()
+
       it "toggles regex via an event and finds text matching the pattern", ->
         editor.setCursorBufferPosition([2,0])
         findView.trigger 'find-and-replace:toggle-regex-option'
@@ -180,10 +185,12 @@ fdescribe 'FindView', ->
       beforeEach ->
         editor.setText "-----\nwords\nWORDs\n"
         editor.setCursorBufferPosition([0,0])
+        findView.focus()
 
       it "toggles case sensitivity via an event and finds text matching the pattern", ->
         findView.findEditor.setText 'WORDs'
         $(document.activeElement).trigger 'core:confirm'
+        findView.focus()
         expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 5]]
 
         editor.setCursorBufferPosition([0,0])
@@ -211,6 +218,7 @@ fdescribe 'FindView', ->
         expect(findResultsView.children().length).toEqual 6
 
         findView.findEditor.setText 'notinthefilebro'
+        findView.focus()
         $(document.activeElement).trigger 'core:confirm'
 
         expect(findResultsView.children().length).toEqual 0
