@@ -11,6 +11,7 @@ class FindModel
     @options = _.extend(@optionDefaults(), options)
     @pattern = ''
     @replacePattern = ''
+    @valid = false
 
     @activePaneItemChanged()
     rootView.on 'pane-container:active-pane-item-changed', => @activePaneItemChanged()
@@ -19,10 +20,14 @@ class FindModel
     @editSession = null
     paneItem = rootView.getActivePaneItem()
     @editSession = paneItem if paneItem instanceof EditSession
-    @search()
+    @destroyMarkers()
+    @trigger 'markers-updated', @markers
 
   serialize: ->
     options: @options
+
+  isValid: ->
+    @valid
 
   optionDefaults: ->
     regex: false
@@ -67,6 +72,7 @@ class FindModel
   search: ->
     @updateMarkers()
     @trigger 'markers-updated', @markers
+    @markers
 
   replace: ->
     @updateMarkers()
@@ -93,6 +99,8 @@ class FindModel
 
     return if not @editSession? or not @pattern
 
+    @valid = true
+
     markerAttributes =
       class: 'find-result'
       invalidation: 'inside'
@@ -105,6 +113,7 @@ class FindModel
     @currentMarkerIndex = @firstMarkerIndexAfterCursor()
 
   destroyMarkers: ->
+    @valid = false
     marker.destroy() for marker in @markers ? []
     @markers = []
 

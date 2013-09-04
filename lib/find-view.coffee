@@ -121,9 +121,8 @@ class FindView extends View
 
   markersUpdated: (@markers) =>
     rootView.one 'cursor:moved', => @updateResultCounter()
-
     @updateResultCounter()
-    if markers.length > 0
+    if @markers.length > 0
       cursorPosition = @findModel.getEditSession().getCursorBufferPosition()
       @currentMarkerIndex = @firstMarkerIndexGreaterThanPosition(cursorPosition)
       @selectMarkerAtIndex(@currentMarkerIndex)
@@ -154,14 +153,14 @@ class FindView extends View
     @resultCounter.text("#{markerIndex + 1} of #{@markers.length}")
 
   findNext: =>
-    if @findEditor.getText() == @findModel.pattern
+    if @findEditor.getText() == @findModel.pattern and @findModel.isValid()
       @currentMarkerIndex = ++@currentMarkerIndex % @markers.length
       @selectMarkerAtIndex(@currentMarkerIndex)
     else
       @search()
 
   findPrevious: =>
-    if @findEditor.getText() != @findModel.pattern
+    if @findEditor.getText() != @findModel.pattern and @findModel.isValid()
       @search()
 
     @currentMarkerIndex--

@@ -104,14 +104,14 @@ fdescribe 'FindView', ->
       describe "when a new edit session is activated", ->
         it "udpates the result view and selects the correct text", ->
           rootView.open('sample.coffee')
-          expect(findView.resultCounter.text()).toEqual('1 of 7')
-          expect(editor.getSelectedBufferRange()).toEqual [[1, 9], [1, 14]]
+          expect(findView.resultCounter.text()).toEqual('no results')
+          expect(editor.getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
 
         it "highlights the found text in the new edit session", ->
           findResultsView = editor.find('.search-results')
 
           rootView.open('sample.coffee')
-          expect(findResultsView.children().length).toEqual 7
+          expect(findResultsView.children().length).toEqual 0
 
       describe "when all active pane items are closed", ->
         it "updates the result count", ->
@@ -147,6 +147,10 @@ fdescribe 'FindView', ->
       describe "when a new edit session is activated on a different pane", ->
         it "updates the result view and selects the correct text", ->
           newEditor = editor.splitRight(project.open('sample.coffee'))
+          expect(findView.resultCounter.text()).toEqual('no results')
+          expect(newEditor.getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
+
+          findView.trigger 'find-and-replace:find-next'
           expect(findView.resultCounter.text()).toEqual('1 of 7')
           expect(newEditor.getSelectedBufferRange()).toEqual [[1, 9], [1, 14]]
 
@@ -155,7 +159,7 @@ fdescribe 'FindView', ->
 
           expect(findResultsView.children().length).toEqual 6
           newEditor = editor.splitRight(project.open('sample.coffee'))
-          expect(findResultsView.children().length).toEqual 7
+          expect(findResultsView.children().length).toEqual 0
 
     describe "when regex is toggled", ->
       it "toggles regex via an event and finds text matching the pattern", ->
