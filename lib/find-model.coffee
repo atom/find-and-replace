@@ -108,13 +108,6 @@ class FindModel
     marker.destroy() for marker in @markers ? []
     @markers = []
 
-  # incrementCurrentMarkerIndex: =>
-  #   @currentMarkerIndex = ++@currentMarkerIndex % @markers.length
-  #
-  # decrementCurrentMarkerIndex: =>
-  #   @currentMarkerIndex--
-  #   @currentMarkerIndex = @markers.length - 1 if @currentMarkerIndex < 0
-
   firstMarkerIndexAfterCursor: ->
     selection = @editSession.getSelection()
     {start, end} = selection.getBufferRange()
