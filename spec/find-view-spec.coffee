@@ -90,6 +90,16 @@ fdescribe 'FindView', ->
       editor.moveCursorDown()
       expect(findView.resultCounter.text()).toBe '6 found'
 
+    it "places the selected text into the find editor when find-and-replace:set-find-pattern is triggered", ->
+      editor.setSelectedBufferRange([[1,6],[1,10]])
+      rootView.trigger 'find-and-replace:use-selection-as-find-pattern'
+
+      expect(findView.findEditor.getText()).toBe 'sort'
+      expect(editor.getSelectedBufferRange()).toEqual [[1,6],[1,10]]
+
+      rootView.trigger 'find-and-replace:find-next'
+      expect(editor.getSelectedBufferRange()).toEqual [[8,11],[8,15]]
+
     describe "when the active pane item changes", ->
       describe "when a new edit session is activated", ->
         it "udpates the result view and selects the correct text", ->

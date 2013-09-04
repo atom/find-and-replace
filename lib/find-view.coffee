@@ -64,6 +64,7 @@ class FindView extends View
     @previousButton.on 'click', => @findPrevious()
     rootView.command 'find-and-replace:find-next', @findNext
     rootView.command 'find-and-replace:find-previous', @findPrevious
+    rootView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
 
   handleReplaceEvents: ->
     rootView.command 'find-and-replace:show-replace', @showReplace
@@ -167,11 +168,9 @@ class FindView extends View
     @currentMarkerIndex = @markers.length - 1 if @currentMarkerIndex < 0
     @selectMarkerAtIndex(@currentMarkerIndex)
 
-  setSelectionAsSearchPattern: =>
-    editSession = @findModel.getEditSession()
-
-    if pattern = editSession.getSelectedText()
-      @findModel.setPattern(pattern)
+  setSelectionAsFindPattern: =>
+    if pattern = @findModel.getEditSession().getSelectedText()
+      @findEditor.setText(pattern)
 
   toggleRegexOption: => @toggleOption('regex')
   toggleCaseSensitiveOption: => @toggleOption('caseSensitive')

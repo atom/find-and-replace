@@ -8,7 +8,7 @@
   'meta-g': 'find-and-replace:find-next'
   'meta-G': 'find-and-replace:find-previous'
 
-  'meta-e': 'find-and-replace:set-selection-as-search-pattern'
+  'meta-e': 'find-and-replace:use-selection-as-find-pattern'
 
 '.find-and-replace .mini.editor input':
   'tab': 'find-and-replace:focus-next'
