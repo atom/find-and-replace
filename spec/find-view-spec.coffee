@@ -198,7 +198,7 @@ fdescribe 'FindView', ->
         $(document.activeElement).trigger 'core:confirm'
         expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 5]]
 
-      it "toggles case sensitiviAty via a button and finds text matching the pattern", ->
+      it "toggles case sensitivity via a button and finds text matching the pattern", ->
         findView.findEditor.setText 'WORDs'
         $(document.activeElement).trigger 'core:confirm'
         expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 5]]
