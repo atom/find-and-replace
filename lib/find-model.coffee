@@ -17,10 +17,14 @@ class FindModel
     rootView.on 'pane-container:active-pane-item-changed', => @activePaneItemChanged()
 
   activePaneItemChanged: ->
+    @editSession?.getBuffer().off(".find")
     @editSession = null
     paneItem = rootView.getActivePaneItem()
-    @editSession = paneItem if paneItem instanceof EditSession
     @destroyMarkers()
+    if paneItem instanceof EditSession
+      @editSession = paneItem
+      @editSession?.getBuffer().on "changed.find", => @findAll()
+
     @trigger 'markers-updated', @markers
 
   serialize: ->
@@ -72,7 +76,6 @@ class FindModel
   findAll: ->
     @updateMarkers()
     @trigger 'markers-updated', @markers
-    @markers
 
   replace: ->
     @updateMarkers()

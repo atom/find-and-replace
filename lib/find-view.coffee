@@ -104,6 +104,12 @@ class FindView extends View
   findAll: ->
     @findModel.setPattern(@findEditor.getText())
     @findModel.findAll()
+
+    if @markers.length > 0
+      cursorPosition = @findModel.getEditSession().getCursorBufferPosition()
+      @currentMarkerIndex = @firstMarkerIndexGreaterThanPosition(cursorPosition)
+      @selectMarkerAtIndex(@currentMarkerIndex)
+
     rootView.focus()
 
   findNext: =>
@@ -129,6 +135,10 @@ class FindView extends View
     @findModel.setReplacePattern(@replaceEditor.getText())
     @findModel.replace()
 
+    cursorPosition = @findModel.getEditSession().getCursorBufferPosition()
+    @currentMarkerIndex = @firstMarkerIndexGreaterThanPosition(cursorPosition)
+    @selectMarkerAtIndex(@currentMarkerIndex)
+
   replaceAll: =>
     @findModel.setPattern(@findEditor.getText())
     @findModel.setReplacePattern(@replaceEditor.getText())
@@ -137,10 +147,6 @@ class FindView extends View
   markersUpdated: (@markers) =>
     rootView.one 'cursor:moved', => @updateResultCounter()
     @updateResultCounter()
-    if @markers.length > 0
-      cursorPosition = @findModel.getEditSession().getCursorBufferPosition()
-      @currentMarkerIndex = @firstMarkerIndexGreaterThanPosition(cursorPosition)
-      @selectMarkerAtIndex(@currentMarkerIndex)
 
   updateResultCounter: ->
     if not @markers? or @markers.length == 0

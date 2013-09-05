@@ -163,6 +163,16 @@ fdescribe 'FindView', ->
           newEditor = editor.splitRight(project.open('sample.coffee'))
           expect(findResultsView.children().length).toEqual 0
 
+    describe "when the buffer contents change", ->
+      it "re-runs the search", ->
+        findResultsView = editor.find('.search-results')
+        editor.setCursorBufferPosition([4,0])
+        editor.insertText("items items")
+
+        expect(findResultsView.children().length).toEqual 8
+        expect(findView.resultCounter.text()).toEqual('8 found')
+        expect(editor.getSelectedBufferRange()).toEqual [[4, 11], [4, 11]]
+
     describe "when finding within a selection", ->
       beforeEach ->
         editor.setSelectedBufferRange [[2, 0], [4, 0]]
@@ -241,6 +251,7 @@ fdescribe 'FindView', ->
         $(document.activeElement).trigger 'core:confirm'
 
         expect(findResultsView.children().length).toEqual 0
+
 
   describe "replacing", ->
     beforeEach ->
