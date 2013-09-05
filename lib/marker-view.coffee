@@ -32,11 +32,14 @@ class MarkerView extends View
       @isMarkerValid = isValid
 
   onEditorDisplayUpdated: (eventProperties) =>
-    [first, last] = [@editor.firstRenderedScreenRow, @editor.lastRenderedScreenRow]
-    range = @getScreenRange()
-    if @updateDisplayPosition and (range.start.row >= first or range.end.row <= last)
+    if @updateDisplayPosition and @isMarkerVisible()
       @updateDisplay()
       @updateDisplayPosition = false
+
+  isMarkerVisible: ->
+    {start, end} = @getScreenRange()
+    [firstRenderedRow, lastRenderedRow] = [@editor.firstRenderedScreenRow, @editor.lastRenderedScreenRow]
+    end.row >= firstRenderedRow and start.row <= lastRenderedRow
 
   updateDisplay: ->
     @clearRegions()
