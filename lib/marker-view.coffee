@@ -1,35 +1,37 @@
-{View, $$} = require 'space-pen'
+_ = require 'underscore'
+Subscriber = require 'subscriber'
 
 module.exports =
-class MarkerView extends View
+class MarkerView
+  _.extend @prototype, Subscriber
 
-  @content: ->
-    @div class: 'marker'
+  constructor: ({@editor, @marker} = {}) ->
 
-  regions: null
-  needsRemoval: false
-
-  initialize: ({@editor, @marker} = {}) ->
     @regions = []
+    @element = document.createElement('div')
+    @element.className = 'marker'
 
-    @isMarkerValid = @marker.isValid()
-    @updateDisplayPosition = @isMarkerValid
+    @updateDisplayPosition = @marker.isValid()
 
     @subscribe @marker, 'changed', @onMarkerChanged
     @subscribe @marker, 'destroyed', @remove
     @subscribe @editor, 'editor:display-updated', @onEditorDisplayUpdated
 
   remove: =>
+    @unsubscribe()
     @marker = null
     @editor = null
-    super()
+    @element.remove()
+
+  show: =>
+    @element.style.display = ""
+
+  hide: =>
+    @element.style.display = "none"
 
   onMarkerChanged: ({isValid}) =>
     @updateDisplayPosition = isValid
-    if isValid != @isMarkerValid
-      # @isMarkerValid is an optimization so we dont call into show or hide unless necessary
-      if isValid then @show() else @hide()
-      @isMarkerValid = isValid
+    if isValid then @show() else @hide()
 
   onEditorDisplayUpdated: (eventProperties) =>
     if @updateDisplayPosition and @isMarkerVisible()
@@ -57,8 +59,6 @@ class MarkerView extends View
       @appendRegion(1, { row: range.end.row, column: 0 }, range.end)
 
   appendRegion: (rows, start, end) ->
-    # FIXME: pixelPositionForScreenPosition is a major bottleneck with many
-    # markers on the page.
     { lineHeight, charWidth } = @editor
     css = @editor.pixelPositionForScreenPosition(start)
     css.height = lineHeight * rows
@@ -67,8 +67,12 @@ class MarkerView extends View
     else
       css.right = 0
 
-    region = ($$ -> @div class: 'region').css(css)
-    @append(region)
+    region = document.createElement('div')
+    region.className = 'region'
+    for name, value of css
+      region.style[name] = value + 'px'
+
+    @element.appendChild(region)
     @regions.push(region)
 
   clearRegions: ->

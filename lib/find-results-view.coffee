@@ -11,7 +11,7 @@ class FindResultsView extends View
 
   initialize: (@findModel) ->
     @markerViews = []
-    @findModel.on 'markers-updated', @markersUpdated
+    @subscribe @findModel, 'markers-updated', (markers) => @markersUpdated(markers)
 
   attach: ->
     @getEditor().underlayer.append(this)
@@ -22,14 +22,14 @@ class FindResultsView extends View
   getEditor: ->
     rootView.getActiveView()
 
-  markersUpdated: (@markers) =>
+  markersUpdated: (@markers) ->
     @destroyMarkerViews()
 
     editor = @getEditor()
     for marker in @markers
       markerView = new MarkerView({editor, marker})
       @markerViews.push(markerView)
-      @append(markerView)
+      @append(markerView.element)
 
   destroyMarkerViews: ->
     @empty()
