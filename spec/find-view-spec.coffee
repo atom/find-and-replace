@@ -87,7 +87,7 @@ describe 'FindView', ->
       findView.findEditor.setText 'items'
       $(document.activeElement).trigger 'core:confirm'
 
-    fit "doesn't change the selection, beeps if there are no matches and keeps focus on the find view", ->
+    it "doesn't change the selection, beeps if there are no matches and keeps focus on the find view", ->
       editor.setCursorBufferPosition([2,0])
       spyOn(shell, 'beep')
       findView.findEditor.setText 'notinthefilebro'

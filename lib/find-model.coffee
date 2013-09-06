@@ -10,8 +10,7 @@ class FindModel
 
   constructor: (options={}) ->
     @options = _.extend({}, @optionDefaults(), options)
-    @findPattern = ''
-    @replacePattern = ''
+    @pattern = ''
     @valid = false
 
     @activePaneItemChanged()
@@ -33,11 +32,9 @@ class FindModel
   serialize: ->
     options: @options
 
-  update: (findPattern=@findPattern, replacePattern=@replacePattern)->
-    @replacePattern = replacePattern
-
-    if findPattern != @findPattern or not @valid
-      @findPattern = findPattern
+  setPattern: (pattern)->
+    if pattern != @pattern or not @valid
+      @pattern = pattern
       @updateMarkers()
 
   toggleOption: (optionName) ->
@@ -56,18 +53,18 @@ class FindModel
     flags += 'i' unless @options.caseSensitive
 
     if @options.regex
-      new RegExp(@findPattern, flags)
+      new RegExp(@pattern, flags)
     else
-      escapedPattern = _.escapeRegExp(@findPattern)
+      escapedPattern = _.escapeRegExp(@pattern)
       new RegExp(escapedPattern, flags)
 
-  replace: (markers) ->
+  replace: (markers, text) ->
     return unless markers?.length > 0
 
     @replacing = true
     for marker in markers
       bufferRange = marker.getBufferRange()
-      @editSession.setTextInBufferRange(bufferRange, @replacePattern)
+      @editSession.setTextInBufferRange(bufferRange, text)
     @replacing = false
 
     @markers = @markers.filter (marker) -> marker.isValid()
@@ -77,7 +74,7 @@ class FindModel
     @destroyMarkers()
     @valid = true
 
-    if not @editSession? or not @findPattern
+    if not @editSession? or not @pattern
       @trigger 'updated', @markers
       return
 

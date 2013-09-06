@@ -106,33 +106,32 @@ class FindView extends View
     replaceHistory: @replaceHistory.serialize()
 
   findNext: =>
-    @findModel.update(@findEditor.getText())
+    @findModel.setPattern(@findEditor.getText())
     @selectFirstMarkerAfterCursor()
     rootView.focus() unless @markers.length == 0
 
   findPrevious: =>
-    @findModel.update(@findEditor.getText())
+    @findModel.setPattern(@findEditor.getText())
     @selectFirstMarkerBeforeCursor()
     rootView.focus() unless @markers.length == 0
 
   replaceNext: =>
-    @findModel.update(@findEditor.getText(), @replaceEditor.getText())
+    @findModel.setPattern(@findEditor.getText())
 
     markerIndex = @firstMarkerIndexAfterCursor()
     currentMarker = @markers[markerIndex]
-    @findModel.replace([currentMarker])
+    @findModel.replace([currentMarker], @replaceEditor.getText())
 
     @findModel.getEditSession().setCursorBufferPosition currentMarker.bufferMarker.getEndPosition()
 
   replaceAll: =>
-    @findModel.update(@findEditor.getText(), @replaceEditor.getText())
-    @findModel.replace(@markers)
+    @findModel.setPattern(@findEditor.getText())
+    @findModel.replace(@markers, @replaceEditor.getText())
 
   markersUpdated: (@markers) =>
     @updateResultCounter()
     @updateOptionButtons()
-    @findEditor.setText(@findModel.findPattern)
-    @replaceEditor.setText(@findModel.replacePattern)
+    @findEditor.setText(@findModel.pattern)
     @findHistory.store()
     @replaceHistory.store()
 
