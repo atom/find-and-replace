@@ -9,7 +9,7 @@ class FindModel
 
   constructor: (options={}) ->
     @options = _.extend(@optionDefaults(), options)
-    @pattern = ''
+    @findPattern = ''
     @replacePattern = ''
     @valid = false
 
@@ -21,42 +21,35 @@ class FindModel
     @editSession = null
     paneItem = rootView.getActivePaneItem()
     @destroyMarkers()
+
     if paneItem instanceof EditSession
       @editSession = paneItem
       @editSession?.getBuffer().on "changed.find", =>
-        @findAll() unless @replacing
+        unless @replacing
+          @updateMarkers()
+          @trigger 'markers-updated', @markers
 
     @trigger 'markers-updated', @markers
 
   serialize: ->
     options: @options
 
-  isValid: ->
-    @valid
+  update: (findPattern=@findPattern, replacePattern=@replacePattern)->
+    @replacePattern = replacePattern
 
-  optionDefaults: ->
-    regex: false
-    inWord: false
-    inSelection: false
-    caseSensitive: false
+    if findPattern != @findPattern or not @valid
+      @findPattern = findPattern
+      @updateMarkers()
+      @trigger 'markers-updated', @markers
 
   toggleOption: (optionName) ->
     currentState = @getOption(optionName)
     @options[optionName] = !currentState
-    @update()
+    @updateMarkers()
+    @trigger 'markers-updated', @markers
 
   getOption: (key) ->
     @options[key]
-
-  setPattern: (pattern='') ->
-    return if @pattern == pattern
-    @pattern = pattern
-    @update()
-
-  setReplacePattern: (replacePattern='') ->
-    return if @replacePattern == replacePattern
-    @replacePattern = replacePattern
-    @update()
 
   getEditSession: ->
     @editSession
@@ -66,17 +59,10 @@ class FindModel
     flags += 'i' unless @options.caseSensitive
 
     if @options.regex
-      new RegExp(@pattern, flags)
+      new RegExp(@findPattern, flags)
     else
-      escapedPattern = _.escapeRegExp(@pattern)
+      escapedPattern = _.escapeRegExp(@findPattern)
       new RegExp(escapedPattern, flags)
-
-  update: ->
-    @trigger 'change'
-
-  findAll: ->
-    @updateMarkers()
-    @trigger 'markers-updated', @markers
 
   replace: (markers) ->
     return unless markers?.length > 0
@@ -93,7 +79,7 @@ class FindModel
   updateMarkers: ->
     @destroyMarkers()
 
-    return if not @editSession? or not @pattern
+    return if not @editSession? or not @findPattern
 
     @valid = true
 
@@ -115,3 +101,8 @@ class FindModel
     @valid = false
     marker.destroy() for marker in @markers ? []
     @markers = []
+
+  optionDefaults: ->
+    regex: false
+    inSelection: false
+    caseSensitive: false

@@ -40,6 +40,7 @@ class History
 
   store: ->
     text = @editor.getText()
+    return if not text
     @scratch = null
     @items.push(text)
     @index = @items.length - 1

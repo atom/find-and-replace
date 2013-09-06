@@ -54,12 +54,11 @@ class FindView extends View
     @caseSensitiveOptionButton.on 'click', @toggleCaseSensitiveOption
     @inSelectionOptionButton.on 'click', @toggleInSelectionOption
 
-    @findModel.on 'change', @findModelChanged
     @findModel.on 'markers-updated', @markersUpdated
 
   handleFindEvents: ->
     rootView.command 'find-and-replace:show', @showFind
-    @findEditor.on 'core:confirm', => @findAll()
+    @findEditor.on 'core:confirm', => @findNext()
     @nextButton.on 'click', => @findNext()
     @previousButton.on 'click', => @findPrevious()
     rootView.command 'find-and-replace:find-next', @findNext
@@ -68,7 +67,7 @@ class FindView extends View
 
   handleReplaceEvents: ->
     rootView.command 'find-and-replace:show-replace', @showReplace
-    @replaceEditor.on 'core:confirm', @replace
+    @replaceEditor.on 'core:confirm', @replaceNext
     @replaceNextButton.on 'click', @replaceNext
     @replaceAllButton.on 'click', @replaceAll
     rootView.command 'find-and-replace:replace-next', @replaceNext
@@ -106,54 +105,36 @@ class FindView extends View
     findHistory: @findHistory.serialize()
     replaceHistory: @replaceHistory.serialize()
 
-  findAll: ->
-    @findModel.setPattern(@findEditor.getText())
-    @findModel.findAll()
+  findNext: =>
+    @findModel.update(@findEditor.getText())
     @selectFirstMarkerAfterCursor()
-
     rootView.focus()
 
-  findNext: =>
-    if @findEditor.getText() == @findModel.pattern and @findModel.isValid()
-      @selectFirstMarkerAfterCursor()
-    else
-      @findAll()
-
   findPrevious: =>
-    if @findEditor.getText() != @findModel.pattern and @findModel.isValid()
-      @findModel.setPattern(@findEditor.getText())
-      @findModel.findAll()
-
-    marker = @markers[@firstMarkerIndexAfterCursor()]
+    @findModel.update(@findEditor.getText())
     @selectFirstMarkerBeforeCursor()
-
-  replace: =>
-    @replaceNext()
+    rootView.focus()
 
   replaceNext: =>
-    unless @findEditor.getText() == @findModel.pattern and @findModel.isValid()
-      @findModel.setPattern(@findEditor.getText())
-      @findModel.findAll()
-
-    @findModel.setReplacePattern(@replaceEditor.getText())
+    @findModel.update(@findEditor.getText(), @replaceEditor.getText())
 
     markerIndex = @firstMarkerIndexAfterCursor()
     currentMarker = @markers[markerIndex]
     @findModel.replace([currentMarker])
+
     @findModel.getEditSession().setCursorBufferPosition currentMarker.bufferMarker.getEndPosition()
-    @resultCounter.text("#{markerIndex + 1} of #{@markers.length}")
 
   replaceAll: =>
-    unless @findEditor.getText() == @findModel.pattern and @findModel.isValid()
-      @findModel.setPattern(@findEditor.getText())
-      @findModel.findAll()
-
-    @findModel.setReplacePattern(@replaceEditor.getText())
+    @findModel.update(@findEditor.getText(), @replaceEditor.getText())
     @findModel.replace(@markers)
 
   markersUpdated: (@markers) =>
-    rootView.one 'cursor:moved', => @updateResultCounter()
     @updateResultCounter()
+    @updateOptionButtons()
+    @findEditor.setText(@findModel.findPattern)
+    @replaceEditor.setText(@findModel.replacePattern)
+    @findHistory.store()
+    @replaceHistory.store()
 
   updateResultCounter: ->
     if not @markers? or @markers.length == 0
@@ -164,12 +145,6 @@ class FindView extends View
       text = "#{@markers.length} found"
 
     @resultCounter.text text
-
-  findModelChanged: =>
-    @updateOptionButtons()
-    @findEditor.setText(@findModel.pattern)
-    @findHistory.store()
-    @replaceHistory.store()
 
   selectFirstMarkerAfterCursor: ->
     markerIndex = @firstMarkerIndexAfterCursor()
@@ -205,6 +180,7 @@ class FindView extends View
 
     if marker = @markers[markerIndex]
       @findModel.getEditSession().setSelectedBufferRange marker.getBufferRange()
+      rootView.one 'cursor:moved', => @updateResultCounter()
       @resultCounter.text("#{markerIndex + 1} of #{@markers.length}")
 
   setSelectionAsFindPattern: =>
