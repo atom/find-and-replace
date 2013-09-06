@@ -1,5 +1,6 @@
-EventEmitter = require 'event-emitter'
 _ = require 'underscore'
+EventEmitter = require 'event-emitter'
+shell = require 'shell'
 EditSession = require 'edit-session'
 require 'underscore-extensions'
 
@@ -94,6 +95,7 @@ class FindModel
     @editSession.scanInBufferRange @getRegex(), bufferRange, ({range}) =>
       @markers.push @editSession.markBufferRange(range, markerAttributes)
 
+    shell.beep() if @markers.length == 0
     @trigger 'updated', @markers
 
   destroyMarkers: ->

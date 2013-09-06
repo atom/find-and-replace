@@ -1,3 +1,4 @@
+shell = require 'shell'
 path = require 'path'
 $ = require 'jquery'
 RootView = require 'root-view'
@@ -85,6 +86,17 @@ describe 'FindView', ->
       editor.trigger 'find-and-replace:show'
       findView.findEditor.setText 'items'
       $(document.activeElement).trigger 'core:confirm'
+
+    fit "doesn't change the selection, beeps if there are no matches and keeps focus on the find view", ->
+      editor.setCursorBufferPosition([2,0])
+      spyOn(shell, 'beep')
+      findView.findEditor.setText 'notinthefilebro'
+      findView.focus()
+      $(document.activeElement).trigger 'core:confirm'
+
+      expect(editor.getCursorBufferPosition()).toEqual [2,0]
+      expect(shell.beep).toHaveBeenCalled()
+      expect(findView.find(':focus')).toExist()
 
     it "selects the first match following the cursor", ->
       expect(findView.resultCounter.text()).toEqual('2 of 6')

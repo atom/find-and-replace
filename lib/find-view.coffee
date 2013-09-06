@@ -108,12 +108,12 @@ class FindView extends View
   findNext: =>
     @findModel.update(@findEditor.getText())
     @selectFirstMarkerAfterCursor()
-    rootView.focus()
+    rootView.focus() unless @markers.length == 0
 
   findPrevious: =>
     @findModel.update(@findEditor.getText())
     @selectFirstMarkerBeforeCursor()
-    rootView.focus()
+    rootView.focus() unless @markers.length == 0
 
   replaceNext: =>
     @findModel.update(@findEditor.getText(), @replaceEditor.getText())
