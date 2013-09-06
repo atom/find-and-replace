@@ -109,45 +109,47 @@ class FindView extends View
   findAll: ->
     @findModel.setPattern(@findEditor.getText())
     @findModel.findAll()
-
-    if @markers.length > 0
-      cursorPosition = @findModel.getEditSession().getCursorBufferPosition()
-      @currentMarkerIndex = @firstMarkerIndexGreaterThanPosition(cursorPosition)
-      @selectMarkerAtIndex(@currentMarkerIndex)
+    @selectFirstMarkerAfterCursor()
 
     rootView.focus()
 
   findNext: =>
     if @findEditor.getText() == @findModel.pattern and @findModel.isValid()
-      @currentMarkerIndex = ++@currentMarkerIndex % @markers.length
-      @selectMarkerAtIndex(@currentMarkerIndex)
+      @selectFirstMarkerAfterCursor()
     else
       @findAll()
 
   findPrevious: =>
     if @findEditor.getText() != @findModel.pattern and @findModel.isValid()
-      @findAll()
+      @findModel.setPattern(@findEditor.getText())
+      @findModel.findAll()
 
-    @currentMarkerIndex--
-    @currentMarkerIndex = @markers.length - 1 if @currentMarkerIndex < 0
-    @selectMarkerAtIndex(@currentMarkerIndex)
+    marker = @markers[@firstMarkerIndexAfterCursor()]
+    @selectFirstMarkerBeforeCursor()
 
   replace: =>
     @replaceNext()
 
   replaceNext: =>
-    @findModel.setPattern(@findEditor.getText())
-    @findModel.setReplacePattern(@replaceEditor.getText())
-    @findModel.replace()
+    unless @findEditor.getText() == @findModel.pattern and @findModel.isValid()
+      @findModel.setPattern(@findEditor.getText())
+      @findModel.findAll()
 
-    cursorPosition = @findModel.getEditSession().getCursorBufferPosition()
-    @currentMarkerIndex = @firstMarkerIndexGreaterThanPosition(cursorPosition)
-    @selectMarkerAtIndex(@currentMarkerIndex)
+    @findModel.setReplacePattern(@replaceEditor.getText())
+
+    markerIndex = @firstMarkerIndexAfterCursor()
+    currentMarker = @markers[markerIndex]
+    @findModel.replace([currentMarker])
+    @findModel.getEditSession().setCursorBufferPosition currentMarker.bufferMarker.getEndPosition()
+    @resultCounter.text("#{markerIndex + 1} of #{@markers.length}")
 
   replaceAll: =>
-    @findModel.setPattern(@findEditor.getText())
+    unless @findEditor.getText() == @findModel.pattern and @findModel.isValid()
+      @findModel.setPattern(@findEditor.getText())
+      @findModel.findAll()
+
     @findModel.setReplacePattern(@replaceEditor.getText())
-    @findModel.replaceAll()
+    @findModel.replace(@markers)
 
   markersUpdated: (@markers) =>
     rootView.one 'cursor:moved', => @updateResultCounter()
@@ -169,13 +171,38 @@ class FindView extends View
     @findHistory.store()
     @replaceHistory.store()
 
-  firstMarkerIndexGreaterThanPosition: (bufferPosition) ->
+  selectFirstMarkerAfterCursor: ->
+    markerIndex = @firstMarkerIndexAfterCursor()
+    @selectMarkerAtIndex(markerIndex)
+
+  firstMarkerIndexAfterCursor: ->
+    selection = @findModel.getEditSession().getSelection()
+    {start, end} = selection.getBufferRange()
+    start = end if selection.isReversed()
+
     for marker, index in @markers
       markerStartPosition = marker.bufferMarker.getStartPosition()
-      return index if markerStartPosition.isGreaterThanOrEqual(bufferPosition)
+      return index if markerStartPosition.isGreaterThan(start)
     0
 
+  selectFirstMarkerBeforeCursor: ->
+    markerIndex = @firstMarkerIndexBeforeCursor()
+    @selectMarkerAtIndex(markerIndex)
+
+  firstMarkerIndexBeforeCursor: ->
+    selection = @findModel.getEditSession().getSelection()
+    {start, end} = selection.getBufferRange()
+    start = end if selection.isReversed()
+
+    for marker, index in @markers by -1
+      markerEndPosition = marker.bufferMarker.getEndPosition()
+      return index if markerEndPosition.isLessThan(start)
+
+    @markers.length - 1
+
   selectMarkerAtIndex: (markerIndex) ->
+    return unless @markers?.length > 0
+
     if marker = @markers[markerIndex]
       @findModel.getEditSession().setSelectedBufferRange marker.getBufferRange()
       @resultCounter.text("#{markerIndex + 1} of #{@markers.length}")

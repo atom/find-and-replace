@@ -23,7 +23,8 @@ class FindModel
     @destroyMarkers()
     if paneItem instanceof EditSession
       @editSession = paneItem
-      @editSession?.getBuffer().on "changed.find", => @findAll()
+      @editSession?.getBuffer().on "changed.find", =>
+        @findAll() unless @replacing
 
     @trigger 'markers-updated', @markers
 
@@ -77,25 +78,17 @@ class FindModel
     @updateMarkers()
     @trigger 'markers-updated', @markers
 
-  replace: ->
-    @updateMarkers()
-    @replaceCurrentMarkerText()
-    @trigger 'markers-updated', @markers
+  replace: (markers) ->
+    return unless markers?.length > 0
 
-  replaceAll: ->
-    @updateMarkers()
-    loop
-      break unless @replaceCurrentMarkerText()?
-    @trigger 'markers-updated', @markers
+    @replacing = true
+    for marker in markers
+      bufferRange = marker.getBufferRange()
+      @editSession.setTextInBufferRange(bufferRange, @replacePattern)
+    @replacing = false
 
-  replaceCurrentMarkerText: ->
-    return unless @markers.length > 0
-
-    marker = @markers[@currentMarkerIndex]
-    bufferRange = marker.getBufferRange()
-    @editSession.setTextInBufferRange(bufferRange, @replacePattern)
     @markers = @markers.filter (marker) -> marker.isValid()
-    @currentMarkerIndex = @firstMarkerIndexAfterCursor()
+    @trigger 'markers-updated', @markers
 
   updateMarkers: ->
     @destroyMarkers()
@@ -118,19 +111,7 @@ class FindModel
     @editSession.scanInBufferRange @getRegex(), bufferRange, ({range}) =>
       @markers.push @editSession.markBufferRange(range, markerAttributes)
 
-    @currentMarkerIndex = @firstMarkerIndexAfterCursor()
-
   destroyMarkers: ->
     @valid = false
     marker.destroy() for marker in @markers ? []
     @markers = []
-
-  firstMarkerIndexAfterCursor: ->
-    selection = @editSession.getSelection()
-    {start, end} = selection.getBufferRange()
-    start = end if selection.isReversed()
-
-    for marker, index in @markers
-      markerStartPosition = marker.bufferMarker.getStartPosition()
-      return index if markerStartPosition.isGreaterThanOrEqual(start)
-    0
