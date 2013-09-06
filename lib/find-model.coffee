@@ -27,9 +27,9 @@ class FindModel
       @editSession?.getBuffer().on "changed.find", =>
         unless @replacing
           @updateMarkers()
-          @trigger 'markers-updated', @markers
+          @trigger 'updated', @markers
 
-    @trigger 'markers-updated', @markers
+    @trigger 'updated', @markers
 
   serialize: ->
     options: @options
@@ -40,13 +40,13 @@ class FindModel
     if findPattern != @findPattern or not @valid
       @findPattern = findPattern
       @updateMarkers()
-      @trigger 'markers-updated', @markers
+      @trigger 'updated', @markers
 
   toggleOption: (optionName) ->
     currentState = @getOption(optionName)
     @options[optionName] = !currentState
     @updateMarkers()
-    @trigger 'markers-updated', @markers
+    @trigger 'updated', @markers
 
   getOption: (key) ->
     @options[key]
@@ -74,7 +74,7 @@ class FindModel
     @replacing = false
 
     @markers = @markers.filter (marker) -> marker.isValid()
-    @trigger 'markers-updated', @markers
+    @trigger 'updated', @markers
 
   updateMarkers: ->
     @destroyMarkers()

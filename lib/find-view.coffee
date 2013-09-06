@@ -54,7 +54,7 @@ class FindView extends View
     @caseSensitiveOptionButton.on 'click', @toggleCaseSensitiveOption
     @inSelectionOptionButton.on 'click', @toggleInSelectionOption
 
-    @findModel.on 'markers-updated', @markersUpdated
+    @findModel.on 'updated', @markersUpdated
 
   handleFindEvents: ->
     rootView.command 'find-and-replace:show', @showFind

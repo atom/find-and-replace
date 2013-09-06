@@ -11,7 +11,7 @@ class FindResultsView extends View
 
   initialize: (@findModel) ->
     @markerViews = []
-    @subscribe @findModel, 'markers-updated', (markers) => @markersUpdated(markers)
+    @subscribe @findModel, 'updated', (markers) => @markersUpdated(markers)
 
   attach: ->
     @getEditor().underlayer.append(this)
