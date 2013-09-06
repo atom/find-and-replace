@@ -7,7 +7,6 @@ class History
   constructor: (@editor, @items=[]) ->
     @index = @items.length
 
-    @editor.on 'core:confirm', => @addToHistory(@editor.getText())
     @editor.on 'core:move-up', => @previous()
     @editor.on 'core:move-down', => @next()
 
@@ -39,13 +38,11 @@ class History
   atLastItem: ->
     @index == @items.length - 1
 
-  addToHistory: (pattern) ->
+  store: ->
+    text = @editor.getText()
     @scratch = null
-    @items.push(pattern)
+    @items.push(text)
     @index = @items.length - 1
 
-# pattern = @unsearchedPattern if @unsearchedPattern and historyIndex == history.length and @unsearchedPattern != _.last(history)
-# storeUnsearchedPattern: ->
-#   if @findEditor.getText() != @searchModel.currentHistoryPattern()
-#     @searchModel.moveToEndOfHistory()
-#     @unsearchedPattern = @findEditor.getText()
+  serialize: ->
+    @items

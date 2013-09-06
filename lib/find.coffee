@@ -1,16 +1,19 @@
 FindModel = require './find-model'
 FindView = require './find-view'
+_ = require 'underscore'
 
 module.exports =
-  activate: (state) ->
-    history = findState?.history
-    options = findState?.options
-
+  activate: ({findHistory, replaceHistory, options}={}) ->
     @findModel = new FindModel(options)
-    @findView = new FindView(@findModel, history)
+    @findView = new FindView(@findModel, {findHistory, replaceHistory})
 
   deactivate: ->
     @findView?.remove()
+    @findView = null
+    @findModel = null
 
   serialize: ->
-    @findModel.serialize()
+    result = {}
+    _.extend result, @findModel.serialize(), @findView.serialize()
+    console.log result
+    result

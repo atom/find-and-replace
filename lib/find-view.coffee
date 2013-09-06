@@ -32,8 +32,9 @@ class FindView extends View
         @div class: 'replace-editor-container editor-container', =>
           @subview 'replaceEditor', new Editor(mini: true)
 
-  initialize: (@findModel, history) ->
-    @findHistory = new History(@findEditor, history)
+  initialize: (@findModel, {findHistory, replaceHistory}) ->
+    @findHistory = new History(@findEditor, findHistory)
+    @replaceHistory = new History(@replaceEditor, replaceHistory)
     @findResultsView = new FindResultsView(@findModel)
     @handleEvents()
     @updateOptionButtons()
@@ -101,6 +102,10 @@ class FindView extends View
     rootView.focus()
     super()
 
+  serialize: ->
+    findHistory: @findHistory.serialize()
+    replaceHistory: @replaceHistory.serialize()
+
   findAll: ->
     @findModel.setPattern(@findEditor.getText())
     @findModel.findAll()
@@ -161,6 +166,8 @@ class FindView extends View
   findModelChanged: =>
     @updateOptionButtons()
     @findEditor.setText(@findModel.pattern)
+    @findHistory.store()
+    @replaceHistory.store()
 
   firstMarkerIndexGreaterThanPosition: (bufferPosition) ->
     for marker, index in @markers

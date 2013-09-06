@@ -108,6 +108,7 @@ class FindModel
       class: 'find-result'
       invalidation: 'inside'
       replicate: false
+      # originSiteId: Infinity # HACK: Don't serialize this marker
 
     if @getOption('inSelection')
       bufferRange = @editSession.getSelectedBufferRange()
