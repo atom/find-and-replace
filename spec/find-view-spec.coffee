@@ -334,7 +334,6 @@ describe 'FindView', ->
           $('.find-and-replace .btn-all').click()
           expect(findView.resultCounter.text()).toEqual('no results')
           expect(editor.getText()).not.toMatch /items/
-          window.x = editor.getText()
           expect(editor.getText().match(/\bcats\b/g).length).toMatch 6
           expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 0]]
 
