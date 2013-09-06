@@ -15,5 +15,4 @@ module.exports =
   serialize: ->
     result = {}
     _.extend result, @findModel.serialize(), @findView.serialize()
-    console.log result
     result
