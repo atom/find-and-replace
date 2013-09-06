@@ -4,7 +4,7 @@ RootView = require 'root-view'
 Project = require 'project'
 {View} = require 'space-pen'
 
-fdescribe 'FindView', ->
+describe 'FindView', ->
   [editor, findView] = []
 
   beforeEach ->
@@ -37,6 +37,47 @@ fdescribe 'FindView', ->
 
       $(document.activeElement).trigger 'core:cancel'
       expect(findResultsView.parent()).not.toExist()
+
+  describe "serialization", ->
+    it "serializes find and replace history", ->
+      findView.findEditor.setText("items")
+      findView.replaceEditor.setText("cat")
+      findView.replaceAll()
+
+      findView.findEditor.setText("sort")
+      findView.replaceEditor.setText("dog")
+      findView.replaceAll()
+
+      atom.deactivatePackage("find-and-replace")
+      pack = atom.activatePackage("find-and-replace")
+      findView = pack.mainModule.findView
+
+      findView.findEditor.trigger('core:move-up')
+      expect(findView.findEditor.getText()).toBe 'sort'
+
+      findView.replaceEditor.trigger('core:move-up')
+      expect(findView.replaceEditor.getText()).toBe 'dog'
+
+    it "serializes find options ", ->
+      expect(findView.caseSensitiveOptionButton).not.toHaveClass 'enabled'
+      expect(findView.regexOptionButton).not.toHaveClass 'enabled'
+      expect(findView.inSelectionOptionButton).not.toHaveClass 'enabled'
+
+      findView.caseSensitiveOptionButton.click()
+      findView.regexOptionButton.click()
+      findView.inSelectionOptionButton.click()
+
+      expect(findView.caseSensitiveOptionButton).toHaveClass 'enabled'
+      expect(findView.regexOptionButton).toHaveClass 'enabled'
+      expect(findView.inSelectionOptionButton).toHaveClass 'enabled'
+
+      atom.deactivatePackage("find-and-replace")
+      pack = atom.activatePackage("find-and-replace")
+      findView = pack.mainModule.findView
+
+      expect(findView.caseSensitiveOptionButton).toHaveClass 'enabled'
+      expect(findView.regexOptionButton).toHaveClass 'enabled'
+      expect(findView.inSelectionOptionButton).toHaveClass 'enabled'
 
   describe "finding", ->
     beforeEach ->
