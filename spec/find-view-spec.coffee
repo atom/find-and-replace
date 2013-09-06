@@ -220,16 +220,14 @@ describe 'FindView', ->
         findView.focus()
 
       it "toggles find within a selction via and event and only finds matches within the selection", ->
-        findView.trigger 'find-and-replace:toggle-in-selection-option'
         findView.findEditor.setText 'items'
-        $(document.activeElement).trigger 'core:confirm'
+        findView.trigger 'find-and-replace:toggle-in-selection-option'
         expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
         expect(findView.resultCounter.text()).toEqual('1 of 3')
 
       it "toggles find within a selction via and button and only finds matches within the selection", ->
-        findView.inSelectionOptionButton.click()
         findView.findEditor.setText 'items'
-        $(document.activeElement).trigger 'core:confirm'
+        findView.inSelectionOptionButton.click()
         expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
         expect(findView.resultCounter.text()).toEqual('1 of 3')
 
@@ -241,14 +239,12 @@ describe 'FindView', ->
         editor.setCursorBufferPosition([2,0])
         findView.trigger 'find-and-replace:toggle-regex-option'
         findView.findEditor.setText 'i[t]em+s'
-        $(document.activeElement).trigger 'core:confirm'
         expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
 
       it "toggles regex via a button and finds text matching the pattern", ->
         editor.setCursorBufferPosition([2,0])
         findView.regexOptionButton.click()
         findView.findEditor.setText 'i[t]em+s'
-        $(document.activeElement).trigger 'core:confirm'
         expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
 
     describe "when case sensitivity is toggled", ->
@@ -265,7 +261,6 @@ describe 'FindView', ->
 
         editor.setCursorBufferPosition([0,0])
         findView.trigger 'find-and-replace:toggle-case-sensitive-option'
-        $(document.activeElement).trigger 'core:confirm'
         expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 5]]
 
       it "toggles case sensitivity via a button and finds text matching the pattern", ->
@@ -275,7 +270,6 @@ describe 'FindView', ->
 
         editor.setCursorBufferPosition([0,0])
         findView.caseSensitiveOptionButton.click()
-        $(document.activeElement).trigger 'core:confirm'
         expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 5]]
 
     describe "highlighting search results", ->
@@ -292,7 +286,6 @@ describe 'FindView', ->
         $(document.activeElement).trigger 'core:confirm'
 
         expect(findResultsView.children().length).toEqual 0
-
 
   describe "replacing", ->
     beforeEach ->

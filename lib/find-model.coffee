@@ -8,7 +8,7 @@ class FindModel
   _.extend @prototype, EventEmitter
 
   constructor: (options={}) ->
-    @options = _.extend(@optionDefaults(), options)
+    @options = _.extend({}, @optionDefaults(), options)
     @findPattern = ''
     @replacePattern = ''
     @valid = false
@@ -25,9 +25,7 @@ class FindModel
     if paneItem instanceof EditSession
       @editSession = paneItem
       @editSession?.getBuffer().on "changed.find", =>
-        unless @replacing
-          @updateMarkers()
-          @trigger 'updated', @markers
+        @updateMarkers() unless @replacing
 
     @trigger 'updated', @markers
 
@@ -40,13 +38,11 @@ class FindModel
     if findPattern != @findPattern or not @valid
       @findPattern = findPattern
       @updateMarkers()
-      @trigger 'updated', @markers
 
   toggleOption: (optionName) ->
     currentState = @getOption(optionName)
     @options[optionName] = !currentState
     @updateMarkers()
-    @trigger 'updated', @markers
 
   getOption: (key) ->
     @options[key]
@@ -78,10 +74,11 @@ class FindModel
 
   updateMarkers: ->
     @destroyMarkers()
-
-    return if not @editSession? or not @findPattern
-
     @valid = true
+
+    if not @editSession? or not @findPattern
+      @trigger 'updated', @markers
+      return
 
     markerAttributes =
       class: 'find-result'
@@ -96,6 +93,8 @@ class FindModel
 
     @editSession.scanInBufferRange @getRegex(), bufferRange, ({range}) =>
       @markers.push @editSession.markBufferRange(range, markerAttributes)
+
+    @trigger 'updated', @markers
 
   destroyMarkers: ->
     @valid = false
