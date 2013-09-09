@@ -11,6 +11,7 @@ class FindView extends View
   @content: ->
     @div class: 'find-and-replace buffer-find-and-replace tool-panel panel-bottom', =>
       @div class: 'find-container block', =>
+        @label class: 'text-subtle', 'Find'
         @div class: 'btn-group pull-right btn-toggle', =>
           @button outlet: 'regexOptionButton', class: 'btn btn-mini option-regex', '.*'
           @button outlet: 'caseOptionButton', class: 'btn btn-mini option-case', 'Aa'
@@ -24,8 +25,7 @@ class FindView extends View
           @subview 'findEditor', new Editor(mini: true)
 
       @div outlet: 'replaceContainer', class: 'replace-container block', =>
-        @label outlet: 'replaceLabel', 'Replace'
-
+        @label class: 'text-subtle', 'Replace'
         @div class: 'btn-group pull-right btn-toggle', =>
           @button outlet: 'replaceNextButton', class: 'btn btn-mini btn-next', 'Next'
           @button outlet: 'replaceAllButton', class: 'btn btn-mini btn-all', 'All'
