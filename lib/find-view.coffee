@@ -1,3 +1,4 @@
+shell = require 'shell'
 {View} = require 'space-pen'
 Editor = require 'editor'
 FindModel = require './find-model'
@@ -107,22 +108,31 @@ class FindView extends View
 
   findNext: =>
     @findModel.update {pattern: @findEditor.getText()}
-    @selectFirstMarkerAfterCursor()
-    rootView.focus() unless @markers.length == 0
+    if @markers.length == 0
+      shell.beep()
+    else
+      @selectFirstMarkerAfterCursor()
+      rootView.focus()
 
   findPrevious: =>
     @findModel.update {pattern: @findEditor.getText()}
-    @selectFirstMarkerBeforeCursor()
-    rootView.focus() unless @markers.length == 0
+    if @markers.length == 0
+      shell.beep()
+    else
+      @selectFirstMarkerBeforeCursor()
+      rootView.focus()
 
   replaceNext: =>
     @findModel.update {pattern: @findEditor.getText()}
 
-    markerIndex = @firstMarkerIndexAfterCursor()
-    currentMarker = @markers[markerIndex]
-    @findModel.replace([currentMarker], @replaceEditor.getText())
+    if @markers.length == 0
+      shell.beep()
+    else
+      markerIndex = @firstMarkerIndexAfterCursor()
+      currentMarker = @markers[markerIndex]
+      @findModel.replace([currentMarker], @replaceEditor.getText())
 
-    @findModel.getEditSession().setCursorBufferPosition currentMarker.bufferMarker.getEndPosition()
+      @findModel.getEditSession().setCursorBufferPosition currentMarker.bufferMarker.getEndPosition()
 
   replaceAll: =>
     @findModel.update {pattern: @findEditor.getText()}

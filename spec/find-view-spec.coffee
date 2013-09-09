@@ -226,6 +226,18 @@ describe 'FindView', ->
         expect(findView.resultCounter.text()).toEqual('8 found')
         expect(editor.getSelectedBufferRange()).toEqual [[4, 11], [4, 11]]
 
+      it "does not beep if no matches were found", ->
+        editor.setCursorBufferPosition([2,0])
+        spyOn(shell, 'beep')
+        findView.findEditor.setText 'notinthefilebro'
+        findView.focus()
+        $(document.activeElement).trigger 'core:confirm'
+        shell.beep.reset()
+
+        editor.insertText("blah blah")
+        expect(shell.beep).not.toHaveBeenCalled()
+
+
     describe "when finding within a selection", ->
       beforeEach ->
         editor.setSelectedBufferRange [[2, 0], [4, 0]]
