@@ -52,19 +52,22 @@ class FindModel
     flags = 'g'
     flags += 'i' unless @options.caseSensitive
 
-    if @options.regex
+    if @getOption('regex')
       new RegExp(@pattern, flags)
     else
       escapedPattern = _.escapeRegExp(@pattern)
       new RegExp(escapedPattern, flags)
 
-  replace: (markers, text) ->
+  replace: (markers, replacementText) ->
     return unless markers?.length > 0
 
     @replacing = true
     for marker in markers
       bufferRange = marker.getBufferRange()
-      @editSession.setTextInBufferRange(bufferRange, text)
+      if @getOption('regex')
+        textToReplace = @editSession.getTextInBufferRange(bufferRange)
+        replacementText = textToReplace.replace(@getRegex(), replacementText)
+      @editSession.setTextInBufferRange(bufferRange, replacementText)
     @replacing = false
 
     @markers = @markers.filter (marker) -> marker.isValid()

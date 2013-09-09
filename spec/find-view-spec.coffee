@@ -350,6 +350,24 @@ describe 'FindView', ->
           expect(editor.getText().match(/\bcats\b/g).length).toMatch 6
           expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 0]]
 
+    describe "replacement patterns", ->
+      describe "when the regex option is true", ->
+        it "replaces $1, $2, etc... with substring matches", ->
+          findView.trigger 'find-and-replace:toggle-regex-option'
+          findView.findEditor.setText('i(t)e(m)s')
+          findView.replaceEditor.setText('$2i$1$1ens')
+          editor.trigger 'find-and-replace:replace-all'
+          expect(editor.getText()).not.toMatch /items/
+          expect(editor.getText().match(/\bmittens\b/g)).toHaveLength 6
+
+      describe "when the regex option is false", ->
+        it "replaces the matches with without any regex subsitions", ->
+          findView.findEditor.setText('items')
+          findView.replaceEditor.setText('$&cats')
+          editor.trigger 'find-and-replace:replace-all'
+          expect(editor.getText()).not.toMatch /items/
+          expect(editor.getText().match(/\$&cats\b/g)).toHaveLength 6
+
   describe "history", ->
     [oneRange, twoRange, threeRange] = []
     beforeEach ->
