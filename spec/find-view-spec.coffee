@@ -166,7 +166,7 @@ describe 'FindView', ->
           findResultsView = editor.find('.search-results')
 
           rootView.open('sample.coffee')
-          expect(findResultsView.children().length).toEqual 0
+          expect(findResultsView.children()).toHaveLength 0
 
       describe "when all active pane items are closed", ->
         it "updates the result count", ->
@@ -177,7 +177,7 @@ describe 'FindView', ->
           findResultsView = editor.find('.search-results')
 
           editor.trigger 'core:close'
-          expect(findResultsView.children().length).toEqual 0
+          expect(findResultsView.children()).toHaveLength 0
 
       describe "when the active pane item is not an edit session", ->
         [anotherOpener] = []
@@ -197,7 +197,7 @@ describe 'FindView', ->
           findResultsView = editor.find('.search-results')
 
           rootView.open "another"
-          expect(findResultsView.children().length).toEqual 0
+          expect(findResultsView.children()).toHaveLength 0
 
       describe "when a new edit session is activated on a different pane", ->
         it "updates the result view and selects the correct text", ->
@@ -212,9 +212,9 @@ describe 'FindView', ->
         it "highlights the found text in the new edit session (and removes the highlights from the other)", ->
           findResultsView = editor.find('.search-results')
 
-          expect(findResultsView.children().length).toEqual 6
+          expect(findResultsView.children()).toHaveLength 6
           newEditor = editor.splitRight(project.open('sample.coffee'))
-          expect(findResultsView.children().length).toEqual 0
+          expect(findResultsView.children()).toHaveLength 0
 
     describe "when the buffer contents change", ->
       it "re-runs the search", ->
@@ -222,7 +222,7 @@ describe 'FindView', ->
         editor.setCursorBufferPosition([4,0])
         editor.insertText("items items")
 
-        expect(findResultsView.children().length).toEqual 8
+        expect(findResultsView.children()).toHaveLength 8
         expect(findView.resultCounter.text()).toEqual('8 found')
         expect(editor.getSelectedBufferRange()).toEqual [[4, 11], [4, 11]]
 
@@ -291,13 +291,13 @@ describe 'FindView', ->
 
       it "only highlights matches", ->
         expect(findResultsView.parent()[0]).toBe editor.underlayer[0]
-        expect(findResultsView.children().length).toEqual 6
+        expect(findResultsView.children()).toHaveLength 6
 
         findView.findEditor.setText 'notinthefilebro'
         findView.focus()
         $(document.activeElement).trigger 'core:confirm'
 
-        expect(findResultsView.children().length).toEqual 0
+        expect(findResultsView.children()).toHaveLength 0
 
   describe "replacing", ->
     beforeEach ->
@@ -339,7 +339,7 @@ describe 'FindView', ->
           $('.find-and-replace .btn-all').click()
           expect(findView.resultCounter.text()).toEqual('no results')
           expect(editor.getText()).not.toMatch /items/
-          expect(editor.getText().match(/\bcats\b/g).length).toMatch 6
+          expect(editor.getText().match(/\bcats\b/g)).toHaveLength 6
           expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 0]]
 
       describe "when the 'find-and-replace:replace-all' event is triggered", ->
@@ -347,7 +347,7 @@ describe 'FindView', ->
           editor.trigger 'find-and-replace:replace-all'
           expect(findView.resultCounter.text()).toEqual('no results')
           expect(editor.getText()).not.toMatch /items/
-          expect(editor.getText().match(/\bcats\b/g).length).toMatch 6
+          expect(editor.getText().match(/\bcats\b/g)).toHaveLength 6
           expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 0]]
 
     describe "replacement patterns", ->
