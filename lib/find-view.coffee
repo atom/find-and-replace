@@ -9,8 +9,8 @@ module.exports =
 class FindView extends View
 
   @content: ->
-    @div class: 'find-and-replace buffer-find-and-replace tool-panel', =>
-      @div class: 'find-container', =>
+    @div class: 'find-and-replace buffer-find-and-replace tool-panel panel-bottom', =>
+      @div class: 'find-container block', =>
         @div class: 'btn-group pull-right btn-toggle', =>
           @button outlet: 'regexOptionButton', class: 'btn btn-mini option-regex', '.*'
           @button outlet: 'caseOptionButton', class: 'btn btn-mini option-case', 'Aa'
@@ -19,11 +19,11 @@ class FindView extends View
         @div class: 'find-editor-container editor-container', =>
           @div class: 'find-meta-container', =>
             @span outlet: 'resultCounter', class: 'result-counter', ''
-            @a href: '#', outlet: 'previousButton', class: 'icon-previous'
-            @a href: '#', outlet: 'nextButton', class: 'icon-next'
+            @a href: '#', outlet: 'previousButton', class: 'icon icon-chevron-left'
+            @a href: '#', outlet: 'nextButton', class: 'icon icon-chevron-right'
           @subview 'findEditor', new Editor(mini: true)
 
-      @div outlet: 'replaceContainer', class: 'replace-container', =>
+      @div outlet: 'replaceContainer', class: 'replace-container block', =>
         @label outlet: 'replaceLabel', 'Replace'
 
         @div class: 'btn-group pull-right btn-toggle', =>
@@ -208,11 +208,11 @@ class FindView extends View
     @findModel.update {pattern: @findEditor.getText(), inCurrentSelection: !@findModel.inCurrentSelection}
     @selectFirstMarkerAfterCursor()
 
-  setOptionButtonState: (optionButton, enabled) ->
-    if enabled
-      optionButton.addClass 'enabled'
+  setOptionButtonState: (optionButton, selected) ->
+    if selected
+      optionButton.addClass 'selected'
     else
-      optionButton.removeClass 'enabled'
+      optionButton.removeClass 'selected'
 
   updateOptionButtons: ->
     @setOptionButtonState(@regexOptionButton, @findModel.useRegex)
