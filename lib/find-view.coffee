@@ -183,8 +183,8 @@ class FindView extends View
       @resultCounter.text("#{markerIndex + 1} of #{@markers.length}")
 
   setSelectionAsFindPattern: =>
-    if text = @findModel.getEditSession().getSelectedText()
-      @findEditor.setText(text)
+    pattern = @findModel.getEditSession().getSelectedText()
+    @findModel.update {pattern}
 
   toggleRegexOption: =>
     @findModel.update {pattern: @findEditor.getText(), useRegex: !@findModel.useRegex}
