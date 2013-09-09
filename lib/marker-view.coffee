@@ -6,37 +6,33 @@ class MarkerView
   _.extend @prototype, Subscriber
 
   constructor: ({@editor, @marker} = {}) ->
-
     @regions = []
     @element = document.createElement('div')
     @element.className = 'marker'
 
-    @updateDisplayPosition = @marker.isValid()
+    @subscribe @marker, 'changed', (event) => @onMarkerChanged(event)
+    @subscribe @marker, 'destroyed', => @remove()
+    @subscribe @editor, 'editor:display-updated', => @updateDisplay()
 
-    @subscribe @marker, 'changed', @onMarkerChanged
-    @subscribe @marker, 'destroyed', @remove
-    @subscribe @editor, 'editor:display-updated', @onEditorDisplayUpdated
+    if @marker.isValid()
+      @updateDisplayPosition = true
+      @updateDisplay()
 
-  remove: =>
+  remove: ->
     @unsubscribe()
     @marker = null
     @editor = null
     @element.remove()
 
-  show: =>
+  show: ->
     @element.style.display = ""
 
-  hide: =>
+  hide: ->
     @element.style.display = "none"
 
-  onMarkerChanged: ({isValid}) =>
+  onMarkerChanged: ({isValid}) ->
     @updateDisplayPosition = isValid
     if isValid then @show() else @hide()
-
-  onEditorDisplayUpdated: (eventProperties) =>
-    if @updateDisplayPosition and @isMarkerVisible()
-      @updateDisplay()
-      @updateDisplayPosition = false
 
   isMarkerVisible: ->
     {start, end} = @getScreenRange()
@@ -44,6 +40,9 @@ class MarkerView
     end.row >= firstRenderedRow and start.row <= lastRenderedRow
 
   updateDisplay: ->
+    return unless @updateDisplayPosition and @isMarkerVisible()
+
+    @updateDisplayPosition = false
     @clearRegions()
     range = @getScreenRange()
     return if range.isEmpty()
