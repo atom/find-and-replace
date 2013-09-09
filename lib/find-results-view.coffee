@@ -31,6 +31,8 @@ class FindResultsView extends View
       @markerViews.push(markerView)
       @append(markerView.element)
 
+    @getEditor().requestDisplayUpdate()
+
   destroyMarkerViews: ->
     @empty()
     @markerViews = []

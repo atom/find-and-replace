@@ -14,9 +14,7 @@ class MarkerView
     @subscribe @marker, 'destroyed', => @remove()
     @subscribe @editor, 'editor:display-updated', => @updateDisplay()
 
-    if @marker.isValid()
-      @updateDisplayPosition = true
-      @updateDisplay()
+    @updateDisplayPosition = @marker.isValid()
 
   remove: ->
     @unsubscribe()
