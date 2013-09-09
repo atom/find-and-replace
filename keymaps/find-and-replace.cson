@@ -3,7 +3,7 @@
 
 '.editor':
   'meta-f': 'find-and-replace:show'
-  'alt-meta-f': 'find-and-replace:display-replace'
+  'alt-meta-f': 'find-and-replace:show-replace'
 
   'meta-g': 'find-and-replace:find-next'
   'meta-G': 'find-and-replace:find-previous'
