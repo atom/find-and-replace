@@ -12,8 +12,8 @@ class FindView extends View
       @div class: 'find-container', =>
         @div class: 'btn-group pull-right btn-toggle', =>
           @button outlet: 'regexOptionButton', class: 'btn btn-mini option-regex', '.*'
-          @button outlet: 'caseSensitiveOptionButton', class: 'btn btn-mini option-case-sensitive', 'Aa'
-          @button outlet: 'inSelectionOptionButton', class: 'btn btn-mini option-in-selection', '"'
+          @button outlet: 'caseOptionButton', class: 'btn btn-mini option-case', 'Aa'
+          @button outlet: 'selectionOptionButton', class: 'btn btn-mini option-selection', '"'
 
         @div class: 'find-editor-container editor-container', =>
           @div class: 'find-meta-container', =>
@@ -46,13 +46,13 @@ class FindView extends View
     @on 'core:cancel', @detach
     @on 'click', => @focus()
 
-    @command 'find-and-replace:toggle-regex-option', @toggleUseRegexOption
-    @command 'find-and-replace:toggle-case-sensitive-option', @toggleIgnoreCaseOption
-    @command 'find-and-replace:toggle-in-selection-option', @toggleInCurrentSelectionOption
+    @command 'find-and-replace:toggle-regex-option', @toggleRegexOption
+    @command 'find-and-replace:toggle-case-option', @toggleCaseOption
+    @command 'find-and-replace:toggle-selection-option', @toggleSelectionOption
 
-    @regexOptionButton.on 'click', @toggleUseRegexOption
-    @caseSensitiveOptionButton.on 'click', @toggleIgnoreCaseOption
-    @inSelectionOptionButton.on 'click', @toggleInCurrentSelectionOption
+    @regexOptionButton.on 'click', @toggleRegexOption
+    @caseOptionButton.on 'click', @toggleCaseOption
+    @selectionOptionButton.on 'click', @toggleSelectionOption
 
     @findModel.on 'updated', @markersUpdated
 
@@ -186,15 +186,15 @@ class FindView extends View
     if text = @findModel.getEditSession().getSelectedText()
       @findEditor.setText(text)
 
-  toggleUseRegexOption: =>
+  toggleRegexOption: =>
     @findModel.update {pattern: @findEditor.getText(), useRegex: !@findModel.useRegex}
     @selectFirstMarkerAfterCursor()
 
-  toggleIgnoreCaseOption: =>
+  toggleCaseOption: =>
     @findModel.update {pattern: @findEditor.getText(), caseInsensitive: !@findModel.caseInsensitive}
     @selectFirstMarkerAfterCursor()
 
-  toggleInCurrentSelectionOption: =>
+  toggleSelectionOption: =>
     @findModel.update {pattern: @findEditor.getText(), inCurrentSelection: !@findModel.inCurrentSelection}
     @selectFirstMarkerAfterCursor()
 
@@ -206,5 +206,5 @@ class FindView extends View
 
   updateOptionButtons: ->
     @setOptionButtonState(@regexOptionButton, @findModel.useRegex)
-    @setOptionButtonState(@caseSensitiveOptionButton, @findModel.caseInsensitive)
-    @setOptionButtonState(@inSelectionOptionButton, @findModel.inCurrentSelection)
+    @setOptionButtonState(@caseOptionButton, @findModel.caseInsensitive)
+    @setOptionButtonState(@selectionOptionButton, @findModel.inCurrentSelection)

@@ -60,25 +60,25 @@ describe 'FindView', ->
       expect(findView.replaceEditor.getText()).toBe 'dog'
 
     it "serializes find options ", ->
-      expect(findView.caseSensitiveOptionButton).not.toHaveClass 'enabled'
+      expect(findView.caseOptionButton).not.toHaveClass 'enabled'
       expect(findView.regexOptionButton).not.toHaveClass 'enabled'
-      expect(findView.inSelectionOptionButton).not.toHaveClass 'enabled'
+      expect(findView.selectionOptionButton).not.toHaveClass 'enabled'
 
-      findView.caseSensitiveOptionButton.click()
+      findView.caseOptionButton.click()
       findView.regexOptionButton.click()
-      findView.inSelectionOptionButton.click()
+      findView.selectionOptionButton.click()
 
-      expect(findView.caseSensitiveOptionButton).toHaveClass 'enabled'
+      expect(findView.caseOptionButton).toHaveClass 'enabled'
       expect(findView.regexOptionButton).toHaveClass 'enabled'
-      expect(findView.inSelectionOptionButton).toHaveClass 'enabled'
+      expect(findView.selectionOptionButton).toHaveClass 'enabled'
 
       atom.deactivatePackage("find-and-replace")
       pack = atom.activatePackage("find-and-replace")
       findView = pack.mainModule.findView
 
-      expect(findView.caseSensitiveOptionButton).toHaveClass 'enabled'
+      expect(findView.caseOptionButton).toHaveClass 'enabled'
       expect(findView.regexOptionButton).toHaveClass 'enabled'
-      expect(findView.inSelectionOptionButton).toHaveClass 'enabled'
+      expect(findView.selectionOptionButton).toHaveClass 'enabled'
 
   describe "finding", ->
     beforeEach ->
@@ -233,13 +233,13 @@ describe 'FindView', ->
 
       it "toggles find within a selction via and event and only finds matches within the selection", ->
         findView.findEditor.setText 'items'
-        findView.trigger 'find-and-replace:toggle-in-selection-option'
+        findView.trigger 'find-and-replace:toggle-selection-option'
         expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
         expect(findView.resultCounter.text()).toEqual('1 of 3')
 
       it "toggles find within a selction via and button and only finds matches within the selection", ->
         findView.findEditor.setText 'items'
-        findView.inSelectionOptionButton.click()
+        findView.selectionOptionButton.click()
         expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
         expect(findView.resultCounter.text()).toEqual('1 of 3')
 
@@ -278,7 +278,7 @@ describe 'FindView', ->
         expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 5]]
 
         editor.setCursorBufferPosition([0,0])
-        findView.trigger 'find-and-replace:toggle-case-sensitive-option'
+        findView.trigger 'find-and-replace:toggle-case-option'
         expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 5]]
 
       it "toggles case sensitivity via a button and finds text matching the pattern", ->
@@ -287,7 +287,7 @@ describe 'FindView', ->
         expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 5]]
 
         editor.setCursorBufferPosition([0,0])
-        findView.caseSensitiveOptionButton.click()
+        findView.caseOptionButton.click()
         expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 5]]
 
     describe "highlighting search results", ->

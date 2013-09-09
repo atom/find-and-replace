@@ -17,8 +17,8 @@
   'escape': 'core:cancel'
   'meta-w': 'core:cancel'
   'alt-meta-/': 'find-and-replace:toggle-regex-option'
-  'alt-meta-c': 'find-and-replace:toggle-case-sensitive-option'
-  'alt-meta-s': 'find-and-replace:toggle-in-selection-option'
+  'alt-meta-c': 'find-and-replace:toggle-case-option'
+  'alt-meta-s': 'find-and-replace:toggle-selection-option'
 
 '.project-find-and-replace .preview-list':
   'enter': 'core:confirm'
