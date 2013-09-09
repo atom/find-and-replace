@@ -46,13 +46,13 @@ class FindView extends View
     @on 'core:cancel', @detach
     @on 'click', => @focus()
 
-    @command 'find-and-replace:toggle-regex-option', @toggleRegexOption
-    @command 'find-and-replace:toggle-case-sensitive-option', @toggleCaseSensitiveOption
-    @command 'find-and-replace:toggle-in-selection-option', @toggleInSelectionOption
+    @command 'find-and-replace:toggle-regex-option', @toggleUseRegexOption
+    @command 'find-and-replace:toggle-case-sensitive-option', @toggleIgnoreCaseOption
+    @command 'find-and-replace:toggle-in-selection-option', @toggleInCurrentSelectionOption
 
-    @regexOptionButton.on 'click', @toggleRegexOption
-    @caseSensitiveOptionButton.on 'click', @toggleCaseSensitiveOption
-    @inSelectionOptionButton.on 'click', @toggleInSelectionOption
+    @regexOptionButton.on 'click', @toggleUseRegexOption
+    @caseSensitiveOptionButton.on 'click', @toggleIgnoreCaseOption
+    @inSelectionOptionButton.on 'click', @toggleInCurrentSelectionOption
 
     @findModel.on 'updated', @markersUpdated
 
@@ -106,17 +106,17 @@ class FindView extends View
     replaceHistory: @replaceHistory.serialize()
 
   findNext: =>
-    @findModel.setPattern(@findEditor.getText())
+    @findModel.update {pattern: @findEditor.getText()}
     @selectFirstMarkerAfterCursor()
     rootView.focus() unless @markers.length == 0
 
   findPrevious: =>
-    @findModel.setPattern(@findEditor.getText())
+    @findModel.update {pattern: @findEditor.getText()}
     @selectFirstMarkerBeforeCursor()
     rootView.focus() unless @markers.length == 0
 
   replaceNext: =>
-    @findModel.setPattern(@findEditor.getText())
+    @findModel.update {pattern: @findEditor.getText()}
 
     markerIndex = @firstMarkerIndexAfterCursor()
     currentMarker = @markers[markerIndex]
@@ -125,7 +125,7 @@ class FindView extends View
     @findModel.getEditSession().setCursorBufferPosition currentMarker.bufferMarker.getEndPosition()
 
   replaceAll: =>
-    @findModel.setPattern(@findEditor.getText())
+    @findModel.update {pattern: @findEditor.getText()}
     @findModel.replace(@markers, @replaceEditor.getText())
 
   markersUpdated: (@markers) =>
@@ -186,22 +186,25 @@ class FindView extends View
     if text = @findModel.getEditSession().getSelectedText()
       @findEditor.setText(text)
 
-  toggleRegexOption: =>
-    @findModel.toggleOption('regex')
-    @findNext()
+  toggleUseRegexOption: =>
+    @findModel.update {pattern: @findEditor.getText(), useRegex: !@findModel.useRegex}
+    @selectFirstMarkerAfterCursor()
 
-  toggleCaseSensitiveOption: =>
-    @findModel.toggleOption('caseSensitive')
-    @findNext()
+  toggleIgnoreCaseOption: =>
+    @findModel.update {pattern: @findEditor.getText(), caseInsensitive: !@findModel.caseInsensitive}
+    @selectFirstMarkerAfterCursor()
 
-  toggleInSelectionOption: =>
-    @findModel.toggleOption('inSelection')
-    @findNext()
+  toggleInCurrentSelectionOption: =>
+    @findModel.update {pattern: @findEditor.getText(), inCurrentSelection: !@findModel.inCurrentSelection}
+    @selectFirstMarkerAfterCursor()
 
   setOptionButtonState: (optionButton, enabled) ->
-    optionButton[if enabled then 'addClass' else 'removeClass']('enabled')
+    if enabled
+      optionButton.addClass 'enabled'
+    else
+      optionButton.removeClass 'enabled'
 
   updateOptionButtons: ->
-    @setOptionButtonState(@regexOptionButton, @findModel.getOption('regex'))
-    @setOptionButtonState(@caseSensitiveOptionButton, @findModel.getOption('caseSensitive'))
-    @setOptionButtonState(@inSelectionOptionButton, @findModel.getOption('inSelection'))
+    @setOptionButtonState(@regexOptionButton, @findModel.useRegex)
+    @setOptionButtonState(@caseSensitiveOptionButton, @findModel.caseInsensitive)
+    @setOptionButtonState(@inSelectionOptionButton, @findModel.inCurrentSelection)

@@ -3,8 +3,8 @@ FindView = require './find-view'
 _ = require 'underscore'
 
 module.exports =
-  activate: ({findHistory, replaceHistory, options}={}) ->
-    @findModel = new FindModel(options)
+  activate: ({findHistory, replaceHistory, findOptions}={}) ->
+    @findModel = new FindModel(findOptions)
     @findView = new FindView(@findModel, {findHistory, replaceHistory})
 
   deactivate: ->
@@ -13,6 +13,6 @@ module.exports =
     @findModel = null
 
   serialize: ->
-    result = {}
-    _.extend result, @findModel.serialize(), @findView.serialize()
+    result = @findView.serialize()
+    result.findOptions = @findModel.serialize()
     result

@@ -259,6 +259,12 @@ describe 'FindView', ->
         findView.findEditor.setText 'i[t]em+s'
         expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
 
+      it "re-runs the search using the new find text when toggled", ->
+        editor.setCursorBufferPosition([1,0])
+        findView.findEditor.setText 's(o)rt'
+        findView.trigger 'find-and-replace:toggle-regex-option'
+        expect(editor.getSelectedBufferRange()).toEqual [[1, 6], [1, 10]]
+
     describe "when case sensitivity is toggled", ->
       beforeEach ->
         editor.setText "-----\nwords\nWORDs\n"

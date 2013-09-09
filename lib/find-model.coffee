@@ -8,9 +8,11 @@ module.exports =
 class FindModel
   _.extend @prototype, EventEmitter
 
-  constructor: (options={}) ->
-    @options = _.extend({}, @optionDefaults(), options)
-    @pattern = ''
+  constructor: (findOptions={}) ->
+    @pattern = findOptions.pattern ? ''
+    @useRegex = findOptions.useRegex ? false
+    @inCurrentSelection = findOptions.inCurrentSelection ? false
+    @caseInsensitive = findOptions.caseInsensitive ? false
     @valid = false
 
     @activePaneItemChanged()
@@ -30,33 +32,15 @@ class FindModel
     @trigger 'updated', @markers
 
   serialize: ->
-    options: @options
+    {@pattern, @useRegex, @inCurrentSelection, @caseInsensitive}
 
-  setPattern: (pattern)->
-    if pattern != @pattern or not @valid
-      @pattern = pattern
+  update: (newFindOptions={}) ->
+    currentFindOptions = {@pattern, @useRegex, @inCurrentSelection, @caseInsensitive}
+    _.defaults(newFindOptions, currentFindOptions)
+
+    unless @valid and _.isEqual(newFindOptions, currentFindOptions)
+      _.extend(this, newFindOptions)
       @updateMarkers()
-
-  toggleOption: (optionName) ->
-    currentState = @getOption(optionName)
-    @options[optionName] = !currentState
-    @updateMarkers()
-
-  getOption: (key) ->
-    @options[key]
-
-  getEditSession: ->
-    @editSession
-
-  getRegex: ->
-    flags = 'g'
-    flags += 'i' unless @options.caseSensitive
-
-    if @getOption('regex')
-      new RegExp(@pattern, flags)
-    else
-      escapedPattern = _.escapeRegExp(@pattern)
-      new RegExp(escapedPattern, flags)
 
   replace: (markers, replacementText) ->
     return unless markers?.length > 0
@@ -64,7 +48,7 @@ class FindModel
     @replacing = true
     for marker in markers
       bufferRange = marker.getBufferRange()
-      if @getOption('regex')
+      if @useRegex
         textToReplace = @editSession.getTextInBufferRange(bufferRange)
         replacementText = textToReplace.replace(@getRegex(), replacementText)
       @editSession.setTextInBufferRange(bufferRange, replacementText)
@@ -76,7 +60,6 @@ class FindModel
   updateMarkers: ->
     @destroyMarkers()
     @valid = true
-
     if not @editSession? or not @pattern
       @trigger 'updated', @markers
       return
@@ -87,7 +70,7 @@ class FindModel
       replicate: false
       # originSiteId: Infinity # HACK: Don't serialize this marker
 
-    if @getOption('inSelection')
+    if @inCurrentSelection
       bufferRange = @editSession.getSelectedBufferRange()
     else
       bufferRange = [[0,0],[Infinity,Infinity]]
@@ -98,12 +81,20 @@ class FindModel
     shell.beep() if @markers.length == 0
     @trigger 'updated', @markers
 
+  getEditSession: ->
+    @editSession
+
+  getRegex: ->
+    flags = 'g'
+    flags += 'i' unless @caseInsensitive
+
+    if @useRegex
+      new RegExp(@pattern, flags)
+    else
+      escapedPattern = _.escapeRegExp(@pattern)
+      new RegExp(escapedPattern, flags)
+
   destroyMarkers: ->
     @valid = false
     marker.destroy() for marker in @markers ? []
     @markers = []
-
-  optionDefaults: ->
-    regex: false
-    inSelection: false
-    caseSensitive: false
