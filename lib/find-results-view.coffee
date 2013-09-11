@@ -11,8 +11,8 @@ class FindResultsView extends View
     @div class: 'search-results'
 
   initialize: (@findModel) ->
-    @markerViews = []
-    @subscribe @findModel, 'updated', (markers) => @markersUpdated(markers)
+    @markerViews = {}
+    @subscribe @findModel, 'updated', (args...) => @markersUpdated(args...)
 
   attach: ->
     @getEditor().underlayer.append(this)
@@ -20,24 +20,34 @@ class FindResultsView extends View
   detach: ->
     super
 
+  beforeRemove: ->
+    @destroyAllViews()
+
   getEditor: ->
     activeView = rootView.getActiveView()
     if activeView instanceof Editor then activeView else null
 
-  markersUpdated: (@markers) ->
-    @destroyMarkerViews()
-
+  markersUpdated: (markers) ->
     editor = @getEditor()
-    return if not editor
 
-    editor = @getEditor()
-    for marker in @markers
-      markerView = new MarkerView({editor, marker})
-      @markerViews.push(markerView)
-      @append(markerView.element)
+    if not editor?
+      @destroyAllViews()
+    else
+      markerViewsToRemoveById = _.clone(@markerViews)
+      for marker in markers
+        if @markerViews[marker.id]
+          delete markerViewsToRemoveById[marker.id]
+        else
+          markerView = new MarkerView({editor, marker})
+          @append(markerView.element)
+          @markerViews[marker.id] = markerView
 
-    @getEditor().requestDisplayUpdate()
+      for id, markerView of markerViewsToRemoveById
+        delete @markerViews[id]
+        markerView.remove()
 
-  destroyMarkerViews: ->
+      editor.requestDisplayUpdate()
+
+  destroyAllViews: ->
     @empty()
-    @markerViews = []
+    @markerViews = {}

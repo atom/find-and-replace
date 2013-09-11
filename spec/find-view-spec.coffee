@@ -1,6 +1,8 @@
+$ = require 'jquery'
+_ = require 'underscore'
+
 shell = require 'shell'
 path = require 'path'
-$ = require 'jquery'
 RootView = require 'root-view'
 Project = require 'project'
 {View} = require 'space-pen'
@@ -219,12 +221,17 @@ describe 'FindView', ->
     describe "when the buffer contents change", ->
       it "re-runs the search", ->
         findResultsView = editor.find('.search-results')
-        editor.setCursorBufferPosition([4,0])
-        editor.insertText("items items")
+        editor.setSelectedBufferRange([[1, 26], [1, 27]])
+        editor.insertText("")
 
-        expect(findResultsView.children()).toHaveLength 8
-        expect(findView.resultCounter.text()).toEqual('8 found')
-        expect(editor.getSelectedBufferRange()).toEqual [[4, 11], [4, 11]]
+        window.advanceClock(1000)
+        expect(findResultsView.children()).toHaveLength 5
+        expect(findView.resultCounter.text()).toEqual('5 found')
+
+        editor.insertText("s")
+        window.advanceClock(1000)
+        expect(findResultsView.children()).toHaveLength 6
+        expect(findView.resultCounter.text()).toEqual('6 found')
 
       it "does not beep if no matches were found", ->
         editor.setCursorBufferPosition([2,0])
@@ -315,6 +322,14 @@ describe 'FindView', ->
         $(document.activeElement).trigger 'core:confirm'
 
         expect(findResultsView.children()).toHaveLength 0
+
+    describe "when another find is called", ->
+      it "clears existing markers", ->
+        previousMarkers = _.clone(editor.activeEditSession.getMarkers())
+        findView.findEditor.setText('notinthefile')
+        findView.focus()
+        $(document.activeElement).trigger 'core:confirm'
+        expect(editor.activeEditSession.getMarkers()).not.toEqual previousMarkers
 
   describe "replacing", ->
     beforeEach ->

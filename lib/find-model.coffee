@@ -21,14 +21,12 @@ class FindModel
     @editSession?.getBuffer().off(".find")
     @editSession = null
     paneItem = rootView.getActivePaneItem()
-    @destroyMarkers()
+    @destroyAllMarkers()
 
     if paneItem instanceof EditSession
       @editSession = paneItem
-      @editSession?.getBuffer().on "changed.find", =>
+      @editSession?.getBuffer().on "contents-modified.find", (args) =>
         @updateMarkers() unless @replacing
-
-    @trigger 'updated', @markers
 
   serialize: ->
     {@pattern, @useRegex, @inCurrentSelection, @caseInsensitive}
@@ -51,33 +49,55 @@ class FindModel
         textToReplace = @editSession.getTextInBufferRange(bufferRange)
         replacementText = textToReplace.replace(@getRegex(), replacementText)
       @editSession.setTextInBufferRange(bufferRange, replacementText)
+
+      marker.destroy()
+      @markers.splice(@markers.indexOf(marker), 1)
     @replacing = false
 
-    @markers = @markers.filter (marker) -> marker.isValid()
-    @trigger 'updated', @markers
+    @trigger 'updated', _.clone(@markers)
 
   updateMarkers: ->
-    @destroyMarkers()
-    @valid = true
     if not @editSession? or not @pattern
-      @trigger 'updated', @markers
+      @destroyAllMarkers()
       return
 
-    markerAttributes =
-      class: 'find-result'
-      invalidation: 'inside'
-      replicate: false
-      # originSiteId: Infinity # HACK: Don't serialize this marker
-
+    @valid = true
     if @inCurrentSelection
       bufferRange = @editSession.getSelectedBufferRange()
     else
       bufferRange = [[0,0],[Infinity,Infinity]]
 
-    @editSession.scanInBufferRange @getRegex(), bufferRange, ({range}) =>
-      @markers.push @editSession.markBufferRange(range, markerAttributes)
+    updatedMarkers = []
+    markersToRemoveById = {}
+    markerClass = 'find-result'
 
-    @trigger 'updated', @markers
+    markersToRemoveById[marker.id] = marker for marker in @markers
+
+    @editSession.scanInBufferRange @getRegex(), bufferRange, ({range}) =>
+      if marker = @findMarker(range, markerClass)
+        delete markersToRemoveById[marker.id]
+      else
+        marker = @createMarker(range, markerClass)
+
+      updatedMarkers.push marker
+
+    marker.destroy() for id, marker of markersToRemoveById
+
+    @markers = updatedMarkers
+    @trigger 'updated', _.clone(@markers)
+
+  findMarker: (range, markerClass) ->
+    attributes = { class: markerClass, startPosition: range.start, endPosition: range.end }
+    _.find @editSession.findMarkers(attributes), (marker) -> marker.isValid()
+
+  createMarker: (range, markerClass) ->
+    markerAttributes = { class: markerClass, invalidation: 'inside', replicate: false }
+    @editSession.markBufferRange(range, markerAttributes)
+
+  destroyAllMarkers: ->
+    @valid = false
+    @markers = []
+    @trigger 'updated', _.clone(@markers)
 
   getEditSession: ->
     @editSession
@@ -91,8 +111,3 @@ class FindModel
     else
       escapedPattern = _.escapeRegExp(@pattern)
       new RegExp(escapedPattern, flags)
-
-  destroyMarkers: ->
-    @valid = false
-    marker.destroy() for marker in @markers ? []
-    @markers = []

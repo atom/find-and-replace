@@ -9,12 +9,11 @@ class MarkerView
     @regions = []
     @element = document.createElement('div')
     @element.className = 'marker'
+    @updateNeeded = @marker.isValid()
 
     @subscribe @marker, 'changed', (event) => @onMarkerChanged(event)
     @subscribe @marker, 'destroyed', => @remove()
     @subscribe @editor, 'editor:display-updated', => @updateDisplay()
-
-    @updateDisplayPosition = @marker.isValid()
 
   remove: ->
     @unsubscribe()
@@ -29,18 +28,20 @@ class MarkerView
     @element.style.display = "none"
 
   onMarkerChanged: ({isValid}) ->
-    @updateDisplayPosition = isValid
+    @updateNeeded = isValid
     if isValid then @show() else @hide()
 
-  isMarkerVisible: ->
+  isUpdateNeeded: ->
+    return false unless @updateNeeded
+
     {start, end} = @getScreenRange()
     [firstRenderedRow, lastRenderedRow] = [@editor.firstRenderedScreenRow, @editor.lastRenderedScreenRow]
     end.row >= firstRenderedRow and start.row <= lastRenderedRow
 
   updateDisplay: ->
-    return unless @updateDisplayPosition and @isMarkerVisible()
+    return unless @isUpdateNeeded()
 
-    @updateDisplayPosition = false
+    @updateNeeded = false
     @clearRegions()
     range = @getScreenRange()
     return if range.isEmpty()
