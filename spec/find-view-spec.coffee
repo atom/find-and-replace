@@ -157,7 +157,7 @@ describe 'FindView', ->
 
     describe "when the active pane item changes", ->
       describe "when a new edit session is activated", ->
-        it "udpates the result view and selects the correct text", ->
+        it "updates the result view and selects the correct text", ->
           rootView.open('sample.coffee')
           expect(findView.resultCounter.text()).toEqual('no results')
           expect(editor.getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
@@ -236,7 +236,6 @@ describe 'FindView', ->
 
         editor.insertText("blah blah")
         expect(shell.beep).not.toHaveBeenCalled()
-
 
     describe "when finding within a selection", ->
       beforeEach ->
