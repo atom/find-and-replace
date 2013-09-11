@@ -60,25 +60,25 @@ describe 'FindView', ->
       expect(findView.replaceEditor.getText()).toBe 'dog'
 
     it "serializes find options ", ->
-      expect(findView.caseOptionButton).not.toHaveClass 'enabled'
-      expect(findView.regexOptionButton).not.toHaveClass 'enabled'
-      expect(findView.selectionOptionButton).not.toHaveClass 'enabled'
+      expect(findView.caseOptionButton).not.toHaveClass 'selected'
+      expect(findView.regexOptionButton).not.toHaveClass 'selected'
+      expect(findView.selectionOptionButton).not.toHaveClass 'selected'
 
       findView.caseOptionButton.click()
       findView.regexOptionButton.click()
       findView.selectionOptionButton.click()
 
-      expect(findView.caseOptionButton).toHaveClass 'enabled'
-      expect(findView.regexOptionButton).toHaveClass 'enabled'
-      expect(findView.selectionOptionButton).toHaveClass 'enabled'
+      expect(findView.caseOptionButton).toHaveClass 'selected'
+      expect(findView.regexOptionButton).toHaveClass 'selected'
+      expect(findView.selectionOptionButton).toHaveClass 'selected'
 
       atom.deactivatePackage("find-and-replace")
       pack = atom.activatePackage("find-and-replace")
       findView = pack.mainModule.findView
 
-      expect(findView.caseOptionButton).toHaveClass 'enabled'
-      expect(findView.regexOptionButton).toHaveClass 'enabled'
-      expect(findView.selectionOptionButton).toHaveClass 'enabled'
+      expect(findView.caseOptionButton).toHaveClass 'selected'
+      expect(findView.regexOptionButton).toHaveClass 'selected'
+      expect(findView.selectionOptionButton).toHaveClass 'selected'
 
   describe "finding", ->
     beforeEach ->
@@ -108,7 +108,7 @@ describe 'FindView', ->
       expect(editor.find(':focus')).toExist()
 
     it "selects the next match when the next match button is pressed", ->
-      $('.find-and-replace .icon-next').click()
+      findView.nextButton.click()
       expect(findView.resultCounter.text()).toEqual('3 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[2, 34], [2, 39]]
 
@@ -125,7 +125,7 @@ describe 'FindView', ->
       expect(editor.getSelectedBufferRange()).toEqual [[8, 11], [8, 15]]
 
     it "selects the previous match when the previous match button is pressed", ->
-      $('.find-and-replace .icon-previous').click()
+      findView.previousButton.click()
       expect(findView.resultCounter.text()).toEqual('1 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[1, 27], [1, 22]]
 
