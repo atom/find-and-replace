@@ -1,5 +1,6 @@
 _ = require 'underscore'
 {View} = require 'space-pen'
+Editor = require 'editor'
 Selection = require 'selection'
 MarkerView = require './marker-view'
 
@@ -20,10 +21,14 @@ class FindResultsView extends View
     super
 
   getEditor: ->
-    rootView.getActiveView()
+    activeView = rootView.getActiveView()
+    if activeView instanceof Editor then activeView else null
 
   markersUpdated: (@markers) ->
     @destroyMarkerViews()
+
+    editor = @getEditor()
+    return if not editor
 
     editor = @getEditor()
     for marker in @markers
