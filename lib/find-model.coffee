@@ -96,6 +96,7 @@ class FindModel
 
   destroyAllMarkers: ->
     @valid = false
+    marker.destroy() for marker in @markers ? []
     @markers = []
     @trigger 'updated', _.clone(@markers)
 

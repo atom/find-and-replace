@@ -324,12 +324,21 @@ describe 'FindView', ->
         expect(findResultsView.children()).toHaveLength 0
 
     describe "when another find is called", ->
-      it "clears existing markers", ->
+      previousMarkers = null
+
+      beforeEach ->
         previousMarkers = _.clone(editor.activeEditSession.getMarkers())
-        findView.findEditor.setText('notinthefile')
         findView.focus()
+
+      it "clears existing markers for another search", ->
+        findView.findEditor.setText('notinthefile')
         $(document.activeElement).trigger 'core:confirm'
-        expect(editor.activeEditSession.getMarkers()).not.toEqual previousMarkers
+        expect(editor.activeEditSession.getMarkers().length).toEqual 1
+
+      it "clears existing markers for an empty search", ->
+        findView.findEditor.setText('')
+        $(document.activeElement).trigger 'core:confirm'
+        expect(editor.activeEditSession.getMarkers().length).toEqual 1
 
   describe "replacing", ->
     beforeEach ->
