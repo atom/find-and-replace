@@ -1,11 +1,7 @@
 @import "ui-variables";
 
-@label-width: 50px;
-@editor-box-width: 350px;
-@button-width: 102px;
-
-@find-mode-width: 2 + @component-padding*3 + @editor-box-width + @button-width;
-@replace-mode-width: 2 + @component-padding*4 + @label-width + @editor-box-width + @button-width;
+@label-width: 5em;
+@button-width: 110px;
 
 .editor .marker .region {
   position: absolute;
@@ -18,7 +14,6 @@
   border: 1px solid #ddd; // need syntax color here..
   border-radius: 2px;
 
-  -webkit-box-sizing: content-box;
   box-sizing: content-box;
 
   padding: 0 0px;
@@ -29,59 +24,53 @@
   padding: @component-padding;
   -webkit-user-select: none;
 
-  label {
-    width: @label-width;
-    margin-right: @component-padding;
-    text-align: right;
-    vertical-align: middle;
-  }
-
-  .find-container {
-    .btn-toggle.btn-group .btn {
-      font-size: 14px;
-      width: @button-width/3;
-      font-family: monospace;
-      //&.option-regex{ font-size: 18px; }
-    }
-  }
-
-  .replace-container {
-    .btn-toggle.btn-group .btn {
-      width: @button-width/2;
-    }
-  }
-
-  .editor-container {
-    position: relative;
-    margin-right: @button-width + @component-padding;
-  }
-}
-
-.buffer-find-and-replace {
   &.find-mode {
     .replace-container, label { display: none; }
   }
 
-  &.replace-mode {
-    // make room for the labels
-    .editor-container { margin-left: @label-width + @component-padding; }
+  .find-container, .replace-container {
+    display: -webkit-flex;
+    -webkit-flex-direction: row;
+
+    label {
+      width: @label-width;
+      text-align: right;
+      vertical-align: middle;
+      margin-right: @component-padding;
+    }
+
+    .btn-toggle.btn-group {
+      width: @button-width;
+      margin-left: @component-padding;
+
+      .btn {
+        font-size: 14px;
+        font-family: monospace;
+      }
+    }
+
+    .editor-container {
+      position: relative;
+      -webkit-flex: 1;
+
+      .editor {
+        width: 100%;
+      }
+    }
   }
 
   .find-container {
-    .find-editor-container {
+    .editor-container {
       .find-meta-container {
         position: absolute;
+        top: 0.35em;
         right: 0;
-        top: .35em;
         z-index: 2;
       }
-      .result-counter {
-        position: relative;
-        top: -1px;
 
+      .result-counter {
         font-size: .9em;
-        color: @text-color-subtle;
-        margin-right: 10px;
+        margin-right: @component-padding;
       }
     }
   }

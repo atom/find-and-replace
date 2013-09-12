@@ -9,36 +9,41 @@ module.exports =
 class FindView extends View
 
   @content: ->
-    @div tabIndex: -1, class: 'find-and-replace buffer-find-and-replace tool-panel panel-bottom', =>
+    @div tabIndex: -1, class: 'find-and-replace tool-panel panel-bottom', =>
       @div class: 'find-container block', =>
         @label class: 'text-subtle', 'Find'
-        @div class: 'btn-group pull-right btn-toggle', =>
+
+        @div class: 'editor-container', =>
+          @subview 'findEditor', new Editor(mini: true)
+
+          @div class: 'find-meta-container', =>
+            @span outlet: 'resultCounter', class: 'text-subtle result-counter', ''
+            @a href: '#', outlet: 'previousButton', class: 'icon icon-chevron-left'
+            @a href: '#', outlet: 'nextButton', class: 'icon icon-chevron-right'
+
+        @div class: 'btn-group btn-toggle', =>
           @button outlet: 'regexOptionButton', class: 'btn btn-mini option-regex', '.*'
           @button outlet: 'caseOptionButton', class: 'btn btn-mini option-case', 'Aa'
           @button outlet: 'selectionOptionButton', class: 'btn btn-mini option-selection', '"'
 
-        @div class: 'find-editor-container editor-container', =>
-          @div class: 'find-meta-container', =>
-            @span outlet: 'resultCounter', class: 'result-counter', ''
-            @a href: '#', outlet: 'previousButton', class: 'icon icon-chevron-left'
-            @a href: '#', outlet: 'nextButton', class: 'icon icon-chevron-right'
-          @subview 'findEditor', new Editor(mini: true)
-
-      @div outlet: 'replaceContainer', class: 'replace-container block', =>
+      @div class: 'replace-container block', =>
         @label class: 'text-subtle', 'Replace'
-        @div class: 'btn-group pull-right btn-toggle', =>
+
+        @div class: 'editor-container', =>
+          @subview 'replaceEditor', new Editor(mini: true)
+
+        @div class: 'btn-group btn-toggle', =>
           @button outlet: 'replaceNextButton', class: 'btn btn-mini btn-next', 'Next'
           @button outlet: 'replaceAllButton', class: 'btn btn-mini btn-all', 'All'
 
-        @div class: 'replace-editor-container editor-container', =>
-          @subview 'replaceEditor', new Editor(mini: true)
 
-  initialize: (@findModel, {findHistory, replaceHistory}) ->
+  initialize: (@findModel, {attached, findHistory, replaceHistory}) ->
     @findHistory = new History(@findEditor, findHistory)
     @replaceHistory = new History(@replaceEditor, replaceHistory)
     @findResultsView = new FindResultsView(@findModel)
     @handleEvents()
     @updateOptionButtons()
+    @showFind() if attached
 
   handleEvents: ->
     @handleFindEvents()
@@ -102,6 +107,7 @@ class FindView extends View
   serialize: ->
     findHistory: @findHistory.serialize()
     replaceHistory: @replaceHistory.serialize()
+    attached: @hasParent()
 
   confirm: ->
     if @hasClass('find-mode')
