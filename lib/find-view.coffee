@@ -87,11 +87,13 @@ class FindView extends View
     @attach()
     @addClass('find-mode').removeClass('replace-mode')
     @findEditor.focus()
+    @findEditor.selectAll()
 
   showReplace: =>
     @attach()
     @addClass('replace-mode').removeClass('find-mode')
     @replaceEditor.focus()
+    @replaceEditor.selectAll()
 
   attach: =>
     @findResultsView.attach()
