@@ -28,7 +28,7 @@ describe 'FindView', ->
     beforeEach ->
       editor.trigger 'find-and-replace:show'
       findView.findEditor.setText 'items'
-      $(document.activeElement).trigger 'core:confirm'
+      findView.trigger 'core:confirm'
       findView.focus()
 
     it "detaches from the root view", ->
@@ -87,14 +87,14 @@ describe 'FindView', ->
       editor.setCursorBufferPosition([2,0])
       editor.trigger 'find-and-replace:show'
       findView.findEditor.setText 'items'
-      $(document.activeElement).trigger 'core:confirm'
+      findView.trigger 'core:confirm'
 
     it "doesn't change the selection, beeps if there are no matches and keeps focus on the find view", ->
       editor.setCursorBufferPosition([2,0])
       spyOn(shell, 'beep')
       findView.findEditor.setText 'notinthefilebro'
-      findView.focus()
-      $(document.activeElement).trigger 'core:confirm'
+      findView.findEditor.focus()
+      findView.trigger 'core:confirm'
 
       expect(editor.getCursorBufferPosition()).toEqual [2,0]
       expect(shell.beep).toHaveBeenCalled()
@@ -237,8 +237,7 @@ describe 'FindView', ->
         editor.setCursorBufferPosition([2,0])
         spyOn(shell, 'beep')
         findView.findEditor.setText 'notinthefilebro'
-        findView.focus()
-        $(document.activeElement).trigger 'core:confirm'
+        findView.trigger 'core:confirm'
         shell.beep.reset()
 
         editor.insertText("blah blah")
@@ -247,7 +246,6 @@ describe 'FindView', ->
     describe "when finding within a selection", ->
       beforeEach ->
         editor.setSelectedBufferRange [[2, 0], [4, 0]]
-        findView.focus()
 
       it "toggles find within a selction via and event and only finds matches within the selection", ->
         findView.findEditor.setText 'items'
@@ -262,9 +260,6 @@ describe 'FindView', ->
         expect(findView.resultCounter.text()).toEqual('1 of 3')
 
     describe "when regex is toggled", ->
-      beforeEach ->
-        findView.focus()
-
       it "toggles regex via an event and finds text matching the pattern", ->
         editor.setCursorBufferPosition([2,0])
         findView.trigger 'find-and-replace:toggle-regex-option'
@@ -287,12 +282,10 @@ describe 'FindView', ->
       beforeEach ->
         editor.setText "-----\nwords\nWORDs\n"
         editor.setCursorBufferPosition([0,0])
-        findView.focus()
 
       it "toggles case sensitivity via an event and finds text matching the pattern", ->
         findView.findEditor.setText 'WORDs'
-        $(document.activeElement).trigger 'core:confirm'
-        findView.focus()
+        findView.trigger 'core:confirm'
         expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 5]]
 
         editor.setCursorBufferPosition([0,0])
@@ -301,7 +294,7 @@ describe 'FindView', ->
 
       it "toggles case sensitivity via a button and finds text matching the pattern", ->
         findView.findEditor.setText 'WORDs'
-        $(document.activeElement).trigger 'core:confirm'
+        findView.trigger 'core:confirm'
         expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 5]]
 
         editor.setCursorBufferPosition([0,0])
@@ -318,8 +311,7 @@ describe 'FindView', ->
         expect(findResultsView.children()).toHaveLength 6
 
         findView.findEditor.setText 'notinthefilebro'
-        findView.focus()
-        $(document.activeElement).trigger 'core:confirm'
+        findView.trigger 'core:confirm'
 
         expect(findResultsView.children()).toHaveLength 0
 
@@ -328,16 +320,15 @@ describe 'FindView', ->
 
       beforeEach ->
         previousMarkers = _.clone(editor.activeEditSession.getMarkers())
-        findView.focus()
 
       it "clears existing markers for another search", ->
         findView.findEditor.setText('notinthefile')
-        $(document.activeElement).trigger 'core:confirm'
+        findView.trigger 'core:confirm'
         expect(editor.activeEditSession.getMarkers().length).toEqual 1
 
       it "clears existing markers for an empty search", ->
         findView.findEditor.setText('')
-        $(document.activeElement).trigger 'core:confirm'
+        findView.trigger 'core:confirm'
         expect(editor.activeEditSession.getMarkers().length).toEqual 1
 
   describe "replacing", ->

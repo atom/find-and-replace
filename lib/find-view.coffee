@@ -9,7 +9,7 @@ module.exports =
 class FindView extends View
 
   @content: ->
-    @div class: 'find-and-replace buffer-find-and-replace tool-panel panel-bottom', =>
+    @div tabIndex: -1, class: 'find-and-replace buffer-find-and-replace tool-panel panel-bottom', =>
       @div class: 'find-container block', =>
         @label class: 'text-subtle', 'Find'
         @div class: 'btn-group pull-right btn-toggle', =>
@@ -44,8 +44,8 @@ class FindView extends View
     @handleFindEvents()
     @handleReplaceEvents()
 
+    @on 'core:confirm', => @confirm()
     @on 'core:cancel', @detach
-    @on 'click', => @focus()
 
     @command 'find-and-replace:toggle-regex-option', @toggleRegexOption
     @command 'find-and-replace:toggle-case-option', @toggleCaseOption
@@ -59,7 +59,6 @@ class FindView extends View
 
   handleFindEvents: ->
     rootView.command 'find-and-replace:show', @showFind
-    @findEditor.on 'core:confirm', => @findNext()
     @nextButton.on 'click', => @findNext()
     @previousButton.on 'click', => @findPrevious()
     rootView.command 'find-and-replace:find-next', @findNext
@@ -68,7 +67,6 @@ class FindView extends View
 
   handleReplaceEvents: ->
     rootView.command 'find-and-replace:show-replace', @showReplace
-    @replaceEditor.on 'core:confirm', @replaceNext
     @replaceNextButton.on 'click', @replaceNext
     @replaceAllButton.on 'click', @replaceAll
     rootView.command 'find-and-replace:replace-next', @replaceNext
@@ -77,21 +75,12 @@ class FindView extends View
   showFind: =>
     @attach()
     @addClass('find-mode').removeClass('replace-mode')
-    @focus()
+    @findEditor.focus()
 
   showReplace: =>
     @attach()
     @addClass('replace-mode').removeClass('find-mode')
-    @focus()
-
-  focus: =>
-    @replaceEditor.selectAll()
-    @findEditor.selectAll()
-
-    if @hasClass('find-mode')
-      @findEditor.focus()
-    else
-      @replaceEditor.focus()
+    @replaceEditor.focus()
 
   attach: =>
     @findResultsView.attach()
@@ -105,6 +94,12 @@ class FindView extends View
   serialize: ->
     findHistory: @findHistory.serialize()
     replaceHistory: @replaceHistory.serialize()
+
+  confirm: ->
+    if @hasClass('find-mode')
+      @findNext()
+    else
+      @replaceNext()
 
   findNext: =>
     @findModel.update {pattern: @findEditor.getText()}
