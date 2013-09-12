@@ -10,15 +10,17 @@
 
   'meta-e': 'find-and-replace:use-selection-as-find-pattern'
 
-'.find-and-replace .mini.editor input':
-  'tab': 'find-and-replace:focus-next'
-  'shift-tab': 'find-and-replace:focus-previous'
+'.find-and-replace':
   'enter': 'core:confirm',
   'escape': 'core:cancel'
   'meta-w': 'core:cancel'
   'alt-meta-/': 'find-and-replace:toggle-regex-option'
   'alt-meta-c': 'find-and-replace:toggle-case-option'
   'alt-meta-s': 'find-and-replace:toggle-selection-option'
+
+'.find-and-replace .mini.editor input':
+  'tab': 'find-and-replace:focus-next'
+  'shift-tab': 'find-and-replace:focus-previous'
 
 '.project-find-and-replace .preview-list':
   'enter': 'core:confirm'
