@@ -37,13 +37,17 @@ class FindView extends View
           @button outlet: 'replaceAllButton', class: 'btn btn-mini btn-all', 'All'
 
 
-  initialize: (@findModel, {attached, findHistory, replaceHistory}) ->
+  initialize: (@findModel, {showFind, showReplace, findHistory, replaceHistory}={}) ->
     @findHistory = new History(@findEditor, findHistory)
     @replaceHistory = new History(@replaceEditor, replaceHistory)
     @findResultsView = new FindResultsView(@findModel)
     @handleEvents()
     @updateOptionButtons()
-    @showFind() if attached
+
+    if showFind
+      @showFind()
+    else if showReplace
+      @showReplace()
 
   handleEvents: ->
     @handleFindEvents()
@@ -107,7 +111,8 @@ class FindView extends View
   serialize: ->
     findHistory: @findHistory.serialize()
     replaceHistory: @replaceHistory.serialize()
-    attached: @hasParent()
+    showFind: @hasParent() and @hasClass('find-mode')
+    showReplace: @hasParent() and @hasClass('replace-mode')
 
   confirm: ->
     if @hasClass('find-mode')

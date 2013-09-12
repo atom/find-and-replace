@@ -7,11 +7,11 @@ module.exports =
 class FindModel
   _.extend @prototype, EventEmitter
 
-  constructor: (findOptions={}) ->
-    @pattern = findOptions.pattern ? ''
-    @useRegex = findOptions.useRegex ? false
-    @inCurrentSelection = findOptions.inCurrentSelection ? false
-    @caseInsensitive = findOptions.caseInsensitive ? false
+  constructor: (state={}) ->
+    @pattern = state.pattern ? ''
+    @useRegex = state.useRegex ? false
+    @inCurrentSelection = state.inCurrentSelection ? false
+    @caseInsensitive = state.caseInsensitive ? false
     @valid = false
 
     @activePaneItemChanged()
@@ -31,12 +31,12 @@ class FindModel
   serialize: ->
     {@pattern, @useRegex, @inCurrentSelection, @caseInsensitive}
 
-  update: (newFindOptions={}) ->
-    currentFindOptions = {@pattern, @useRegex, @inCurrentSelection, @caseInsensitive}
-    _.defaults(newFindOptions, currentFindOptions)
+  update: (newParams={}) ->
+    currentParams = {@pattern, @useRegex, @inCurrentSelection, @caseInsensitive}
+    _.defaults(newParams, currentParams)
 
-    unless @valid and _.isEqual(newFindOptions, currentFindOptions)
-      _.extend(this, newFindOptions)
+    unless @valid and _.isEqual(newParams, currentParams)
+      _.extend(this, newParams)
       @updateMarkers()
 
   replace: (markers, replacementText) ->
