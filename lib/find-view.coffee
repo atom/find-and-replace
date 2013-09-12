@@ -46,6 +46,8 @@ class FindView extends View
 
     @on 'core:confirm', => @confirm()
     @on 'core:cancel', @detach
+    @on 'find-and-replace:focus-next', @toggleFocus
+    @on 'find-and-replace:focus-previous', @toggleFocus
 
     @command 'find-and-replace:toggle-regex-option', @toggleRegexOption
     @command 'find-and-replace:toggle-case-option', @toggleCaseOption
@@ -90,6 +92,12 @@ class FindView extends View
     @findResultsView.detach()
     rootView.focus()
     super()
+
+  toggleFocus: =>
+    if @hasClass('replace-mode') and @findEditor.find(':focus').length > 0
+      @replaceEditor.focus()
+    else
+      @findEditor.focus()
 
   serialize: ->
     findHistory: @findHistory.serialize()
