@@ -41,14 +41,33 @@ describe 'ProjectFindView', ->
       expect(projectFindView.hasParent()).toBeTruthy()
 
   describe "when core:confirm is triggered", ->
+    beforeEach ->
+      editor.trigger 'project-find:show'
+
     describe "when results exist", ->
       beforeEach ->
         projectFindView.findEditor.setText('items')
 
-      it "displays the results", ->
+      it "displays the results and no errors", ->
         waitsForPromise ->
           projectFindView.confirm()
 
         runs ->
+          expect(projectFindView.previewList).toBeVisible()
+          projectFindView.previewList.scrollToBottom() # To load ALL the results
+          expect(projectFindView.errorMessages).not.toBeVisible()
           expect(projectFindView.previewList.find("li > ul > li")).toHaveLength(13)
           expect(projectFindView.previewCount.text()).toBe "13 matches in 2 files"
+
+    describe "when results exist", ->
+      beforeEach ->
+        projectFindView.findEditor.setText('notintheprojectbro')
+
+      it "displays no errors and no results", ->
+        waitsForPromise ->
+          projectFindView.confirm()
+
+        runs ->
+          expect(projectFindView.errorMessages).not.toBeVisible()
+          expect(projectFindView.previewList).toBeVisible()
+          expect(projectFindView.previewList.find("li > ul > li")).toHaveLength(0)

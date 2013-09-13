@@ -17,7 +17,7 @@ class ProjectFindView extends View
           @span outlet: 'previewCount', class: 'preview-count'
         @subview 'previewList', new PreviewList
 
-      @ul class: 'error-messages block', outlet: 'errorMessages'
+      @ul outlet: 'errorMessages', class: 'error-messages block'
 
       @div class: 'find-container block', =>
         @label outlet: 'findLabel', class: 'text-subtle', 'Find'
@@ -58,17 +58,17 @@ class ProjectFindView extends View
       @loadingMessage.hide()
 
       if errorMessages.length > 0
-        @flashError()
         @errorMessages.show()
         @errorMessages.append $$ ->
           @li errorMessage for errorMessage in errorMessages
-      else if results.length
+      else
         @previewBlock.show()
         @previewList.populate(results)
-        @previewCount.text("#{_.pluralize(results.length, 'match', 'matches')} in #{_.pluralize(@previewList.getPathCount(), 'file')}").show()
-        @previewList.focus()
-      else
-        @previewCount.text("No matches found").show()
+        if results.length > 0
+          @previewCount.text("#{_.pluralize(results.length, 'match', 'matches')} in #{_.pluralize(@previewList.getPathCount(), 'file')}").show()
+          @previewList.focus()
+        else
+          @previewCount.text("No matches found")
 
     deferred
 

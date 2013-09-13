@@ -29,13 +29,12 @@ class PreviewList extends ScrollView
   hasResults: -> @results?
 
   populate: (results) ->
-    @destroyResults() if @results
+    @destroyResults() if @results?
     @results = results
     @lastRenderedResultIndex = 0
     @empty()
     @viewsForPath = {}
 
-    @show()
     @renderResults()
 
     @find('.search-result:first').addClass('selected')
