@@ -3,7 +3,7 @@ $ = require 'jquery'
 RootView = require 'root-view'
 Project = require 'project'
 
-describe 'ProjectFindView', ->
+fdescribe 'ProjectFindView', ->
   [editor, projectFindView] = []
 
   beforeEach ->

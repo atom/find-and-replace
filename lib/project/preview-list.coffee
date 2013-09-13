@@ -23,14 +23,7 @@ class PreviewList extends ScrollView
     @command 'find-and-replace:collapse-all', => @collapseAllPaths()
     @command 'find-and-replace:expand-all', => @expandAllPaths()
 
-  expandAllPaths: ->
-    @children().each (index, element) -> $(element).view().expand()
-
-  collapseAllPaths: ->
-    @renderResults(renderAll: true)
-    @children().each (index, element) -> $(element).view().collapse()
-
-  destroy: ->
+  beforeRemove: ->
     @destroyResults() if @results
 
   hasResults: -> @results?

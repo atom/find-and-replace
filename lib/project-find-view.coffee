@@ -60,9 +60,9 @@ class ProjectFindView extends View
         @errorMessages.append $$ ->
           @li errorMessage for errorMessage in errorMessages
       else if results.length
+        @previewBlock.show()
         @previewList.populate(results)
         @previewCount.text("#{_.pluralize(results.length, 'match', 'matches')} in #{_.pluralize(@previewList.getPathCount(), 'file')}").show()
-        @previewBlock.show()
         @previewList.focus()
       else
         @previewCount.text("No matches found").show()
