@@ -10,8 +10,7 @@ class ProjectFindView extends View
   @content: ->
     @div tabIndex: -1, class: 'project-find tool-panel panel-bottom padded', =>
 
-      @div outlet: 'loadingMessage', class: 'loading is-loading loading-spinner-small', =>
-        @span 'Searching...'
+      @div outlet: 'loadingMessage', class: 'loading loading-spinner-small block pull-center'
 
       @div outlet: 'previewBlock', class: 'preview-block inset-panel block', =>
         @div class: 'panel-heading', =>
