@@ -15,11 +15,15 @@ describe 'ProjectFindView', ->
     projectFindView = pack.mainModule.projectFindView
 
   describe "when project-find:show is triggered", ->
+    beforeEach ->
+      projectFindView.findEditor.setText('items')
+
     it "attaches ProjectFindView to the root view", ->
       editor.trigger 'project-find:show'
       expect(rootView.find('.project-find')).toExist()
       expect(projectFindView.find('.preview-block')).not.toBeVisible()
       expect(projectFindView.find('.loading')).not.toBeVisible()
+      expect(projectFindView.findEditor.getSelectedBufferRange()).toEqual [[0, 0], [0, 5]]
 
   describe "when core:cancel is triggered", ->
     beforeEach ->

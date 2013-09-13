@@ -43,6 +43,7 @@ class ProjectFindView extends View
   attach: ->
     rootView.vertical.append(this)
     @findEditor.focus()
+    @findEditor.selectAll()
 
   detach: ->
     rootView.focus()
