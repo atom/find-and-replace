@@ -5,7 +5,6 @@ shell = require 'shell'
 path = require 'path'
 RootView = require 'root-view'
 Project = require 'project'
-{View} = require 'space-pen'
 
 describe 'FindView', ->
   [editor, findView] = []
@@ -13,7 +12,6 @@ describe 'FindView', ->
   beforeEach ->
     window.rootView = new RootView()
     rootView.open('sample.js')
-    rootView.enableKeymap()
     rootView.attachToDom()
     editor = rootView.getActiveView()
     pack = atom.activatePackage("find-and-replace")
