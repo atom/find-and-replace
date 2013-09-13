@@ -1,13 +1,24 @@
+_ = require 'underscore'
+$ = require 'jquery'
 {View} = require 'space-pen'
 Editor = require 'editor'
+PreviewList = require './project/preview-list'
+SearchResult = require './project/search-result'
 
 module.exports =
 class ProjectFindView extends View
   @content: ->
-    @div tabIndex: -1, class: 'project-find tool-panel panel-bottom', =>
+    @div tabIndex: -1, class: 'project-find tool-panel panel-bottom padded', =>
 
       @div outlet: 'loadingMessage', class: 'loading is-loading loading-spinner-small', =>
         @span 'Searching...'
+
+      @div outlet: 'previewBlock', class: 'preview-block inset-panel block', =>
+        @div class: 'panel-heading', =>
+          @span outlet: 'previewCount', class: 'preview-count'
+        @subview 'previewList', new PreviewList
+
+      @ul class: 'error-messages block', outlet: 'errorMessages'
 
       @div class: 'find-container block', =>
         @label outlet: 'findLabel', 'Find'
@@ -18,27 +29,12 @@ class ProjectFindView extends View
           @button outlet: 'regexOptionButton', class: 'btn btn-mini option-regex', '.*'
           @button outlet: 'caseSensitiveOptionButton', class: 'btn btn-mini option-case-sensitive', 'Aa'
 
-      @div class: 'replace-container block', =>
-        @label outlet: 'replaceLabel', 'Replace'
-
-        @subview 'replaceEditor', new Editor(mini: true)
-
-        @div class: 'btn-group btn-toggle', =>
-          @button outlet: 'replaceNextButton', class: 'btn btn-mini btn-next', 'Next'
-          @button outlet: 'replaceAllButton', class: 'btn btn-mini btn-all', 'All'
-
-      @div class: 'filter-container block', =>
-        @label outlet: 'filterLabel', 'Where'
-
-        @subview 'filterEditor', new Editor(mini: true)
-
-        @div class: 'btn-group btn-toggle', =>
-
   initialize: ->
     @handleEvents()
 
   handleEvents: ->
     @on 'core:cancel', => @detach()
+    @on 'core:confirm', => @confirm()
     rootView.command 'project-find:show', => @attach()
 
   attach: ->
@@ -48,3 +44,41 @@ class ProjectFindView extends View
   detach: ->
     rootView.focus()
     super()
+
+  confirm: ->
+    @loadingMessage.show()
+    @previewBlock.hide()
+    @errorMessages.empty()
+
+    deferred = @search()
+    deferred.done (results, errorMessages=[]) =>
+      @loadingMessage.hide()
+
+      if errorMessages.length > 0
+        @flashError()
+        @errorMessages.show()
+        @errorMessages.append $$ ->
+          @li errorMessage for errorMessage in errorMessages
+      else if results.length
+        @previewList.populate(results)
+        @previewCount.text("#{_.pluralize(results.length, 'match', 'matches')} in #{_.pluralize(@previewList.getPathCount(), 'file')}").show()
+        @previewBlock.show()
+        @previewList.focus()
+      else
+        @previewCount.text("No matches found").show()
+
+    deferred
+
+  search: ->
+    text = @findEditor.getText()
+    regex = new RegExp(_.escapeRegExp(text))
+    results = []
+
+    deferred = $.Deferred()
+    promise = project.scan regex, ({path, range: bufferRange}) =>
+      searchResult = new SearchResult({path, bufferRange})
+      results.push(searchResult)
+
+    promise.done -> deferred.resolve(results)
+
+    deferred.promise()

@@ -4,10 +4,9 @@
 @button-width: 120px;
 
 .project-find {
-  padding: @component-padding;
   -webkit-user-select: none;
 
-  .loading {
+  .loading, .preview-block {
     display: none;
   }
 
@@ -40,4 +39,31 @@
   .replace-container, .filter-container {
     display: none;
   }
+
+  .preview-list {
+    max-height: 10 * @component-line-height + @component-padding * 2;
+    overflow: auto;
+    position: relative;
+
+    .search-result {
+      padding-top: 2px;
+      padding-bottom: 2px;
+    }
+
+    .line-number {
+      margin-right: 1ex;
+      text-align: right;
+      display: inline-block;
+    }
+
+    .path-match-number {
+      padding-left: 8px;
+    }
+
+    .preview {
+      word-break: break-all;
+      font-family: monospace;
+    }
+  }
+
 }
