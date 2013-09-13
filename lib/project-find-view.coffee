@@ -20,7 +20,7 @@ class ProjectFindView extends View
       @ul class: 'error-messages block', outlet: 'errorMessages'
 
       @div class: 'find-container block', =>
-        @label outlet: 'findLabel', 'Find'
+        @label outlet: 'findLabel', class: 'text-subtle', 'Find'
 
         @subview 'findEditor', new Editor(mini: true)
 

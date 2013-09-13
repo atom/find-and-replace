@@ -20,6 +20,17 @@
   margin: -1px 0 0 -1px;
 }
 
+.find-and-replace,
+.project-find {
+  label {
+    width: @label-width;
+    text-align: right;
+    vertical-align: middle;
+    margin: 0 @component-padding 0 0;
+    line-height: 28px; // Assumed the height of an editor to vertically center
+  }
+}
+
 .find-and-replace {
   padding: @component-padding;
   -webkit-user-select: none;
@@ -31,13 +42,6 @@
   .find-container, .replace-container {
     display: -webkit-flex;
     -webkit-flex-direction: row;
-
-    label {
-      width: @label-width;
-      text-align: right;
-      vertical-align: middle;
-      margin-right: @component-padding;
-    }
 
     .btn-toggle.btn-group {
       width: @button-width;
@@ -70,4 +74,64 @@
       margin-right: @component-padding;
     }
   }
+}
+
+
+.project-find {
+  -webkit-user-select: none;
+
+  .loading, .preview-block, .error-messages {
+    display: none;
+  }
+
+  .find-container, .replace-container, .filter-container {
+    display: -webkit-flex;
+    -webkit-flex-direction: row;
+
+    .btn-toggle.btn-group {
+      width: @button-width;
+      margin-left: @component-padding;
+
+      .btn {
+        font-size: 14px;
+        font-family: monospace;
+      }
+    }
+
+    .editor {
+      width: 100%;
+    }
+  }
+
+  .replace-container, .filter-container {
+    display: none;
+  }
+
+  .preview-list {
+    max-height: 10 * @component-line-height + @component-padding * 2;
+    overflow: auto;
+    position: relative;
+    padding: 0 @component-padding;
+
+    .search-result {
+      padding-top: 2px;
+      padding-bottom: 2px;
+    }
+
+    .line-number {
+      margin-right: 1ex;
+      text-align: right;
+      display: inline-block;
+    }
+
+    .path-match-number {
+      padding-left: 8px;
+    }
+
+    .preview {
+      word-break: break-all;
+      font-family: monospace;
+    }
+  }
+
 }
