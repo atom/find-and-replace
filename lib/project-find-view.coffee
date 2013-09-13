@@ -28,8 +28,12 @@ class ProjectFindView extends View
           @button outlet: 'regexOptionButton', class: 'btn btn-mini option-regex', '.*'
           @button outlet: 'caseSensitiveOptionButton', class: 'btn btn-mini option-case-sensitive', 'Aa'
 
-  initialize: ->
+  initialize: ({attached}={})->
     @handleEvents()
+    @attach() if attached
+
+  serialize: ->
+    attached: @hasParent()
 
   handleEvents: ->
     @on 'core:cancel', => @detach()

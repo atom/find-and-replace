@@ -3,7 +3,7 @@ $ = require 'jquery'
 RootView = require 'root-view'
 Project = require 'project'
 
-fdescribe 'ProjectFindView', ->
+describe 'ProjectFindView', ->
   [editor, projectFindView] = []
 
   beforeEach ->
@@ -29,6 +29,16 @@ fdescribe 'ProjectFindView', ->
     it "detaches from the root view", ->
       $(document.activeElement).trigger 'core:cancel'
       expect(rootView.find('.project-find')).not.toExist()
+
+  describe "serialization", ->
+    it "serializes if the view is attached", ->
+      expect(projectFindView.hasParent()).toBeFalsy()
+      editor.trigger 'project-find:show'
+      atom.deactivatePackage("find-and-replace")
+      pack = atom.activatePackage("find-and-replace")
+      projectFindView = pack.mainModule.projectFindView
+
+      expect(projectFindView.hasParent()).toBeTruthy()
 
   describe "when core:confirm is triggered", ->
     describe "when results exist", ->

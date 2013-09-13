@@ -4,10 +4,9 @@ ProjectFindView = require './project-find-view'
 _ = require 'underscore'
 
 module.exports =
-  activate: ({viewState, modelState}={}) ->
-    @projectFindView = new ProjectFindView()
-    @findModel = new FindModel(modelState)
-    @findView = new FindView(@findModel, viewState)
+  activate: ({viewState, projectViewState}={}) ->
+    @projectFindView = new ProjectFindView(projectViewState)
+    @findView = new FindView(viewState)
 
   deactivate: ->
     @findView.remove()
@@ -16,8 +15,6 @@ module.exports =
     @projectFindView.remove()
     @projectFindView = null
 
-    @findModel = null
-
   serialize: ->
     viewState: @findView.serialize()
-    modelState: @findModel.serialize()
+    projectViewState: @projectFindView.serialize()
