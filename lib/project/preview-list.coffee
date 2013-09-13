@@ -6,7 +6,7 @@ PathView = require './path-view'
 module.exports =
 class PreviewList extends ScrollView
   @content: ->
-    @ol class: 'preview-list list-tree padded', tabindex: -1
+    @ol class: 'preview-list list-tree', tabindex: -1
 
   results: null
   viewsForPath: null
