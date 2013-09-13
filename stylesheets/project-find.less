@@ -1,0 +1,43 @@
+@import "ui-variables";
+
+@label-width: 5em;
+@button-width: 120px;
+
+.project-find {
+  padding: @component-padding;
+  -webkit-user-select: none;
+
+  .loading {
+    display: none;
+  }
+
+  .find-container, .replace-container, .filter-container {
+    display: -webkit-flex;
+    -webkit-flex-direction: row;
+
+    label {
+      width: @label-width;
+      text-align: right;
+      vertical-align: middle;
+      margin-right: @component-padding;
+    }
+
+    .btn-toggle.btn-group {
+      width: @button-width;
+      margin-left: @component-padding;
+
+      .btn {
+        font-size: 14px;
+        font-family: monospace;
+      }
+    }
+
+    .editor {
+      width: 100%;
+    }
+  }
+
+  .replace-container, .filter-container {
+    display: none;
+  }
+}
