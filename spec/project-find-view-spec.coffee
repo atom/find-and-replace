@@ -4,7 +4,7 @@ RootView = require 'root-view'
 Project = require 'project'
 
 describe 'ProjectFindView', ->
-  [editor, projectFindView] = []
+  [editor, projectFindView, searchPromise] = []
 
   beforeEach ->
     window.rootView = new RootView()
@@ -13,6 +13,9 @@ describe 'ProjectFindView', ->
     editor = rootView.getActiveView()
     pack = atom.activatePackage("find-and-replace")
     projectFindView = pack.mainModule.projectFindView
+
+    spy = spyOn(projectFindView, 'confirm').andCallFake ->
+      searchPromise = spy.originalValue.call(projectFindView)
 
   describe "when project-find:show is triggered", ->
     beforeEach ->
@@ -47,14 +50,19 @@ describe 'ProjectFindView', ->
   describe "when core:confirm is triggered", ->
     beforeEach ->
       editor.trigger 'project-find:show'
+  describe "when core:confirm is triggered", ->
+    beforeEach ->
+      rootView.trigger 'project-find:show'
 
     describe "when results exist", ->
       beforeEach ->
         projectFindView.findEditor.setText('items')
 
       it "displays the results and no errors", ->
+        projectFindView.trigger 'core:confirm'
+
         waitsForPromise ->
-          projectFindView.confirm()
+          searchPromise
 
         runs ->
           expect(projectFindView.previewList).toBeVisible()
@@ -68,8 +76,10 @@ describe 'ProjectFindView', ->
         projectFindView.findEditor.setText('notintheprojectbro')
 
       it "displays no errors and no results", ->
+        projectFindView.trigger 'core:confirm'
+
         waitsForPromise ->
-          projectFindView.confirm()
+          searchPromise
 
         runs ->
           expect(projectFindView.errorMessages).not.toBeVisible()
