@@ -78,6 +78,37 @@ describe 'ProjectFindView', ->
         expect(projectFindView.previewList.find("li > ul > li")).toHaveLength(13)
         expect(projectFindView.previewCount.text()).toBe "13 matches in 2 files"
 
+  describe "case sensitivity", ->
+    beforeEach ->
+      editor.trigger 'project-find:show'
+      projectFindView.findEditor.setText('C')
+
+    it "toggles case sensitive option via an event and finds files matching the pattern", ->
+      expect(projectFindView.caseOptionButton).not.toHaveClass('selected')
+      projectFindView.trigger 'project-find:toggle-case-option'
+      expect(projectFindView.caseOptionButton).toHaveClass('selected')
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        projectFindView.previewList.scrollToBottom() # To load ALL the results
+        expect(projectFindView.previewList.find("li > ul > li")).toHaveLength(1)
+        expect(projectFindView.previewCount.text()).toBe "1 match in 1 file"
+
+    it "toggles case sensitive option via a button and finds files matching the pattern", ->
+      expect(projectFindView.caseOptionButton).not.toHaveClass('selected')
+      projectFindView.caseOptionButton.click()
+      expect(projectFindView.caseOptionButton).toHaveClass('selected')
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        projectFindView.previewList.scrollToBottom() # To load ALL the results
+        expect(projectFindView.previewList.find("li > ul > li")).toHaveLength(1)
+        expect(projectFindView.previewCount.text()).toBe "1 match in 1 file"
+
   describe "when core:confirm is triggered", ->
     beforeEach ->
       rootView.trigger 'project-find:show'

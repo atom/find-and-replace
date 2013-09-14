@@ -40,8 +40,11 @@ class ProjectFindView extends View
     @on 'core:cancel', => @detach()
     @on 'core:confirm', => @confirm()
 
-    @on 'project-find:toggle-regex-option', => @toggleRegex()
-    @regexOptionButton.click => @toggleRegex()
+    @on 'project-find:toggle-regex-option', => @toggleRegexOption()
+    @regexOptionButton.click => @toggleRegexOption()
+
+    @on 'project-find:toggle-case-option', => @toggleCaseOption()
+    @caseOptionButton.click => @toggleCaseOption()
 
   attach: ->
     rootView.vertical.append(this)
@@ -52,9 +55,14 @@ class ProjectFindView extends View
     rootView.focus()
     super()
 
-  toggleRegex: ->
+  toggleRegexOption: ->
     @useRegex = not @useRegex
     if @useRegex then @regexOptionButton.addClass('selected') else @regexOptionButton.removeClass('selected')
+    @confirm()
+
+  toggleCaseOption: ->
+    @caseInsensitive = not @caseInsensitive
+    if @caseInsensitive then @caseOptionButton.addClass('selected') else @caseOptionButton.removeClass('selected')
     @confirm()
 
   confirm: ->
