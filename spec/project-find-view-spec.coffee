@@ -47,6 +47,23 @@ describe 'ProjectFindView', ->
 
       expect(projectFindView.hasParent()).toBeTruthy()
 
+    it "serializes if the case and regex options", ->
+      editor.trigger 'project-find:show'
+      expect(projectFindView.caseOptionButton).not.toHaveClass('selected')
+      projectFindView.caseOptionButton.click()
+      expect(projectFindView.caseOptionButton).toHaveClass('selected')
+
+      expect(projectFindView.regexOptionButton).not.toHaveClass('selected')
+      projectFindView.regexOptionButton.click()
+      expect(projectFindView.regexOptionButton).toHaveClass('selected')
+
+      atom.deactivatePackage("find-and-replace")
+      pack = atom.activatePackage("find-and-replace")
+      projectFindView = pack.mainModule.projectFindView
+
+      expect(projectFindView.caseOptionButton).toHaveClass('selected')
+      expect(projectFindView.regexOptionButton).toHaveClass('selected')
+
   describe "regex", ->
     beforeEach ->
       editor.trigger 'project-find:show'
