@@ -26,7 +26,7 @@ class ProjectFindView extends View
 
         @div class: 'btn-group btn-toggle', =>
           @button outlet: 'regexOptionButton', class: 'btn btn-mini option-regex', '.*'
-          @button outlet: 'caseSensitiveOptionButton', class: 'btn btn-mini option-case-sensitive', 'Aa'
+          @button outlet: 'caseOptionButton', class: 'btn btn-mini option-case-sensitive', 'Aa'
 
   initialize: ({attached}={})->
     @handleEvents()
@@ -36,9 +36,12 @@ class ProjectFindView extends View
     attached: @hasParent()
 
   handleEvents: ->
+    rootView.command 'project-find:show', => @attach()
     @on 'core:cancel', => @detach()
     @on 'core:confirm', => @confirm()
-    rootView.command 'project-find:show', => @attach()
+
+    @on 'project-find:toggle-regex-option', => @toggleRegex()
+    @regexOptionButton.click => @toggleRegex()
 
   attach: ->
     rootView.vertical.append(this)
@@ -48,6 +51,11 @@ class ProjectFindView extends View
   detach: ->
     rootView.focus()
     super()
+
+  toggleRegex: ->
+    @useRegex = not @useRegex
+    if @useRegex then @regexOptionButton.addClass('selected') else @regexOptionButton.removeClass('selected')
+    @confirm()
 
   confirm: ->
     @loadingMessage.show()
@@ -75,7 +83,10 @@ class ProjectFindView extends View
 
   search: ->
     text = @findEditor.getText()
-    regex = new RegExp(_.escapeRegExp(text))
+    if @useRegex
+      regex = new RegExp(text)
+    else
+      regex = new RegExp(_.escapeRegExp(text))
     results = []
 
     deferred = $.Deferred()

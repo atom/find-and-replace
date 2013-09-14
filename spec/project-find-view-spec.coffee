@@ -47,9 +47,37 @@ describe 'ProjectFindView', ->
 
       expect(projectFindView.hasParent()).toBeTruthy()
 
-  describe "when core:confirm is triggered", ->
+  describe "regex", ->
     beforeEach ->
       editor.trigger 'project-find:show'
+      projectFindView.findEditor.setText('i(\\w)ems+')
+
+    it "toggles regex option via an event and finds files matching the pattern", ->
+      expect(projectFindView.regexOptionButton).not.toHaveClass('selected')
+      projectFindView.trigger 'project-find:toggle-regex-option'
+      expect(projectFindView.regexOptionButton).toHaveClass('selected')
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        projectFindView.previewList.scrollToBottom() # To load ALL the results
+        expect(projectFindView.previewList.find("li > ul > li")).toHaveLength(13)
+        expect(projectFindView.previewCount.text()).toBe "13 matches in 2 files"
+
+    it "toggles regex option via a button and finds files matching the pattern", ->
+      expect(projectFindView.regexOptionButton).not.toHaveClass('selected')
+      projectFindView.regexOptionButton.click()
+      expect(projectFindView.regexOptionButton).toHaveClass('selected')
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        projectFindView.previewList.scrollToBottom() # To load ALL the results
+        expect(projectFindView.previewList.find("li > ul > li")).toHaveLength(13)
+        expect(projectFindView.previewCount.text()).toBe "13 matches in 2 files"
+
   describe "when core:confirm is triggered", ->
     beforeEach ->
       rootView.trigger 'project-find:show'
