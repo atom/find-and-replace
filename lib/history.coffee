@@ -6,7 +6,6 @@ module.exports =
 class History
   constructor: (@miniEditor, @items=[]) ->
     @index = @items.length
-
     @miniEditor.on 'core:move-up', => @previous()
     @miniEditor.on 'core:move-down', => @next()
 
@@ -44,6 +43,3 @@ class History
     @scratch = null
     @items.push(text)
     @index = @items.length - 1
-
-  serialize: ->
-    @items
