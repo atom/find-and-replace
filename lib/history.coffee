@@ -4,22 +4,21 @@ HISTORY_MAX = 25
 
 module.exports =
 class History
-  constructor: (@editor, @items=[]) ->
+  constructor: (@miniEditor, @items=[]) ->
     @index = @items.length
-
-    @editor.on 'core:move-up', => @previous()
-    @editor.on 'core:move-down', => @next()
+    @miniEditor.on 'core:move-up', => @previous()
+    @miniEditor.on 'core:move-down', => @next()
 
   serialize: ->
     @items[-HISTORY_MAX..]
 
   previous: ->
-    if @atLastItem() and @editor.getText() != @getLast()
-      @scratch = @editor.getText()
+    if @items.length == 0 or (@atLastItem() and @miniEditor.getText() != @getLast())
+      @scratch = @miniEditor.getText()
     else if @index > 0
       @index--
 
-    @editor.setText @items[@index]
+    @miniEditor.setText @items[@index] ? ''
 
   next: ->
     if @index < @items.length - 1
@@ -28,9 +27,9 @@ class History
     else if @scratch
       item = @scratch
     else
-      item = ""
+      item = ''
 
-    @editor.setText item
+    @miniEditor.setText item
 
   getLast: ->
     _.last(@items)
@@ -39,11 +38,8 @@ class History
     @index == @items.length - 1
 
   store: ->
-    text = @editor.getText()
-    return if not text
+    text = @miniEditor.getText()
+    return if not text or text is @getLast()
     @scratch = null
     @items.push(text)
     @index = @items.length - 1
-
-  serialize: ->
-    @items

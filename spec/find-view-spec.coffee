@@ -399,67 +399,80 @@ describe 'FindView', ->
           expect(editor.getText().match(/\$&cats\b/g)).toHaveLength 6
 
   describe "history", ->
-    [oneRange, twoRange, threeRange] = []
-    beforeEach ->
-      editor.trigger 'find-and-replace:show'
-      editor.setText("zero\none\ntwo\nthree\n")
-      findView.findEditor.setText('one')
-      findView.findEditor.trigger 'core:confirm'
-      findView.findEditor.setText('two')
-      findView.findEditor.trigger 'core:confirm'
-      findView.findEditor.setText('three')
-      findView.findEditor.trigger 'core:confirm'
+    describe "when there is no history", ->
+      it "retains unsearched text", ->
+        text = 'something I want to search for but havent yet'
+        findView.findEditor.setText(text)
 
-    it "can navigate the entire history stack", ->
-      expect(findView.findEditor.getText()).toEqual 'three'
+        findView.findEditor.trigger 'core:move-up'
+        expect(findView.findEditor.getText()).toEqual ''
 
-      findView.findEditor.trigger 'core:move-down'
-      expect(findView.findEditor.getText()).toEqual ''
+        findView.findEditor.trigger 'core:move-down'
+        expect(findView.findEditor.getText()).toEqual text
 
-      findView.findEditor.trigger 'core:move-down'
-      expect(findView.findEditor.getText()).toEqual ''
+    describe "when there is history", ->
+      [oneRange, twoRange, threeRange] = []
 
-      findView.findEditor.trigger 'core:move-up'
-      expect(findView.findEditor.getText()).toEqual 'three'
+      beforeEach ->
+        editor.trigger 'find-and-replace:show'
+        editor.setText("zero\none\ntwo\nthree\n")
+        findView.findEditor.setText('one')
+        findView.findEditor.trigger 'core:confirm'
+        findView.findEditor.setText('two')
+        findView.findEditor.trigger 'core:confirm'
+        findView.findEditor.setText('three')
+        findView.findEditor.trigger 'core:confirm'
 
-      findView.findEditor.trigger 'core:move-up'
-      expect(findView.findEditor.getText()).toEqual 'two'
+      it "can navigate the entire history stack", ->
+        expect(findView.findEditor.getText()).toEqual 'three'
 
-      findView.findEditor.trigger 'core:move-up'
-      expect(findView.findEditor.getText()).toEqual 'one'
+        findView.findEditor.trigger 'core:move-down'
+        expect(findView.findEditor.getText()).toEqual ''
 
-      findView.findEditor.trigger 'core:move-up'
-      expect(findView.findEditor.getText()).toEqual 'one'
+        findView.findEditor.trigger 'core:move-down'
+        expect(findView.findEditor.getText()).toEqual ''
 
-      findView.findEditor.trigger 'core:move-down'
-      expect(findView.findEditor.getText()).toEqual 'two'
+        findView.findEditor.trigger 'core:move-up'
+        expect(findView.findEditor.getText()).toEqual 'three'
 
-    it "retains the current unsearched text", ->
-      text = 'something I want to search for but havent yet'
-      findView.findEditor.setText(text)
+        findView.findEditor.trigger 'core:move-up'
+        expect(findView.findEditor.getText()).toEqual 'two'
 
-      findView.findEditor.trigger 'core:move-up'
-      expect(findView.findEditor.getText()).toEqual 'three'
+        findView.findEditor.trigger 'core:move-up'
+        expect(findView.findEditor.getText()).toEqual 'one'
 
-      findView.findEditor.trigger 'core:move-down'
-      expect(findView.findEditor.getText()).toEqual text
+        findView.findEditor.trigger 'core:move-up'
+        expect(findView.findEditor.getText()).toEqual 'one'
 
-      findView.findEditor.trigger 'core:move-up'
-      expect(findView.findEditor.getText()).toEqual 'three'
+        findView.findEditor.trigger 'core:move-down'
+        expect(findView.findEditor.getText()).toEqual 'two'
 
-      findView.findEditor.trigger 'core:move-down'
-      findView.findEditor.trigger 'core:confirm'
+      it "retains the current unsearched text", ->
+        text = 'something I want to search for but havent yet'
+        findView.findEditor.setText(text)
 
-      findView.findEditor.trigger 'core:move-down'
-      expect(findView.findEditor.getText()).toEqual ''
+        findView.findEditor.trigger 'core:move-up'
+        expect(findView.findEditor.getText()).toEqual 'three'
 
-    it "adds confirmed patterns to the history", ->
-      findView.findEditor.setText("cool stuff")
-      findView.findEditor.trigger 'core:confirm'
+        findView.findEditor.trigger 'core:move-down'
+        expect(findView.findEditor.getText()).toEqual text
 
-      findView.findEditor.setText("cooler stuff")
-      findView.findEditor.trigger 'core:move-up'
-      expect(findView.findEditor.getText()).toEqual 'cool stuff'
+        findView.findEditor.trigger 'core:move-up'
+        expect(findView.findEditor.getText()).toEqual 'three'
 
-      findView.findEditor.trigger 'core:move-up'
-      expect(findView.findEditor.getText()).toEqual 'three'
+        findView.findEditor.trigger 'core:move-down'
+        findView.findEditor.trigger 'core:confirm'
+
+        findView.findEditor.trigger 'core:move-down'
+        expect(findView.findEditor.getText()).toEqual ''
+
+      it "adds confirmed patterns to the history", ->
+        findView.findEditor.setText("cool stuff")
+        findView.findEditor.trigger 'core:confirm'
+
+        findView.findEditor.setText("cooler stuff")
+        findView.findEditor.trigger 'core:move-up'
+        expect(findView.findEditor.getText()).toEqual 'cool stuff'
+
+        findView.findEditor.trigger 'core:move-up'
+        expect(findView.findEditor.getText()).toEqual 'three'
