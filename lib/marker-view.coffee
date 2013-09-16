@@ -7,6 +7,7 @@ class MarkerView
 
   constructor: ({@editor, @marker} = {}) ->
     @regions = []
+    @editSession = @editor.activeEditSession
     @element = document.createElement('div')
     @element.className = 'marker'
     @updateNeeded = @marker.isValid()
@@ -32,7 +33,7 @@ class MarkerView
     if isValid then @show() else @hide()
 
   isUpdateNeeded: ->
-    return false unless @updateNeeded
+    return false unless @updateNeeded and @editSession == @editor.activeEditSession
 
     {start, end} = @getScreenRange()
     [firstRenderedRow, lastRenderedRow] = [@editor.firstRenderedScreenRow, @editor.lastRenderedScreenRow]
