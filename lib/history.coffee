@@ -40,7 +40,7 @@ class History
 
   store: ->
     text = @miniEditor.getText()
-    return if not text
+    return if not text or text is @getLast()
     @scratch = null
     @items.push(text)
     @index = @items.length - 1
