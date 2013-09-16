@@ -2,6 +2,7 @@ _ = require 'underscore'
 $ = require 'jquery'
 {View} = require 'space-pen'
 Editor = require 'editor'
+History = require './history'
 PreviewList = require './project/preview-list'
 SearchResult = require './project/search-result'
 
@@ -28,9 +29,10 @@ class ProjectFindView extends View
           @button outlet: 'regexOptionButton', class: 'btn btn-mini option-regex', '.*'
           @button outlet: 'caseOptionButton', class: 'btn btn-mini option-case-sensitive', 'Aa'
 
-  initialize: ({attached, @useRegex, @caseInsensitive}={})->
+  initialize: ({attached, @useRegex, @caseInsensitive, findHistory}={})->
     @handleEvents()
     @attach() if attached
+    @findHistory = new History(@findEditor, findHistory)
 
     @regexOptionButton.addClass('selected') if @useRegex
     @caseOptionButton.addClass('selected') if @caseInsensitive
@@ -74,6 +76,7 @@ class ProjectFindView extends View
     @loadingMessage.show()
     @previewBlock.hide()
     @errorMessages.empty()
+    @findHistory.store()
 
     deferred = @search()
     deferred.done (results, errorMessages=[]) =>

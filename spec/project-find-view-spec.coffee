@@ -161,3 +161,31 @@ describe 'ProjectFindView', ->
           expect(projectFindView.errorMessages).not.toBeVisible()
           expect(projectFindView.previewList).toBeVisible()
           expect(projectFindView.previewList.find("li > ul > li")).toHaveLength(0)
+
+  describe "history", ->
+    beforeEach ->
+      rootView.trigger 'project-find:show'
+      projectFindView.findEditor.setText('sort')
+      projectFindView.findEditor.trigger 'core:confirm'
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        projectFindView.findEditor.setText('items')
+        projectFindView.findEditor.trigger 'core:confirm'
+
+      waitsForPromise ->
+        searchPromise
+
+    it "can navigate the entire history stack", ->
+      expect(projectFindView.findEditor.getText()).toEqual 'items'
+
+      projectFindView.findEditor.trigger 'core:move-up'
+      expect(projectFindView.findEditor.getText()).toEqual 'sort'
+
+      projectFindView.findEditor.trigger 'core:move-down'
+      expect(projectFindView.findEditor.getText()).toEqual 'items'
+
+      projectFindView.findEditor.trigger 'core:move-down'
+      expect(projectFindView.findEditor.getText()).toEqual ''

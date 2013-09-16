@@ -57,7 +57,6 @@ class FindView extends View
     showReplace: @hasParent() and @hasClass('replace-mode')
     modelState: @findModel.serialize()
 
-
   handleEvents: ->
     @handleFindEvents()
     @handleReplaceEvents()
