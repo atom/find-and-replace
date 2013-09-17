@@ -54,6 +54,8 @@ class ProjectFindView extends View
     attached: @hasParent()
     useRegex: @useRegex
     caseInsensitive: @caseInsensitive
+    findHistory: @findHistory.serialize()
+    pathsHistory: @pathsHistory.serialize()
 
   handleEvents: ->
     rootView.command 'project-find:show', => @attach()
