@@ -1,32 +1,17 @@
 module.exports =
 class SearchResult
-  constructor: ({@path, @buffer, @bufferRange, @newText, @preserveSelection, @errorMessage}) ->
-    if @buffer?
-      @buffer.retain()
-      @getMarker()
-
-  getMarker: ->
-    @marker ?= @getBuffer().markRange(@bufferRange)
-
-  getBuffer: ->
-    @buffer ?= project.bufferForPath(@path).retain()
+  constructor: ({@path, @bufferRange, @matchText, @lineText}) ->
 
   getPath: ->
-    path = @path ? @getBuffer().getPath()
-    project.relativize(path)
+    project.relativize(@path)
 
   getBufferRange: ->
-    @getMarker().getRange()
+    @bufferRange
 
   preview: ->
     range = @getBufferRange()
-    line = @getBuffer().lineForRow(range.start.row)
-    prefix = line[0...range.start.column]
-    match = line[range.start.column...range.end.column]
-    suffix = line[range.end.column..]
+    prefix = @lineText[0...range.start.column]
+    match = @lineText[range.start.column...range.end.column]
+    suffix = @lineText[range.end.column..]
 
     {prefix, suffix, match, range}
-
-  destroy: ->
-    @marker?.destroy()
-    @buffer?.release()
