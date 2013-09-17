@@ -21,7 +21,7 @@ class ProjectFindView extends View
       @ul outlet: 'errorMessages', class: 'error-messages block'
 
       @div class: 'find-container block', =>
-        @label outlet: 'findLabel', class: 'text-subtle', 'Find'
+        @label class: 'text-subtle', 'Find'
 
         @subview 'findEditor', new Editor(mini: true)
 
@@ -29,10 +29,15 @@ class ProjectFindView extends View
           @button outlet: 'regexOptionButton', class: 'btn btn-mini option-regex', '.*'
           @button outlet: 'caseOptionButton', class: 'btn btn-mini option-case-sensitive', 'Aa'
 
-  initialize: ({attached, @useRegex, @caseInsensitive, findHistory}={})->
+      @div class: 'paths-container block', =>
+        @label class: 'text-subtle', 'In'
+        @subview 'pathsEditor', new Editor(mini: true)
+
+  initialize: ({attached, @useRegex, @caseInsensitive, findHistory, pathsHistory}={})->
     @handleEvents()
     @attach() if attached
     @findHistory = new History(@findEditor, findHistory)
+    @pathsHistory = new History(@pathsEditor, pathsHistory)
 
     @regexOptionButton.addClass('selected') if @useRegex
     @caseOptionButton.addClass('selected') if @caseInsensitive
@@ -41,6 +46,8 @@ class ProjectFindView extends View
     attached: @hasParent()
     useRegex: @useRegex
     caseInsensitive: @caseInsensitive
+    findHistory: @findHistory.serialize()
+    pathsHistory: @pathsHistory.serialize()
 
   handleEvents: ->
     rootView.command 'project-find:show', => @attach()
@@ -99,6 +106,7 @@ class ProjectFindView extends View
 
   search: ->
     text = @findEditor.getText()
+    paths = (path.trim() for path in @pathsEditor.getText().trim().split(',') when path)
     if @useRegex
       regex = new RegExp(text)
     else
@@ -106,8 +114,8 @@ class ProjectFindView extends View
     results = []
 
     deferred = $.Deferred()
-    promise = project.scan regex, ({path, range: bufferRange}) =>
-      searchResult = new SearchResult({path, bufferRange})
+    promise = project.scan regex, {paths}, ({path, matchText, lineText, range: bufferRange}) =>
+      searchResult = new SearchResult({path, matchText, lineText, bufferRange})
       results.push(searchResult)
 
     promise.done -> deferred.resolve(results)
