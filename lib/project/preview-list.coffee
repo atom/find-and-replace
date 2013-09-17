@@ -93,7 +93,6 @@ class PreviewList extends ScrollView
     new Array(@results...)
 
   destroyResults: ->
-    result.destroy() for result in @getResults()
     @results = null
 
   scrollTo: (top, bottom) ->

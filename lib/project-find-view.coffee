@@ -129,8 +129,8 @@ class ProjectFindView extends View
     @results = []
 
     deferred = $.Deferred()
-    promise = project.scan regex, ({path, range: bufferRange}) =>
-      searchResult = new SearchResult({path, bufferRange})
+    promise = project.scan regex, ({path, matchText, lineText, range: bufferRange}) =>
+      searchResult = new SearchResult({path, matchText, lineText, bufferRange})
       @results.push(searchResult)
 
     promise.done ->
