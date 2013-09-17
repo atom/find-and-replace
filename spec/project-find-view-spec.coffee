@@ -166,7 +166,21 @@ describe 'ProjectFindView', ->
             expect(projectFindView.previewList.find("li > ul > li")).toHaveLength(13)
             expect(projectFindView.previewCount.text()).toBe "13 matches in 2 files"
 
-      describe "when results exist", ->
+        it "with a paths filter displays the results and no errors", ->
+          projectFindView.pathsEditor.setText('*.js')
+          projectFindView.trigger 'core:confirm'
+
+          waitsForPromise ->
+            searchPromise
+
+          runs ->
+            expect(projectFindView.previewList).toBeVisible()
+            projectFindView.previewList.scrollToBottom() # To load ALL the results
+            expect(projectFindView.errorMessages).not.toBeVisible()
+            expect(projectFindView.previewList.find("li > ul > li")).toHaveLength(6)
+            expect(projectFindView.previewCount.text()).toBe "6 matches in 1 file"
+
+      describe "when no results exist", ->
         beforeEach ->
           projectFindView.findEditor.setText('notintheprojectbro')
 
