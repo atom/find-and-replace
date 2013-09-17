@@ -131,7 +131,7 @@ class ProjectFindView extends View
   search: ->
     regex = @getRegex()
     @results = []
-    paths = (path for path in @pathsEditor.getText().trim().split(',') when path)
+    paths = (path.trim() for path in @pathsEditor.getText().trim().split(',') when path)
 
     deferred = $.Deferred()
     promise = project.scan regex, {paths}, ({path, matchText, lineText, range: bufferRange}) =>
