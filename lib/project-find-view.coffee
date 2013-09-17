@@ -104,7 +104,7 @@ class ProjectFindView extends View
 
   search: ->
     text = @findEditor.getText()
-    paths = (path for path in @pathsEditor.getText().trim().split(',') when path)
+    paths = (path.trim() for path in @pathsEditor.getText().trim().split(',') when path)
     if @useRegex
       regex = new RegExp(text)
     else
