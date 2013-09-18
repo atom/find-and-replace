@@ -34,6 +34,10 @@ class ProjectFindView extends View
 
         @subview 'replaceEditor', new Editor(mini: true)
 
+        @div class: 'btn-group btn-toggle', =>
+          @button outlet: 'replaceButton', class: 'btn btn-mini', 'Replace'
+
+
   initialize: ({attached, @useRegex, @caseInsensitive, findHistory}={})->
     @handleEvents()
     @attach() if attached
@@ -58,7 +62,7 @@ class ProjectFindView extends View
     @on 'project-find:toggle-case-option', => @toggleCaseOption()
     @caseOptionButton.click => @toggleCaseOption()
 
-    @replaceEditor.on 'core:confirm', => @replaceAll()
+    @replaceButton.on 'click', => @replaceAll()
 
   attach: ->
     rootView.vertical.append(this)

@@ -220,12 +220,12 @@ describe 'ProjectFindView', ->
     afterEach ->
       fsUtils.remove(testDir)
 
-    describe "when core:confirm is triggered", ->
+    describe "when the replace button is pressed", ->
       it "runs the search, and replaces all the matches", ->
         projectFindView.findEditor.setText('items')
         projectFindView.replaceEditor.setText('sunshine')
 
-        projectFindView.replaceEditor.trigger 'core:confirm'
+        projectFindView.replaceButton.click()
 
         waitsForPromise ->
           searchPromise
