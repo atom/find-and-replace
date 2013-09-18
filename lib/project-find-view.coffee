@@ -63,6 +63,7 @@ class ProjectFindView extends View
     @caseOptionButton.click => @toggleCaseOption()
 
     @replaceButton.on 'click', => @replaceAll()
+    @on 'project-find:replace', => @replaceAll()
 
   attach: ->
     rootView.vertical.append(this)

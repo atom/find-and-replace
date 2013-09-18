@@ -241,3 +241,25 @@ describe 'ProjectFindView', ->
           sampleCoffeeContent = fsUtils.read sampleCoffee
           expect(sampleCoffeeContent.match(/items/g)).toBeFalsy()
           expect(sampleCoffeeContent.match(/sunshine/g)).toHaveLength 7
+
+    describe "when the project-find:replace is triggered", ->
+      fit "runs the search, and replaces all the matches", ->
+        projectFindView.findEditor.setText('items')
+        projectFindView.replaceEditor.setText('sunshine')
+
+        projectFindView.trigger 'project-find:replace'
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          expect(projectFindView.errorMessages).not.toBeVisible()
+          expect(projectFindView.previewList).toBeVisible()
+
+          sampleJsContent = fsUtils.read sampleJs
+          expect(sampleJsContent.match(/items/g)).toBeFalsy()
+          expect(sampleJsContent.match(/sunshine/g)).toHaveLength 6
+
+          sampleCoffeeContent = fsUtils.read sampleCoffee
+          expect(sampleCoffeeContent.match(/items/g)).toBeFalsy()
+          expect(sampleCoffeeContent.match(/sunshine/g)).toHaveLength 7
