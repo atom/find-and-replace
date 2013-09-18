@@ -100,9 +100,21 @@ describe 'ProjectFindView', ->
     describe "case sensitivity", ->
       beforeEach ->
         editor.trigger 'project-find:show'
-        projectFindView.findEditor.setText('C')
+
+      it "runs a case insensitive search by default", ->
+        projectFindView.findEditor.setText('ITEMS')
+        projectFindView.trigger 'core:confirm'
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          projectFindView.previewList.scrollToBottom() # To load ALL the results
+          expect(projectFindView.previewList.find("li > ul > li")).toHaveLength(13)
+          expect(projectFindView.previewCount.text()).toBe "13 matches in 2 files"
 
       it "toggles case sensitive option via an event and finds files matching the pattern", ->
+        projectFindView.findEditor.setText('C')
         expect(projectFindView.caseOptionButton).not.toHaveClass('selected')
         projectFindView.trigger 'project-find:toggle-case-option'
         expect(projectFindView.caseOptionButton).toHaveClass('selected')
@@ -111,11 +123,11 @@ describe 'ProjectFindView', ->
           searchPromise
 
         runs ->
-          projectFindView.previewList.scrollToBottom() # To load ALL the results
           expect(projectFindView.previewList.find("li > ul > li")).toHaveLength(1)
           expect(projectFindView.previewCount.text()).toBe "1 match in 1 file"
 
       it "toggles case sensitive option via a button and finds files matching the pattern", ->
+        projectFindView.findEditor.setText('C')
         expect(projectFindView.caseOptionButton).not.toHaveClass('selected')
         projectFindView.caseOptionButton.click()
         expect(projectFindView.caseOptionButton).toHaveClass('selected')
@@ -124,7 +136,6 @@ describe 'ProjectFindView', ->
           searchPromise
 
         runs ->
-          projectFindView.previewList.scrollToBottom() # To load ALL the results
           expect(projectFindView.previewList.find("li > ul > li")).toHaveLength(1)
           expect(projectFindView.previewCount.text()).toBe "1 match in 1 file"
 
@@ -197,15 +208,17 @@ describe 'ProjectFindView', ->
 
     beforeEach ->
       testDir = "/tmp/atom-find-and-replace"
-      fsUtils.remove(testDir)
       fsUtils.makeTree(testDir)
       sampleJs = path.join(testDir, 'sample.js')
       sampleCoffee = path.join(testDir, 'sample.coffee')
 
       fsUtils.copy(require.resolve('./fixtures/sample.coffee'), sampleCoffee)
       fsUtils.copy(require.resolve('./fixtures/sample.js'), sampleJs)
-      project.setPath(testDir)
       rootView.trigger 'project-find:show'
+      project.setPath(testDir)
+
+    afterEach ->
+      fsUtils.remove(testDir)
 
     describe "when core:confirm is triggered", ->
       it "runs the search, and replaces all the matches", ->

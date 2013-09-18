@@ -119,6 +119,7 @@ class ProjectFindView extends View
 
   getRegex: ->
     flags = 'g'
+    flags += 'i' unless @caseInsensitive
     text = @findEditor.getText()
 
     if @useRegex
