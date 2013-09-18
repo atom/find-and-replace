@@ -225,7 +225,7 @@ describe 'ProjectFindView', ->
         projectFindView.findEditor.setText('items')
         projectFindView.replaceEditor.setText('sunshine')
 
-        projectFindView.replaceButton.click()
+        projectFindView.replaceAllButton.click()
 
         waitsForPromise ->
           searchPromise
@@ -242,12 +242,12 @@ describe 'ProjectFindView', ->
           expect(sampleCoffeeContent.match(/items/g)).toBeFalsy()
           expect(sampleCoffeeContent.match(/sunshine/g)).toHaveLength 7
 
-    describe "when the project-find:replace is triggered", ->
-      fit "runs the search, and replaces all the matches", ->
+    describe "when the project-find:replace-all is triggered", ->
+      it "runs the search, and replaces all the matches", ->
         projectFindView.findEditor.setText('items')
         projectFindView.replaceEditor.setText('sunshine')
 
-        projectFindView.trigger 'project-find:replace'
+        projectFindView.trigger 'project-find:replace-all'
 
         waitsForPromise ->
           searchPromise

@@ -35,7 +35,7 @@ class ProjectFindView extends View
         @subview 'replaceEditor', new Editor(mini: true)
 
         @div class: 'btn-group btn-toggle', =>
-          @button outlet: 'replaceButton', class: 'btn btn-mini', 'Replace'
+          @button outlet: 'replaceAllButton', class: 'btn btn-mini', 'Replace'
 
 
   initialize: ({attached, @useRegex, @caseInsensitive, findHistory}={})->
@@ -62,8 +62,8 @@ class ProjectFindView extends View
     @on 'project-find:toggle-case-option', => @toggleCaseOption()
     @caseOptionButton.click => @toggleCaseOption()
 
-    @replaceButton.on 'click', => @replaceAll()
-    @on 'project-find:replace', => @replaceAll()
+    @replaceAllButton.on 'click', => @replaceAll()
+    @on 'project-find:replace-all', => @replaceAll()
 
   attach: ->
     rootView.vertical.append(this)
