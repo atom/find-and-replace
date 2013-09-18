@@ -29,6 +29,11 @@ class ProjectFindView extends View
           @button outlet: 'regexOptionButton', class: 'btn btn-mini option-regex', '.*'
           @button outlet: 'caseOptionButton', class: 'btn btn-mini option-case-sensitive', 'Aa'
 
+      @div class: 'replace-container block', =>
+        @label outlet: 'replaceLabel', class: 'text-subtle', 'Replace'
+
+        @subview 'replaceEditor', new Editor(mini: true)
+
   initialize: ({attached, @useRegex, @caseInsensitive, findHistory}={})->
     @handleEvents()
     @attach() if attached
@@ -52,6 +57,8 @@ class ProjectFindView extends View
 
     @on 'project-find:toggle-case-option', => @toggleCaseOption()
     @caseOptionButton.click => @toggleCaseOption()
+
+    @replaceEditor.on 'core:confirm', => @replaceAll()
 
   attach: ->
     rootView.vertical.append(this)
@@ -98,11 +105,7 @@ class ProjectFindView extends View
     deferred
 
   search: ->
-    text = @findEditor.getText()
-    if @useRegex
-      regex = new RegExp(text)
-    else
-      regex = new RegExp(_.escapeRegExp(text))
+    regex = @getRegex()
     results = []
 
     deferred = $.Deferred()
@@ -113,3 +116,26 @@ class ProjectFindView extends View
     promise.done -> deferred.resolve(results)
 
     deferred.promise()
+
+  getRegex: ->
+    flags = 'g'
+    text = @findEditor.getText()
+
+    if @useRegex
+      new RegExp(text, flags)
+    else
+      new RegExp(_.escapeRegExp(text), flags)
+
+  replaceAll: ->
+    regex = @getRegex()
+    replacementText = @replaceEditor.getText()
+    pathsReplaced = {}
+    @confirm().done (results) ->
+      for result in results
+        buffer = result.getBuffer()
+        continue if pathsReplaced[buffer.getPath()]
+        pathsReplaced[buffer.getPath()] = true
+
+        newText = buffer.getText().replace(regex, replacementText)
+        buffer.setText(newText)
+        buffer.save()
