@@ -12,6 +12,7 @@
 
 '.find-and-replace':
   'enter': 'core:confirm',
+  'meta-enter': 'find-and-replace:replace-all'
   'escape': 'core:cancel'
   'meta-w': 'core:cancel'
   'alt-meta-/': 'find-and-replace:toggle-regex-option'
@@ -24,5 +25,6 @@
 
 '.project-find':
   'enter': 'core:confirm',
+  'meta-enter': 'project-find:replace-all'
   'escape': 'core:cancel'
   'meta-w': 'core:cancel'
