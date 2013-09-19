@@ -55,6 +55,8 @@ class ProjectFindView extends View
     rootView.command 'project-find:show', => @attach()
     @on 'core:cancel', => @detach()
     @on 'core:confirm', => @confirm()
+    @on 'project-find:focus-next', => @focusNextElement(1)
+    @on 'project-find:focus-previous', => @focusNextElement(-1)
 
     @on 'project-find:toggle-regex-option', => @toggleRegexOption()
     @regexOptionButton.click => @toggleRegexOption()
@@ -83,6 +85,16 @@ class ProjectFindView extends View
     @caseInsensitive = not @caseInsensitive
     if @caseInsensitive then @caseOptionButton.addClass('selected') else @caseOptionButton.removeClass('selected')
     @confirm()
+
+  focusNextElement: (direction) ->
+    elements = [@previewList, @findEditor, @replaceEditor].filter (el) -> el.has(':visible').length > 0
+    focusedElement = _.find elements, (el) -> el.has(':focus').length > 0 or el.is(':focus')
+    focusedIndex = elements.indexOf focusedElement
+
+    focusedIndex = focusedIndex + direction
+    focusedIndex = 0 if focusedIndex >= elements.length
+    focusedIndex = elements.length - 1 if focusedIndex < 0
+    elements[focusedIndex].focus()
 
   confirm: ->
     @loadingMessage.show()

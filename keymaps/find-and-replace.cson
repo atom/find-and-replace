@@ -19,9 +19,17 @@
   'alt-meta-c': 'find-and-replace:toggle-case-option'
   'alt-meta-s': 'find-and-replace:toggle-selection-option'
 
-'.find-and-replace .mini.editor input':
+'.find-and-replace input':
   'tab': 'find-and-replace:focus-next'
   'shift-tab': 'find-and-replace:focus-previous'
+
+'.project-find input':
+  'tab': 'project-find:focus-next'
+  'shift-tab': 'project-find:focus-previous'
+
+'.project-find .preview-list':
+  'tab': 'project-find:focus-next'
+  'shift-tab': 'project-find:focus-previous'
 
 '.project-find':
   'enter': 'core:confirm',
