@@ -1,8 +1,8 @@
 'body':
   'meta-F': 'project-find:show'
+  'meta-f': 'find-and-replace:show'
 
 '.editor':
-  'meta-f': 'find-and-replace:show'
   'alt-meta-f': 'find-and-replace:show-replace'
 
   'meta-g': 'find-and-replace:find-next'
