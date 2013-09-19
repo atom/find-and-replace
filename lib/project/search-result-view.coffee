@@ -1,4 +1,4 @@
-{View} = require 'atom-api'
+{View} = require 'atom'
 
 module.exports =
 class SearchResultView extends View

@@ -1,4 +1,4 @@
-{_, $, ScrollView} = require 'atom-api'
+{_, $, ScrollView} = require 'atom'
 PathView = require './path-view'
 
 module.exports =

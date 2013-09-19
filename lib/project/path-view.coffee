@@ -1,4 +1,4 @@
-{$, fs, View} = require 'atom-api'
+{$, fs, View} = require 'atom'
 SearchResultView = require './search-result-view'
 
 module.exports =

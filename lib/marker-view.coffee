@@ -1,4 +1,4 @@
-{_, Subscriber} = require 'atom-api'
+{_, Subscriber} = require 'atom'
 
 module.exports =
 class MarkerView

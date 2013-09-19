@@ -1,4 +1,4 @@
-{_, $, Editor, View} = require 'atom-api'
+{_, $, Editor, View} = require 'atom'
 History = require './history'
 PreviewList = require './project/preview-list'
 SearchResult = require './project/search-result'

@@ -1,5 +1,5 @@
 path = require 'path'
-{$, RootView} = require 'atom-api'
+{$, RootView} = require 'atom'
 
 describe 'ProjectFindView', ->
   [editor, projectFindView, searchPromise] = []

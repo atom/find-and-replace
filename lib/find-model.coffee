@@ -1,4 +1,4 @@
-{_, EventEmitter} = require 'atom-api'
+{_, EventEmitter} = require 'atom'
 
 module.exports =
 class FindModel

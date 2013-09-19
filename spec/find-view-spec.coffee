@@ -1,4 +1,4 @@
-{_, $, RootView} = require 'atom-api'
+{_, $, RootView} = require 'atom'
 
 shell = require 'shell'
 path = require 'path'

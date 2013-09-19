@@ -1,7 +1,7 @@
 FindModel = require './find-model'
 FindView = require './find-view'
 ProjectFindView = require './project-find-view'
-{_} = require 'atom-api'
+{_} = require 'atom'
 
 module.exports =
   activate: ({viewState, projectViewState}={}) ->

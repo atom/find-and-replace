@@ -1,5 +1,5 @@
 shell = require 'shell'
-{Editor, View} = require 'atom-api'
+{Editor, View} = require 'atom'
 FindModel = require './find-model'
 FindResultsView = require './find-results-view'
 History = require './history'
