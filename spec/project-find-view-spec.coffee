@@ -143,6 +143,12 @@ describe 'ProjectFindView', ->
       beforeEach ->
         rootView.trigger 'project-find:show'
 
+      describe "when the there search field is empty", ->
+        it "does not run the seach", ->
+          spyOn(project, 'scan')
+          projectFindView.trigger 'core:confirm'
+          expect(project.scan).not.toHaveBeenCalled()
+
       describe "when results exist", ->
         beforeEach ->
           projectFindView.findEditor.setText('items')

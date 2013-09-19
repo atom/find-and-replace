@@ -97,6 +97,8 @@ class ProjectFindView extends View
     elements[focusedIndex].focus()
 
   confirm: ->
+    return if @findEditor.getText().length == 0
+
     @loadingMessage.show()
     @previewBlock.hide()
     @errorMessages.empty()
