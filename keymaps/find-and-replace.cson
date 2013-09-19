@@ -11,28 +11,14 @@
   'meta-e': 'find-and-replace:use-selection-as-find-pattern'
 
 '.find-and-replace':
-  'enter': 'core:confirm',
   'meta-enter': 'find-and-replace:replace-all'
-  'escape': 'core:cancel'
-  'meta-w': 'core:cancel'
   'alt-meta-/': 'find-and-replace:toggle-regex-option'
   'alt-meta-c': 'find-and-replace:toggle-case-option'
   'alt-meta-s': 'find-and-replace:toggle-selection-option'
 
-'.find-and-replace input':
+'.find-and-replace, .project-find, .project-find .preview-list':
   'tab': 'find-and-replace:focus-next'
   'shift-tab': 'find-and-replace:focus-previous'
 
-'.project-find input':
-  'tab': 'project-find:focus-next'
-  'shift-tab': 'project-find:focus-previous'
-
-'.project-find .preview-list':
-  'tab': 'project-find:focus-next'
-  'shift-tab': 'project-find:focus-previous'
-
 '.project-find':
-  'enter': 'core:confirm',
   'meta-enter': 'project-find:replace-all'
-  'escape': 'core:cancel'
-  'meta-w': 'core:cancel'
