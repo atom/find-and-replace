@@ -256,6 +256,9 @@ describe 'ProjectFindView', ->
           expect(projectFindView.errorMessages).not.toBeVisible()
           expect(projectFindView.previewList).toBeVisible()
 
+          expect(projectFindView.previewList.find("li > ul > li")).toHaveLength(0)
+          expect(projectFindView.previewCount.text()).toBe "Replaced 13 results in 2 files"
+
           sampleJsContent = fsUtils.read sampleJs
           expect(sampleJsContent.match(/items/g)).toBeFalsy()
           expect(sampleJsContent.match(/sunshine/g)).toHaveLength 6
