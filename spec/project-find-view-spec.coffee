@@ -8,6 +8,7 @@ describe 'ProjectFindView', ->
 
   beforeEach ->
     window.rootView = new RootView()
+    project.setPath(path.join(__dirname, 'fixtures'))
     rootView.open('sample.js')
     rootView.attachToDom()
     editor = rootView.getActiveView()
