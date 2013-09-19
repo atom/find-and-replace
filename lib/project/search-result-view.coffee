@@ -1,4 +1,4 @@
-{View} = require 'space-pen'
+{View} = require 'atom'
 
 module.exports =
 class SearchResultView extends View

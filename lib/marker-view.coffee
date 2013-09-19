@@ -1,5 +1,4 @@
-_ = require 'underscore'
-Subscriber = require 'subscriber'
+{_, Subscriber} = require 'atom'
 
 module.exports =
 class MarkerView
