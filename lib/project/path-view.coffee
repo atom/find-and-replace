@@ -1,12 +1,10 @@
-{View} = require 'space-pen'
-fsUtils = require 'fs-utils'
+{$, fs, View} = require 'atom-api'
 SearchResultView = require './search-result-view'
-$ = require 'jquery'
 
 module.exports =
 class PathView extends View
   @content: ({path, previewList} = {}) ->
-    iconClass = if fsUtils.isReadmePath(path) then 'icon-book' else 'icon-file-text'
+    iconClass = if fs.isReadmePath(path) then 'icon-book' else 'icon-file-text'
     @li class: 'path list-nested-item', =>
       @div outlet: 'pathDetails', class: 'path-details list-item', =>
         @span class: 'disclosure-arrow'

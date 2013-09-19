@@ -1,6 +1,4 @@
-$ = require 'jquery'
-_ = require 'underscore'
-ScrollView = require 'scroll-view'
+{_, $, ScrollView} = require 'atom-api'
 PathView = require './path-view'
 
 module.exports =

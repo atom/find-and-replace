@@ -1,7 +1,4 @@
-_ = require 'underscore'
-{View} = require 'space-pen'
-Editor = require 'editor'
-Selection = require 'selection'
+{_, Editor, View} = require 'atom-api'
 MarkerView = require './marker-view'
 
 module.exports =

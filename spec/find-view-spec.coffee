@@ -1,10 +1,7 @@
-$ = require 'jquery'
-_ = require 'underscore'
+{_, $, RootView} = require 'atom-api'
 
 shell = require 'shell'
 path = require 'path'
-RootView = require 'root-view'
-Project = require 'project'
 
 describe 'FindView', ->
   [editor, findView] = []
@@ -185,10 +182,10 @@ describe 'FindView', ->
 
         beforeEach ->
           anotherOpener = (pathToOpen, options) -> $('another')
-          Project.registerOpener(anotherOpener)
+          project.registerOpener(anotherOpener)
 
         afterEach ->
-          Project.unregisterOpener(anotherOpener)
+          project.unregisterOpener(anotherOpener)
 
         it "updates the result view", ->
           rootView.open "another"

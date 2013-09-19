@@ -1,7 +1,4 @@
-_ = require 'underscore'
-$ = require 'jquery'
-{View} = require 'space-pen'
-Editor = require 'editor'
+{_, $, Editor, View} = require 'atom-api'
 History = require './history'
 PreviewList = require './project/preview-list'
 SearchResult = require './project/search-result'

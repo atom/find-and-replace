@@ -1,7 +1,4 @@
-_ = require 'underscore'
-EventEmitter = require 'event-emitter'
-EditSession = require 'edit-session'
-require 'underscore-extensions'
+{_, EventEmitter} = require 'atom-api'
 
 module.exports =
 class FindModel
@@ -23,9 +20,9 @@ class FindModel
     paneItem = rootView.getActivePaneItem()
     @destroyAllMarkers()
 
-    if paneItem instanceof EditSession
+    if paneItem?.getBuffer?()?
       @editSession = paneItem
-      @editSession?.getBuffer().on "contents-modified.find", (args) =>
+      @editSession.getBuffer().on "contents-modified.find", (args) =>
         @updateMarkers() unless @replacing
 
   serialize: ->

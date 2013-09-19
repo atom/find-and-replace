@@ -1,7 +1,5 @@
 path = require 'path'
-$ = require 'jquery'
-RootView = require 'root-view'
-Project = require 'project'
+{$, RootView} = require 'atom-api'
 
 describe 'ProjectFindView', ->
   [editor, projectFindView, searchPromise] = []
