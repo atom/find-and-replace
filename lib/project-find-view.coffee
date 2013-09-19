@@ -1,5 +1,6 @@
 _ = require 'underscore'
 $ = require 'jquery'
+shell = require 'shell'
 {View} = require 'space-pen'
 Editor = require 'editor'
 History = require './history'
@@ -67,6 +68,8 @@ class ProjectFindView extends View
     @replaceAllButton.on 'click', => @replaceAll()
     @on 'project-find:replace-all', => @replaceAll()
 
+    @findEditor.getBuffer().on 'changed', => @clearResults()
+
   attach: ->
     rootView.vertical.append(this)
     @findEditor.focus()
@@ -95,6 +98,11 @@ class ProjectFindView extends View
     focusedIndex = 0 if focusedIndex >= elements.length
     focusedIndex = elements.length - 1 if focusedIndex < 0
     elements[focusedIndex].focus()
+    elements[focusedIndex].selectAll() if elements[focusedIndex].selectAll
+
+  clearResults: ->
+    @results = []
+    @previewBlock.hide()
 
   confirm: ->
     return if @findEditor.getText().length == 0
@@ -105,34 +113,29 @@ class ProjectFindView extends View
     @findHistory.store()
 
     deferred = @search()
-    deferred.done (results, errorMessages=[]) =>
+    deferred.done =>
       @loadingMessage.hide()
-
-      if errorMessages.length > 0
-        @errorMessages.show()
-        @errorMessages.append $$ ->
-          @li errorMessage for errorMessage in errorMessages
+      @previewBlock.show()
+      @previewList.populate(@results)
+      if @results.length > 0
+        @previewCount.text("#{_.pluralize(@results.length, 'match', 'matches')} in #{_.pluralize(@previewList.getPathCount(), 'file')}").show()
+        @previewList.focus()
       else
-        @previewBlock.show()
-        @previewList.populate(results)
-        if results.length > 0
-          @previewCount.text("#{_.pluralize(results.length, 'match', 'matches')} in #{_.pluralize(@previewList.getPathCount(), 'file')}").show()
-          @previewList.focus()
-        else
-          @previewCount.text("No matches found")
+        @previewCount.text("No matches found")
 
     deferred
 
   search: ->
     regex = @getRegex()
-    results = []
+    @results = []
 
     deferred = $.Deferred()
     promise = project.scan regex, ({path, range: bufferRange}) =>
       searchResult = new SearchResult({path, bufferRange})
-      results.push(searchResult)
+      @results.push(searchResult)
 
-    promise.done -> deferred.resolve(results)
+    promise.done ->
+      deferred.resolve()
 
     deferred.promise()
 
@@ -147,11 +150,15 @@ class ProjectFindView extends View
       new RegExp(_.escapeRegExp(text), flags)
 
   replaceAll: ->
-    regex = @getRegex()
-    replacementText = @replaceEditor.getText()
-    pathsReplaced = {}
-    @confirm().done (results) =>
-      for result in results
+    unless @results?.length
+      shell.beep()
+      @previewBlock.show()
+      @previewCount.text("Nothing replaced").show()
+    else
+      regex = @getRegex()
+      replacementText = @replaceEditor.getText()
+      pathsReplaced = {}
+      for result in @results
         buffer = result.getBuffer()
         continue if pathsReplaced[buffer.getPath()]
         pathsReplaced[buffer.getPath()] = true
@@ -161,4 +168,4 @@ class ProjectFindView extends View
         buffer.save()
 
       @previewList.populate([])
-      @previewCount.text("Replaced #{_.pluralize(results.length, 'result')} in #{_.pluralize(Object.keys(pathsReplaced).length, 'file')}").show()
+      @previewCount.text("Replaced #{_.pluralize(@results.length, 'result')} in #{_.pluralize(Object.keys(pathsReplaced).length, 'file')}").show()

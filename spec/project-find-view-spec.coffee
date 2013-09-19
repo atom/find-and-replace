@@ -1,3 +1,4 @@
+shell = require 'shell'
 path = require 'path'
 fsUtils = require 'fs-utils'
 $ = require 'jquery'
@@ -229,14 +230,15 @@ describe 'ProjectFindView', ->
     describe "when the replace button is pressed", ->
       it "runs the search, and replaces all the matches", ->
         projectFindView.findEditor.setText('items')
-        projectFindView.replaceEditor.setText('sunshine')
-
-        projectFindView.replaceAllButton.click()
+        projectFindView.trigger 'core:confirm'
 
         waitsForPromise ->
           searchPromise
 
         runs ->
+          projectFindView.replaceEditor.setText('sunshine')
+          projectFindView.replaceAllButton.click()
+
           expect(projectFindView.errorMessages).not.toBeVisible()
           expect(projectFindView.previewList).toBeVisible()
 
@@ -249,16 +251,49 @@ describe 'ProjectFindView', ->
           expect(sampleCoffeeContent.match(/sunshine/g)).toHaveLength 7
 
     describe "when the project-find:replace-all is triggered", ->
-      it "runs the search, and replaces all the matches", ->
-        projectFindView.findEditor.setText('items')
-        projectFindView.replaceEditor.setText('sunshine')
+      describe "when no search has been run", ->
+        it "does not replace anything", ->
+          spyOn(project, 'scan')
+          spyOn(shell, 'beep')
+          projectFindView.trigger 'project-find:replace-all'
+          expect(project.scan).not.toHaveBeenCalled()
+          expect(shell.beep).toHaveBeenCalled()
+          expect(projectFindView.previewList).toBeVisible()
+          expect(projectFindView.previewCount.text()).toBe "Nothing replaced"
 
-        projectFindView.trigger 'project-find:replace-all'
+      describe "when the search text has changed since that last search", ->
+        beforeEach ->
+          projectFindView.findEditor.setText('items')
+          projectFindView.trigger 'core:confirm'
 
-        waitsForPromise ->
-          searchPromise
+          waitsForPromise ->
+            searchPromise
 
-        runs ->
+        it "clears the search results and does not replace anything", ->
+          spyOn(project, 'scan')
+          spyOn(shell, 'beep')
+
+          projectFindView.findEditor.setText('sort')
+          expect(projectFindView.previewList).not.toBeVisible()
+
+          projectFindView.trigger 'project-find:replace-all'
+          expect(project.scan).not.toHaveBeenCalled()
+          expect(shell.beep).toHaveBeenCalled()
+          expect(projectFindView.previewList).toBeVisible()
+          expect(projectFindView.previewCount.text()).toBe "Nothing replaced"
+
+      describe "when the text in the search box triggered the results", ->
+        beforeEach ->
+          projectFindView.findEditor.setText('items')
+          projectFindView.trigger 'core:confirm'
+
+          waitsForPromise ->
+            searchPromise
+
+        it "runs the search, and replaces all the matches", ->
+          projectFindView.replaceEditor.setText('sunshine')
+
+          projectFindView.trigger 'project-find:replace-all'
           expect(projectFindView.errorMessages).not.toBeVisible()
           expect(projectFindView.previewList).toBeVisible()
 
