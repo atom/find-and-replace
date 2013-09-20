@@ -1,4 +1,7 @@
+shell = require 'shell'
+
 {_, $, Editor, View} = require 'atom'
+
 History = require './history'
 PreviewList = require './project/preview-list'
 SearchResult = require './project/search-result'
@@ -26,6 +29,15 @@ class ProjectFindView extends View
           @button outlet: 'regexOptionButton', class: 'btn btn-mini option-regex', '.*'
           @button outlet: 'caseOptionButton', class: 'btn btn-mini option-case-sensitive', 'Aa'
 
+      @div class: 'replace-container block', =>
+        @label outlet: 'replaceLabel', class: 'text-subtle', 'Replace'
+
+        @subview 'replaceEditor', new Editor(mini: true)
+
+        @div class: 'btn-group btn-toggle', =>
+          @button outlet: 'replaceAllButton', class: 'btn btn-mini', 'Replace'
+
+
   initialize: ({attached, @useRegex, @caseInsensitive, findHistory}={})->
     @handleEvents()
     @attach() if attached
@@ -43,12 +55,19 @@ class ProjectFindView extends View
     rootView.command 'project-find:show', => @attach()
     @on 'core:cancel', => @detach()
     @on 'core:confirm', => @confirm()
+    @on 'find-and-replace:focus-next', => @focusNextElement(1)
+    @on 'find-and-replace:focus-previous', => @focusNextElement(-1)
 
     @on 'project-find:toggle-regex-option', => @toggleRegexOption()
     @regexOptionButton.click => @toggleRegexOption()
 
     @on 'project-find:toggle-case-option', => @toggleCaseOption()
     @caseOptionButton.click => @toggleCaseOption()
+
+    @replaceAllButton.on 'click', => @replaceAll()
+    @on 'project-find:replace-all', => @replaceAll()
+
+    @findEditor.getBuffer().on 'changed', => @clearResults()
 
   attach: ->
     rootView.vertical.append(this)
@@ -69,44 +88,83 @@ class ProjectFindView extends View
     if @caseInsensitive then @caseOptionButton.addClass('selected') else @caseOptionButton.removeClass('selected')
     @confirm()
 
+  focusNextElement: (direction) ->
+    elements = [@previewList, @findEditor, @replaceEditor].filter (el) -> el.has(':visible').length > 0
+    focusedElement = _.find elements, (el) -> el.has(':focus').length > 0 or el.is(':focus')
+    focusedIndex = elements.indexOf focusedElement
+
+    focusedIndex = focusedIndex + direction
+    focusedIndex = 0 if focusedIndex >= elements.length
+    focusedIndex = elements.length - 1 if focusedIndex < 0
+    elements[focusedIndex].focus()
+    elements[focusedIndex].selectAll() if elements[focusedIndex].selectAll
+
+  clearResults: ->
+    @results = []
+    @previewBlock.hide()
+
   confirm: ->
+    return if @findEditor.getText().length == 0
+
     @loadingMessage.show()
     @previewBlock.hide()
     @errorMessages.empty()
     @findHistory.store()
 
     deferred = @search()
-    deferred.done (results, errorMessages=[]) =>
+    deferred.done =>
       @loadingMessage.hide()
-
-      if errorMessages.length > 0
-        @errorMessages.show()
-        @errorMessages.append $$ ->
-          @li errorMessage for errorMessage in errorMessages
+      @previewBlock.show()
+      @previewList.populate(@results)
+      if @results.length > 0
+        @previewCount.text("#{_.pluralize(@results.length, 'match', 'matches')} in #{_.pluralize(@previewList.getPathCount(), 'file')}").show()
+        @previewList.focus()
       else
-        @previewBlock.show()
-        @previewList.populate(results)
-        if results.length > 0
-          @previewCount.text("#{_.pluralize(results.length, 'match', 'matches')} in #{_.pluralize(@previewList.getPathCount(), 'file')}").show()
-          @previewList.focus()
-        else
-          @previewCount.text("No matches found")
+        @previewCount.text("No matches found")
 
     deferred
 
   search: ->
-    text = @findEditor.getText()
-    if @useRegex
-      regex = new RegExp(text)
-    else
-      regex = new RegExp(_.escapeRegExp(text))
-    results = []
+    regex = @getRegex()
+    @results = []
 
     deferred = $.Deferred()
     promise = project.scan regex, ({path, range: bufferRange}) =>
       searchResult = new SearchResult({path, bufferRange})
-      results.push(searchResult)
+      @results.push(searchResult)
 
-    promise.done -> deferred.resolve(results)
+    promise.done ->
+      deferred.resolve()
 
     deferred.promise()
+
+  getRegex: ->
+    flags = 'g'
+    flags += 'i' unless @caseInsensitive
+    text = @findEditor.getText()
+
+    if @useRegex
+      new RegExp(text, flags)
+    else
+      new RegExp(_.escapeRegExp(text), flags)
+
+  replaceAll: ->
+    unless @results?.length
+      shell.beep()
+      @previewBlock.show()
+      @previewCount.text("Nothing replaced").show()
+    else
+      regex = @getRegex()
+      replacementText = @replaceEditor.getText()
+      pathsReplaced = {}
+      for result in @results
+        buffer = result.getBuffer()
+        continue if pathsReplaced[buffer.getPath()]
+        pathsReplaced[buffer.getPath()] = true
+
+        newText = buffer.getText().replace(regex, replacementText)
+        buffer.setText(newText)
+        buffer.save()
+
+      @previewList.populate([])
+      @previewCount.text("Replaced #{_.pluralize(@results.length, 'result')} in #{_.pluralize(Object.keys(pathsReplaced).length, 'file')}").show()

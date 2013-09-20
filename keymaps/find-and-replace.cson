@@ -1,8 +1,8 @@
 'body':
   'meta-F': 'project-find:show'
+  'meta-f': 'find-and-replace:show'
 
 '.editor':
-  'meta-f': 'find-and-replace:show'
   'alt-meta-f': 'find-and-replace:show-replace'
 
   'meta-g': 'find-and-replace:find-next'
@@ -11,18 +11,15 @@
   'meta-e': 'find-and-replace:use-selection-as-find-pattern'
 
 '.find-and-replace':
-  'enter': 'core:confirm',
-  'escape': 'core:cancel'
-  'meta-w': 'core:cancel'
+  'meta-enter': 'find-and-replace:replace-all'
   'alt-meta-/': 'find-and-replace:toggle-regex-option'
   'alt-meta-c': 'find-and-replace:toggle-case-option'
   'alt-meta-s': 'find-and-replace:toggle-selection-option'
 
-'.find-and-replace .mini.editor input':
+'.find-and-replace, .project-find, .project-find .preview-list':
+  'escape': 'core:cancel'
   'tab': 'find-and-replace:focus-next'
   'shift-tab': 'find-and-replace:focus-previous'
 
 '.project-find':
-  'enter': 'core:confirm',
-  'escape': 'core:cancel'
-  'meta-w': 'core:cancel'
+  'meta-enter': 'project-find:replace-all'
