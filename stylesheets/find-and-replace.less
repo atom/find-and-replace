@@ -3,6 +3,11 @@
 @label-width: 5em;
 @button-width: 110px;
 
+.option-button() {
+  font-size: 14px;
+  font-family: courier, monospace;
+}
+
 .editor .marker .region {
   position: absolute;
   pointer-events: none;
@@ -70,10 +75,8 @@
 
   .find-container {
     .btn-toggle.btn-group .btn {
+      .option-button();
       width: @button-width/3;
-      font-size: 14px;
-      font-family: courier, monospace;
-      font-weight: normal;
 
       &.option-selection {
         font-family: "Times New Roman";
@@ -98,25 +101,31 @@
 
 
 .project-find {
+  @project-button-width: @button-width - @button-width/3 + 5px;
+
   -webkit-user-select: none;
 
   .loading,
   .preview-block,
-  .error-messages {
+  .error-messages,
+  .replace-container,
+  .filter-container {
     display: none;
   }
 
-  .find-container, .replace-container, .filter-container {
+  .find-container,
+  .replace-container,
+  .filter-container {
     display: -webkit-flex;
     -webkit-flex-direction: row;
 
     .btn-toggle.btn-group {
-      width: @button-width;
+      width: @project-button-width;
       margin-left: @component-padding;
 
       .btn {
-        font-size: 14px;
-        font-family: monospace;
+        .option-button();
+        width: @button-width/3;
       }
     }
 
