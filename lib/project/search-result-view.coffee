@@ -1,17 +1,20 @@
-{View} = require 'atom'
+{View, Range} = require 'atom'
 
 module.exports =
 class SearchResultView extends View
-  @content: ({searchResult} = {}) ->
-    {prefix, suffix, match, range} = searchResult.preview()
+  @content: (previewList, filePath, match) ->
+    range = Range.fromObject(match.range)
+    prefix = match.lineText[0...range.start.column]
+    suffix = match.lineText[range.end.column..]
+
     @li class: 'search-result list-item', =>
       @span range.start.row + 1, class: 'line-number text-subtle'
       @span class: 'preview', =>
         @span prefix
-        @span match, class: 'match highlight-info'
+        @span match.matchText, class: 'match highlight-info'
         @span suffix
 
-  initialize: ({@previewList, @searchResult}) ->
+  initialize: (@previewList, @filePath, @match) ->
     @subscribe @previewList, 'core:confirm', =>
       if @hasClass('selected')
         @highlightResult()
@@ -22,9 +25,8 @@ class SearchResultView extends View
       @addClass('selected')
 
   highlightResult: ->
-    editSession = rootView.open(@searchResult.getPath())
-    bufferRange = @searchResult.getBufferRange()
-    editSession.setSelectedBufferRange(bufferRange, autoscroll: true) if bufferRange
+    editSession = rootView.open(@filePath)
+    editSession.setSelectedBufferRange(@match.range, autoscroll: true)
     @previewList.focus()
 
   scrollTo: ->

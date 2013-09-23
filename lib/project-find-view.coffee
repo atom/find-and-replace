@@ -136,9 +136,8 @@ class ProjectFindView extends View
     paths = (path.trim() for path in @pathsEditor.getText().trim().split(',') when path)
 
     deferred = $.Deferred()
-    promise = project.scan regex, {paths}, ({path, matchText, lineText, range: bufferRange}) =>
-      searchResult = new SearchResult({path, matchText, lineText, bufferRange})
-      @results.push(searchResult)
+    promise = project.scan regex, {paths}, ({path: filePath, matches}) =>
+      @results.push({filePath, matches})
 
     promise.done ->
       deferred.resolve()
@@ -165,7 +164,7 @@ class ProjectFindView extends View
       replacementText = @replaceEditor.getText()
       pathsReplaced = {}
       for result in @results
-        buffer = result.getBuffer()
+        buffer = project.bufferForPath(bufferForPath)
         continue if pathsReplaced[buffer.getPath()]
         pathsReplaced[buffer.getPath()] = true
 

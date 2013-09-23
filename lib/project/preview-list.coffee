@@ -18,8 +18,6 @@ class PreviewList extends ScrollView
     @on 'core:move-up', => @selectPreviousResult(); false
     @on 'scroll', =>
       @renderResults() if @scrollBottom() >= @prop('scrollHeight')
-    @command 'find-and-replace:collapse-all', => @collapseAllPaths()
-    @command 'find-and-replace:expand-all', => @expandAllPaths()
 
   beforeRemove: ->
     @destroyResults() if @results
@@ -41,7 +39,7 @@ class PreviewList extends ScrollView
     renderAll ?= false
     startingScrollHeight = @prop('scrollHeight')
     for result in @results[@lastRenderedResultIndex..]
-      pathView = @pathViewForPath(result.getPath())
+      pathView = @pathViewForPath(result.filePath)
       pathView.addResult(result)
       @lastRenderedResultIndex++
       break if not renderAll and @prop('scrollHeight') >= startingScrollHeight + @pixelOverdraw and @prop('scrollHeight') > @height() + @pixelOverdraw
@@ -84,13 +82,11 @@ class PreviewList extends ScrollView
       previousView.scrollTo()
 
   getPathCount: ->
-    _.keys(_.groupBy(@results, (result) -> result.getPath())).length
+    @results.length
 
-  getPathResultCount: (path) ->
-    @results.filter((result) -> path is result.getPath()).length
-
-  getResults: ->
-    new Array(@results...)
+  getPathResultCount: (filePath) ->
+    result = _.find @results, (result) -> filePath is result.filePath
+    result?.matches.length
 
   destroyResults: ->
     @results = null
