@@ -3,6 +3,11 @@
 @label-width: 5em;
 @button-width: 110px;
 
+.option-button() {
+  font-size: 14px;
+  font-family: courier, monospace;
+}
+
 .editor .marker .region {
   position: absolute;
   pointer-events: none;
@@ -27,7 +32,9 @@
     text-align: right;
     vertical-align: middle;
     margin: 0 @component-padding 0 0;
-    line-height: 28px; // Assumed the height of an editor to vertically center
+
+    // Assumed the height of an editor to vertically center
+    line-height: @component-line-height + 3px;
   }
 }
 
@@ -37,6 +44,9 @@
 
   &.find-mode {
     .replace-container, label { display: none; }
+
+    // FIXME: this should be handled by the .block system
+    .find-container.block { margin-bottom: 0; }
   }
 
   .find-container,
@@ -47,11 +57,6 @@
     .btn-toggle.btn-group {
       width: @button-width;
       margin-left: @component-padding;
-
-      .btn {
-        font-size: 14px;
-        font-family: monospace;
-      }
     }
 
     .editor-container {
@@ -60,6 +65,25 @@
 
       .editor {
         width: 100%;
+      }
+    }
+  }
+
+  .replace-container {
+    .btn-toggle.btn-group .btn {
+      width: @button-width/2;
+    }
+  }
+
+  .find-container {
+    .btn-toggle.btn-group .btn {
+      .option-button();
+      width: @button-width/3;
+
+      &.option-selection {
+        font-family: "Times New Roman";
+        font-size: 20px;
+        padding-top: 3px;
       }
     }
   }
@@ -79,30 +103,45 @@
 
 
 .project-find {
+  @project-button-width: @button-width - @button-width/3;
+
   -webkit-user-select: none;
 
   .loading,
   .preview-block,
-  .error-messages {
+  .error-messages,
+  .replace-container,
+  .filter-container {
     display: none;
   }
 
-  .find-container, .replace-container, .filter-container {
+  .find-container,
+  .replace-container,
+  .filter-container {
     display: -webkit-flex;
     -webkit-flex-direction: row;
 
     .btn-toggle.btn-group {
-      width: @button-width;
+      // FIXME: I dont understand why I need this 5px to make the buttons not wrap
+      width: @project-button-width + 5px;
       margin-left: @component-padding;
-
-      .btn {
-        font-size: 14px;
-        font-family: monospace;
-      }
     }
 
     .editor {
       width: 100%;
+    }
+  }
+
+  .find-container {
+    .btn-toggle.btn-group .btn {
+      .option-button();
+      width: @project-button-width/2;
+    }
+  }
+
+  .replace-container {
+    .btn-toggle.btn-group .btn {
+      width: @project-button-width;
     }
   }
 
@@ -122,9 +161,13 @@
       text-align: right;
       display: inline-block;
     }
+    .selected .line-number {
+      color: @text-color-selected;
+    }
 
     .path-match-number {
-      padding-left: 8px;
+      padding-left: @component-padding;
+      color: @text-color-subtle;
     }
 
     .preview {
