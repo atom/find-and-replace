@@ -103,7 +103,7 @@
 
 
 .project-find {
-  @project-button-width: @button-width - @button-width/3 + 5px;
+  @project-button-width: @button-width - @button-width/3;
 
   -webkit-user-select: none;
 
@@ -122,17 +122,26 @@
     -webkit-flex-direction: row;
 
     .btn-toggle.btn-group {
-      width: @project-button-width;
+      // FIXME: I dont understand why I need this 5px to make the buttons not wrap
+      width: @project-button-width + 5px;
       margin-left: @component-padding;
-
-      .btn {
-        .option-button();
-        width: @button-width/3;
-      }
     }
 
     .editor {
       width: 100%;
+    }
+  }
+
+  .find-container {
+    .btn-toggle.btn-group .btn {
+      .option-button();
+      width: @project-button-width/2;
+    }
+  }
+
+  .replace-container {
+    .btn-toggle.btn-group .btn {
+      width: @project-button-width;
     }
   }
 
