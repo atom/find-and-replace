@@ -15,7 +15,7 @@ describe 'PreviewList', ->
 
   describe "when list is scrollable", ->
     it "adds more operations to the DOM when `scrollBottom` nears the `pixelOverdraw`", ->
-      waitsForPromise ->
+      waitsForPromise timeout: 30000, ->
         projectFindView.findEditor.setText(' ')
         projectFindView.confirm()
 
