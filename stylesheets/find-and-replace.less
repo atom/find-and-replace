@@ -32,7 +32,9 @@
     text-align: right;
     vertical-align: middle;
     margin: 0 @component-padding 0 0;
-    line-height: 28px; // Assumed the height of an editor to vertically center
+
+    // Assumed the height of an editor to vertically center
+    line-height: @component-line-height + 3px;
   }
 }
 
@@ -150,9 +152,13 @@
       text-align: right;
       display: inline-block;
     }
+    .selected .line-number {
+      color: @text-color-selected;
+    }
 
     .path-match-number {
-      padding-left: 8px;
+      padding-left: @component-padding;
+      color: @text-color-subtle;
     }
 
     .preview {
