@@ -50,11 +50,6 @@
     .btn-toggle.btn-group {
       width: @button-width;
       margin-left: @component-padding;
-
-      .btn {
-        font-size: 14px;
-        font-family: monospace;
-      }
     }
 
     .editor-container {
@@ -63,6 +58,27 @@
 
       .editor {
         width: 100%;
+      }
+    }
+  }
+
+  .replace-container {
+    .btn-toggle.btn-group .btn {
+      width: @button-width/2;
+    }
+  }
+
+  .find-container {
+    .btn-toggle.btn-group .btn {
+      width: @button-width/3;
+      font-size: 14px;
+      font-family: courier, monospace;
+      font-weight: normal;
+
+      &.option-selection {
+        font-family: "Times New Roman";
+        font-size: 20px;
+        padding-top: 3px;
       }
     }
   }
