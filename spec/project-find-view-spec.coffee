@@ -3,9 +3,6 @@ path = require 'path'
 
 {fs, $, RootView} = require 'atom'
 
-# Default to 30 second promises
-waitsForPromise = (fn) -> window.waitsForPromise timeout: 30000, fn
-
 describe 'ProjectFindView', ->
   [editor, projectFindView, searchPromise] = []
 
@@ -83,8 +80,8 @@ describe 'ProjectFindView', ->
           searchPromise
 
         runs ->
-          projectFindView.previewList.scrollToBottom() # To load ALL the results
-          expect(projectFindView.previewList.find("li > ul > li")).toHaveLength(13)
+          projectFindView.resultsView.scrollToBottom() # To load ALL the results
+          expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(13)
           expect(projectFindView.previewCount.text()).toBe "13 matches in 2 files"
 
       it "toggles regex option via a button and finds files matching the pattern", ->
@@ -96,8 +93,8 @@ describe 'ProjectFindView', ->
           searchPromise
 
         runs ->
-          projectFindView.previewList.scrollToBottom() # To load ALL the results
-          expect(projectFindView.previewList.find("li > ul > li")).toHaveLength(13)
+          projectFindView.resultsView.scrollToBottom() # To load ALL the results
+          expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(13)
           expect(projectFindView.previewCount.text()).toBe "13 matches in 2 files"
 
     describe "case sensitivity", ->
@@ -112,8 +109,8 @@ describe 'ProjectFindView', ->
           searchPromise
 
         runs ->
-          projectFindView.previewList.scrollToBottom() # To load ALL the results
-          expect(projectFindView.previewList.find("li > ul > li")).toHaveLength(13)
+          projectFindView.resultsView.scrollToBottom() # To load ALL the results
+          expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(13)
           expect(projectFindView.previewCount.text()).toBe "13 matches in 2 files"
 
       it "toggles case sensitive option via an event and finds files matching the pattern", ->
@@ -126,7 +123,7 @@ describe 'ProjectFindView', ->
           searchPromise
 
         runs ->
-          expect(projectFindView.previewList.find("li > ul > li")).toHaveLength(1)
+          expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(1)
           expect(projectFindView.previewCount.text()).toBe "1 match in 1 file"
 
       it "toggles case sensitive option via a button and finds files matching the pattern", ->
@@ -139,7 +136,7 @@ describe 'ProjectFindView', ->
           searchPromise
 
         runs ->
-          expect(projectFindView.previewList.find("li > ul > li")).toHaveLength(1)
+          expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(1)
           expect(projectFindView.previewCount.text()).toBe "1 match in 1 file"
 
     describe "when core:confirm is triggered", ->
@@ -163,10 +160,10 @@ describe 'ProjectFindView', ->
             searchPromise
 
           runs ->
-            expect(projectFindView.previewList).toBeVisible()
-            projectFindView.previewList.scrollToBottom() # To load ALL the results
+            expect(projectFindView.resultsView).toBeVisible()
+            projectFindView.resultsView.scrollToBottom() # To load ALL the results
             expect(projectFindView.errorMessages).not.toBeVisible()
-            expect(projectFindView.previewList.find("li > ul > li")).toHaveLength(13)
+            expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(13)
             expect(projectFindView.previewCount.text()).toBe "13 matches in 2 files"
 
         it "with a paths filter displays the results and no errors", ->
@@ -177,10 +174,10 @@ describe 'ProjectFindView', ->
             searchPromise
 
           runs ->
-            expect(projectFindView.previewList).toBeVisible()
-            projectFindView.previewList.scrollToBottom() # To load ALL the results
+            expect(projectFindView.resultsView).toBeVisible()
+            projectFindView.resultsView.scrollToBottom() # To load ALL the results
             expect(projectFindView.errorMessages).not.toBeVisible()
-            expect(projectFindView.previewList.find("li > ul > li")).toHaveLength(6)
+            expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(6)
             expect(projectFindView.previewCount.text()).toBe "6 matches in 1 file"
 
       describe "when no results exist", ->
@@ -195,8 +192,8 @@ describe 'ProjectFindView', ->
 
           runs ->
             expect(projectFindView.errorMessages).not.toBeVisible()
-            expect(projectFindView.previewList).toBeVisible()
-            expect(projectFindView.previewList.find("li > ul > li")).toHaveLength(0)
+            expect(projectFindView.resultsView).toBeVisible()
+            expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(0)
 
     describe "history", ->
       beforeEach ->
@@ -256,7 +253,7 @@ describe 'ProjectFindView', ->
           projectFindView.replaceAllButton.click()
 
           expect(projectFindView.errorMessages).not.toBeVisible()
-          expect(projectFindView.previewList).toBeVisible()
+          expect(projectFindView.resultsView).toBeVisible()
 
           sampleJsContent = fs.read sampleJs
           expect(sampleJsContent.match(/items/g)).toBeFalsy()
@@ -274,7 +271,7 @@ describe 'ProjectFindView', ->
           projectFindView.trigger 'project-find:replace-all'
           expect(project.scan).not.toHaveBeenCalled()
           expect(shell.beep).toHaveBeenCalled()
-          expect(projectFindView.previewList).toBeVisible()
+          expect(projectFindView.resultsView).toBeVisible()
           expect(projectFindView.previewCount.text()).toBe "Nothing replaced"
 
       describe "when the search text has changed since that last search", ->
@@ -290,12 +287,12 @@ describe 'ProjectFindView', ->
           spyOn(shell, 'beep')
 
           projectFindView.findEditor.setText('sort')
-          expect(projectFindView.previewList).not.toBeVisible()
+          expect(projectFindView.resultsView).not.toBeVisible()
 
           projectFindView.trigger 'project-find:replace-all'
           expect(project.scan).not.toHaveBeenCalled()
           expect(shell.beep).toHaveBeenCalled()
-          expect(projectFindView.previewList).toBeVisible()
+          expect(projectFindView.resultsView).toBeVisible()
           expect(projectFindView.previewCount.text()).toBe "Nothing replaced"
 
       describe "when the text in the search box triggered the results", ->
@@ -311,9 +308,9 @@ describe 'ProjectFindView', ->
 
           projectFindView.trigger 'project-find:replace-all'
           expect(projectFindView.errorMessages).not.toBeVisible()
-          expect(projectFindView.previewList).toBeVisible()
+          expect(projectFindView.resultsView).toBeVisible()
 
-          expect(projectFindView.previewList.find("li > ul > li")).toHaveLength(0)
+          expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(0)
           expect(projectFindView.previewCount.text()).toBe "Replaced 13 results in 2 files"
 
           sampleJsContent = fs.read sampleJs

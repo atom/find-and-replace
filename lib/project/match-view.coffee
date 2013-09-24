@@ -2,7 +2,7 @@
 
 module.exports =
 class SearchResultView extends View
-  @content: (previewList, filePath, match) ->
+  @content: ({filePath, match}) ->
     range = Range.fromObject(match.range)
     prefix = match.lineText[match.lineTextOffset...(match.lineTextOffset + range.start.column)]
     suffix = match.lineText[(match.lineTextOffset + range.end.column)..]
@@ -14,22 +14,8 @@ class SearchResultView extends View
         @span match.matchText, class: 'match highlight-info'
         @span suffix
 
-  initialize: (@previewList, @filePath, @match) ->
-    @subscribe @previewList, 'core:confirm', =>
-      if @hasClass('selected')
-        @highlightResult()
-        false
-    @on 'mousedown', (e) =>
-      @highlightResult()
-      @previewList.find('.selected').removeClass('selected')
-      @addClass('selected')
+  initialize: ({@filePath, @match}) ->
 
-  highlightResult: ->
+  confirm: ->
     editSession = rootView.open(@filePath)
     editSession.setSelectedBufferRange(@match.range, autoscroll: true)
-    @previewList.focus()
-
-  scrollTo: ->
-    top = @previewList.scrollTop() + @offset().top - @previewList.offset().top
-    bottom = top + @outerHeight()
-    @previewList.scrollTo(top, bottom)

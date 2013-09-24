@@ -3,7 +3,7 @@ shell = require 'shell'
 {_, $, Editor, View} = require 'atom'
 
 History = require './history'
-PreviewList = require './project/preview-list'
+ResultsView = require './project/results-view'
 
 module.exports =
 class ProjectFindView extends View
@@ -15,7 +15,7 @@ class ProjectFindView extends View
       @div outlet: 'previewBlock', class: 'preview-block inset-panel block', =>
         @div class: 'panel-heading', =>
           @span outlet: 'previewCount', class: 'preview-count'
-        @subview 'previewList', new PreviewList
+        @subview 'resultsView', new ResultsView
 
       @ul outlet: 'errorMessages', class: 'error-messages block'
 
@@ -94,7 +94,7 @@ class ProjectFindView extends View
     @confirm()
 
   focusNextElement: (direction) ->
-    elements = [@previewList, @findEditor, @replaceEditor].filter (el) -> el.has(':visible').length > 0
+    elements = [@resultsView, @findEditor, @replaceEditor].filter (el) -> el.has(':visible').length > 0
     focusedElement = _.find elements, (el) -> el.has(':focus').length > 0 or el.is(':focus')
     focusedIndex = elements.indexOf focusedElement
 
@@ -119,11 +119,8 @@ class ProjectFindView extends View
     deferred = @search()
     deferred.done =>
       @loadingMessage.hide()
-      @previewBlock.show()
-      @previewList.populate(@results)
       if @results.length > 0
-        @previewCount.text("#{_.pluralize(@previewList.getMatchCount(), 'match', 'matches')} in #{_.pluralize(@previewList.getPathCount(), 'file')}").show()
-        @previewList.focus()
+        @resultsView.focus()
       else
         @previewCount.text("No matches found")
 
@@ -134,9 +131,12 @@ class ProjectFindView extends View
     @results = []
     paths = (path.trim() for path in @pathsEditor.getText().trim().split(',') when path)
 
+    @previewBlock.show()
     deferred = $.Deferred()
-    promise = project.scan regex, {paths}, ({filePath, matches}) =>
-      @results.push({filePath, matches})
+    promise = project.scan regex, {paths}, (result) =>
+      @results.push result
+      @resultsView.addResult(result)
+      @previewCount.text("#{_.pluralize(@resultsView.getMatchCount(), 'match', 'matches')} in #{_.pluralize(@resultsView.getPathCount(), 'file')}").show()
 
     promise.done ->
       deferred.resolve()
@@ -174,6 +174,6 @@ class ProjectFindView extends View
         buffer.setText(newText)
         buffer.save()
 
-      @previewList.populate([])
+      @resultsView.clear()
 
       @previewCount.text("Replaced #{_.pluralize(replacementsCount, 'result')} in #{_.pluralize(Object.keys(pathsReplaced).length, 'file')}").show()
