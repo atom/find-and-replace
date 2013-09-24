@@ -163,9 +163,12 @@ class ProjectFindView extends View
       regex = @getRegex()
       replacementText = @replaceEditor.getText()
       pathsReplaced = {}
+      replacementsCount = 0
       for result in @results
-        buffer = project.bufferForPath(bufferForPath)
-        continue if pathsReplaced[buffer.getPath()]
+        continue if pathsReplaced[result.filePath]
+
+        replacementsCount += result.matches.length
+        buffer = project.bufferForPath(result.filePath)
         pathsReplaced[buffer.getPath()] = true
 
         newText = buffer.getText().replace(regex, replacementText)
@@ -173,4 +176,5 @@ class ProjectFindView extends View
         buffer.save()
 
       @previewList.populate([])
-      @previewCount.text("Replaced #{_.pluralize(@results.length, 'result')} in #{_.pluralize(Object.keys(pathsReplaced).length, 'file')}").show()
+
+      @previewCount.text("Replaced #{_.pluralize(replacementsCount, 'result')} in #{_.pluralize(Object.keys(pathsReplaced).length, 'file')}").show()
