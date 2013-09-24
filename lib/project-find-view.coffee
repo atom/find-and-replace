@@ -123,7 +123,7 @@ class ProjectFindView extends View
       @previewBlock.show()
       @previewList.populate(@results)
       if @results.length > 0
-        @previewCount.text("#{_.pluralize(@results.length, 'match', 'matches')} in #{_.pluralize(@previewList.getPathCount(), 'file')}").show()
+        @previewCount.text("#{_.pluralize(@previewList.getMatchCount(), 'match', 'matches')} in #{_.pluralize(@previewList.getPathCount(), 'file')}").show()
         @previewList.focus()
       else
         @previewCount.text("No matches found")

@@ -43,4 +43,4 @@ describe 'PreviewList', ->
         expect(previewList.prop('scrollHeight')).toBeGreaterThan previewList.height()
         previousScrollHeight = previewList.prop('scrollHeight')
         previewList.trigger 'core:move-to-bottom'
-        expect(previewList.find("li").length).toBe 12
+        expect(previewList.find("li").length).toBe previewList.getPathCount() + previewList.getMatchCount()
