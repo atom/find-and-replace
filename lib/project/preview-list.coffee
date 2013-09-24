@@ -84,6 +84,11 @@ class PreviewList extends ScrollView
   getPathCount: ->
     @results.length
 
+  getMatchCount: ->
+    count = 0
+    count += matches.length for {filePath, matches} in @results
+    count
+
   getPathResultCount: (filePath) ->
     result = _.find @results, (result) -> filePath is result.filePath
     result?.matches.length
