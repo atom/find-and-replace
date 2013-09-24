@@ -3,6 +3,9 @@ path = require 'path'
 
 {fs, $, RootView} = require 'atom'
 
+# Default to 30 second promises
+waitsForPromise = (fn) -> window.waitsForPromise timeout: 3000, fn
+
 describe 'ProjectFindView', ->
   [editor, projectFindView, searchPromise] = []
 
