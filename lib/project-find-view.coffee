@@ -21,7 +21,7 @@ class ProjectFindView extends View
       @ul outlet: 'errorMessages', class: 'error-messages block'
 
       @div class: 'find-container block', =>
-        @label outlet: 'findLabel', class: 'text-subtle', 'Find'
+        @label class: 'text-subtle', 'Find'
 
         @subview 'findEditor', new Editor(mini: true)
 
@@ -37,11 +37,15 @@ class ProjectFindView extends View
         @div class: 'btn-group btn-toggle', =>
           @button outlet: 'replaceAllButton', class: 'btn btn-mini', 'Replace'
 
+      @div class: 'paths-container block', =>
+        @label class: 'text-subtle', 'In'
+        @subview 'pathsEditor', new Editor(mini: true)
 
-  initialize: ({attached, @useRegex, @caseInsensitive, findHistory}={})->
+  initialize: ({attached, @useRegex, @caseInsensitive, findHistory, pathsHistory}={})->
     @handleEvents()
     @attach() if attached
     @findHistory = new History(@findEditor, findHistory)
+    @pathsHistory = new History(@pathsEditor, pathsHistory)
 
     @regexOptionButton.addClass('selected') if @useRegex
     @caseOptionButton.addClass('selected') if @caseInsensitive
@@ -50,6 +54,8 @@ class ProjectFindView extends View
     attached: @hasParent()
     useRegex: @useRegex
     caseInsensitive: @caseInsensitive
+    findHistory: @findHistory.serialize()
+    pathsHistory: @pathsHistory.serialize()
 
   handleEvents: ->
     rootView.command 'project-find:show', => @attach()
@@ -117,7 +123,7 @@ class ProjectFindView extends View
       @previewBlock.show()
       @previewList.populate(@results)
       if @results.length > 0
-        @previewCount.text("#{_.pluralize(@results.length, 'match', 'matches')} in #{_.pluralize(@previewList.getPathCount(), 'file')}").show()
+        @previewCount.text("#{_.pluralize(@previewList.getMatchCount(), 'match', 'matches')} in #{_.pluralize(@previewList.getPathCount(), 'file')}").show()
         @previewList.focus()
       else
         @previewCount.text("No matches found")
@@ -127,11 +133,11 @@ class ProjectFindView extends View
   search: ->
     regex = @getRegex()
     @results = []
+    paths = (path.trim() for path in @pathsEditor.getText().trim().split(',') when path)
 
     deferred = $.Deferred()
-    promise = project.scan regex, ({path, range: bufferRange}) =>
-      searchResult = new SearchResult({path, bufferRange})
-      @results.push(searchResult)
+    promise = project.scan regex, {paths}, ({path: filePath, matches}) =>
+      @results.push({filePath, matches})
 
     promise.done ->
       deferred.resolve()
@@ -158,7 +164,7 @@ class ProjectFindView extends View
       replacementText = @replaceEditor.getText()
       pathsReplaced = {}
       for result in @results
-        buffer = result.getBuffer()
+        buffer = project.bufferForPath(bufferForPath)
         continue if pathsReplaced[buffer.getPath()]
         pathsReplaced[buffer.getPath()] = true
 

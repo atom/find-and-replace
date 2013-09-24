@@ -29,7 +29,8 @@ class PathView extends View
     @description.text("(#{resultCount})")
 
   addResult: (searchResult) ->
-    @matches.append new SearchResultView({searchResult, @previewList})
+    for match in searchResult.matches
+      @matches.append new SearchResultView(@previewList, searchResult.filePath, match)
 
   isSelected: ->
     @hasClass('selected') or @find('.selected').length
