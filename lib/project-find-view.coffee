@@ -136,7 +136,7 @@ class ProjectFindView extends View
     paths = (path.trim() for path in @pathsEditor.getText().trim().split(',') when path)
 
     deferred = $.Deferred()
-    promise = project.scan regex, {paths}, ({path: filePath, matches}) =>
+    promise = project.scan regex, {paths}, ({filePath, matches}) =>
       @results.push({filePath, matches})
 
     promise.done ->
