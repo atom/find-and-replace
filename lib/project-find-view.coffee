@@ -4,7 +4,6 @@ shell = require 'shell'
 
 History = require './history'
 PreviewList = require './project/preview-list'
-SearchResult = require './project/search-result'
 
 module.exports =
 class ProjectFindView extends View
