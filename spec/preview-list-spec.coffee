@@ -1,5 +1,8 @@
 {RootView} = require 'atom'
 
+# Default to 30 second promises
+waitsForPromise = (fn) -> window.waitsForPromise timeout: 30000, fn
+
 describe 'PreviewList', ->
   [projectFindView, previewList] = []
 
@@ -15,7 +18,7 @@ describe 'PreviewList', ->
 
   describe "when list is scrollable", ->
     it "adds more operations to the DOM when `scrollBottom` nears the `pixelOverdraw`", ->
-      waitsForPromise timeout: 30000, ->
+      waitsForPromise ->
         projectFindView.findEditor.setText(' ')
         projectFindView.confirm()
 
