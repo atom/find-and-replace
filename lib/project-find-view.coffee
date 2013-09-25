@@ -42,6 +42,7 @@ class ProjectFindView extends View
 
   initialize: ({attached, modelState, findHistory, pathsHistory}={})->
     @model = new ResultsModel(modelState)
+    @lastFocusedElement = null
 
     @handleEvents()
     @attach() if attached
@@ -83,10 +84,25 @@ class ProjectFindView extends View
     @model.on 'finished-searching', =>
       @previewCount.text(@getResultCountText())
 
+    self = this
+    @findEditor.on 'focus', -> self.setLastFocusedElement(this)
+    @findEditor.on 'blur', -> -> self.setLastFocusedElement(this)
+    @replaceEditor.on 'focus', -> self.setLastFocusedElement(this)
+    @replaceEditor.on 'blur', -> self.setLastFocusedElement(this)
+    @pathsEditor.on 'focus', -> self.setLastFocusedElement(this)
+    @pathsEditor.on 'blur', -> self.setLastFocusedElement(this)
+    @resultsView.on 'focus', -> self.setLastFocusedElement(this)
+    @resultsView.on 'blur', -> self.setLastFocusedElement(this)
+
   attach: ->
-    rootView.vertical.append(this)
-    @findEditor.focus()
-    @findEditor.selectAll()
+    if @hasParent()
+      el = @lastFocusedElement or @findEditor
+      el.focus()
+      el.selectAll() if el.selectAll
+    else
+      rootView.vertical.append(this)
+      @findEditor.focus()
+      @findEditor.selectAll()
 
   detach: ->
     rootView.focus()
@@ -102,6 +118,9 @@ class ProjectFindView extends View
     if @model.caseSensitive then @caseOptionButton.addClass('selected') else @caseOptionButton.removeClass('selected')
     @confirm()
 
+  setLastFocusedElement: (element) ->
+    @lastFocusedElement = $(element)
+
   focusNextElement: (direction) ->
     elements = [@resultsView, @findEditor, @replaceEditor].filter (el) -> el.has(':visible').length > 0
     focusedElement = _.find elements, (el) -> el.has(':focus').length > 0 or el.is(':focus')
@@ -114,6 +133,7 @@ class ProjectFindView extends View
     elements[focusedIndex].selectAll() if elements[focusedIndex].selectAll
 
   clearResults: ->
+    @lastFocusedElement = null
     @resultsView.clear()
     @previewBlock.hide()
 

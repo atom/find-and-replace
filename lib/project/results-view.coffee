@@ -4,7 +4,7 @@ ResultView = require './result-view'
 module.exports =
 class ResultsView extends ScrollView
   @content: ->
-    @ol class: 'results-view list-tree', tabindex: -1
+    @ol class: 'results-view list-tree focusable-panel', tabindex: -1
 
   initialize: ->
     super
