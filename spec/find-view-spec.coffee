@@ -7,6 +7,7 @@ describe 'FindView', ->
   [editor, findView] = []
 
   beforeEach ->
+    spyOn(shell, 'beep')
     window.rootView = new RootView()
     project.setPath(path.join(__dirname, 'fixtures'))
     rootView.open('sample.js')
@@ -87,7 +88,6 @@ describe 'FindView', ->
 
     it "doesn't change the selection, beeps if there are no matches and keeps focus on the find view", ->
       editor.setCursorBufferPosition([2,0])
-      spyOn(shell, 'beep')
       findView.findEditor.setText 'notinthefilebro'
       findView.findEditor.focus()
       findView.trigger 'core:confirm'
@@ -231,7 +231,6 @@ describe 'FindView', ->
 
       it "does not beep if no matches were found", ->
         editor.setCursorBufferPosition([2,0])
-        spyOn(shell, 'beep')
         findView.findEditor.setText 'notinthefilebro'
         findView.trigger 'core:confirm'
         shell.beep.reset()
