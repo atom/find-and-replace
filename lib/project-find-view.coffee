@@ -11,11 +11,10 @@ class ProjectFindView extends View
   @content: ->
     @div tabIndex: -1, class: 'project-find tool-panel panel-bottom padded', =>
 
-      @div outlet: 'loadingMessage', class: 'loading loading-spinner-small block pull-center'
-
       @div outlet: 'previewBlock', class: 'preview-block inset-panel block', =>
         @div class: 'panel-heading', =>
-          @span outlet: 'previewCount', class: 'preview-count'
+          @span outlet: 'previewCount', class: 'preview-count inline-block'
+          @div outlet: 'loadingMessage', class: 'loading loading-spinner-tiny inline-block'
         @subview 'resultsView', new ResultsView
 
       @ul outlet: 'errorMessages', class: 'error-messages block'
