@@ -6,7 +6,7 @@ class ResultView extends View
   @content: (filePath, matches) ->
     iconClass = if fs.isReadmePath(filePath) then 'icon-book' else 'icon-file-text'
 
-    @li class: 'path list-nested-item', 'data-path': _.escape(filePath), =>
+    @li class: 'path list-nested-item', 'data-path': _.escapeAttribute(filePath), =>
       @div outlet: 'pathDetails', class: 'path-details list-item', =>
         @span class: 'disclosure-arrow'
         @span class: iconClass + ' icon'

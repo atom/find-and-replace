@@ -128,5 +128,5 @@ class ResultsView extends ScrollView
     @find('.path:first').addClass('selected')
 
   getResultView: (filePath) ->
-    el = @find("[data-path=\"#{_.escape(filePath)}\"]")
+    el = @find("[data-path=\"#{_.escapeAttribute(filePath)}\"]")
     if el.length then el.view() else null
