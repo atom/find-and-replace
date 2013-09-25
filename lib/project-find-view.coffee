@@ -111,18 +111,18 @@ class ProjectFindView extends View
   confirm: ->
     return if @findEditor.getText().length == 0
 
+    @clearResults()
     @loadingMessage.show()
     @previewBlock.hide()
     @errorMessages.empty()
     @findHistory.store()
 
     deferred = @search()
+    console.time("search")
     deferred.done =>
+      console.timeEnd("search")
       @loadingMessage.hide()
-      if @results.length > 0
-        @resultsView.focus()
-      else
-        @previewCount.text("No matches found")
+      @previewCount.text(@getResultCountText())
 
     deferred
 
@@ -131,17 +131,26 @@ class ProjectFindView extends View
     @results = []
     paths = (path.trim() for path in @pathsEditor.getText().trim().split(',') when path)
 
-    @previewBlock.show()
     deferred = $.Deferred()
+    @previewBlock.show()
+    @previewCount.show()
+    @resultsView.focus()
+
     promise = project.scan regex, {paths}, (result) =>
       @results.push result
       @resultsView.addResult(result)
-      @previewCount.text("#{_.pluralize(@resultsView.getMatchCount(), 'match', 'matches')} in #{_.pluralize(@resultsView.getPathCount(), 'file')}").show()
+      @previewCount.text(@getResultCountText()) if @results.length % 250 == 0 or @results.lenght - 1
 
     promise.done ->
       deferred.resolve()
 
     deferred.promise()
+
+  getResultCountText: ->
+    if @results.length > 0
+      "#{_.pluralize(@resultsView.getMatchCount(), 'match', 'matches')} in #{_.pluralize(@resultsView.getPathCount(), 'file')}"
+    else
+      "No matches found"
 
   getRegex: ->
     flags = 'g'
