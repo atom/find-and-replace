@@ -13,7 +13,6 @@ describe 'ResultsView', ->
     spy = spyOn(projectFindView, 'confirm').andCallFake ->
       searchPromise = spy.originalValue.call(projectFindView)
 
-
     rootView.trigger 'project-find:show'
 
   describe "when list is scrollable", ->
