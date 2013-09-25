@@ -3,7 +3,7 @@ MatchView = require './match-view'
 
 module.exports =
 class ResultView extends View
-  @content: ({filePath, matches}) ->
+  @content: (filePath, matches) ->
     iconClass = if fs.isReadmePath(filePath) then 'icon-book' else 'icon-file-text'
 
     @li class: 'path list-nested-item', =>
@@ -14,7 +14,7 @@ class ResultView extends View
         @span outlet: 'description', class: 'path-match-number'
       @ul outlet: 'matches', class: 'matches list-tree', =>
 
-  initialize: ({@filePath, matches}) ->
+  initialize: (@filePath, matches) ->
     @description.text("(#{matches.length})")
     for match in matches
       @matches.append new MatchView({@filePath, match})

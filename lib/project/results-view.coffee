@@ -9,7 +9,6 @@ class ResultsView extends ScrollView
   initialize: ->
     super
 
-    @results = []
     @pixelOverdraw = 100
     @lastRenderedResultIndex = 0
 
@@ -31,22 +30,26 @@ class ResultsView extends ScrollView
       view.addClass('selected')
       view.confirm()
 
+  setModel: (@model) ->
+    @model.on 'result-added', @addResult
+
   beforeRemove: ->
     @clear()
 
   hasResults: ->
-    @results.length > 0
+    @model.getResultCount() > 0
 
-  addResult: (result) ->
-    @results.push(result)
+  addResult: (filePath, matches) =>
     @renderResults()
-    if @results.length == 1
+    if @getPathCount() == 1
       @find('.search-result:first').addClass('selected')
 
   renderResults: ({renderAll}={}) ->
-    for result in @results[@lastRenderedResultIndex..]
+    paths = @model.getPaths()
+    for filePath in paths[@lastRenderedResultIndex..]
+      result = @model.getResult(filePath)
       break if not renderAll and not @shouldRenderMoreResults()
-      resultView = new ResultView(result)
+      resultView = new ResultView(filePath, result)
       @append(resultView)
       @lastRenderedResultIndex++
 
@@ -82,13 +85,13 @@ class ResultsView extends ScrollView
       @scrollTo(previousView)
 
   getPathCount: ->
-    @results.length
+    @model.getPathCount()
 
   getMatchCount: ->
-    _.reduce @results, ((count, result) -> count + result.matches.length), 0
+    @model.getMatchCount()
 
   clear: ->
-    @results = []
+    @model.clear()
     @lastRenderedResultIndex = 0
     @empty()
 

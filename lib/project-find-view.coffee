@@ -4,6 +4,7 @@ shell = require 'shell'
 
 History = require './history'
 ResultsView = require './project/results-view'
+ResultsModel = require './project/results-model'
 
 module.exports =
 class ProjectFindView extends View
@@ -40,21 +41,24 @@ class ProjectFindView extends View
         @label class: 'text-subtle', 'In'
         @subview 'pathsEditor', new Editor(mini: true)
 
-  initialize: ({attached, @useRegex, @caseInsensitive, findHistory, pathsHistory}={})->
+  initialize: ({attached, modelState, findHistory, pathsHistory}={})->
+    @model = new ResultsModel(modelState)
+
     @handleEvents()
     @attach() if attached
     @findHistory = new History(@findEditor, findHistory)
     @pathsHistory = new History(@pathsEditor, pathsHistory)
 
-    @regexOptionButton.addClass('selected') if @useRegex
-    @caseOptionButton.addClass('selected') if @caseInsensitive
+    @resultsView.setModel(@model)
+
+    @regexOptionButton.addClass('selected') if @model.useRegex
+    @caseOptionButton.addClass('selected') if @model.caseSensitive
 
   serialize: ->
     attached: @hasParent()
-    useRegex: @useRegex
-    caseInsensitive: @caseInsensitive
     findHistory: @findHistory.serialize()
     pathsHistory: @pathsHistory.serialize()
+    modelState: @model.serialize()
 
   handleEvents: ->
     rootView.command 'project-find:show', => @attach()
@@ -74,6 +78,9 @@ class ProjectFindView extends View
 
     @findEditor.getBuffer().on 'changed', => @clearResults()
 
+    @model.on 'result-added', =>
+      @previewCount.text(@getResultCountText()) if @model.getPathCount() % 250 == 0 or @model.getPathCount()
+
   attach: ->
     rootView.vertical.append(this)
     @findEditor.focus()
@@ -84,13 +91,13 @@ class ProjectFindView extends View
     super()
 
   toggleRegexOption: ->
-    @useRegex = not @useRegex
-    if @useRegex then @regexOptionButton.addClass('selected') else @regexOptionButton.removeClass('selected')
+    @model.toggleUseRegex()
+    if @model.useRegex then @regexOptionButton.addClass('selected') else @regexOptionButton.removeClass('selected')
     @confirm()
 
   toggleCaseOption: ->
-    @caseInsensitive = not @caseInsensitive
-    if @caseInsensitive then @caseOptionButton.addClass('selected') else @caseOptionButton.removeClass('selected')
+    @model.toggleCaseSensitive()
+    if @model.caseSensitive then @caseOptionButton.addClass('selected') else @caseOptionButton.removeClass('selected')
     @confirm()
 
   focusNextElement: (direction) ->
@@ -105,7 +112,6 @@ class ProjectFindView extends View
     elements[focusedIndex].selectAll() if elements[focusedIndex].selectAll
 
   clearResults: ->
-    @results = []
     @resultsView.clear()
     @previewBlock.hide()
 
@@ -128,56 +134,37 @@ class ProjectFindView extends View
     deferred
 
   search: ->
-    regex = @getRegex()
-    @results = []
     paths = (path.trim() for path in @pathsEditor.getText().trim().split(',') when path)
 
-    deferred = $.Deferred()
     @previewBlock.show()
     @previewCount.show()
     @resultsView.focus()
 
-    promise = project.scan regex, {paths}, (result) =>
-      @results.push result
-      @resultsView.addResult(result)
-      @previewCount.text(@getResultCountText()) if @results.length % 250 == 0 or @results.lenght - 1
-
-    promise.done ->
-      deferred.resolve()
-
-    deferred.promise()
+    @model.search(@findEditor.getText(), paths)
 
   getResultCountText: ->
-    if @results.length > 0
+    if @resultsView.getPathCount() > 0
       "#{_.pluralize(@resultsView.getMatchCount(), 'match', 'matches')} in #{_.pluralize(@resultsView.getPathCount(), 'file')}"
     else
       "No matches found"
 
-  getRegex: ->
-    flags = 'g'
-    flags += 'i' unless @caseInsensitive
-    text = @findEditor.getText()
-
-    if @useRegex
-      new RegExp(text, flags)
-    else
-      new RegExp(_.escapeRegExp(text), flags)
-
   replaceAll: ->
-    unless @results?.length
+    unless @model.getPathCount()
       shell.beep()
       @previewBlock.show()
       @previewCount.text("Nothing replaced").show()
     else
-      regex = @getRegex()
+      regex = @model.getRegex(@findEditor.getText())
       replacementText = @replaceEditor.getText()
       pathsReplaced = {}
       replacementsCount = 0
-      for result in @results
-        continue if pathsReplaced[result.filePath]
+      for filePath in @model.getPaths()
+        continue if pathsReplaced[filePath]
 
-        replacementsCount += result.matches.length
-        buffer = project.bufferForPath(result.filePath)
+        result = @model.getResult(filePath)
+
+        replacementsCount += result.length
+        buffer = project.bufferForPath(filePath)
         pathsReplaced[buffer.getPath()] = true
 
         newText = buffer.getText().replace(regex, replacementText)

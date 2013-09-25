@@ -43,6 +43,9 @@ describe 'ResultsModel', ->
 
         result = resultsModel.getResult(editSession.getPath())
         expect(result.length).toBe 6
+        expect(resultsModel.getPathCount()).toBe 1
+        expect(resultsModel.getMatchCount()).toBe 6
+        expect(resultsModel.getPaths()).toEqual [editSession.getPath()]
 
         # updates when we change the buffer
         editSession.setText('there are some items in here')
@@ -52,6 +55,9 @@ describe 'ResultsModel', ->
 
         result = resultsModel.getResult(editSession.getPath())
         expect(result.length).toBe 1
+        expect(resultsModel.getPathCount()).toBe 1
+        expect(resultsModel.getMatchCount()).toBe 1
+        expect(resultsModel.getPaths()).toEqual [editSession.getPath()]
 
         expect(result[0].lineText).toBe 'there are some items in here'
 
@@ -65,6 +71,9 @@ describe 'ResultsModel', ->
         result = resultsModel.getResult(editSession.getPath())
         expect(result).not.toBeDefined()
 
+        expect(resultsModel.getPathCount()).toBe 0
+        expect(resultsModel.getMatchCount()).toBe 0
+
         # after clear, contents modified is not called
         resultsModel.clear()
         spyOn(editSession, 'scan').andCallThrough()
@@ -73,3 +82,6 @@ describe 'ResultsModel', ->
         editSession.buffer.trigger('contents-modified')
 
         expect(editSession.scan).not.toHaveBeenCalled()
+
+        expect(resultsModel.getPathCount()).toBe 0
+        expect(resultsModel.getMatchCount()).toBe 0
