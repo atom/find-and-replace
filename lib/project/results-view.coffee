@@ -25,10 +25,12 @@ class ResultsView extends ScrollView
     @on 'core:confirm', =>
       @find('.selected').view?().confirm?()
 
-    @on 'mousedown', (e) =>
+    @on 'mousedown', '.match-result, .path', (e) =>
       @find('.selected').removeClass('selected')
-      console.log e
-      # @addClass('selected')
+
+      if view = $(e.srcElement).view?()
+        view.addClass('selected')
+        view.confirm()
 
   beforeRemove: ->
     @clear()
