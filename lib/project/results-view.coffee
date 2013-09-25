@@ -84,7 +84,7 @@ class ResultsView extends ScrollView
     previousView = selectedView.prev().view()
 
     if selectedView instanceof ResultView
-      previousView = previousView.find('.search-result:last').view()
+      previousView = previousView?.find('.search-result:last').view()
     else
       previousView ?= selectedView.closest('.path').view()
 
