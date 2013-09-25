@@ -23,6 +23,7 @@ class ResultsView extends ScrollView
 
     @on 'core:confirm', =>
       @find('.selected').view?().confirm?()
+      false
 
     @on 'mousedown', '.match-result, .path', (e) =>
       @find('.selected').removeClass('selected')
