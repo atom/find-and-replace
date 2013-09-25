@@ -22,9 +22,11 @@ class ResultsModel
     @regex = null
     @results = {}
     @paths = []
+    @active = false
     @trigger('cleared')
 
   search: (pattern, paths)->
+    @active = true
     @regex = @getRegex(pattern)
     promise = project.scan @regex, {paths}, (result) =>
       @setResult(result.filePath, result.matches)
@@ -87,7 +89,7 @@ class ResultsModel
       new RegExp(_.escapeRegExp(pattern), flags)
 
   onContentsModified: (editSession) =>
-    return unless @regex
+    return unless @active
 
     matches = []
     editSession.scan @regex, (match) ->
