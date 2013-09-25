@@ -20,17 +20,16 @@ class ResultsView extends ScrollView
       @selectPreviousResult()
 
     @on 'scroll', =>
-      @renderResults() if @scrollBottom() >= @prop('scrollHeight')
+      @renderResults() if @shouldRenderMoreResults()
 
     @on 'core:confirm', =>
       @find('.selected').view?().confirm?()
 
     @on 'mousedown', '.match-result, .path', (e) =>
       @find('.selected').removeClass('selected')
-
-      if view = $(e.srcElement).view?()
-        view.addClass('selected')
-        view.confirm()
+      view = $(e.srcElement).view()
+      view.addClass('selected')
+      view.confirm()
 
   beforeRemove: ->
     @clear()
@@ -45,18 +44,20 @@ class ResultsView extends ScrollView
       @find('.search-result:first').addClass('selected')
 
   renderResults: ({renderAll}={}) ->
-    renderAll ?= false
     for result in @results[@lastRenderedResultIndex..]
-      break if not renderAll and @prop('scrollHeight') > @height() + @pixelOverdraw
+      break if not renderAll and not @shouldRenderMoreResults()
       resultView = new ResultView(result)
       @append(resultView)
       @lastRenderedResultIndex++
+
+  shouldRenderMoreResults: ->
+    @prop('scrollHeight') <= @height() + @pixelOverdraw or @scrollBottom() + @pixelOverdraw >= @prop('scrollHeight')
 
   selectNextResult: ->
     selectedView = @find('.selected').view()
     nextView = selectedView.next().view()
 
-    if selectedView instanceof PathView
+    if selectedView instanceof ResultView
       nextView = selectedView.find('.search-result:first').view()
     else
       nextView ?= selectedView.closest('.path').next().view()
@@ -70,7 +71,7 @@ class ResultsView extends ScrollView
     selectedView = @find('.selected').view()
     previousView = selectedView.prev().view()
 
-    if selectedView instanceof PathView
+    if selectedView instanceof ResultView
       previousView = previousView.find('.search-result:last').view()
     else
       previousView ?= selectedView.closest('.path').view()

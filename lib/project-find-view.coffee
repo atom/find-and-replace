@@ -106,6 +106,7 @@ class ProjectFindView extends View
 
   clearResults: ->
     @results = []
+    @resultsView.clear()
     @previewBlock.hide()
 
   confirm: ->
