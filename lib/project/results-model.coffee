@@ -1,7 +1,7 @@
 {_, EventEmitter} = require 'atom'
 
 module.exports =
-class SearchResultsModel
+class ResultsModel
   _.extend @prototype, EventEmitter
 
   constructor: (state={}) ->

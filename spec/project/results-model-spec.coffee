@@ -3,12 +3,12 @@ path = require 'path'
 
 {fs, $, RootView} = require 'atom'
 
-SearchResultsModel = require '../../lib/project/search-results-model.coffee'
+ResultsModel = require '../../lib/project/results-model.coffee'
 
 # Default to 30 second promises
 waitsForPromise = (fn) -> window.waitsForPromise timeout: 30000, fn
 
-describe 'SearchResultsModel', ->
+describe 'ResultsModel', ->
   [editSession, searchPromise, resultsModel, searchPromise] = []
 
   beforeEach ->
@@ -20,7 +20,7 @@ describe 'SearchResultsModel', ->
     editor = rootView.getActiveView()
     editSession = editor.activeEditSession
 
-    resultsModel = new SearchResultsModel()
+    resultsModel = new ResultsModel()
 
   describe "searching for a pattern", ->
     beforeEach ->
