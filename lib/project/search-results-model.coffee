@@ -1,5 +1,6 @@
 {_, EventEmitter} = require 'atom'
 
+module.exports =
 class SearchResultsModel
   _.extend @prototype, EventEmitter
 
@@ -7,23 +8,18 @@ class SearchResultsModel
     @useRegex = state.useRegex ? false
     @inCurrentSelection = state.inCurrentSelection ? false
 
+    rootView.eachEditSession (editSession) =>
+      editSession.on 'contents-modified', => @onContentsModified(editSession)
+
     @clear()
-    rootView.eachEditSession(@subscribeToEditSession)
-
-  subscribeToEditSession: (editSession) =>
-    resultsModel = this
-    editSession.on 'contents-modified', ->
-      return unless resultsModel.regex
-
-      matches = []
-      promise = @scan resultsModel.regex, (match) ->
-        matches.push(match)
-
-      promise.done = =>
-        resultsModel.setResult(@getPath(), matches)
 
   serialize: ->
     {@useRegex, @inCurrentSelection}
+
+  clear: ->
+    @regex = null
+    @results = {}
+    @trigger('cleared')
 
   search: (pattern, paths)->
     @regex = @getRegex(pattern)
@@ -35,11 +31,6 @@ class SearchResultsModel
 
   toggleInSelection: ->
     @inSelection = not @inSelection
-
-  clear: ->
-    @regex = null
-    @results = {}
-    @trigger('cleared', filePath, matches)
 
   getResult: (filePath) ->
     @results[filePath]
@@ -67,3 +58,12 @@ class SearchResultsModel
       new RegExp(pattern, flags)
     else
       new RegExp(_.escapeRegExp(pattern), flags)
+
+  onContentsModified: (editSession) =>
+    return unless @regex
+
+    matches = []
+    editSession.scan @regex, (match) ->
+      matches.push(match)
+
+    @setResult(editSession.getPath(), matches)
