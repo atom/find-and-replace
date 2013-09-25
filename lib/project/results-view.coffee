@@ -55,7 +55,7 @@ class ResultsView extends ScrollView
     resultView.renderMatches(null) if resultView
 
   renderResults: ({renderAll}={}) ->
-    return unless @shouldRenderMoreResults()
+    return unless renderAll or @shouldRenderMoreResults()
 
     paths = @model.getPaths()
     for filePath in paths[@lastRenderedResultIndex..]
