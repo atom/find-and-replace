@@ -8,7 +8,7 @@ SearchResultsModel = require '../../lib/project/search-results-model.coffee'
 # Default to 30 second promises
 waitsForPromise = (fn) -> window.waitsForPromise timeout: 30000, fn
 
-fdescribe 'SearchResultsModel', ->
+describe 'SearchResultsModel', ->
   [editSession, searchPromise, resultsModel, searchPromise] = []
 
   beforeEach ->
