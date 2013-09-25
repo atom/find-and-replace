@@ -4,12 +4,11 @@ ResultView = require './result-view'
 module.exports =
 class ResultsView extends ScrollView
   @content: ->
-    @ol class: 'results-view list-tree', tabindex: -1
+    @ol class: 'results-view list-tree focusable-panel', tabindex: -1
 
   initialize: ->
     super
 
-    @results = []
     @pixelOverdraw = 100
     @lastRenderedResultIndex = 0
 
@@ -24,6 +23,7 @@ class ResultsView extends ScrollView
 
     @on 'core:confirm', =>
       @find('.selected').view?().confirm?()
+      false
 
     @on 'mousedown', '.match-result, .path', (e) =>
       @find('.selected').removeClass('selected')
@@ -31,24 +31,41 @@ class ResultsView extends ScrollView
       view.addClass('selected')
       view.confirm()
 
+  setModel: (@model) ->
+    @model.on 'result-added', @addResult
+    @model.on 'result-removed', @removeResult
+
   beforeRemove: ->
     @clear()
 
   hasResults: ->
-    @results.length > 0
+    @model.getResultCount() > 0
 
-  addResult: (result) ->
-    @results.push(result)
-    @renderResults()
-    if @results.length == 1
-      @find('.search-result:first').addClass('selected')
+  addResult: (filePath, matches) =>
+    resultView = @getResultView(filePath)
+
+    if resultView
+      resultView.renderMatches(matches)
+    else
+      @renderResults()
+      @find('.search-result:first').addClass('selected') if @getPathCount() == 1
+
+  removeResult: (filePath) =>
+    resultView = @getResultView(filePath)
+    resultView.renderMatches(null) if resultView
 
   renderResults: ({renderAll}={}) ->
-    for result in @results[@lastRenderedResultIndex..]
+    return unless @shouldRenderMoreResults()
+
+    paths = @model.getPaths()
+    for filePath in paths[@lastRenderedResultIndex..]
+      result = @model.getResult(filePath)
       break if not renderAll and not @shouldRenderMoreResults()
-      resultView = new ResultView(result)
+      resultView = new ResultView(filePath, result)
       @append(resultView)
       @lastRenderedResultIndex++
+
+    null # dont return an array
 
   shouldRenderMoreResults: ->
     @prop('scrollHeight') <= @height() + @pixelOverdraw or @scrollBottom() + @pixelOverdraw >= @prop('scrollHeight')
@@ -72,7 +89,7 @@ class ResultsView extends ScrollView
     previousView = selectedView.prev().view()
 
     if selectedView instanceof ResultView
-      previousView = previousView.find('.search-result:last').view()
+      previousView = previousView?.find('.search-result:last').view()
     else
       previousView ?= selectedView.closest('.path').view()
 
@@ -82,13 +99,13 @@ class ResultsView extends ScrollView
       @scrollTo(previousView)
 
   getPathCount: ->
-    @results.length
+    @model.getPathCount()
 
   getMatchCount: ->
-    _.reduce @results, ((count, result) -> count + result.matches.length), 0
+    @model.getMatchCount()
 
   clear: ->
-    @results = []
+    @model.clear()
     @lastRenderedResultIndex = 0
     @empty()
 
@@ -113,3 +130,7 @@ class ResultsView extends ScrollView
 
     @find('.selected').removeClass('selected')
     @find('.path:first').addClass('selected')
+
+  getResultView: (filePath) ->
+    el = @find("[data-path=\"#{_.escapeAttribute(filePath)}\"]")
+    if el.length then el.view() else null
