@@ -7,12 +7,13 @@ describe 'FindView', ->
   [editor, findView] = []
 
   beforeEach ->
+    spyOn(shell, 'beep')
     window.rootView = new RootView()
     project.setPath(path.join(__dirname, 'fixtures'))
     rootView.open('sample.js')
     rootView.attachToDom()
     editor = rootView.getActiveView()
-    pack = atom.activatePackage("find-and-replace")
+    pack = atom.activatePackage("find-and-replace", immediate: true)
     findView = pack.mainModule.findView
 
   describe "when find-and-replace:show is triggered", ->
@@ -48,7 +49,7 @@ describe 'FindView', ->
       findView.replaceAll()
 
       atom.deactivatePackage("find-and-replace")
-      pack = atom.activatePackage("find-and-replace")
+      pack = atom.activatePackage("find-and-replace", immediate: true)
       findView = pack.mainModule.findView
 
       findView.findEditor.trigger('core:move-up')
@@ -71,7 +72,7 @@ describe 'FindView', ->
       expect(findView.selectionOptionButton).toHaveClass 'selected'
 
       atom.deactivatePackage("find-and-replace")
-      pack = atom.activatePackage("find-and-replace")
+      pack = atom.activatePackage("find-and-replace", immediate: true)
       findView = pack.mainModule.findView
 
       expect(findView.caseOptionButton).toHaveClass 'selected'
@@ -87,7 +88,6 @@ describe 'FindView', ->
 
     it "doesn't change the selection, beeps if there are no matches and keeps focus on the find view", ->
       editor.setCursorBufferPosition([2,0])
-      spyOn(shell, 'beep')
       findView.findEditor.setText 'notinthefilebro'
       findView.findEditor.focus()
       findView.trigger 'core:confirm'
@@ -231,7 +231,6 @@ describe 'FindView', ->
 
       it "does not beep if no matches were found", ->
         editor.setCursorBufferPosition([2,0])
-        spyOn(shell, 'beep')
         findView.findEditor.setText 'notinthefilebro'
         findView.trigger 'core:confirm'
         shell.beep.reset()
