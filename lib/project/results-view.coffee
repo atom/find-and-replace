@@ -32,6 +32,7 @@ class ResultsView extends ScrollView
 
   setModel: (@model) ->
     @model.on 'result-added', @addResult
+    @model.on 'result-removed', @removeResult
 
   beforeRemove: ->
     @clear()
@@ -40,9 +41,17 @@ class ResultsView extends ScrollView
     @model.getResultCount() > 0
 
   addResult: (filePath, matches) =>
-    @renderResults()
-    if @getPathCount() == 1
-      @find('.search-result:first').addClass('selected')
+    resultView = @getResultView(filePath)
+
+    if resultView
+      resultView.renderMatches(matches)
+    else
+      @renderResults()
+      @find('.search-result:first').addClass('selected') if @getPathCount() == 1
+
+  removeResult: (filePath) =>
+    resultView = @getResultView(filePath)
+    resultView.renderMatches(null) if resultView
 
   renderResults: ({renderAll}={}) ->
     paths = @model.getPaths()
@@ -116,3 +125,7 @@ class ResultsView extends ScrollView
 
     @find('.selected').removeClass('selected')
     @find('.path:first').addClass('selected')
+
+  getResultView: (filePath) ->
+    el = @find("[data-path=\"#{_.escape(filePath)}\"]")
+    if el.length then el.view() else null

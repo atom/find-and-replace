@@ -180,6 +180,30 @@ describe 'ProjectFindView', ->
             expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(6)
             expect(projectFindView.previewCount.text()).toBe "6 matches in 1 file"
 
+        it "updates the results list when a buffer changes", ->
+          projectFindView.trigger 'core:confirm'
+          buffer = project.bufferForPath('sample.js')
+
+          waitsForPromise ->
+            searchPromise
+
+          runs ->
+            projectFindView.resultsView.scrollToBottom() # To load ALL the results
+            expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(13)
+            expect(projectFindView.previewCount.text()).toBe "13 matches in 2 files"
+
+            buffer.setText('there is one "items" in this file')
+            buffer.trigger('contents-modified')
+
+            expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(8)
+            expect(projectFindView.previewCount.text()).toBe "8 matches in 2 files"
+
+            buffer.setText('no matches in this file')
+            buffer.trigger('contents-modified')
+
+            expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(7)
+            expect(projectFindView.previewCount.text()).toBe "7 matches in 1 file"
+
       describe "when no results exist", ->
         beforeEach ->
           projectFindView.findEditor.setText('notintheprojectbro')

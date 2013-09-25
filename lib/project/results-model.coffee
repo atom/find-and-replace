@@ -26,8 +26,11 @@ class ResultsModel
 
   search: (pattern, paths)->
     @regex = @getRegex(pattern)
-    project.scan @regex, {paths}, (result) =>
+    promise = project.scan @regex, {paths}, (result) =>
       @setResult(result.filePath, result.matches)
+
+    promise.done => @trigger('finished-searching')
+    promise
 
   toggleUseRegex: ->
     @useRegex = not @useRegex
@@ -91,3 +94,4 @@ class ResultsModel
       matches.push(match)
 
     @setResult(editSession.getPath(), matches)
+    @trigger('finished-searching')

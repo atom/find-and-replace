@@ -78,8 +78,11 @@ class ProjectFindView extends View
 
     @findEditor.getBuffer().on 'changed', => @clearResults()
 
-    @model.on 'result-added', =>
-      @previewCount.text(@getResultCountText()) if @model.getPathCount() % 250 == 0 or @model.getPathCount()
+    @model.on 'result-added result-removed', =>
+      @previewCount.text(@getResultCountText()) if @model.getPathCount() % 250 == 0
+
+    @model.on 'finished-searching', =>
+      @previewCount.text(@getResultCountText())
 
   attach: ->
     rootView.vertical.append(this)
@@ -136,6 +139,7 @@ class ProjectFindView extends View
   search: ->
     paths = (path.trim() for path in @pathsEditor.getText().trim().split(',') when path)
 
+    @previewCount.text('Searching...')
     @previewBlock.show()
     @previewCount.show()
     @resultsView.focus()
