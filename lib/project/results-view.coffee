@@ -65,6 +65,8 @@ class ResultsView extends ScrollView
       @append(resultView)
       @lastRenderedResultIndex++
 
+    null # dont return an array
+
   shouldRenderMoreResults: ->
     @prop('scrollHeight') <= @height() + @pixelOverdraw or @scrollBottom() + @pixelOverdraw >= @prop('scrollHeight')
 
