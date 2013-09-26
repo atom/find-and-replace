@@ -150,9 +150,7 @@ class ProjectFindView extends View
     @findHistory.store()
 
     deferred = @search()
-    console.time("search")
     deferred.done =>
-      console.timeEnd("search")
       @loadingMessage.hide()
       @previewCount.text(@getResultCountText())
 
