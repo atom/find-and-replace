@@ -48,7 +48,7 @@ class ResultsView extends ScrollView
       resultView.renderMatches(matches)
     else
       @renderResults()
-      @find('.search-result:first').addClass('selected') if @getPathCount() == 1
+      @selectFirstResult() if @getPathCount() == 1
 
   removeResult: (filePath) =>
     resultView = @getResultView(filePath)
@@ -70,14 +70,14 @@ class ResultsView extends ScrollView
   shouldRenderMoreResults: ->
     @prop('scrollHeight') <= @height() + @pixelOverdraw or @scrollBottom() + @pixelOverdraw >= @prop('scrollHeight')
 
+  selectFirstResult: ->
+    @find('.search-result:first').addClass('selected')
+
   selectNextResult: ->
     selectedView = @find('.selected').view()
-    nextView = selectedView.next().view()
 
-    if selectedView instanceof ResultView
-      nextView = selectedView.find('.search-result:first').view()
-    else
-      nextView ?= selectedView.closest('.path').next().view()
+    nextView = selectedView.next().view()
+    nextView ?= selectedView.closest('.path').next().find('.search-result:first').view()
 
     if nextView?
       selectedView.removeClass('selected')
@@ -86,12 +86,9 @@ class ResultsView extends ScrollView
 
   selectPreviousResult: ->
     selectedView = @find('.selected').view()
-    previousView = selectedView.prev().view()
 
-    if selectedView instanceof ResultView
-      previousView = previousView?.find('.search-result:last').view()
-    else
-      previousView ?= selectedView.closest('.path').view()
+    previousView = selectedView.prev().view()
+    previousView ?= selectedView.closest('.path').prev().find('.search-result:last').view()
 
     if previousView?
       selectedView.removeClass('selected')

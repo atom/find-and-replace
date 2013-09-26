@@ -1,4 +1,4 @@
-{RootView} = require 'atom'
+{_, RootView} = require 'atom'
 
 # Default to 30 second promises
 waitsForPromise = (fn) -> window.waitsForPromise timeout: 30000, fn
@@ -53,3 +53,56 @@ describe 'ResultsView', ->
         previousScrollHeight = resultsView.prop('scrollHeight')
         resultsView.trigger 'core:move-to-bottom'
         expect(resultsView.find("li").length).toBe resultsView.getPathCount() + resultsView.getMatchCount()
+
+  fdescribe "arrowing through the list", ->
+    it "arrows through the list without selecting paths", ->
+      projectFindView.findEditor.setText('items')
+      projectFindView.trigger 'core:confirm'
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        lastSelectedItem = null
+
+        # moves down for 13 results
+        _.times 12, ->
+          resultsView.trigger 'core:move-down'
+
+          selectedItem = resultsView.find('.selected')
+
+          expect(selectedItem).toHaveClass('search-result')
+          expect(selectedItem[0]).not.toBe lastSelectedItem
+
+          lastSelectedItem = selectedItem[0]
+
+        # stays at the bottom
+        _.times 2, ->
+          resultsView.trigger 'core:move-down'
+
+          selectedItem = resultsView.find('.selected')
+
+          expect(selectedItem[0]).toBe lastSelectedItem
+
+          lastSelectedItem = selectedItem[0]
+
+        # moves up to the top
+        _.times 12, ->
+          resultsView.trigger 'core:move-up'
+
+          selectedItem = resultsView.find('.selected')
+
+          expect(selectedItem).toHaveClass('search-result')
+          expect(selectedItem[0]).not.toBe lastSelectedItem
+
+          lastSelectedItem = selectedItem[0]
+
+        # stays at the top
+        _.times 2, ->
+          resultsView.trigger 'core:move-up'
+
+          selectedItem = resultsView.find('.selected')
+
+          expect(selectedItem[0]).toBe lastSelectedItem
+
+          lastSelectedItem = selectedItem[0]
