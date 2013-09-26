@@ -106,7 +106,7 @@ class FindView extends View
 
   attach: =>
     @findResultsView.attach()
-    rootView.vertical.append(this)
+    rootView.vertical.find('.find-and-replace-container').append(this)
 
   detach: =>
     @findResultsView.detach()
