@@ -54,7 +54,7 @@ describe 'ResultsView', ->
         resultsView.trigger 'core:move-to-bottom'
         expect(resultsView.find("li").length).toBe resultsView.getPathCount() + resultsView.getMatchCount()
 
-  fdescribe "arrowing through the list", ->
+  describe "arrowing through the list", ->
     it "arrows through the list without selecting paths", ->
       projectFindView.findEditor.setText('items')
       projectFindView.trigger 'core:confirm'
