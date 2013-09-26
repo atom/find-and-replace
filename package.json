@@ -13,6 +13,9 @@
     "find-and-replace:replace-next",
     "find-and-replace:replace-all"
   ],
+  "devDependencies": {
+    "jasmine-focused": "0.14.0"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/atom/find-and-replace"
