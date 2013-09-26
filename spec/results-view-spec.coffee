@@ -1,3 +1,4 @@
+path = require 'path'
 {_, RootView} = require 'atom'
 path = require 'path'
 
@@ -11,10 +12,10 @@ describe 'ResultsView', ->
     window.rootView = new RootView()
     project.setPath(path.join(__dirname, 'fixtures'))
     rootView.attachToDom()
+    project.setPath(path.join(__dirname, 'fixtures'))
     pack = atom.activatePackage("find-and-replace", immediate: true)
     projectFindView = pack.mainModule.projectFindView
     resultsView = projectFindView.resultsView
-
     spy = spyOn(projectFindView, 'confirm').andCallFake ->
       searchPromise = spy.originalValue.call(projectFindView)
 
