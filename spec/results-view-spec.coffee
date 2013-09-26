@@ -1,4 +1,5 @@
 {_, RootView} = require 'atom'
+path = require 'path'
 
 # Default to 30 second promises
 waitsForPromise = (fn) -> window.waitsForPromise timeout: 30000, fn
@@ -8,6 +9,7 @@ describe 'ResultsView', ->
 
   beforeEach ->
     window.rootView = new RootView()
+    project.setPath(path.join(__dirname, 'fixtures'))
     rootView.attachToDom()
     pack = atom.activatePackage("find-and-replace", immediate: true)
     projectFindView = pack.mainModule.projectFindView
