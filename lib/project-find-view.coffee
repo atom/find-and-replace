@@ -100,7 +100,7 @@ class ProjectFindView extends View
       el.focus()
       el.selectAll() if el.selectAll
     else
-      rootView.vertical.append(this)
+      rootView.vertical.find('.find-and-replace-container').prepend(this)
       @findEditor.focus()
       @findEditor.selectAll()
 
