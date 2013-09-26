@@ -83,7 +83,7 @@ class ProjectFindView extends View
 
     self = this
     @findEditor.on 'focus', -> self.setLastFocusedElement(this)
-    @findEditor.on 'blur', -> -> self.setLastFocusedElement(this)
+    @findEditor.on 'blur', -> self.setLastFocusedElement(this)
     @replaceEditor.on 'focus', -> self.setLastFocusedElement(this)
     @replaceEditor.on 'blur', -> self.setLastFocusedElement(this)
     @pathsEditor.on 'focus', -> self.setLastFocusedElement(this)
