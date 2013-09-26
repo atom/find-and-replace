@@ -65,6 +65,10 @@ describe 'ResultsView', ->
       runs ->
         lastSelectedItem = null
 
+        expect(resultsView.find("li > ul > li")).toHaveLength(13)
+
+        resultsView.selectFirstResult()
+
         # moves down for 13 results
         _.times 12, ->
           resultsView.trigger 'core:move-down'
