@@ -14,7 +14,12 @@ class ProjectFindView extends View
       @div outlet: 'previewBlock', class: 'preview-block inset-panel block', =>
         @div class: 'panel-heading', =>
           @span outlet: 'previewCount', class: 'preview-count inline-block'
-          @div outlet: 'loadingMessage', class: 'loading loading-spinner-tiny inline-block'
+          @div outlet: 'loadingMessage', class: 'inline-block', =>
+            @div class: 'loading loading-spinner-tiny inline-block'
+            @div outlet: 'searchedCountBlock', class: 'inline-block', =>
+              @span outlet: 'searchedCount', class: 'searched-count'
+              @span ' paths searched'
+
         @subview 'resultsView', new ResultsView
 
       @ul outlet: 'errorMessages', class: 'error-messages block'
@@ -81,6 +86,10 @@ class ProjectFindView extends View
     @model.on 'finished-searching', =>
       @previewCount.text(@getResultCountText())
 
+    @model.on 'paths-searched', (numberOfPathsSearched) =>
+      if @showSearchedCountBlock
+        @searchedCount.text(numberOfPathsSearched)
+
     self = this
     @findEditor.on 'focus', -> self.setLastFocusedElement(this)
     @findEditor.on 'blur', -> self.setLastFocusedElement(this)
@@ -138,9 +147,6 @@ class ProjectFindView extends View
     return if @findEditor.getText().length == 0
 
     @clearResults()
-    @loadingMessage.show()
-    @previewBlock.hide()
-    @errorMessages.empty()
     @findHistory.store()
 
     deferred = @search()
@@ -155,10 +161,24 @@ class ProjectFindView extends View
   search: ->
     paths = (path.trim() for path in @pathsEditor.getText().trim().split(',') when path)
 
+    @loadingMessage.show()
+    @errorMessages.empty()
+
     @previewCount.text('Searching...')
+    @searchedCount.text('0')
+    @searchedCountBlock.hide()
+
     @previewBlock.show()
     @previewCount.show()
     @resultsView.focus()
+
+    # We'll only show the paths searched message after 500ms. It's too fast to
+    # see on short searches, and slows them down.
+    @showSearchedCountBlock = false
+    timeout = setTimeout =>
+      @searchedCountBlock.show()
+      @showSearchedCountBlock = true
+    , 500
 
     @model.search(@findEditor.getText(), paths)
 

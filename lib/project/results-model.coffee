@@ -28,7 +28,11 @@ class ResultsModel
   search: (pattern, paths)->
     @active = true
     @regex = @getRegex(pattern)
-    promise = project.scan @regex, {paths}, (result) =>
+
+    onPathsSearched = (numberOfPathsSearched) =>
+      @trigger('paths-searched', numberOfPathsSearched)
+
+    promise = project.scan @regex, {paths, onPathsSearched}, (result) =>
       @setResult(result.filePath, result.matches)
 
     promise.done => @trigger('finished-searching')
