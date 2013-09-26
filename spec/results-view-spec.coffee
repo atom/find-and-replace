@@ -106,3 +106,41 @@ describe 'ResultsView', ->
           expect(selectedItem[0]).toBe lastSelectedItem
 
           lastSelectedItem = selectedItem[0]
+
+    it "moves to the proper next search-result when a path is selected", ->
+      projectFindView.findEditor.setText('items')
+      projectFindView.trigger 'core:confirm'
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        resultsView.find('.selected').removeClass('selected')
+        resultsView.find('.path:eq(0)').addClass('selected')
+
+        resultsView.trigger 'core:move-up'
+        selectedItem = resultsView.find('.selected')
+        expect(selectedItem).toHaveClass('path') # it's the same path
+
+        resultsView.trigger 'core:move-down'
+
+        selectedItem = resultsView.find('.selected')
+        expect(selectedItem).toHaveClass('search-result')
+        expect(selectedItem[0]).toBe resultsView.find('.path:eq(0) .search-result:first')[0]
+
+    it "moves to the proper previous search-result when a path is selected", ->
+      projectFindView.findEditor.setText('items')
+      projectFindView.trigger 'core:confirm'
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        resultsView.find('.selected').removeClass('selected')
+        resultsView.find('.path:eq(1)').addClass('selected')
+
+        resultsView.trigger 'core:move-up'
+
+        selectedItem = resultsView.find('.selected')
+        expect(selectedItem).toHaveClass('search-result')
+        expect(selectedItem[0]).toBe resultsView.find('.path:eq(0) .search-result:last')[0]

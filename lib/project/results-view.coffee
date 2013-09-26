@@ -76,8 +76,11 @@ class ResultsView extends ScrollView
   selectNextResult: ->
     selectedView = @find('.selected').view()
 
-    nextView = selectedView.next().view()
-    nextView ?= selectedView.closest('.path').next().find('.search-result:first').view()
+    if selectedView instanceof ResultView
+      nextView = selectedView.find('.search-result:first').view()
+    else
+      nextView = selectedView.next().view()
+      nextView ?= selectedView.closest('.path').next().find('.search-result:first').view()
 
     if nextView?
       selectedView.removeClass('selected')
@@ -87,8 +90,11 @@ class ResultsView extends ScrollView
   selectPreviousResult: ->
     selectedView = @find('.selected').view()
 
-    previousView = selectedView.prev().view()
-    previousView ?= selectedView.closest('.path').prev().find('.search-result:last').view()
+    if selectedView instanceof ResultView
+      previousView = selectedView.prev().find('.search-result:last').view()
+    else
+      previousView = selectedView.prev().view()
+      previousView ?= selectedView.closest('.path').prev().find('.search-result:last').view()
 
     if previousView?
       selectedView.removeClass('selected')
