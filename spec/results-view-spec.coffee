@@ -6,7 +6,7 @@ describe 'ResultsView', ->
   beforeEach ->
     window.rootView = new RootView()
     rootView.attachToDom()
-    pack = atom.activatePackage("find-and-replace")
+    pack = atom.activatePackage("find-and-replace", immediate: true)
     projectFindView = pack.mainModule.projectFindView
     resultsView = projectFindView.resultsView
 

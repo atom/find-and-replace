@@ -12,7 +12,7 @@ describe 'ProjectFindView', ->
     rootView.open('sample.js')
     rootView.attachToDom()
     editor = rootView.getActiveView()
-    pack = atom.activatePackage("find-and-replace")
+    pack = atom.activatePackage("find-and-replace", immediate: true)
     projectFindView = pack.mainModule.projectFindView
 
     spy = spyOn(projectFindView, 'confirm').andCallFake ->
@@ -44,7 +44,7 @@ describe 'ProjectFindView', ->
         expect(projectFindView.hasParent()).toBeFalsy()
         editor.trigger 'project-find:show'
         atom.deactivatePackage("find-and-replace")
-        pack = atom.activatePackage("find-and-replace")
+        pack = atom.activatePackage("find-and-replace", immediate: true)
         projectFindView = pack.mainModule.projectFindView
 
         expect(projectFindView.hasParent()).toBeTruthy()
@@ -60,7 +60,7 @@ describe 'ProjectFindView', ->
         expect(projectFindView.regexOptionButton).toHaveClass('selected')
 
         atom.deactivatePackage("find-and-replace")
-        pack = atom.activatePackage("find-and-replace")
+        pack = atom.activatePackage("find-and-replace", immediate: true)
         projectFindView = pack.mainModule.projectFindView
 
         expect(projectFindView.caseOptionButton).toHaveClass('selected')

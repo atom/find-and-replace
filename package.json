@@ -3,6 +3,16 @@
   "main": "./lib/find",
   "description": "Find and replace within buffers and across the project.",
   "version": "0.13.0",
+  "activationEvents": [
+    "project-find:show",
+    "find-and-replace:show",
+    "find-and-replace:find-next",
+    "find-and-replace:find-previous",
+    "find-and-replace:use-selection-as-find-pattern",
+    "find-and-replace:show-replace",
+    "find-and-replace:replace-next",
+    "find-and-replace:replace-all"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/atom/find-and-replace"
