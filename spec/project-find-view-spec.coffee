@@ -73,74 +73,45 @@ describe 'ProjectFindView', ->
       beforeEach ->
         editor.trigger 'project-find:show'
         projectFindView.findEditor.setText('i(\\w)ems+')
+        spyOn(project, 'scan').andCallFake -> new $.Deferred().done()
+
+      it "escapes regex patterns by default", ->
+        projectFindView.trigger 'core:confirm'
+        expect(project.scan.argsForCall[0][0]).toEqual /i\(\\w\)ems\+/gi
 
       it "toggles regex option via an event and finds files matching the pattern", ->
         expect(projectFindView.regexOptionButton).not.toHaveClass('selected')
         projectFindView.trigger 'project-find:toggle-regex-option'
         expect(projectFindView.regexOptionButton).toHaveClass('selected')
-
-        waitsForPromise ->
-          searchPromise
-
-        runs ->
-          projectFindView.resultsView.scrollToBottom() # To load ALL the results
-          expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(13)
-          expect(projectFindView.previewCount.text()).toBe "13 matches in 2 files"
+        expect(project.scan.argsForCall[0][0]).toEqual /i(\w)ems+/gi
 
       it "toggles regex option via a button and finds files matching the pattern", ->
         expect(projectFindView.regexOptionButton).not.toHaveClass('selected')
         projectFindView.regexOptionButton.click()
         expect(projectFindView.regexOptionButton).toHaveClass('selected')
-
-        waitsForPromise ->
-          searchPromise
-
-        runs ->
-          projectFindView.resultsView.scrollToBottom() # To load ALL the results
-          expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(13)
-          expect(projectFindView.previewCount.text()).toBe "13 matches in 2 files"
+        expect(project.scan.argsForCall[0][0]).toEqual /i(\w)ems+/gi
 
     describe "case sensitivity", ->
       beforeEach ->
         editor.trigger 'project-find:show'
+        spyOn(project, 'scan').andCallFake -> new $.Deferred().done()
+        projectFindView.findEditor.setText('ITEMS')
 
       it "runs a case insensitive search by default", ->
-        projectFindView.findEditor.setText('ITEMS')
         projectFindView.trigger 'core:confirm'
-
-        waitsForPromise ->
-          searchPromise
-
-        runs ->
-          projectFindView.resultsView.scrollToBottom() # To load ALL the results
-          expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(13)
-          expect(projectFindView.previewCount.text()).toBe "13 matches in 2 files"
+        expect(project.scan.argsForCall[0][0]).toEqual /ITEMS/gi
 
       it "toggles case sensitive option via an event and finds files matching the pattern", ->
-        projectFindView.findEditor.setText('C')
         expect(projectFindView.caseOptionButton).not.toHaveClass('selected')
         projectFindView.trigger 'project-find:toggle-case-option'
         expect(projectFindView.caseOptionButton).toHaveClass('selected')
-
-        waitsForPromise ->
-          searchPromise
-
-        runs ->
-          expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(1)
-          expect(projectFindView.previewCount.text()).toBe "1 match in 1 file"
+        expect(project.scan.argsForCall[0][0]).toEqual /ITEMS/g
 
       it "toggles case sensitive option via a button and finds files matching the pattern", ->
-        projectFindView.findEditor.setText('C')
         expect(projectFindView.caseOptionButton).not.toHaveClass('selected')
         projectFindView.caseOptionButton.click()
         expect(projectFindView.caseOptionButton).toHaveClass('selected')
-
-        waitsForPromise ->
-          searchPromise
-
-        runs ->
-          expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(1)
-          expect(projectFindView.previewCount.text()).toBe "1 match in 1 file"
+        expect(project.scan.argsForCall[0][0]).toEqual /ITEMS/g
 
     describe "when core:confirm is triggered", ->
       beforeEach ->
@@ -169,19 +140,12 @@ describe 'ProjectFindView', ->
             expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(13)
             expect(projectFindView.previewCount.text()).toBe "13 matches in 2 files"
 
-        it "with a paths filter displays the results and no errors", ->
+        it "only searches paths matching text in the path filter", ->
+          spyOn(project, 'scan').andCallFake -> new $.Deferred().done()
           projectFindView.pathsEditor.setText('*.js')
           projectFindView.trigger 'core:confirm'
 
-          waitsForPromise ->
-            searchPromise
-
-          runs ->
-            expect(projectFindView.resultsView).toBeVisible()
-            projectFindView.resultsView.scrollToBottom() # To load ALL the results
-            expect(projectFindView.errorMessages).not.toBeVisible()
-            expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(6)
-            expect(projectFindView.previewCount.text()).toBe "6 matches in 1 file"
+          expect(project.scan.argsForCall[0][1]['paths']).toEqual ['*.js']
 
         it "updates the results list when a buffer changes", ->
           projectFindView.trigger 'core:confirm'
@@ -210,33 +174,23 @@ describe 'ProjectFindView', ->
       describe "when no results exist", ->
         beforeEach ->
           projectFindView.findEditor.setText('notintheprojectbro')
+          spyOn(project, 'scan').andCallFake -> new $.Deferred().done()
+
 
         it "displays no errors and no results", ->
           projectFindView.trigger 'core:confirm'
-
-          waitsForPromise ->
-            searchPromise
-
-          runs ->
-            expect(projectFindView.errorMessages).not.toBeVisible()
-            expect(projectFindView.resultsView).toBeVisible()
-            expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(0)
+          expect(projectFindView.errorMessages).not.toBeVisible()
+          expect(projectFindView.resultsView).toBeVisible()
+          expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(0)
 
     describe "history", ->
       beforeEach ->
         rootView.trigger 'project-find:show'
+        spyOn(project, 'scan').andCallFake -> new $.Deferred().done()
         projectFindView.findEditor.setText('sort')
         projectFindView.findEditor.trigger 'core:confirm'
-
-        waitsForPromise ->
-          searchPromise
-
-        runs ->
-          projectFindView.findEditor.setText('items')
-          projectFindView.findEditor.trigger 'core:confirm'
-
-        waitsForPromise ->
-          searchPromise
+        projectFindView.findEditor.setText('items')
+        projectFindView.findEditor.trigger 'core:confirm'
 
       it "can navigate the entire history stack", ->
         expect(projectFindView.findEditor.getText()).toEqual 'items'
