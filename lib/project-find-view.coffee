@@ -78,9 +78,6 @@ class ProjectFindView extends View
 
     @findEditor.getBuffer().on 'changed', => @clearResults()
 
-    @model.on 'result-added result-removed', =>
-      @previewCount.text(@getResultCountText()) if @model.getPathCount() % 250 == 0
-
     @model.on 'finished-searching', =>
       @previewCount.text(@getResultCountText())
 
