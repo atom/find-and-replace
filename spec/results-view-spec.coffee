@@ -1,5 +1,8 @@
 {RootView} = require 'atom'
 
+# Default to 30 second promises
+waitsForPromise = (fn) -> window.waitsForPromise timeout: 30000, fn
+
 describe 'ResultsView', ->
   [projectFindView, resultsView, searchPromise] = []
 
