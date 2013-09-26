@@ -1,4 +1,4 @@
-{RootView} = require 'atom'
+{_, RootView} = require 'atom'
 
 # Default to 30 second promises
 waitsForPromise = (fn) -> window.waitsForPromise timeout: 30000, fn
@@ -53,3 +53,94 @@ describe 'ResultsView', ->
         previousScrollHeight = resultsView.prop('scrollHeight')
         resultsView.trigger 'core:move-to-bottom'
         expect(resultsView.find("li").length).toBe resultsView.getPathCount() + resultsView.getMatchCount()
+
+  describe "arrowing through the list", ->
+    it "arrows through the list without selecting paths", ->
+      projectFindView.findEditor.setText('items')
+      projectFindView.trigger 'core:confirm'
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        lastSelectedItem = null
+
+        # moves down for 13 results
+        _.times 12, ->
+          resultsView.trigger 'core:move-down'
+
+          selectedItem = resultsView.find('.selected')
+
+          expect(selectedItem).toHaveClass('search-result')
+          expect(selectedItem[0]).not.toBe lastSelectedItem
+
+          lastSelectedItem = selectedItem[0]
+
+        # stays at the bottom
+        _.times 2, ->
+          resultsView.trigger 'core:move-down'
+
+          selectedItem = resultsView.find('.selected')
+
+          expect(selectedItem[0]).toBe lastSelectedItem
+
+          lastSelectedItem = selectedItem[0]
+
+        # moves up to the top
+        _.times 12, ->
+          resultsView.trigger 'core:move-up'
+
+          selectedItem = resultsView.find('.selected')
+
+          expect(selectedItem).toHaveClass('search-result')
+          expect(selectedItem[0]).not.toBe lastSelectedItem
+
+          lastSelectedItem = selectedItem[0]
+
+        # stays at the top
+        _.times 2, ->
+          resultsView.trigger 'core:move-up'
+
+          selectedItem = resultsView.find('.selected')
+
+          expect(selectedItem[0]).toBe lastSelectedItem
+
+          lastSelectedItem = selectedItem[0]
+
+    it "moves to the proper next search-result when a path is selected", ->
+      projectFindView.findEditor.setText('items')
+      projectFindView.trigger 'core:confirm'
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        resultsView.find('.selected').removeClass('selected')
+        resultsView.find('.path:eq(0)').addClass('selected')
+
+        resultsView.trigger 'core:move-up'
+        selectedItem = resultsView.find('.selected')
+        expect(selectedItem).toHaveClass('path') # it's the same path
+
+        resultsView.trigger 'core:move-down'
+
+        selectedItem = resultsView.find('.selected')
+        expect(selectedItem).toHaveClass('search-result')
+        expect(selectedItem[0]).toBe resultsView.find('.path:eq(0) .search-result:first')[0]
+
+    it "moves to the proper previous search-result when a path is selected", ->
+      projectFindView.findEditor.setText('items')
+      projectFindView.trigger 'core:confirm'
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        resultsView.find('.selected').removeClass('selected')
+        resultsView.find('.path:eq(1)').addClass('selected')
+
+        resultsView.trigger 'core:move-up'
+
+        selectedItem = resultsView.find('.selected')
+        expect(selectedItem).toHaveClass('search-result')
+        expect(selectedItem[0]).toBe resultsView.find('.path:eq(0) .search-result:last')[0]
