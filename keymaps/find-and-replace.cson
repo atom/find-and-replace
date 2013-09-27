@@ -1,10 +1,9 @@
 'body':
   'meta-F': 'project-find:show'
   'meta-f': 'find-and-replace:show'
-
-'.editor':
   'alt-meta-f': 'find-and-replace:show-replace'
 
+'.editor':
   'meta-g': 'find-and-replace:find-next'
   'meta-G': 'find-and-replace:find-previous'
 
