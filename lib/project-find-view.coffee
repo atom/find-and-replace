@@ -148,6 +148,7 @@ class ProjectFindView extends View
 
     @clearResults()
     @findHistory.store()
+    @pathsHistory.store()
 
     deferred = @search()
     deferred.done =>

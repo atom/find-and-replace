@@ -188,8 +188,10 @@ describe 'ProjectFindView', ->
         rootView.trigger 'project-find:show'
         spyOn(project, 'scan').andCallFake -> new $.Deferred().done()
         projectFindView.findEditor.setText('sort')
+        projectFindView.pathsEditor.setText('abc')
         projectFindView.findEditor.trigger 'core:confirm'
         projectFindView.findEditor.setText('items')
+        projectFindView.pathsEditor.setText('def')
         projectFindView.findEditor.trigger 'core:confirm'
 
       it "can navigate the entire history stack", ->
@@ -203,6 +205,17 @@ describe 'ProjectFindView', ->
 
         projectFindView.findEditor.trigger 'core:move-down'
         expect(projectFindView.findEditor.getText()).toEqual ''
+
+        expect(projectFindView.pathsEditor.getText()).toEqual 'def'
+
+        projectFindView.pathsEditor.trigger 'core:move-up'
+        expect(projectFindView.pathsEditor.getText()).toEqual 'abc'
+
+        projectFindView.pathsEditor.trigger 'core:move-down'
+        expect(projectFindView.pathsEditor.getText()).toEqual 'def'
+
+        projectFindView.pathsEditor.trigger 'core:move-down'
+        expect(projectFindView.pathsEditor.getText()).toEqual ''
 
   describe "replacing", ->
     [testDir, sampleJs, sampleCoffee] = []
