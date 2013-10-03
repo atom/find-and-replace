@@ -4,8 +4,10 @@ module.exports =
 class SearchResultView extends View
   @content: ({filePath, match}) ->
     range = Range.fromObject(match.range)
-    prefix = match.lineText[match.lineTextOffset...(match.lineTextOffset + range.start.column)]
-    suffix = match.lineText[(match.lineTextOffset + range.end.column)..]
+    matchStart = range.start.column - match.lineTextOffset
+    matchEnd = range.end.column - match.lineTextOffset
+    prefix = match.lineText[match.lineTextOffset...matchStart]
+    suffix = match.lineText[matchEnd..]
 
     @li class: 'search-result list-item', =>
       @span range.start.row + 1, class: 'line-number text-subtle'

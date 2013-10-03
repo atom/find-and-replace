@@ -21,6 +21,19 @@ describe 'ResultsView', ->
 
     rootView.trigger 'project-find:show'
 
+  describe "when the result is for a long line", ->
+    it "renders the context around the match", ->
+      projectFindView.findEditor.setText('ghijkl')
+      projectFindView.trigger 'core:confirm'
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        expect(resultsView.find('.preview').length).toBe 1
+        expect(resultsView.find('.preview').text()).toBe 'a b c d e f g h i j k l abcdefghijklmnopqrstuvwxyz'
+        expect(resultsView.find('.match').text()).toBe 'ghijkl'
+
   describe "when list is scrollable", ->
     it "adds more operations to the DOM when `scrollBottom` nears the `pixelOverdraw`", ->
       projectFindView.findEditor.setText(' ')
