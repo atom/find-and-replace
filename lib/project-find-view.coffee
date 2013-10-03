@@ -128,7 +128,7 @@ class ProjectFindView extends View
     @lastFocusedElement = $(element)
 
   focusNextElement: (direction) ->
-    elements = [@resultsView, @findEditor, @replaceEditor].filter (el) -> el.has(':visible').length > 0
+    elements = [@resultsView, @findEditor, @replaceEditor, @pathsEditor].filter (el) -> el.has(':visible').length > 0
     focusedElement = _.find elements, (el) -> el.has(':focus').length > 0 or el.is(':focus')
     focusedIndex = elements.indexOf focusedElement
 
