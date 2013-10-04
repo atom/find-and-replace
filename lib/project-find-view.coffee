@@ -104,7 +104,7 @@ class ProjectFindView extends View
     if @hasParent()
       el = @lastFocusedElement or @findEditor
       el.focus()
-      el.selectAll() if el.selectAll
+      el.selectAll?()
     else
       rootView.vertical.find('.find-and-replace-container').prepend(this)
       @findEditor.focus()
