@@ -187,10 +187,14 @@ describe 'ProjectFindView', ->
       beforeEach ->
         rootView.trigger 'project-find:show'
         spyOn(project, 'scan').andCallFake -> new $.Deferred().done()
+
         projectFindView.findEditor.setText('sort')
+        projectFindView.replaceEditor.setText('bort')
         projectFindView.pathsEditor.setText('abc')
         projectFindView.findEditor.trigger 'core:confirm'
+
         projectFindView.findEditor.setText('items')
+        projectFindView.replaceEditor.setText('eyetims')
         projectFindView.pathsEditor.setText('def')
         projectFindView.findEditor.trigger 'core:confirm'
 
@@ -216,6 +220,17 @@ describe 'ProjectFindView', ->
 
         projectFindView.pathsEditor.trigger 'core:move-down'
         expect(projectFindView.pathsEditor.getText()).toEqual ''
+
+        expect(projectFindView.replaceEditor.getText()).toEqual 'eyetims'
+
+        projectFindView.replaceEditor.trigger 'core:move-up'
+        expect(projectFindView.replaceEditor.getText()).toEqual 'bort'
+
+        projectFindView.replaceEditor.trigger 'core:move-down'
+        expect(projectFindView.replaceEditor.getText()).toEqual 'eyetims'
+
+        projectFindView.replaceEditor.trigger 'core:move-down'
+        expect(projectFindView.replaceEditor.getText()).toEqual ''
 
   describe "replacing", ->
     [testDir, sampleJs, sampleCoffee] = []

@@ -45,13 +45,14 @@ class ProjectFindView extends View
         @label class: 'text-subtle', 'In'
         @subview 'pathsEditor', new Editor(mini: true)
 
-  initialize: ({attached, modelState, findHistory, pathsHistory}={})->
+  initialize: ({attached, modelState, findHistory, replaceHistory, pathsHistory}={}) ->
     @model = new ResultsModel(modelState)
     @lastFocusedElement = null
 
     @handleEvents()
     @attach() if attached
     @findHistory = new History(@findEditor, findHistory)
+    @replaceHistory = new History(@replaceEditor, replaceHistory)
     @pathsHistory = new History(@pathsEditor, pathsHistory)
 
     @resultsView.setModel(@model)
@@ -62,6 +63,7 @@ class ProjectFindView extends View
   serialize: ->
     attached: @hasParent()
     findHistory: @findHistory.serialize()
+    replaceHistory: @replaceHistory.serialize()
     pathsHistory: @pathsHistory.serialize()
     modelState: @model.serialize()
 
@@ -148,6 +150,7 @@ class ProjectFindView extends View
 
     @clearResults()
     @findHistory.store()
+    @replaceHistory.store()
     @pathsHistory.store()
 
     deferred = @search()
