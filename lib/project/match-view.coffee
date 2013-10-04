@@ -1,12 +1,15 @@
 {View, Range} = require 'atom'
 
+LeadingWhitespace = /^\s+/
+removeLeadingWhitespace = (string) -> string.replace(LeadingWhitespace, '')
+
 module.exports =
 class SearchResultView extends View
   @content: ({filePath, match}) ->
     range = Range.fromObject(match.range)
     matchStart = range.start.column - match.lineTextOffset
     matchEnd = range.end.column - match.lineTextOffset
-    prefix = match.lineText[match.lineTextOffset...matchStart]
+    prefix = removeLeadingWhitespace(match.lineText[match.lineTextOffset...matchStart])
     suffix = match.lineText[matchEnd..]
 
     @li class: 'search-result list-item', =>
