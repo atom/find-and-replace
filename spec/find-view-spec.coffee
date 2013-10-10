@@ -155,7 +155,7 @@ describe 'FindView', ->
 
     describe "when the active pane item changes", ->
       describe "when a new edit session is activated", ->
-        ffit "updates the result view and selects the correct text", ->
+        it "updates the result view and selects the correct text", ->
           rootView.open('sample.coffee')
           editor = rootView.getActiveView()
           expect(findView.resultCounter.text()).toEqual('no results')
