@@ -22,5 +22,5 @@ class SearchResultView extends View
   initialize: ({@filePath, @match}) ->
 
   confirm: ->
-    editSession = rootView.open(@filePath)
-    editSession.setSelectedBufferRange(@match.range, autoscroll: true)
+    rootView.open(@filePath).done (editSession) =>
+      editSession.setSelectedBufferRange(@match.range, autoscroll: true)

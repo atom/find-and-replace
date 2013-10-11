@@ -10,7 +10,7 @@ describe 'FindView', ->
     spyOn(shell, 'beep')
     window.rootView = new RootView()
     project.setPath(path.join(__dirname, 'fixtures'))
-    rootView.open('sample.js')
+    rootView.openSync('sample.js')
     rootView.attachToDom()
     editor = rootView.getActiveView()
     pack = atom.activatePackage("find-and-replace", immediate: true)
@@ -156,7 +156,7 @@ describe 'FindView', ->
     describe "when the active pane item changes", ->
       describe "when a new edit session is activated", ->
         it "updates the result view and selects the correct text", ->
-          rootView.open('sample.coffee')
+          rootView.openSync('sample.coffee')
           editor = rootView.getActiveView()
           expect(findView.resultCounter.text()).toEqual('no results')
           expect(editor.getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
@@ -164,7 +164,7 @@ describe 'FindView', ->
         it "highlights the found text in the new edit session", ->
           findResultsView = editor.find('.search-results')
 
-          rootView.open('sample.coffee')
+          rootView.openSync('sample.coffee')
           expect(findResultsView.children()).toHaveLength 0
 
       describe "when all active pane items are closed", ->
@@ -189,18 +189,18 @@ describe 'FindView', ->
           project.unregisterOpener(anotherOpener)
 
         it "updates the result view", ->
-          rootView.open "another"
+          rootView.openSync "another"
           expect(findView.resultCounter.text()).toEqual('no results')
 
         it "removes all highlights", ->
           findResultsView = editor.find('.search-results')
 
-          rootView.open "another"
+          rootView.openSync "another"
           expect(findResultsView.children()).toHaveLength 0
 
       describe "when a new edit session is activated on a different pane", ->
         it "updates the result view and selects the correct text", ->
-          newEditor = editor.splitRight(project.open('sample.coffee'))
+          newEditor = editor.splitRight(project.openSync('sample.coffee'))
           expect(findView.resultCounter.text()).toEqual('no results')
           expect(newEditor.getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
 
@@ -212,7 +212,7 @@ describe 'FindView', ->
           findResultsView = editor.find('.search-results')
 
           expect(findResultsView.children()).toHaveLength 6
-          newEditor = editor.splitRight(project.open('sample.coffee'))
+          newEditor = editor.splitRight(project.openSync('sample.coffee'))
           expect(findResultsView.children()).toHaveLength 0
 
     describe "when the buffer contents change", ->

@@ -31,4 +31,4 @@ class ResultView extends View
     null
 
   confirm: ->
-    editSession = rootView.open(@filePath)
+    rootView.openSync(@filePath)
