@@ -2,6 +2,7 @@ shell = require 'shell'
 path = require 'path'
 
 {fs, $, RootView} = require 'atom'
+Q = require 'q'
 
 # Default to 30 second promises
 waitsForPromise = (fn) -> window.waitsForPromise timeout: 30000, fn
@@ -73,7 +74,7 @@ describe 'ProjectFindView', ->
       beforeEach ->
         editor.trigger 'project-find:show'
         projectFindView.findEditor.setText('i(\\w)ems+')
-        spyOn(project, 'scan').andCallFake -> new $.Deferred().done()
+        spyOn(project, 'scan').andCallFake -> Q()
 
       it "escapes regex patterns by default", ->
         projectFindView.trigger 'core:confirm'
@@ -94,7 +95,7 @@ describe 'ProjectFindView', ->
     describe "case sensitivity", ->
       beforeEach ->
         editor.trigger 'project-find:show'
-        spyOn(project, 'scan').andCallFake -> new $.Deferred().done()
+        spyOn(project, 'scan').andCallFake -> Q()
         projectFindView.findEditor.setText('ITEMS')
 
       it "runs a case insensitive search by default", ->
@@ -141,7 +142,7 @@ describe 'ProjectFindView', ->
             expect(projectFindView.previewCount.text()).toBe "13 matches in 2 files"
 
         it "only searches paths matching text in the path filter", ->
-          spyOn(project, 'scan').andCallFake -> new $.Deferred().done()
+          spyOn(project, 'scan').andCallFake -> Q()
           projectFindView.pathsEditor.setText('*.js')
           projectFindView.trigger 'core:confirm'
 
@@ -174,7 +175,7 @@ describe 'ProjectFindView', ->
       describe "when no results exist", ->
         beforeEach ->
           projectFindView.findEditor.setText('notintheprojectbro')
-          spyOn(project, 'scan').andCallFake -> new $.Deferred().done()
+          spyOn(project, 'scan').andCallFake -> Q()
 
 
         it "displays no errors and no results", ->
@@ -186,7 +187,7 @@ describe 'ProjectFindView', ->
     describe "history", ->
       beforeEach ->
         rootView.trigger 'project-find:show'
-        spyOn(project, 'scan').andCallFake -> new $.Deferred().done()
+        spyOn(project, 'scan').andCallFake -> Q()
 
         projectFindView.findEditor.setText('sort')
         projectFindView.replaceEditor.setText('bort')

@@ -14,7 +14,8 @@
     "find-and-replace:replace-all"
   ],
   "devDependencies": {
-    "jasmine-focused": "0.14.0"
+    "jasmine-focused": "0.14.0",
+    "q": "~0.9.7"
   },
   "repository": {
     "type": "git",
