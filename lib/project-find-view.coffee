@@ -206,7 +206,7 @@ class ProjectFindView extends View
         result = @model.getResult(filePath)
 
         replacementsCount += result.length
-        buffer = project.bufferForPath(filePath)
+        buffer = project.bufferForPathSync(filePath)
         pathsReplaced[buffer.getPath()] = true
 
         newText = buffer.getText().replace(regex, replacementText)

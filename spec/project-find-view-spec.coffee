@@ -149,7 +149,7 @@ describe 'ProjectFindView', ->
 
         it "updates the results list when a buffer changes", ->
           projectFindView.trigger 'core:confirm'
-          buffer = project.bufferForPath('sample.js')
+          buffer = project.bufferForPathSync('sample.js')
 
           waitsForPromise ->
             searchPromise
