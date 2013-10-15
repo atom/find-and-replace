@@ -1,8 +1,9 @@
-{_, EventEmitter} = require 'atom'
+{_} = require 'atom'
+{Emitter} = require 'emissary'
 
 module.exports =
 class FindModel
-  _.extend @prototype, EventEmitter
+  Emitter.includeInto(this)
 
   constructor: (state={}) ->
     @pattern = state.pattern ? ''
@@ -51,7 +52,7 @@ class FindModel
       @markers.splice(@markers.indexOf(marker), 1)
     @replacing = false
 
-    @trigger 'updated', _.clone(@markers)
+    @emit 'updated', _.clone(@markers)
 
   updateMarkers: ->
     if not @editSession? or not @pattern
@@ -81,7 +82,7 @@ class FindModel
     marker.destroy() for id, marker of markersToRemoveById
 
     @markers = updatedMarkers
-    @trigger 'updated', _.clone(@markers)
+    @emit 'updated', _.clone(@markers)
 
   findMarker: (range, markerClass) ->
     attributes = { class: markerClass, startPosition: range.start, endPosition: range.end }
@@ -95,7 +96,7 @@ class FindModel
     @valid = false
     marker.destroy() for marker in @markers ? []
     @markers = []
-    @trigger 'updated', _.clone(@markers)
+    @emit 'updated', _.clone(@markers)
 
   getEditSession: ->
     @editSession

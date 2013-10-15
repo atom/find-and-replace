@@ -1,8 +1,9 @@
-{_, Subscriber} = require 'atom'
+{_} = require 'atom'
+{Subscriber} = require 'emissary'
 
 module.exports =
 class MarkerView
-  _.extend @prototype, Subscriber
+  Subscriber.includeInto(this)
 
   constructor: ({@editor, @marker} = {}) ->
     @regions = []
