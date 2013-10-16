@@ -1,8 +1,9 @@
-{_, EventEmitter} = require 'atom'
+{_} = require 'atom'
+{Emitter} = require 'emissary'
 
 module.exports =
 class ResultsModel
-  _.extend @prototype, EventEmitter
+  Emitter.includeInto(this)
 
   constructor: (state={}) ->
     @useRegex = state.useRegex ? false
@@ -23,19 +24,19 @@ class ResultsModel
     @results = {}
     @paths = []
     @active = false
-    @trigger('cleared')
+    @emit('cleared')
 
   search: (pattern, paths)->
     @active = true
     @regex = @getRegex(pattern)
 
     onPathsSearched = (numberOfPathsSearched) =>
-      @trigger('paths-searched', numberOfPathsSearched)
+      @emit('paths-searched', numberOfPathsSearched)
 
     promise = project.scan @regex, {paths, onPathsSearched}, (result) =>
       @setResult(result.filePath, result.matches)
 
-    promise.done => @trigger('finished-searching')
+    promise.done => @emit('finished-searching')
     promise
 
   toggleUseRegex: ->
@@ -72,7 +73,7 @@ class ResultsModel
     @matchCount += matches.length
 
     @results[filePath] = matches
-    @trigger('result-added', filePath, matches)
+    @emit('result-added', filePath, matches)
 
   removeResult: (filePath) ->
     if @results[filePath]
@@ -81,7 +82,7 @@ class ResultsModel
 
       @paths = _.without(@paths, filePath)
       delete @results[filePath]
-      @trigger('result-removed', filePath)
+      @emit('result-removed', filePath)
 
   getRegex: (pattern) ->
     flags = 'g'
@@ -100,4 +101,4 @@ class ResultsModel
       matches.push(match)
 
     @setResult(editSession.getPath(), matches)
-    @trigger('finished-searching')
+    @emit('finished-searching')
