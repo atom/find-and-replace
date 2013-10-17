@@ -27,7 +27,7 @@ class ResultsView extends ScrollView
 
     @on 'mousedown', '.match-result, .path', (e) =>
       @find('.selected').removeClass('selected')
-      view = $(e.srcElement).view()
+      view = $(e.target).view()
       view.addClass('selected')
       view.confirm()
 
