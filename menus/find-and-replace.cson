@@ -1,0 +1,15 @@
+'menu': [
+  'label': 'Find'
+  'submenu': [
+    { 'label': 'Find in Buffer', 'command': 'find-and-replace:show'}
+    { 'label': 'Replace in Buffer', 'command': 'find-and-replace:show-replace'}
+    { 'type': 'separator' }
+    { 'label': 'Find in Project', 'command': 'project-find:show'}
+    { 'type': 'separator' }
+    { 'label': 'Find Next', 'command': 'find-and-replace:find-next'}
+    { 'label': 'Find Previous', 'command': 'find-and-replace:find-previous'}
+    { 'label': 'Replace Next', 'command': 'find-and-replace:replace-next'}
+    { 'label': 'Replace All', 'command': 'find-and-replace:replace-all'}
+    { 'type': 'separator' }
+  ]
+]
