@@ -161,11 +161,20 @@ describe 'FindView', ->
           expect(findView.resultCounter.text()).toEqual('no results')
           expect(editor.getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
 
-        it "highlights the found text in the new edit session", ->
+        it "doesnt initially highlight the found text in the new edit session", ->
           findResultsView = editor.find('.search-results')
 
           rootView.openSync('sample.coffee')
           expect(findResultsView.children()).toHaveLength 0
+
+        it "highlights the found text in the new edit session when find next is triggered", ->
+          findResultsView = editor.find('.search-results')
+          rootView.open('sample.coffee')
+          editor = rootView.getActiveView()
+
+          findView.trigger 'find-and-replace:find-next'
+          expect(findResultsView.children()).toHaveLength 7
+          expect(findResultsView.parent()[0]).toBe editor.underlayer[0]
 
       describe "when all active pane items are closed", ->
         it "updates the result count", ->

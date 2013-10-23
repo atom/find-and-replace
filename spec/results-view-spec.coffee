@@ -71,6 +71,31 @@ describe 'ResultsView', ->
         expect(resultsView.find("li").length).toBe resultsView.getPathCount() + resultsView.getMatchCount()
 
   describe "arrowing through the list", ->
+    describe "when nothing is selected", ->
+      beforeEach ->
+        projectFindView.findEditor.setText('items')
+        projectFindView.trigger 'core:confirm'
+
+      it "doesnt error when the user arrows down", ->
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          resultsView.find('.selected').removeClass('selected')
+          expect(resultsView.find('.selected')).not.toExist()
+          resultsView.trigger 'core:move-down'
+          expect(resultsView.find('.selected')).toExist()
+
+      it "doesnt error when the user arrows up", ->
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          resultsView.find('.selected').removeClass('selected')
+          expect(resultsView.find('.selected')).not.toExist()
+          resultsView.trigger 'core:move-up'
+          expect(resultsView.find('.selected')).toExist()
+
     it "arrows through the list without selecting paths", ->
       projectFindView.findEditor.setText('items')
       projectFindView.trigger 'core:confirm'

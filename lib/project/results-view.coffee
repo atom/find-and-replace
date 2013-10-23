@@ -75,6 +75,7 @@ class ResultsView extends ScrollView
 
   selectNextResult: ->
     selectedView = @find('.selected').view()
+    return @selectFirstResult() unless selectedView
 
     if selectedView instanceof ResultView
       nextView = selectedView.find('.search-result:first').view()
@@ -89,6 +90,7 @@ class ResultsView extends ScrollView
 
   selectPreviousResult: ->
     selectedView = @find('.selected').view()
+    return @selectFirstResult() unless selectedView
 
     if selectedView instanceof ResultView
       previousView = selectedView.prev().find('.search-result:last').view()
