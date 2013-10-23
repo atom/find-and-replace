@@ -69,7 +69,7 @@ class ProjectFindView extends View
 
   handleEvents: ->
     rootView.command 'project-find:show', => @attach()
-    @on 'core:cancel', => @detach()
+    rootView.on 'core:cancel', => @detach()
     @on 'core:confirm', => @confirm()
     @on 'find-and-replace:focus-next', => @focusNextElement(1)
     @on 'find-and-replace:focus-previous', => @focusNextElement(-1)

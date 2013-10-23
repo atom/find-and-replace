@@ -16,7 +16,6 @@
   'alt-meta-s': 'find-and-replace:toggle-selection-option'
 
 '.find-and-replace, .project-find, .project-find .results-view':
-  'escape': 'core:cancel'
   'tab': 'find-and-replace:focus-next'
   'shift-tab': 'find-and-replace:focus-previous'
 

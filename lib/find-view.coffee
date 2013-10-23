@@ -60,8 +60,8 @@ class FindView extends View
     @handleFindEvents()
     @handleReplaceEvents()
 
+    rootView.on 'core:cancel', @detach
     @on 'core:confirm', => @confirm()
-    @on 'core:cancel', @detach
     @on 'find-and-replace:focus-next', @toggleFocus
     @on 'find-and-replace:focus-previous', @toggleFocus
 
