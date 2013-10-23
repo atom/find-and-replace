@@ -169,7 +169,7 @@ describe 'FindView', ->
 
         it "highlights the found text in the new edit session when find next is triggered", ->
           findResultsView = editor.find('.search-results')
-          rootView.open('sample.coffee')
+          rootView.openSync('sample.coffee')
           editor = rootView.getActiveView()
 
           findView.trigger 'find-and-replace:find-next'
