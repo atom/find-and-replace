@@ -20,7 +20,7 @@ module.exports =
       @projectFindView.detach()
       @findView.showReplace()
 
-    rootView.on 'core:cancel', =>
+    rootView.on 'core:cancel core:close', =>
       @findView.detach()
       @projectFindView.detach()
 
