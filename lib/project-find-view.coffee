@@ -68,8 +68,6 @@ class ProjectFindView extends View
     modelState: @model.serialize()
 
   handleEvents: ->
-    rootView.command 'project-find:show', => @attach()
-    rootView.on 'core:cancel', => @detach()
     @on 'core:confirm', => @confirm()
     @on 'find-and-replace:focus-next', => @focusNextElement(1)
     @on 'find-and-replace:focus-previous', => @focusNextElement(-1)
@@ -108,7 +106,7 @@ class ProjectFindView extends View
       el.focus()
       el.selectAll?()
     else
-      rootView.vertical.find('.find-and-replace-container').prepend(this)
+      rootView.vertical.append(this)
       @findEditor.focus()
       @findEditor.selectAll()
 

@@ -60,7 +60,6 @@ class FindView extends View
     @handleFindEvents()
     @handleReplaceEvents()
 
-    rootView.on 'core:cancel', @detach
     @on 'core:confirm', => @confirm()
     @on 'find-and-replace:focus-next', @toggleFocus
     @on 'find-and-replace:focus-previous', @toggleFocus
@@ -76,7 +75,6 @@ class FindView extends View
     @findModel.on 'updated', @markersUpdated
 
   handleFindEvents: ->
-    rootView.command 'find-and-replace:show', @showFind
     @nextButton.on 'click', => @findNext()
     @previousButton.on 'click', => @findPrevious()
     rootView.command 'find-and-replace:find-next', @findNext
@@ -84,7 +82,6 @@ class FindView extends View
     rootView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
 
   handleReplaceEvents: ->
-    rootView.command 'find-and-replace:show-replace', @showReplace
     @replaceNextButton.on 'click', @replaceNext
     @replaceAllButton.on 'click', @replaceAll
     rootView.command 'find-and-replace:replace-next', @replaceNext
@@ -107,7 +104,7 @@ class FindView extends View
 
   attach: =>
     @findResultsView.attach()
-    rootView.vertical.find('.find-and-replace-container').append(this)
+    rootView.vertical.append(this)
 
   detach: =>
     @findResultsView.detach()

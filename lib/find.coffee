@@ -7,7 +7,22 @@ module.exports =
   activate: ({viewState, projectViewState}={}) ->
     @projectFindView = new ProjectFindView(projectViewState)
     @findView = new FindView(viewState)
-    rootView.vertical.append($$ -> @div class: 'find-and-replace-container')
+
+    rootView.command 'project-find:show', =>
+      @findView.detach()
+      @projectFindView.attach()
+
+    rootView.command 'find-and-replace:show', =>
+      @projectFindView.detach()
+      @findView.showFind()
+
+    rootView.command 'find-and-replace:show-replace', =>
+      @projectFindView.detach()
+      @findView.showReplace()
+
+    rootView.on 'core:cancel', =>
+      @findView.detach()
+      @projectFindView.detach()
 
   deactivate: ->
     @findView.remove()
