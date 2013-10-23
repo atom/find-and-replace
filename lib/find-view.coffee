@@ -101,6 +101,7 @@ class FindView extends View
   showReplace: =>
     @attach()
     @addClass('replace-mode').removeClass('find-mode')
+    @replaceEditor.redraw()
     @replaceEditor.focus()
     @replaceEditor.selectAll()
 
