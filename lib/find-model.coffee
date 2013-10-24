@@ -6,7 +6,7 @@ class FindModel
   Emitter.includeInto(this)
 
   constructor: (state={}) ->
-    @pattern = state.pattern ? ''
+    @pattern = ''
     @useRegex = state.useRegex ? false
     @inCurrentSelection = state.inCurrentSelection ? false
     @caseInsensitive = state.caseInsensitive ? false
@@ -25,9 +25,10 @@ class FindModel
       @editSession = paneItem
       @editSession.getBuffer().on "contents-modified.find", (args) =>
         @updateMarkers() unless @replacing
+      @updateMarkers()
 
   serialize: ->
-    {@pattern, @useRegex, @inCurrentSelection, @caseInsensitive}
+    {@useRegex, @inCurrentSelection, @caseInsensitive}
 
   update: (newParams={}) ->
     currentParams = {@pattern, @useRegex, @inCurrentSelection, @caseInsensitive}
