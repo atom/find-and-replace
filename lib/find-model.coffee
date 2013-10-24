@@ -25,6 +25,7 @@ class FindModel
       @editSession = paneItem
       @editSession.getBuffer().on "contents-modified.find", (args) =>
         @updateMarkers() unless @replacing
+      @updateMarkers()
 
   serialize: ->
     {@useRegex, @inCurrentSelection, @caseInsensitive}

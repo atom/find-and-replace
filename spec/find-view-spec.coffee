@@ -155,17 +155,17 @@ describe 'FindView', ->
 
     describe "when the active pane item changes", ->
       describe "when a new edit session is activated", ->
-        it "updates the result view and selects the correct text", ->
+        it "reruns the search on the new edit session", ->
           rootView.openSync('sample.coffee')
           editor = rootView.getActiveView()
-          expect(findView.resultCounter.text()).toEqual('no results')
+          expect(findView.resultCounter.text()).toEqual('7 found')
           expect(editor.getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
 
-        it "doesnt initially highlight the found text in the new edit session", ->
+        it "initially highlights the found text in the new edit session", ->
           findResultsView = editor.find('.search-results')
 
           rootView.openSync('sample.coffee')
-          expect(findResultsView.children()).toHaveLength 0
+          expect(findResultsView.children()).toHaveLength 7
 
         it "highlights the found text in the new edit session when find next is triggered", ->
           findResultsView = editor.find('.search-results')
@@ -208,9 +208,9 @@ describe 'FindView', ->
           expect(findResultsView.children()).toHaveLength 0
 
       describe "when a new edit session is activated on a different pane", ->
-        it "updates the result view and selects the correct text", ->
+        it "reruns the search on the new editSession", ->
           newEditor = editor.splitRight(project.openSync('sample.coffee'))
-          expect(findView.resultCounter.text()).toEqual('no results')
+          expect(findView.resultCounter.text()).toEqual('7 found')
           expect(newEditor.getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
 
           findView.trigger 'find-and-replace:find-next'
@@ -222,7 +222,7 @@ describe 'FindView', ->
 
           expect(findResultsView.children()).toHaveLength 6
           newEditor = editor.splitRight(project.openSync('sample.coffee'))
-          expect(findResultsView.children()).toHaveLength 0
+          expect(findResultsView.children()).toHaveLength 7
 
     describe "when the buffer contents change", ->
       it "re-runs the search", ->
