@@ -6,7 +6,7 @@ class FindModel
   Emitter.includeInto(this)
 
   constructor: (state={}) ->
-    @pattern = state.pattern ? ''
+    @pattern = ''
     @useRegex = state.useRegex ? false
     @inCurrentSelection = state.inCurrentSelection ? false
     @caseInsensitive = state.caseInsensitive ? false
@@ -27,7 +27,7 @@ class FindModel
         @updateMarkers() unless @replacing
 
   serialize: ->
-    {@pattern, @useRegex, @inCurrentSelection, @caseInsensitive}
+    {@useRegex, @inCurrentSelection, @caseInsensitive}
 
   update: (newParams={}) ->
     currentParams = {@pattern, @useRegex, @inCurrentSelection, @caseInsensitive}
