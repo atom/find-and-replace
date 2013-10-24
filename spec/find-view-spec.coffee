@@ -153,7 +153,7 @@ describe 'FindView', ->
       rootView.trigger 'find-and-replace:find-next'
       expect(editor.getSelectedBufferRange()).toEqual [[8,11],[8,15]]
 
-    it "does not highlights the found text in the when the find view is hidden", ->
+    it "does not highlight the found text when the find view is hidden", ->
       findView.trigger 'core:cancel'
       findView.trigger 'find-and-replace:find-next'
 
