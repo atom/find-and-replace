@@ -158,6 +158,7 @@ class FindView extends View
   markersUpdated: (@markers) =>
     @updateResultCounter()
     @updateOptionButtons()
+    @findResultsView.attach() if @isVisible()
     @findEditor.setText(@findModel.pattern)
     @findHistory.store()
     @replaceHistory.store()

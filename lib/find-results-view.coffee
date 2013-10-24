@@ -12,7 +12,7 @@ class FindResultsView extends View
     @subscribe @findModel, 'updated', (args...) => @markersUpdated(args...)
 
   attach: ->
-    @getEditor().underlayer.append(this)
+    @getEditor()?.underlayer.append(this)
 
   detach: ->
     super
@@ -43,7 +43,6 @@ class FindResultsView extends View
         delete @markerViews[id]
         markerView.remove()
 
-      @attach()
       editor.requestDisplayUpdate()
 
   destroyAllViews: ->
