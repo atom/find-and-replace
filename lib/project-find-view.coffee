@@ -5,6 +5,7 @@ shell = require 'shell'
 History = require './history'
 ResultsView = require './project/results-view'
 ResultsModel = require './project/results-model'
+ResultsPaneView = require './project/results-pane'
 
 module.exports =
 class ProjectFindView extends View
@@ -168,6 +169,7 @@ class ProjectFindView extends View
     @searchedCount.text('0')
     @searchedCountBlock.hide()
 
+    @showResultPane()
     @previewBlock.show()
     @previewCount.show()
     @resultsView.focus()
@@ -181,6 +183,24 @@ class ProjectFindView extends View
     , 500
 
     @model.search(@findEditor.getText(), paths)
+
+  showResultPane: ->
+    activePane = rootView.getActivePane()
+    {pane, view} = @getExistingResultsPane()
+
+    if view?
+      pane.showItem(view)
+    else if nextPane = activePane.getNextPane()
+      nextPane.showItem(new ResultsPaneView())
+    else
+      activePane.splitRight(new ResultsPaneView())
+    activePane.focus()
+
+  getExistingResultsPane: (editSession) ->
+    for pane in rootView.getPanes()
+      view = pane.itemForUri(ResultsPaneView.URI)
+      return {pane, view} if view?
+    {}
 
   getResultCountText: ->
     if @resultsView.getPathCount() > 0
