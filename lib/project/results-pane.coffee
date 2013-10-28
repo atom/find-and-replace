@@ -11,7 +11,7 @@ class ResultsPaneView extends ScrollView
     new ResultsPaneView(state)
 
   @content: ->
-    @div class: 'preview-panel', =>
+    @div class: 'preview-pane pane-item', =>
       @div class: 'panel-heading', =>
         @span outlet: 'previewCount', class: 'preview-count inline-block'
         @div outlet: 'loadingMessage', class: 'inline-block', =>
@@ -22,8 +22,9 @@ class ResultsPaneView extends ScrollView
 
       @subview 'resultsView', new ResultsView
 
-  initialize: (state) ->
+  initialize: (state, model) ->
     super
+    @resultsView.setModel(model) if model
 
   getPane: ->
     @parent('.item-views').parent('.pane').view()

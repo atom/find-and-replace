@@ -170,7 +170,6 @@ class ProjectFindView extends View
     @searchedCountBlock.hide()
 
     @showResultPane()
-    @previewBlock.show()
     @previewCount.show()
     @resultsView.focus()
 
@@ -191,9 +190,9 @@ class ProjectFindView extends View
     if view?
       pane.showItem(view)
     else if nextPane = activePane.getNextPane()
-      nextPane.showItem(new ResultsPaneView())
+      nextPane.showItem(new ResultsPaneView({}, @model))
     else
-      activePane.splitRight(new ResultsPaneView())
+      activePane.splitRight(new ResultsPaneView({}, @model))
     activePane.focus()
 
   getExistingResultsPane: (editSession) ->

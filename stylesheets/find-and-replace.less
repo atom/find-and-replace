@@ -142,9 +142,13 @@
       width: 100%;
     }
   }
+}
+
+.preview-pane {
+  display: -webkit-flex;
+  -webkit-flex-direction: column;
 
   .results-view {
-    max-height: 10 * @component-line-height + @component-padding * 2;
     overflow: auto;
     position: relative;
     padding: 0 @component-padding;
@@ -173,5 +177,4 @@
       font-family: monospace;
     }
   }
-
 }
