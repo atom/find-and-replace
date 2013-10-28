@@ -34,6 +34,7 @@ class ResultsView extends ScrollView
   setModel: (@model) ->
     @model.on 'result-added', @addResult
     @model.on 'result-removed', @removeResult
+    @model.on 'cleared', @clear
 
   beforeRemove: ->
     @clear()
@@ -109,8 +110,7 @@ class ResultsView extends ScrollView
   getMatchCount: ->
     @model.getMatchCount()
 
-  clear: ->
-    @model.clear()
+  clear: =>
     @lastRenderedResultIndex = 0
     @empty()
 

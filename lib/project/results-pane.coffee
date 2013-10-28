@@ -24,7 +24,7 @@ class ResultsPaneView extends ScrollView
 
   initialize: (state, model) ->
     super
-    @resultsView.setModel(model) if model
+    @setModel(model) if model
 
   getPane: ->
     @parent('.item-views').parent('.pane').view()
@@ -40,3 +40,43 @@ class ResultsPaneView extends ScrollView
 
   focus: ->
     @resultsView.focus()
+
+  setModel: (@model) ->
+    @resultsView.setModel(@model)
+    @handleEvents()
+
+  getResultCountText: ->
+    if @resultsView.getPathCount() > 0
+      "#{_.pluralize(@resultsView.getMatchCount(), 'match', 'matches')} in #{_.pluralize(@resultsView.getPathCount(), 'file')} for '#{@model.getPattern()}'"
+    else
+      "No matches found for '#{@model.getPattern()}'"
+
+  handleEvents: ->
+    @model.on 'search', (deferred) =>
+      @loadingMessage.show()
+
+      @previewCount.text('Searching...')
+      @searchedCount.text('0')
+      @searchedCountBlock.hide()
+
+      @previewCount.show()
+      @resultsView.focus()
+
+      # We'll only show the paths searched message after 500ms. It's too fast to
+      # see on short searches, and slows them down.
+      @showSearchedCountBlock = false
+      timeout = setTimeout =>
+        @searchedCountBlock.show()
+        @showSearchedCountBlock = true
+      , 500
+
+      deferred.done =>
+        @loadingMessage.hide()
+        @previewCount.text(@getResultCountText())
+
+    @model.on 'finished-searching', =>
+      @previewCount.text(@getResultCountText())
+
+    @model.on 'paths-searched', (numberOfPathsSearched) =>
+      if @showSearchedCountBlock
+        @searchedCount.text(numberOfPathsSearched)

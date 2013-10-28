@@ -27,6 +27,7 @@ class ResultsModel
     @emit('cleared')
 
   search: (pattern, paths)->
+    @clear()
     @active = true
     @regex = @getRegex(pattern)
 
@@ -37,6 +38,9 @@ class ResultsModel
       @setResult(result.filePath, result.matches)
 
     promise.done => @emit('finished-searching')
+
+    @emit('search', promise)
+
     promise
 
   toggleUseRegex: ->
@@ -50,6 +54,9 @@ class ResultsModel
 
   getMatchCount: ->
     @matchCount
+
+  getPattern: ->
+    @regex.source
 
   getPaths: (filePath) ->
     @paths
