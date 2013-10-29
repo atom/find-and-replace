@@ -9,10 +9,11 @@ describe 'ResultsView', ->
   [projectFindView, resultsView, searchPromise] = []
 
   getResultsView = ->
-    projectFindView.getExistingResultsPane().view.resultsView
+    resultsView = projectFindView.getExistingResultsPane().view.resultsView
 
   beforeEach ->
     window.rootView = new RootView()
+    rootView.height(1000)
     project.setPath(path.join(__dirname, 'fixtures'))
     rootView.attachToDom()
     pack = atom.activatePackage("find-and-replace", immediate: true)
@@ -63,6 +64,7 @@ describe 'ResultsView', ->
         expect(resultsView.find("li").length).toBeGreaterThan previousOperationCount
 
     it "renders all operations when core:move-to-bottom is triggered", ->
+      rootView.height(300)
       projectFindView.findEditor.setText('so')
       projectFindView.confirm()
 
@@ -106,6 +108,7 @@ describe 'ResultsView', ->
           expect(resultsView.find('.selected')).toExist()
 
     it "arrows through the list without selecting paths", ->
+      rootView.openSync('sample.js')
       projectFindView.findEditor.setText('items')
       projectFindView.trigger 'core:confirm'
 
@@ -117,12 +120,13 @@ describe 'ResultsView', ->
 
         lastSelectedItem = null
 
-        expect(resultsView.find("li > ul > li")).toHaveLength(13)
+        length = resultsView.find("li > ul > li").length
+        expect(length).toBe 13
 
         resultsView.selectFirstResult()
 
         # moves down for 13 results
-        _.times 12, ->
+        _.times length - 1, ->
           resultsView.trigger 'core:move-down'
 
           selectedItem = resultsView.find('.selected')
@@ -143,7 +147,7 @@ describe 'ResultsView', ->
           lastSelectedItem = selectedItem[0]
 
         # moves up to the top
-        _.times 12, ->
+        _.times length - 1, ->
           resultsView.trigger 'core:move-up'
 
           selectedItem = resultsView.find('.selected')
