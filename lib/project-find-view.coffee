@@ -133,7 +133,7 @@ class ProjectFindView extends View
     @model.search(@findEditor.getText(), paths)
 
   showResultPane: ->
-    rootView.open(ResultsPaneView.URI)
+    rootView.openSync(ResultsPaneView.URI)
 
   clearMessages: ->
     @errorMessages.hide().empty()
