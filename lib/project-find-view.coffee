@@ -35,8 +35,7 @@ class ProjectFindView extends View
         @label class: 'text-subtle', 'In'
         @subview 'pathsEditor', new Editor(mini: true)
 
-  initialize: ({attached, modelState, findHistory, replaceHistory, pathsHistory}={}) ->
-    @model = new ResultsModel(modelState)
+  initialize: (@model, {attached, modelState, findHistory, replaceHistory, pathsHistory}={}) ->
     @lastFocusedElement = null
 
     @handleEvents()
@@ -134,27 +133,7 @@ class ProjectFindView extends View
     @model.search(@findEditor.getText(), paths)
 
   showResultPane: ->
-    activePane = rootView.getActivePane()
-    {pane, view} = @getExistingResultsPane()
-
-    if view?
-      pane.showItem(view)
-    else if activePane and nextPane = activePane.getNextPane()
-      nextPane.showItem(new ResultsPaneView({}, @model))
-    else if activePane
-      activePane.splitRight(new ResultsPaneView({}, @model))
-    else
-      rootView.on 'uri-opened.open-without-a-pane', =>
-        activePane = rootView.getActivePane()
-        activePane.itemForUri(ResultsPaneView.URI).setModel(@model)
-        rootView.off '.open-without-a-pane'
-      rootView.open(ResultsPaneView.URI)
-
-  getExistingResultsPane: (editSession) ->
-    for pane in rootView.getPanes()
-      view = pane.itemForUri(ResultsPaneView.URI)
-      return {pane, view} if view?
-    {}
+    rootView.open(ResultsPaneView.URI)
 
   clearMessages: ->
     @errorMessages.hide().empty()

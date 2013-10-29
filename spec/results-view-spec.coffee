@@ -6,10 +6,10 @@ path = require 'path'
 waitsForPromise = (fn) -> window.waitsForPromise timeout: 30000, fn
 
 describe 'ResultsView', ->
-  [projectFindView, resultsView, searchPromise] = []
+  [pack, projectFindView, resultsView, searchPromise] = []
 
   getResultsView = ->
-    resultsView = projectFindView.getExistingResultsPane().view.resultsView
+    resultsView = pack.mainModule.getExistingResultsPane().resultsView
 
   beforeEach ->
     window.rootView = new RootView()

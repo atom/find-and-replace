@@ -8,7 +8,10 @@ Q = require 'q'
 waitsForPromise = (fn) -> window.waitsForPromise timeout: 30000, fn
 
 describe 'ProjectFindView', ->
-  [editor, projectFindView, searchPromise] = []
+  [pack, editor, projectFindView, searchPromise] = []
+
+  getExistingResultsPane = ->
+    pack.mainModule.getExistingResultsPane()
 
   beforeEach ->
     window.rootView = new RootView()
@@ -135,7 +138,7 @@ describe 'ProjectFindView', ->
             searchPromise
 
           runs ->
-            resultsPaneView = projectFindView.getExistingResultsPane().view
+            resultsPaneView = getExistingResultsPane()
             resultsView = resultsPaneView.resultsView
             expect(resultsView).toBeVisible()
             resultsView.scrollToBottom() # To load ALL the results
@@ -158,7 +161,7 @@ describe 'ProjectFindView', ->
             searchPromise
 
           runs ->
-            resultsPaneView = projectFindView.getExistingResultsPane().view
+            resultsPaneView = getExistingResultsPane()
             resultsView = resultsPaneView.resultsView
             resultsView.scrollToBottom() # To load ALL the results
             expect(resultsView.find("li > ul > li")).toHaveLength(13)
@@ -181,13 +184,17 @@ describe 'ProjectFindView', ->
           projectFindView.findEditor.setText('notintheprojectbro')
           spyOn(project, 'scan').andCallFake -> Q()
 
-
         it "displays no errors and no results", ->
           projectFindView.trigger 'core:confirm'
-          resultsView = projectFindView.getExistingResultsPane().view.resultsView
-          expect(projectFindView.errorMessages).not.toBeVisible()
-          expect(resultsView).toBeVisible()
-          expect(resultsView.find("li > ul > li")).toHaveLength(0)
+
+          waitsForPromise ->
+            searchPromise
+
+          runs ->
+            resultsView = getExistingResultsPane().resultsView
+            expect(projectFindView.errorMessages).not.toBeVisible()
+            expect(resultsView).toBeVisible()
+            expect(resultsView.find("li > ul > li")).toHaveLength(0)
 
     describe "history", ->
       beforeEach ->
@@ -323,7 +330,7 @@ describe 'ProjectFindView', ->
           projectFindView.trigger 'project-find:replace-all'
           expect(projectFindView.errorMessages).not.toBeVisible()
 
-          resultsPaneView = projectFindView.getExistingResultsPane().view
+          resultsPaneView = getExistingResultsPane()
           resultsView = resultsPaneView.resultsView
 
           expect(resultsView).toBeVisible()

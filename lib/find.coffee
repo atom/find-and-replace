@@ -1,19 +1,24 @@
 FindModel = require './find-model'
 FindView = require './find-view'
 ProjectFindView = require './project-find-view'
+ResultsModel = require './project/results-model'
 ResultsPaneView = require './project/results-pane'
 {_, $$} = require 'atom'
 
 module.exports =
-  activate: ({viewState, projectViewState}={}) ->
-    @projectFindView = new ProjectFindView(projectViewState)
+  activate: ({viewState, projectViewState, resultsModelState, paneViewState}={}) ->
+    @resultsModel = new ResultsModel(resultsModelState)
+    @projectFindView = new ProjectFindView(@resultsModel, projectViewState)
     @findView = new FindView(viewState)
 
-    project.registerOpener (filePath) ->
-      if filePath is ResultsPaneView.URI
-        new ResultsPaneView({})
-      else
-        null
+    project.registerOpener (filePath) =>
+      return null unless filePath is ResultsPaneView.URI
+
+      state = paneViewState or {}
+
+      view = @getExistingResultsPane()
+      view ?= new ResultsPaneView(state, @resultsModel)
+      view
 
     rootView.command 'project-find:show', =>
       @findView.detach()
@@ -41,3 +46,11 @@ module.exports =
   serialize: ->
     viewState: @findView.serialize()
     projectViewState: @projectFindView.serialize()
+    resultsModelState: @resultsModel.serialize()
+    paneViewState: @getExistingResultsPane()?.serialize()
+
+  getExistingResultsPane: (editSession) ->
+    for pane in rootView.getPanes()
+      view = pane.itemForUri(ResultsPaneView.URI)
+      return view if view?
+    null

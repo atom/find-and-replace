@@ -56,7 +56,7 @@ class ResultsModel
     @matchCount
 
   getPattern: ->
-    @regex.source
+    if @regex? then @regex.source else ''
 
   getPaths: (filePath) ->
     @paths
