@@ -1,12 +1,19 @@
 FindModel = require './find-model'
 FindView = require './find-view'
 ProjectFindView = require './project-find-view'
+ResultsPaneView = require './project/results-pane'
 {_, $$} = require 'atom'
 
 module.exports =
   activate: ({viewState, projectViewState}={}) ->
     @projectFindView = new ProjectFindView(projectViewState)
     @findView = new FindView(viewState)
+
+    project.registerOpener (filePath) ->
+      if filePath is ResultsPaneView.URI
+        new ResultsPaneView({})
+      else
+        null
 
     rootView.command 'project-find:show', =>
       @findView.detach()

@@ -139,11 +139,16 @@ class ProjectFindView extends View
 
     if view?
       pane.showItem(view)
-    else if nextPane = activePane.getNextPane()
+    else if activePane and nextPane = activePane.getNextPane()
       nextPane.showItem(new ResultsPaneView({}, @model))
-    else
+    else if activePane
       activePane.splitRight(new ResultsPaneView({}, @model))
-    activePane.focus()
+    else
+      rootView.on 'uri-opened.open-without-a-pane', =>
+        activePane = rootView.getActivePane()
+        activePane.itemForUri(ResultsPaneView.URI).setModel(@model)
+        rootView.off '.open-without-a-pane'
+      rootView.open(ResultsPaneView.URI)
 
   getExistingResultsPane: (editSession) ->
     for pane in rootView.getPanes()

@@ -8,14 +8,15 @@ waitsForPromise = (fn) -> window.waitsForPromise timeout: 30000, fn
 describe 'ResultsView', ->
   [projectFindView, resultsView, searchPromise] = []
 
+  getResultsView = ->
+    projectFindView.getExistingResultsPane().view.resultsView
+
   beforeEach ->
     window.rootView = new RootView()
     project.setPath(path.join(__dirname, 'fixtures'))
     rootView.attachToDom()
-    project.setPath(path.join(__dirname, 'fixtures'))
     pack = atom.activatePackage("find-and-replace", immediate: true)
     projectFindView = pack.mainModule.projectFindView
-    resultsView = projectFindView.resultsView
     spy = spyOn(projectFindView, 'confirm').andCallFake ->
       searchPromise = spy.originalValue.call(projectFindView)
 
@@ -30,6 +31,8 @@ describe 'ResultsView', ->
         searchPromise
 
       runs ->
+        resultsView = getResultsView()
+
         expect(resultsView.find('.preview').length).toBe 1
         expect(resultsView.find('.preview').text()).toBe 'a b c d e f g h i j k l abcdefghijklmnopqrstuvwxyz'
         expect(resultsView.find('.match').text()).toBe 'ghijkl'
@@ -43,6 +46,8 @@ describe 'ResultsView', ->
         searchPromise
 
       runs ->
+        resultsView = getResultsView()
+
         expect(resultsView.prop('scrollHeight')).toBeGreaterThan resultsView.height()
         previousScrollHeight = resultsView.prop('scrollHeight')
         previousOperationCount = resultsView.find("li").length
@@ -65,6 +70,8 @@ describe 'ResultsView', ->
         searchPromise
 
       runs ->
+        resultsView = getResultsView()
+
         expect(resultsView.prop('scrollHeight')).toBeGreaterThan resultsView.height()
         previousScrollHeight = resultsView.prop('scrollHeight')
         resultsView.trigger 'core:move-to-bottom'
@@ -81,6 +88,7 @@ describe 'ResultsView', ->
           searchPromise
 
         runs ->
+          resultsView = getResultsView()
           resultsView.find('.selected').removeClass('selected')
           expect(resultsView.find('.selected')).not.toExist()
           resultsView.trigger 'core:move-down'
@@ -91,6 +99,7 @@ describe 'ResultsView', ->
           searchPromise
 
         runs ->
+          resultsView = getResultsView()
           resultsView.find('.selected').removeClass('selected')
           expect(resultsView.find('.selected')).not.toExist()
           resultsView.trigger 'core:move-up'
@@ -104,6 +113,8 @@ describe 'ResultsView', ->
         searchPromise
 
       runs ->
+        resultsView = getResultsView()
+
         lastSelectedItem = null
 
         expect(resultsView.find("li > ul > li")).toHaveLength(13)
@@ -160,6 +171,7 @@ describe 'ResultsView', ->
         searchPromise
 
       runs ->
+        resultsView = getResultsView()
         resultsView.find('.selected').removeClass('selected')
         resultsView.find('.path:eq(0)').addClass('selected')
 
@@ -181,6 +193,7 @@ describe 'ResultsView', ->
         searchPromise
 
       runs ->
+        resultsView = getResultsView()
         resultsView.find('.selected').removeClass('selected')
         resultsView.find('.path:eq(1)').addClass('selected')
 
