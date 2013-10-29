@@ -18,7 +18,7 @@ class ResultsView extends ScrollView
     @on 'core:move-up', =>
       @selectPreviousResult()
 
-    @on 'scroll', =>
+    @on 'scroll resize', =>
       @renderResults() if @shouldRenderMoreResults()
 
     @on 'core:confirm', =>
