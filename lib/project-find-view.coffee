@@ -1,6 +1,6 @@
 shell = require 'shell'
 
-{_, $, Editor, View} = require 'atom'
+{_, $, $$$, Editor, View} = require 'atom'
 
 History = require './history'
 ResultsModel = require './project/results-model'
@@ -12,6 +12,7 @@ class ProjectFindView extends View
     @div tabIndex: -1, class: 'project-find tool-panel panel-bottom padded', =>
 
       @ul outlet: 'errorMessages', class: 'error-messages block'
+      @ul outlet: 'infoMessages', class: 'info-messages block'
 
       @div class: 'find-container block', =>
         @label class: 'text-subtle', 'Find'
@@ -67,6 +68,9 @@ class ProjectFindView extends View
 
     @replaceAllButton.on 'click', => @replaceAll()
     @on 'project-find:replace-all', => @replaceAll()
+
+    @model.on 'cleared', => @clearMessages()
+    @findEditor.getBuffer().on 'changed', => @model.clear()
 
     self = this
     @findEditor.on 'focus', -> self.setLastFocusedElement(this)
@@ -147,11 +151,25 @@ class ProjectFindView extends View
       return {pane, view} if view?
     {}
 
+  clearMessages: ->
+    @errorMessages.hide().empty()
+    @infoMessages.hide().empty()
+
+  addInfoMessage: (message) ->
+    @infoMessages.append($$$ -> @li message)
+    @infoMessages.show()
+
+  addErrorMessage: (message) ->
+    @errorMessages.append($$$ -> @li message)
+    @errorMessages.show()
+
   replaceAll: ->
+    @clearMessages()
+
     unless @model.getPathCount()
       shell.beep()
-      @previewBlock.show()
-      @previewCount.text("Nothing replaced").show()
+
+      @addInfoMessage("Nothing replaced")
     else
       regex = @model.getRegex(@findEditor.getText())
       replacementText = @replaceEditor.getText()
@@ -170,4 +188,5 @@ class ProjectFindView extends View
         buffer.setText(newText)
         buffer.save()
 
-      @previewCount.text("Replaced #{_.pluralize(replacementsCount, 'result')} in #{_.pluralize(Object.keys(pathsReplaced).length, 'file')}").show()
+      @model.clear()
+      @addInfoMessage("Replaced #{_.pluralize(replacementsCount, 'result')} in #{_.pluralize(Object.keys(pathsReplaced).length, 'file')}")
