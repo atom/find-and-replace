@@ -2,14 +2,21 @@ path = require 'path'
 {_, RootView} = require 'atom'
 path = require 'path'
 
+ResultsPaneView = require '../lib/project/results-pane'
+
 # Default to 30 second promises
 waitsForPromise = (fn) -> window.waitsForPromise timeout: 30000, fn
 
 describe 'ResultsView', ->
   [pack, projectFindView, resultsView, searchPromise] = []
 
+  getExistingResultsPane = ->
+    pane = rootView.panes.paneForUri(ResultsPaneView.URI)
+    return pane.itemForUri(ResultsPaneView.URI) if pane?
+    null
+
   getResultsView = ->
-    resultsView = pack.mainModule.getExistingResultsPane().resultsView
+    resultsView = getExistingResultsPane().resultsView
 
   beforeEach ->
     window.rootView = new RootView()

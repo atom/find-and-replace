@@ -13,12 +13,8 @@ module.exports =
 
     project.registerOpener (filePath) =>
       return null unless filePath is ResultsPaneView.URI
-
       state = paneViewState or {}
-
-      view = @getExistingResultsPane()
-      view ?= new ResultsPaneView(state, @resultsModel)
-      view
+      new ResultsPaneView(state, @resultsModel)
 
     rootView.command 'project-find:show', =>
       @findView.detach()
@@ -47,9 +43,3 @@ module.exports =
     viewState: @findView.serialize()
     projectViewState: @projectFindView.serialize()
     resultsModelState: @resultsModel.serialize()
-    paneViewState: @getExistingResultsPane()?.serialize()
-
-  getExistingResultsPane: ->
-    pane = rootView.panes.paneForUri(ResultsPaneView.URI)
-    return pane.itemForUri(ResultsPaneView.URI) if pane?
-    null
