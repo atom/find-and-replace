@@ -4,11 +4,18 @@ path = require 'path'
 {fs, $, RootView} = require 'atom'
 Q = require 'q'
 
+ResultsPaneView = require '../lib/project/results-pane'
+
 # Default to 30 second promises
 waitsForPromise = (fn) -> window.waitsForPromise timeout: 30000, fn
 
 describe 'ProjectFindView', ->
-  [editor, projectFindView, searchPromise] = []
+  [pack, editor, projectFindView, searchPromise] = []
+
+  getExistingResultsPane = ->
+    pane = rootView.panes.paneForUri(ResultsPaneView.URI)
+    return pane.itemForUri(ResultsPaneView.URI) if pane?
+    null
 
   beforeEach ->
     window.rootView = new RootView()
@@ -135,11 +142,13 @@ describe 'ProjectFindView', ->
             searchPromise
 
           runs ->
-            expect(projectFindView.resultsView).toBeVisible()
-            projectFindView.resultsView.scrollToBottom() # To load ALL the results
+            resultsPaneView = getExistingResultsPane()
+            resultsView = resultsPaneView.resultsView
+            expect(resultsView).toBeVisible()
+            resultsView.scrollToBottom() # To load ALL the results
+            expect(resultsView.find("li > ul > li")).toHaveLength(13)
+            expect(resultsPaneView.previewCount.text()).toBe "13 matches in 2 files for 'items'"
             expect(projectFindView.errorMessages).not.toBeVisible()
-            expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(13)
-            expect(projectFindView.previewCount.text()).toBe "13 matches in 2 files"
 
         it "only searches paths matching text in the path filter", ->
           spyOn(project, 'scan').andCallFake -> Q()
@@ -156,33 +165,40 @@ describe 'ProjectFindView', ->
             searchPromise
 
           runs ->
-            projectFindView.resultsView.scrollToBottom() # To load ALL the results
-            expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(13)
-            expect(projectFindView.previewCount.text()).toBe "13 matches in 2 files"
+            resultsPaneView = getExistingResultsPane()
+            resultsView = resultsPaneView.resultsView
+            resultsView.scrollToBottom() # To load ALL the results
+            expect(resultsView.find("li > ul > li")).toHaveLength(13)
+            expect(resultsPaneView.previewCount.text()).toBe "13 matches in 2 files for 'items'"
 
             buffer.setText('there is one "items" in this file')
             buffer.trigger('contents-modified')
 
-            expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(8)
-            expect(projectFindView.previewCount.text()).toBe "8 matches in 2 files"
+            expect(resultsView.find("li > ul > li")).toHaveLength(8)
+            expect(resultsPaneView.previewCount.text()).toBe "8 matches in 2 files for 'items'"
 
             buffer.setText('no matches in this file')
             buffer.trigger('contents-modified')
 
-            expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(7)
-            expect(projectFindView.previewCount.text()).toBe "7 matches in 1 file"
+            expect(resultsView.find("li > ul > li")).toHaveLength(7)
+            expect(resultsPaneView.previewCount.text()).toBe "7 matches in 1 file for 'items'"
 
       describe "when no results exist", ->
         beforeEach ->
           projectFindView.findEditor.setText('notintheprojectbro')
           spyOn(project, 'scan').andCallFake -> Q()
 
-
         it "displays no errors and no results", ->
           projectFindView.trigger 'core:confirm'
-          expect(projectFindView.errorMessages).not.toBeVisible()
-          expect(projectFindView.resultsView).toBeVisible()
-          expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(0)
+
+          waitsForPromise ->
+            searchPromise
+
+          runs ->
+            resultsView = getExistingResultsPane().resultsView
+            expect(projectFindView.errorMessages).not.toBeVisible()
+            expect(resultsView).toBeVisible()
+            expect(resultsView.find("li > ul > li")).toHaveLength(0)
 
     describe "history", ->
       beforeEach ->
@@ -263,7 +279,8 @@ describe 'ProjectFindView', ->
           projectFindView.replaceAllButton.click()
 
           expect(projectFindView.errorMessages).not.toBeVisible()
-          expect(projectFindView.resultsView).toBeVisible()
+          expect(projectFindView.infoMessages).toBeVisible()
+          expect(projectFindView.infoMessages.find('li').text()).toContain 'Replaced'
 
           sampleJsContent = fs.read sampleJs
           expect(sampleJsContent.match(/items/g)).toBeFalsy()
@@ -281,8 +298,7 @@ describe 'ProjectFindView', ->
           projectFindView.trigger 'project-find:replace-all'
           expect(project.scan).not.toHaveBeenCalled()
           expect(shell.beep).toHaveBeenCalled()
-          expect(projectFindView.resultsView).toBeVisible()
-          expect(projectFindView.previewCount.text()).toBe "Nothing replaced"
+          expect(projectFindView.infoMessages.find('li').text()).toBe "Nothing replaced"
 
       describe "when the search text has changed since that last search", ->
         beforeEach ->
@@ -302,8 +318,7 @@ describe 'ProjectFindView', ->
           projectFindView.trigger 'project-find:replace-all'
           expect(project.scan).not.toHaveBeenCalled()
           expect(shell.beep).toHaveBeenCalled()
-          expect(projectFindView.resultsView).toBeVisible()
-          expect(projectFindView.previewCount.text()).toBe "Nothing replaced"
+          expect(projectFindView.infoMessages.find('li').text()).toBe "Nothing replaced"
 
       describe "when the text in the search box triggered the results", ->
         beforeEach ->
@@ -318,10 +333,14 @@ describe 'ProjectFindView', ->
 
           projectFindView.trigger 'project-find:replace-all'
           expect(projectFindView.errorMessages).not.toBeVisible()
-          expect(projectFindView.resultsView).toBeVisible()
 
-          expect(projectFindView.resultsView.find("li > ul > li")).toHaveLength(0)
-          expect(projectFindView.previewCount.text()).toBe "Replaced 13 results in 2 files"
+          resultsPaneView = getExistingResultsPane()
+          resultsView = resultsPaneView.resultsView
+
+          expect(resultsView).toBeVisible()
+          expect(resultsView.find("li > ul > li")).toHaveLength(0)
+
+          expect(projectFindView.infoMessages.find('li').text()).toBe "Replaced 13 results in 2 files"
 
           sampleJsContent = fs.read sampleJs
           expect(sampleJsContent.match(/items/g)).toBeFalsy()

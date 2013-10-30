@@ -90,8 +90,8 @@ describe 'FindView', ->
       editor.setCursorBufferPosition([2,0])
       findView.findEditor.setText 'notinthefilebro'
       findView.findEditor.focus()
-      findView.trigger 'core:confirm'
 
+      findView.trigger 'core:confirm'
       expect(editor.getCursorBufferPosition()).toEqual [2,0]
       expect(shell.beep).toHaveBeenCalled()
       expect(findView.find(':focus')).toExist()

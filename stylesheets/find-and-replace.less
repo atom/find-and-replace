@@ -142,12 +142,21 @@
       width: 100%;
     }
   }
+}
+
+.preview-pane {
+  display: -webkit-flex;
+  -webkit-flex-direction: column;
+
+  .panel-heading {
+    -webkit-flex-shrink: 0;
+  }
 
   .results-view {
-    max-height: 10 * @component-line-height + @component-padding * 2;
     overflow: auto;
     position: relative;
     padding: 0 @component-padding;
+    -webkit-flex: 1;
 
     .search-result {
       padding-top: 2px;
@@ -173,5 +182,4 @@
       font-family: monospace;
     }
   }
-
 }

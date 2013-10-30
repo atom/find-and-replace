@@ -1,28 +1,18 @@
 shell = require 'shell'
 
-{_, $, Editor, View} = require 'atom'
+{_, $, $$$, Editor, View} = require 'atom'
 
 History = require './history'
-ResultsView = require './project/results-view'
 ResultsModel = require './project/results-model'
+ResultsPaneView = require './project/results-pane'
 
 module.exports =
 class ProjectFindView extends View
   @content: ->
     @div tabIndex: -1, class: 'project-find tool-panel panel-bottom padded', =>
 
-      @div outlet: 'previewBlock', class: 'preview-block inset-panel block', =>
-        @div class: 'panel-heading', =>
-          @span outlet: 'previewCount', class: 'preview-count inline-block'
-          @div outlet: 'loadingMessage', class: 'inline-block', =>
-            @div class: 'loading loading-spinner-tiny inline-block'
-            @div outlet: 'searchedCountBlock', class: 'inline-block', =>
-              @span outlet: 'searchedCount', class: 'searched-count'
-              @span ' paths searched'
-
-        @subview 'resultsView', new ResultsView
-
       @ul outlet: 'errorMessages', class: 'error-messages block'
+      @ul outlet: 'infoMessages', class: 'info-messages block'
 
       @div class: 'find-container block', =>
         @label class: 'text-subtle', 'Find'
@@ -45,8 +35,7 @@ class ProjectFindView extends View
         @label class: 'text-subtle', 'In'
         @subview 'pathsEditor', new Editor(mini: true)
 
-  initialize: ({attached, modelState, findHistory, replaceHistory, pathsHistory}={}) ->
-    @model = new ResultsModel(modelState)
+  initialize: (@model, {attached, modelState, findHistory, replaceHistory, pathsHistory}={}) ->
     @lastFocusedElement = null
 
     @handleEvents()
@@ -54,8 +43,6 @@ class ProjectFindView extends View
     @findHistory = new History(@findEditor, findHistory)
     @replaceHistory = new History(@replaceEditor, replaceHistory)
     @pathsHistory = new History(@pathsEditor, pathsHistory)
-
-    @resultsView.setModel(@model)
 
     @regexOptionButton.addClass('selected') if @model.useRegex
     @caseOptionButton.addClass('selected') if @model.caseSensitive
@@ -81,14 +68,8 @@ class ProjectFindView extends View
     @replaceAllButton.on 'click', => @replaceAll()
     @on 'project-find:replace-all', => @replaceAll()
 
-    @findEditor.getBuffer().on 'changed', => @clearResults()
-
-    @model.on 'finished-searching', =>
-      @previewCount.text(@getResultCountText())
-
-    @model.on 'paths-searched', (numberOfPathsSearched) =>
-      if @showSearchedCountBlock
-        @searchedCount.text(numberOfPathsSearched)
+    @model.on 'cleared', => @clearMessages()
+    @findEditor.getBuffer().on 'changed', => @model.clear()
 
     self = this
     @findEditor.on 'focus', -> self.setLastFocusedElement(this)
@@ -97,8 +78,6 @@ class ProjectFindView extends View
     @replaceEditor.on 'blur', -> self.setLastFocusedElement(this)
     @pathsEditor.on 'focus', -> self.setLastFocusedElement(this)
     @pathsEditor.on 'blur', -> self.setLastFocusedElement(this)
-    @resultsView.on 'focus', -> self.setLastFocusedElement(this)
-    @resultsView.on 'blur', -> self.setLastFocusedElement(this)
 
   attach: ->
     if @hasParent()
@@ -128,7 +107,7 @@ class ProjectFindView extends View
     @lastFocusedElement = $(element)
 
   focusNextElement: (direction) ->
-    elements = [@resultsView, @findEditor, @replaceEditor, @pathsEditor].filter (el) -> el.has(':visible').length > 0
+    elements = [@findEditor, @replaceEditor, @pathsEditor].filter (el) -> el.has(':visible').length > 0
     focusedElement = _.find elements, (el) -> el.has(':focus').length > 0 or el.is(':focus')
     focusedIndex = elements.indexOf focusedElement
 
@@ -138,61 +117,43 @@ class ProjectFindView extends View
     elements[focusedIndex].focus()
     elements[focusedIndex].selectAll() if elements[focusedIndex].selectAll
 
-  clearResults: ->
-    @lastFocusedElement = null
-    @resultsView.clear()
-    @previewBlock.hide()
-
   confirm: ->
     return if @findEditor.getText().length == 0
 
-    @clearResults()
     @findHistory.store()
     @replaceHistory.store()
     @pathsHistory.store()
 
-    deferred = @search()
-    deferred.done =>
-      @loadingMessage.hide()
-      @previewCount.text(@getResultCountText())
-
-    deferred
+    @search()
 
   search: ->
     paths = (path.trim() for path in @pathsEditor.getText().trim().split(',') when path)
-
-    @loadingMessage.show()
     @errorMessages.empty()
-
-    @previewCount.text('Searching...')
-    @searchedCount.text('0')
-    @searchedCountBlock.hide()
-
-    @previewBlock.show()
-    @previewCount.show()
-    @resultsView.focus()
-
-    # We'll only show the paths searched message after 500ms. It's too fast to
-    # see on short searches, and slows them down.
-    @showSearchedCountBlock = false
-    timeout = setTimeout =>
-      @searchedCountBlock.show()
-      @showSearchedCountBlock = true
-    , 500
-
+    @showResultPane()
     @model.search(@findEditor.getText(), paths)
 
-  getResultCountText: ->
-    if @resultsView.getPathCount() > 0
-      "#{_.pluralize(@resultsView.getMatchCount(), 'match', 'matches')} in #{_.pluralize(@resultsView.getPathCount(), 'file')}"
-    else
-      "No matches found"
+  showResultPane: ->
+    rootView.openSingletonSync(ResultsPaneView.URI, split: 'right')
+
+  clearMessages: ->
+    @errorMessages.hide().empty()
+    @infoMessages.hide().empty()
+
+  addInfoMessage: (message) ->
+    @infoMessages.append($$$ -> @li message)
+    @infoMessages.show()
+
+  addErrorMessage: (message) ->
+    @errorMessages.append($$$ -> @li message)
+    @errorMessages.show()
 
   replaceAll: ->
+    @clearMessages()
+
     unless @model.getPathCount()
       shell.beep()
-      @previewBlock.show()
-      @previewCount.text("Nothing replaced").show()
+
+      @addInfoMessage("Nothing replaced")
     else
       regex = @model.getRegex(@findEditor.getText())
       replacementText = @replaceEditor.getText()
@@ -211,6 +172,5 @@ class ProjectFindView extends View
         buffer.setText(newText)
         buffer.save()
 
-      @resultsView.clear()
-
-      @previewCount.text("Replaced #{_.pluralize(replacementsCount, 'result')} in #{_.pluralize(Object.keys(pathsReplaced).length, 'file')}").show()
+      @model.clear()
+      @addInfoMessage("Replaced #{_.pluralize(replacementsCount, 'result')} in #{_.pluralize(Object.keys(pathsReplaced).length, 'file')}")

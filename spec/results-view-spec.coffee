@@ -2,20 +2,29 @@ path = require 'path'
 {_, RootView} = require 'atom'
 path = require 'path'
 
+ResultsPaneView = require '../lib/project/results-pane'
+
 # Default to 30 second promises
 waitsForPromise = (fn) -> window.waitsForPromise timeout: 30000, fn
 
 describe 'ResultsView', ->
-  [projectFindView, resultsView, searchPromise] = []
+  [pack, projectFindView, resultsView, searchPromise] = []
+
+  getExistingResultsPane = ->
+    pane = rootView.panes.paneForUri(ResultsPaneView.URI)
+    return pane.itemForUri(ResultsPaneView.URI) if pane?
+    null
+
+  getResultsView = ->
+    resultsView = getExistingResultsPane().resultsView
 
   beforeEach ->
     window.rootView = new RootView()
+    rootView.height(1000)
     project.setPath(path.join(__dirname, 'fixtures'))
     rootView.attachToDom()
-    project.setPath(path.join(__dirname, 'fixtures'))
     pack = atom.activatePackage("find-and-replace", immediate: true)
     projectFindView = pack.mainModule.projectFindView
-    resultsView = projectFindView.resultsView
     spy = spyOn(projectFindView, 'confirm').andCallFake ->
       searchPromise = spy.originalValue.call(projectFindView)
 
@@ -30,6 +39,8 @@ describe 'ResultsView', ->
         searchPromise
 
       runs ->
+        resultsView = getResultsView()
+
         expect(resultsView.find('.preview').length).toBe 1
         expect(resultsView.find('.preview').text()).toBe 'a b c d e f g h i j k l abcdefghijklmnopqrstuvwxyz'
         expect(resultsView.find('.match').text()).toBe 'ghijkl'
@@ -43,6 +54,8 @@ describe 'ResultsView', ->
         searchPromise
 
       runs ->
+        resultsView = getResultsView()
+
         expect(resultsView.prop('scrollHeight')).toBeGreaterThan resultsView.height()
         previousScrollHeight = resultsView.prop('scrollHeight')
         previousOperationCount = resultsView.find("li").length
@@ -58,6 +71,7 @@ describe 'ResultsView', ->
         expect(resultsView.find("li").length).toBeGreaterThan previousOperationCount
 
     it "renders all operations when core:move-to-bottom is triggered", ->
+      rootView.height(300)
       projectFindView.findEditor.setText('so')
       projectFindView.confirm()
 
@@ -65,6 +79,8 @@ describe 'ResultsView', ->
         searchPromise
 
       runs ->
+        resultsView = getResultsView()
+
         expect(resultsView.prop('scrollHeight')).toBeGreaterThan resultsView.height()
         previousScrollHeight = resultsView.prop('scrollHeight')
         resultsView.trigger 'core:move-to-bottom'
@@ -81,6 +97,7 @@ describe 'ResultsView', ->
           searchPromise
 
         runs ->
+          resultsView = getResultsView()
           resultsView.find('.selected').removeClass('selected')
           expect(resultsView.find('.selected')).not.toExist()
           resultsView.trigger 'core:move-down'
@@ -91,12 +108,14 @@ describe 'ResultsView', ->
           searchPromise
 
         runs ->
+          resultsView = getResultsView()
           resultsView.find('.selected').removeClass('selected')
           expect(resultsView.find('.selected')).not.toExist()
           resultsView.trigger 'core:move-up'
           expect(resultsView.find('.selected')).toExist()
 
     it "arrows through the list without selecting paths", ->
+      rootView.openSync('sample.js')
       projectFindView.findEditor.setText('items')
       projectFindView.trigger 'core:confirm'
 
@@ -104,14 +123,17 @@ describe 'ResultsView', ->
         searchPromise
 
       runs ->
+        resultsView = getResultsView()
+
         lastSelectedItem = null
 
-        expect(resultsView.find("li > ul > li")).toHaveLength(13)
+        length = resultsView.find("li > ul > li").length
+        expect(length).toBe 13
 
         resultsView.selectFirstResult()
 
         # moves down for 13 results
-        _.times 12, ->
+        _.times length - 1, ->
           resultsView.trigger 'core:move-down'
 
           selectedItem = resultsView.find('.selected')
@@ -132,7 +154,7 @@ describe 'ResultsView', ->
           lastSelectedItem = selectedItem[0]
 
         # moves up to the top
-        _.times 12, ->
+        _.times length - 1, ->
           resultsView.trigger 'core:move-up'
 
           selectedItem = resultsView.find('.selected')
@@ -160,6 +182,7 @@ describe 'ResultsView', ->
         searchPromise
 
       runs ->
+        resultsView = getResultsView()
         resultsView.find('.selected').removeClass('selected')
         resultsView.find('.path:eq(0)').addClass('selected')
 
@@ -181,6 +204,7 @@ describe 'ResultsView', ->
         searchPromise
 
       runs ->
+        resultsView = getResultsView()
         resultsView.find('.selected').removeClass('selected')
         resultsView.find('.path:eq(1)').addClass('selected')
 

@@ -1,12 +1,18 @@
 FindModel = require './find-model'
 FindView = require './find-view'
 ProjectFindView = require './project-find-view'
+ResultsModel = require './project/results-model'
+ResultsPaneView = require './project/results-pane'
 {_, $$} = require 'atom'
 
 module.exports =
-  activate: ({viewState, projectViewState}={}) ->
-    @projectFindView = new ProjectFindView(projectViewState)
+  activate: ({viewState, projectViewState, resultsModelState, paneViewState}={}) ->
+    @resultsModel = new ResultsModel(resultsModelState)
+    @projectFindView = new ProjectFindView(@resultsModel, projectViewState)
     @findView = new FindView(viewState)
+
+    project.registerOpener (filePath) =>
+      new ResultsPaneView(@resultsModel) if filePath is ResultsPaneView.URI
 
     rootView.command 'project-find:show', =>
       @findView.detach()
@@ -34,3 +40,4 @@ module.exports =
   serialize: ->
     viewState: @findView.serialize()
     projectViewState: @projectFindView.serialize()
+    resultsModelState: @resultsModel.serialize()
