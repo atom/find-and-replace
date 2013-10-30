@@ -7,8 +7,8 @@ class ResultsPaneView extends ScrollView
 
   @URI: "atom://find-and-replace/project-results"
 
-  @deserialize: (state) ->
-    new ResultsPaneView(state)
+  @deserialize: ({model}) ->
+    new ResultsPaneView(model)
 
   @content: ->
     @div class: 'preview-pane pane-item', =>
@@ -31,6 +31,7 @@ class ResultsPaneView extends ScrollView
 
   serialize: ->
     deserializer: 'ResultsPaneView'
+    model: @model
 
   getTitle: ->
     "Project Find Results"
