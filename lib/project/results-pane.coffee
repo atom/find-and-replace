@@ -22,7 +22,7 @@ class ResultsPaneView extends ScrollView
 
       @subview 'resultsView', new ResultsView
 
-  initialize: (state, model) ->
+  initialize: (model) ->
     super
     @setModel(model) if model
 

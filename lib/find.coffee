@@ -12,9 +12,7 @@ module.exports =
     @findView = new FindView(viewState)
 
     project.registerOpener (filePath) =>
-      return null unless filePath is ResultsPaneView.URI
-      state = paneViewState or {}
-      new ResultsPaneView(state, @resultsModel)
+      new ResultsPaneView(@resultsModel) if filePath is ResultsPaneView.URI
 
     rootView.command 'project-find:show', =>
       @findView.detach()
