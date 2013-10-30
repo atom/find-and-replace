@@ -49,8 +49,7 @@ module.exports =
     resultsModelState: @resultsModel.serialize()
     paneViewState: @getExistingResultsPane()?.serialize()
 
-  getExistingResultsPane: (editSession) ->
-    for pane in rootView.getPanes()
-      view = pane.itemForUri(ResultsPaneView.URI)
-      return view if view?
+  getExistingResultsPane: ->
+    pane = rootView.panes.paneForUri(ResultsPaneView.URI)
+    return pane.itemForUri(ResultsPaneView.URI) if pane?
     null
