@@ -124,21 +124,21 @@ class FindView extends View
   confirm: ->
     @findNext()
 
-  findNext: =>
+  findNext: (focusEditorAfter = true) =>
     @findModel.update {pattern: @findEditor.getText()}
     if @markers.length == 0
       shell.beep()
     else
       @selectFirstMarkerAfterCursor()
-      rootView.focus()
+      rootView.focus() if focusEditorAfter
 
-  findPrevious: =>
+  findPrevious: (focusEditorAfter = true) =>
     @findModel.update {pattern: @findEditor.getText()}
     if @markers.length == 0
       shell.beep()
     else
       @selectFirstMarkerBeforeCursor()
-      rootView.focus()
+      rootView.focus() if focusEditorAfter
 
   replaceNext: =>
     @findModel.update {pattern: @findEditor.getText()}
@@ -146,11 +146,12 @@ class FindView extends View
     if @markers.length == 0
       shell.beep()
     else
-      markerIndex = @firstMarkerIndexAfterCursor()
-      currentMarker = @markers[markerIndex]
-      @findModel.replace([currentMarker], @replaceEditor.getText())
+      unless currentMarker = @currentResultMarker
+        markerIndex = @firstMarkerIndexAfterCursor()
+        currentMarker = @markers[markerIndex]
 
-      @findModel.getEditSession().setCursorBufferPosition currentMarker.bufferMarker.getEndPosition()
+      @findModel.replace([currentMarker], @replaceEditor.getText())
+      @findNext(false)
 
   replaceAll: =>
     @findModel.update {pattern: @findEditor.getText()}
