@@ -25,7 +25,7 @@ describe 'FindView', ->
     beforeEach ->
       editor.trigger 'find-and-replace:show'
       findView.findEditor.setText 'items'
-      findView.trigger 'core:confirm'
+      findView.findEditor.trigger 'core:confirm'
       findView.focus()
 
     it "detaches from the root view", ->
@@ -84,14 +84,14 @@ describe 'FindView', ->
       editor.setCursorBufferPosition([2,0])
       editor.trigger 'find-and-replace:show'
       findView.findEditor.setText 'items'
-      findView.trigger 'core:confirm'
+      findView.findEditor.trigger 'core:confirm'
 
     it "doesn't change the selection, beeps if there are no matches and keeps focus on the find view", ->
       editor.setCursorBufferPosition([2,0])
       findView.findEditor.setText 'notinthefilebro'
       findView.findEditor.focus()
 
-      findView.trigger 'core:confirm'
+      findView.findEditor.trigger 'core:confirm'
       expect(editor.getCursorBufferPosition()).toEqual [2,0]
       expect(shell.beep).toHaveBeenCalled()
       expect(findView.find(':focus')).toExist()
@@ -154,8 +154,8 @@ describe 'FindView', ->
       expect(editor.getSelectedBufferRange()).toEqual [[8,11],[8,15]]
 
     it "does not highlight the found text when the find view is hidden", ->
-      findView.trigger 'core:cancel'
-      findView.trigger 'find-and-replace:find-next'
+      findView.findEditor.trigger 'core:cancel'
+      findView.findEditor.trigger 'find-and-replace:find-next'
 
       findResultsView = editor.find('.search-results')
       expect(findResultsView.parent()).not.toExist()
@@ -179,7 +179,7 @@ describe 'FindView', ->
           rootView.openSync('sample.coffee')
           editor = rootView.getActiveView()
 
-          findView.trigger 'find-and-replace:find-next'
+          findView.findEditor.trigger 'find-and-replace:find-next'
           expect(findResultsView.children()).toHaveLength 7
           expect(findResultsView.parent()[0]).toBe editor.underlayer[0]
 
@@ -220,7 +220,7 @@ describe 'FindView', ->
           expect(findView.resultCounter.text()).toEqual('7 found')
           expect(newEditor.getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
 
-          findView.trigger 'find-and-replace:find-next'
+          findView.findEditor.trigger 'find-and-replace:find-next'
           expect(findView.resultCounter.text()).toEqual('1 of 7')
           expect(newEditor.getSelectedBufferRange()).toEqual [[1, 9], [1, 14]]
 
@@ -249,7 +249,7 @@ describe 'FindView', ->
       it "does not beep if no matches were found", ->
         editor.setCursorBufferPosition([2,0])
         findView.findEditor.setText 'notinthefilebro'
-        findView.trigger 'core:confirm'
+        findView.findEditor.trigger 'core:confirm'
         shell.beep.reset()
 
         editor.insertText("blah blah")
@@ -261,7 +261,7 @@ describe 'FindView', ->
 
       it "toggles find within a selction via and event and only finds matches within the selection", ->
         findView.findEditor.setText 'items'
-        findView.trigger 'find-and-replace:toggle-selection-option'
+        findView.findEditor.trigger 'find-and-replace:toggle-selection-option'
         expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
         expect(findView.resultCounter.text()).toEqual('1 of 3')
 
@@ -274,7 +274,7 @@ describe 'FindView', ->
     describe "when regex is toggled", ->
       it "toggles regex via an event and finds text matching the pattern", ->
         editor.setCursorBufferPosition([2,0])
-        findView.trigger 'find-and-replace:toggle-regex-option'
+        findView.findEditor.trigger 'find-and-replace:toggle-regex-option'
         findView.findEditor.setText 'i[t]em+s'
         expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
 
@@ -287,7 +287,7 @@ describe 'FindView', ->
       it "re-runs the search using the new find text when toggled", ->
         editor.setCursorBufferPosition([1,0])
         findView.findEditor.setText 's(o)rt'
-        findView.trigger 'find-and-replace:toggle-regex-option'
+        findView.findEditor.trigger 'find-and-replace:toggle-regex-option'
         expect(editor.getSelectedBufferRange()).toEqual [[1, 6], [1, 10]]
 
     describe "when case sensitivity is toggled", ->
@@ -297,16 +297,16 @@ describe 'FindView', ->
 
       it "toggles case sensitivity via an event and finds text matching the pattern", ->
         findView.findEditor.setText 'WORDs'
-        findView.trigger 'core:confirm'
+        findView.findEditor.trigger 'core:confirm'
         expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 5]]
 
         editor.setCursorBufferPosition([0,0])
-        findView.trigger 'find-and-replace:toggle-case-option'
+        findView.findEditor.trigger 'find-and-replace:toggle-case-option'
         expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 5]]
 
       it "toggles case sensitivity via a button and finds text matching the pattern", ->
         findView.findEditor.setText 'WORDs'
-        findView.trigger 'core:confirm'
+        findView.findEditor.trigger 'core:confirm'
         expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 5]]
 
         editor.setCursorBufferPosition([0,0])
@@ -323,7 +323,7 @@ describe 'FindView', ->
         expect(findResultsView.children()).toHaveLength 6
 
         findView.findEditor.setText 'notinthefilebro'
-        findView.trigger 'core:confirm'
+        findView.findEditor.trigger 'core:confirm'
 
         expect(findResultsView.children()).toHaveLength 0
 
@@ -335,12 +335,12 @@ describe 'FindView', ->
 
       it "clears existing markers for another search", ->
         findView.findEditor.setText('notinthefile')
-        findView.trigger 'core:confirm'
+        findView.findEditor.trigger 'core:confirm'
         expect(editor.activeEditSession.getMarkers().length).toEqual 1
 
       it "clears existing markers for an empty search", ->
         findView.findEditor.setText('')
-        findView.trigger 'core:confirm'
+        findView.findEditor.trigger 'core:confirm'
         expect(editor.activeEditSession.getMarkers().length).toEqual 1
 
   describe "replacing", ->
@@ -397,7 +397,7 @@ describe 'FindView', ->
     describe "replacement patterns", ->
       describe "when the regex option is true", ->
         it "replaces $1, $2, etc... with substring matches", ->
-          findView.trigger 'find-and-replace:toggle-regex-option'
+          findView.findEditor.trigger 'find-and-replace:toggle-regex-option'
           findView.findEditor.setText('i(t)e(m)s')
           findView.replaceEditor.setText('$2i$1$1ens')
           editor.trigger 'find-and-replace:replace-all'

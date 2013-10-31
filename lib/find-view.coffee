@@ -60,7 +60,9 @@ class FindView extends View
     @handleFindEvents()
     @handleReplaceEvents()
 
-    @on 'core:confirm', => @confirm()
+    @findEditor.on 'core:confirm', => @confirm()
+    @replaceEditor.on 'core:confirm', => @replaceNext()
+
     @on 'find-and-replace:focus-next', @toggleFocus
     @on 'find-and-replace:focus-previous', @toggleFocus
 
@@ -118,10 +120,7 @@ class FindView extends View
       @findEditor.focus()
 
   confirm: ->
-    if @hasClass('find-mode')
-      @findNext()
-    else
-      @replaceNext()
+    @findNext()
 
   findNext: =>
     @findModel.update {pattern: @findEditor.getText()}
