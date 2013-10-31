@@ -36,6 +36,8 @@ class ResultsView extends ScrollView
     @model.on 'result-removed', @removeResult
     @model.on 'cleared', @clear
 
+    @renderResults()
+
   beforeRemove: ->
     @clear()
 

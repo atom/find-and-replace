@@ -50,6 +50,35 @@ describe 'ProjectFindView', ->
         $(document.activeElement).trigger 'core:cancel'
         expect(rootView.find('.project-find')).not.toExist()
 
+    describe "splitting into a second pane", ->
+      beforeEach ->
+        rootView.height(1000)
+        editor.trigger 'project-find:show'
+
+      it "can be duplicated", ->
+        projectFindView.findEditor.setText('items')
+        projectFindView.trigger 'core:confirm'
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          resultsPaneView1 = getExistingResultsPane()
+          pane1 = rootView.getActivePane()
+          pane1.splitRight(pane1.copyActiveItem())
+
+          pane2 = rootView.getActivePane()
+          resultsPaneView2 = pane2.itemForUri(ResultsPaneView.URI)
+
+          expect(pane1[0]).not.toBe pane2[0]
+          expect(resultsPaneView1[0]).not.toBe resultsPaneView2[0]
+
+          length = resultsPaneView1.find('li > ul > li').length
+          expect(length).toBeGreaterThan 0
+          expect(resultsPaneView2.find('li > ul > li')).toHaveLength length
+
+          expect(resultsPaneView2.previewCount.html()).toEqual resultsPaneView1.previewCount.html()
+
     describe "serialization", ->
       it "serializes if the view is attached", ->
         expect(projectFindView.hasParent()).toBeFalsy()
