@@ -143,6 +143,11 @@ describe 'FindView', ->
       editor.moveCursorDown()
       expect(findView.resultCounter.text()).toBe '6 found'
 
+    it "replaces results counter x of y text when user selects a marked range", ->
+      editor.moveCursorDown()
+      editor.setSelectedBufferRange([[2, 34], [2, 39]])
+      expect(findView.resultCounter.text()).toEqual('3 of 6')
+
     it "places the selected text into the find editor when find-and-replace:set-find-pattern is triggered", ->
       editor.setSelectedBufferRange([[1,6],[1,10]])
       rootView.trigger 'find-and-replace:use-selection-as-find-pattern'

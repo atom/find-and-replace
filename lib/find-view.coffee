@@ -76,6 +76,8 @@ class FindView extends View
 
     @findModel.on 'updated', @markersUpdated
 
+    rootView.on 'selection:changed', @setCurrentMarkerFromSelection
+
   handleFindEvents: ->
     @nextButton.on 'click', => @findNext()
     @previousButton.on 'click', => @findPrevious()
@@ -155,7 +157,7 @@ class FindView extends View
     @findModel.replace(@markers, @replaceEditor.getText())
 
   markersUpdated: (@markers) =>
-    @updateResultCounter()
+    @setCurrentMarkerFromSelection()
     @updateOptionButtons()
     @findResultsView.attach() if @isVisible()
     @findEditor.setText(@findModel.pattern)
@@ -163,12 +165,16 @@ class FindView extends View
     @replaceHistory.store()
 
   updateResultCounter: ->
-    if not @markers? or @markers.length == 0
-      text = "no results"
-    else if @markers.length == 1
-      text = "1 found"
+    if @currentResultMarker
+      index = @markers.indexOf(@currentResultMarker)
+      text = "#{ index + 1} of #{@markers.length}"
     else
-      text = "#{@markers.length} found"
+      if not @markers? or @markers.length == 0
+        text = "no results"
+      else if @markers.length == 1
+        text = "1 found"
+      else
+        text = "#{@markers.length} found"
 
     @resultCounter.text text
 
@@ -206,8 +212,13 @@ class FindView extends View
 
     if marker = @markers[markerIndex]
       @findModel.getEditSession().setSelectedBufferRange marker.getBufferRange()
-      rootView.one 'cursor:moved', => @updateResultCounter()
-      @resultCounter.text("#{markerIndex + 1} of #{@markers.length}")
+
+  setCurrentMarkerFromSelection: =>
+    @currentResultMarker = null
+    if @markers? and @markers.length and editSession = @findModel.getEditSession()
+      selectedBufferRange = editSession.getSelectedBufferRange()
+      @currentResultMarker = @findModel.findMarker(selectedBufferRange)
+    @updateResultCounter()
 
   setSelectionAsFindPattern: =>
     pattern = @findModel.getEditSession().getSelectedText()

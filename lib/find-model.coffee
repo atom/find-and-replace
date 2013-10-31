@@ -4,6 +4,7 @@
 module.exports =
 class FindModel
   Emitter.includeInto(this)
+  @markerClass: 'find-result'
 
   constructor: (state={}) ->
     @pattern = ''
@@ -68,15 +69,14 @@ class FindModel
 
     updatedMarkers = []
     markersToRemoveById = {}
-    markerClass = 'find-result'
 
     markersToRemoveById[marker.id] = marker for marker in @markers
 
     @editSession.scanInBufferRange @getRegex(), bufferRange, ({range}) =>
-      if marker = @findMarker(range, markerClass)
+      if marker = @findMarker(range)
         delete markersToRemoveById[marker.id]
       else
-        marker = @createMarker(range, markerClass)
+        marker = @createMarker(range)
 
       updatedMarkers.push marker
 
@@ -85,12 +85,12 @@ class FindModel
     @markers = updatedMarkers
     @emit 'updated', _.clone(@markers)
 
-  findMarker: (range, markerClass) ->
-    attributes = { class: markerClass, startPosition: range.start, endPosition: range.end }
+  findMarker: (range) ->
+    attributes = { class: @constructor.markerClass, startPosition: range.start, endPosition: range.end }
     _.find @editSession.findMarkers(attributes), (marker) -> marker.isValid()
 
-  createMarker: (range, markerClass) ->
-    markerAttributes = { class: markerClass, invalidation: 'inside', replicate: false }
+  createMarker: (range) ->
+    markerAttributes = { class: @constructor.markerClass, invalidation: 'inside', replicate: false }
     @editSession.markBufferRange(range, markerAttributes)
 
   destroyAllMarkers: ->
