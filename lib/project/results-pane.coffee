@@ -7,8 +7,8 @@ class ResultsPaneView extends ScrollView
 
   @URI: "atom://find-and-replace/project-results"
 
-  @deserialize: (state) ->
-    new ResultsPaneView(state)
+  @deserialize: ({model}) ->
+    new ResultsPaneView(model)
 
   @content: ->
     @div class: 'preview-pane pane-item', =>
@@ -24,6 +24,7 @@ class ResultsPaneView extends ScrollView
 
   initialize: (model) ->
     super
+    @loadingMessage.hide()
     @setModel(model) if model
 
   getPane: ->
@@ -31,6 +32,7 @@ class ResultsPaneView extends ScrollView
 
   serialize: ->
     deserializer: 'ResultsPaneView'
+    model: @model
 
   getTitle: ->
     "Project Find Results"
@@ -44,6 +46,7 @@ class ResultsPaneView extends ScrollView
   setModel: (@model) ->
     @resultsView.setModel(@model)
     @handleEvents()
+    @onFinishedSearching()
 
   getResultCountText: ->
     if @resultsView.getPathCount() > 0
@@ -52,31 +55,35 @@ class ResultsPaneView extends ScrollView
       "No matches found for '#{@model.getPattern()}'"
 
   handleEvents: ->
-    @model.on 'search', (deferred) =>
-      @loadingMessage.show()
+    @model.on 'search', @onSearch
+    @model.on 'finished-searching', @onFinishedSearching
+    @model.on 'paths-searched', @onPathsSearched
 
-      @previewCount.text('Searching...')
-      @searchedCount.text('0')
-      @searchedCountBlock.hide()
+  onSearch: (deferred) =>
+    @loadingMessage.show()
 
-      @previewCount.show()
-      @resultsView.focus()
+    @previewCount.text('Searching...')
+    @searchedCount.text('0')
+    @searchedCountBlock.hide()
 
-      # We'll only show the paths searched message after 500ms. It's too fast to
-      # see on short searches, and slows them down.
-      @showSearchedCountBlock = false
-      timeout = setTimeout =>
-        @searchedCountBlock.show()
-        @showSearchedCountBlock = true
-      , 500
+    @previewCount.show()
+    @resultsView.focus()
 
-      deferred.done =>
-        @loadingMessage.hide()
-        @previewCount.text(@getResultCountText())
+    # We'll only show the paths searched message after 500ms. It's too fast to
+    # see on short searches, and slows them down.
+    @showSearchedCountBlock = false
+    timeout = setTimeout =>
+      @searchedCountBlock.show()
+      @showSearchedCountBlock = true
+    , 500
 
-    @model.on 'finished-searching', =>
+    deferred.done =>
+      @loadingMessage.hide()
       @previewCount.text(@getResultCountText())
 
-    @model.on 'paths-searched', (numberOfPathsSearched) =>
-      if @showSearchedCountBlock
-        @searchedCount.text(numberOfPathsSearched)
+  onPathsSearched: (numberOfPathsSearched) =>
+    if @showSearchedCountBlock
+      @searchedCount.text(numberOfPathsSearched)
+
+  onFinishedSearching: =>
+    @previewCount.text(@getResultCountText())
