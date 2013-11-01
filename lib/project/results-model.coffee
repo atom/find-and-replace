@@ -30,6 +30,7 @@ class ResultsModel
     @clear()
     @active = true
     @regex = @getRegex(pattern)
+    @pattern = pattern
 
     onPathsSearched = (numberOfPathsSearched) =>
       @emit('paths-searched', numberOfPathsSearched)
@@ -56,7 +57,7 @@ class ResultsModel
     @matchCount
 
   getPattern: ->
-    if @regex? then @regex.source else ''
+    @pattern or ''
 
   getPaths: (filePath) ->
     @paths
