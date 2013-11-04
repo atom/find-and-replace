@@ -3,7 +3,7 @@ FindView = require './find-view'
 ProjectFindView = require './project-find-view'
 ResultsModel = require './project/results-model'
 ResultsPaneView = require './project/results-pane'
-{_, $$} = require 'atom'
+{_, $, $$} = require 'atom'
 
 module.exports =
   activate: ({viewState, projectViewState, resultsModelState, paneViewState}={}) ->
@@ -26,7 +26,18 @@ module.exports =
       @projectFindView.detach()
       @findView.showReplace()
 
-    rootView.on 'core:cancel core:close', =>
+    @findView.on 'core:cancel core:close', =>
+      @findView.detach()
+
+    @projectFindView.on 'core:cancel core:close', =>
+      @projectFindView.detach()
+
+    # in code editors
+    rootView.on 'core:cancel core:close', (event) =>
+      target = $(event.target)
+      editor = target.parents('.editor:not(.mini)')
+      return unless editor.length
+
       @findView.detach()
       @projectFindView.detach()
 
