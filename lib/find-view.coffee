@@ -92,8 +92,6 @@ class FindView extends View
     rootView.command 'find-and-replace:replace-all', @replaceAll
 
   showFind: =>
-    return unless rootView.getActiveView() instanceof Editor
-
     @attach()
     @addClass('find-mode').removeClass('replace-mode')
     @findEditor.focus()
