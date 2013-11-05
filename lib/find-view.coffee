@@ -226,7 +226,7 @@ class FindView extends View
     return unless @markers?.length > 0
 
     if marker = @markers[markerIndex]
-      @findModel.getEditSession().setSelectedBufferRange marker.getBufferRange()
+      @findModel.getEditSession().setSelectedBufferRange(marker.getBufferRange(), autoscroll: true)
 
   setCurrentMarkerFromSelection: =>
     @currentResultMarker = null
