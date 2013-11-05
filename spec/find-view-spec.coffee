@@ -96,6 +96,21 @@ describe 'FindView', ->
       expect(shell.beep).toHaveBeenCalled()
       expect(findView.find(':focus')).toExist()
 
+      expect(findView.infoMessages.children()).toHaveLength 1
+
+    it "properly handles the info message when there are no results", ->
+      findView.findEditor.setText 'item'
+      findView.findEditor.trigger 'core:confirm'
+      expect(findView.infoMessages.children()).toHaveLength 0
+
+      findView.findEditor.setText 'notinthefilenope'
+      findView.findEditor.trigger 'core:confirm'
+      expect(findView.infoMessages.children()).toHaveLength 1
+
+      findView.findEditor.setText 'item'
+      findView.findEditor.trigger 'core:confirm'
+      expect(findView.infoMessages.children()).toHaveLength 0
+
     it "selects the first match following the cursor", ->
       expect(findView.resultCounter.text()).toEqual('2 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
@@ -294,6 +309,15 @@ describe 'FindView', ->
         findView.findEditor.setText 's(o)rt'
         findView.findEditor.trigger 'find-and-replace:toggle-regex-option'
         expect(editor.getSelectedBufferRange()).toEqual [[1, 6], [1, 10]]
+
+      describe "when an invalid regex is entered", ->
+        it "displays an error", ->
+          editor.setCursorBufferPosition([2,0])
+          findView.findEditor.trigger 'find-and-replace:toggle-regex-option'
+          findView.findEditor.setText 'i[t'
+          findView.findEditor.trigger 'core:confirm'
+          expect(findView.errorMessages.children()).toHaveLength 1
+          expect(findView.infoMessages.children()).toHaveLength 0
 
     describe "when case sensitivity is toggled", ->
       beforeEach ->
