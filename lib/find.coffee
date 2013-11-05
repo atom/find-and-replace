@@ -7,7 +7,7 @@ ResultsPaneView = require './project/results-pane'
 
 module.exports =
   configDefaults:
-    openProjectResultsInRightPane: false
+    openProjectFindResultsInRightPane: false
 
   activate: ({viewState, projectViewState, resultsModelState, paneViewState}={}) ->
     @resultsModel = new ResultsModel(resultsModelState)

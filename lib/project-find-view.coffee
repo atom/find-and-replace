@@ -138,7 +138,7 @@ class ProjectFindView extends View
 
   showResultPane: ->
     options = null
-    options = {split: 'right'} if config.get('find-and-replace.openProjectResultsInRightPane')
+    options = {split: 'right'} if config.get('find-and-replace.openProjectFindResultsInRightPane')
     rootView.openSingletonSync(ResultsPaneView.URI, options)
 
   clearMessages: ->
