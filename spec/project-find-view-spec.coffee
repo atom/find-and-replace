@@ -26,6 +26,8 @@ describe 'ProjectFindView', ->
     pack = atom.activatePackage("find-and-replace", immediate: true)
     projectFindView = pack.mainModule.projectFindView
 
+    config.set('find-and-replace.openProjectFindResultsInRightPane', false)
+
     spy = spyOn(projectFindView, 'confirm').andCallFake ->
       searchPromise = spy.originalValue.call(projectFindView)
 
@@ -53,9 +55,36 @@ describe 'ProjectFindView', ->
     describe "splitting into a second pane", ->
       beforeEach ->
         rootView.height(1000)
+
         editor.trigger 'project-find:show'
 
+      it "splits when option is true", ->
+        initialPane = rootView.getActivePane()
+        config.set('find-and-replace.openProjectFindResultsInRightPane', true)
+        projectFindView.findEditor.setText('items')
+        projectFindView.trigger 'core:confirm'
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          pane1 = rootView.getActivePane()
+          expect(pane1[0]).not.toBe initialPane[0]
+
+      it "does not split when option is false", ->
+        initialPane = rootView.getActivePane()
+        projectFindView.findEditor.setText('items')
+        projectFindView.trigger 'core:confirm'
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          pane1 = rootView.getActivePane()
+          expect(pane1[0]).toBe initialPane[0]
+
       it "can be duplicated", ->
+        config.set('find-and-replace.openProjectFindResultsInRightPane', true)
         projectFindView.findEditor.setText('items')
         projectFindView.trigger 'core:confirm'
 

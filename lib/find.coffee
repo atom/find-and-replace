@@ -6,6 +6,9 @@ ResultsPaneView = require './project/results-pane'
 {_, $, $$} = require 'atom'
 
 module.exports =
+  configDefaults:
+    openProjectFindResultsInRightPane: false
+
   activate: ({viewState, projectViewState, resultsModelState, paneViewState}={}) ->
     @resultsModel = new ResultsModel(resultsModelState)
     @projectFindView = new ProjectFindView(@resultsModel, projectViewState)

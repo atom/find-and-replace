@@ -137,7 +137,9 @@ class ProjectFindView extends View
     @model.search(@findEditor.getText(), paths)
 
   showResultPane: ->
-    rootView.openSingletonSync(ResultsPaneView.URI, split: 'right')
+    options = null
+    options = {split: 'right'} if config.get('find-and-replace.openProjectFindResultsInRightPane')
+    rootView.openSingletonSync(ResultsPaneView.URI, options)
 
   clearMessages: ->
     @errorMessages.hide().empty()
