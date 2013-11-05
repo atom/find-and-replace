@@ -72,18 +72,22 @@ class FindModel
 
     markersToRemoveById[marker.id] = marker for marker in @markers
 
-    @editSession.scanInBufferRange @getRegex(), bufferRange, ({range}) =>
-      if marker = @findMarker(range)
-        delete markersToRemoveById[marker.id]
-      else
-        marker = @createMarker(range)
+    try
+      @editSession.scanInBufferRange @getRegex(), bufferRange, ({range}) =>
+        if marker = @findMarker(range)
+          delete markersToRemoveById[marker.id]
+        else
+          marker = @createMarker(range)
 
-      updatedMarkers.push marker
+        updatedMarkers.push marker
 
-    marker.destroy() for id, marker of markersToRemoveById
+      marker.destroy() for id, marker of markersToRemoveById
 
-    @markers = updatedMarkers
-    @emit 'updated', _.clone(@markers)
+      @markers = updatedMarkers
+      @emit 'updated', _.clone(@markers)
+    catch e
+      @destroyAllMarkers()
+      throw e
 
   findMarker: (range) ->
     attributes = { class: @constructor.markerClass, startPosition: range.start, endPosition: range.end }

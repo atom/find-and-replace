@@ -136,10 +136,10 @@ class FindView extends View
   findAndSelectResult: (selectFunction, focusEditorAfter = true) =>
     @clearMessages()
     pattern = @findEditor.getText()
-    @findModel.update { pattern }
+    @updateModel { pattern }
 
     if @markers.length == 0
-      @addInfoMessage("No results found for '#{pattern}'")
+      @addInfoMessage("No results found for '#{pattern}'") unless @hasErrors()
       shell.beep()
     else
       selectFunction()
@@ -148,10 +148,10 @@ class FindView extends View
   replaceNext: =>
     @clearMessages()
     pattern = @findEditor.getText()
-    @findModel.update { pattern }
+    @updateModel { pattern }
 
     if @markers.length == 0
-      @addInfoMessage("No results found for '#{pattern}'")
+      @addInfoMessage("No results found for '#{pattern}'") unless @hasErrors()
       shell.beep()
     else
       unless currentMarker = @currentResultMarker
@@ -162,7 +162,7 @@ class FindView extends View
       @findNext(false)
 
   replaceAll: =>
-    @findModel.update {pattern: @findEditor.getText()}
+    @updateModel {pattern: @findEditor.getText()}
     @findModel.replace(@markers, @replaceEditor.getText())
 
   markersUpdated: (@markers) =>
@@ -172,6 +172,12 @@ class FindView extends View
     @findEditor.setText(@findModel.pattern)
     @findHistory.store()
     @replaceHistory.store()
+
+  updateModel: (options) ->
+    try
+      @findModel.update(options)
+    catch e
+      @addErrorMessage(e.message)
 
   updateResultCounter: ->
     if @currentResultMarker
@@ -231,7 +237,7 @@ class FindView extends View
 
   setSelectionAsFindPattern: =>
     pattern = @findModel.getEditSession().getSelectedText()
-    @findModel.update {pattern}
+    @updateModel {pattern}
 
   clearMessages: ->
     @errorMessages.hide().empty()
@@ -245,16 +251,19 @@ class FindView extends View
     @errorMessages.append($$$ -> @li message)
     @errorMessages.show()
 
+  hasErrors: ->
+    !!@errorMessages.children().length
+
   toggleRegexOption: =>
-    @findModel.update {pattern: @findEditor.getText(), useRegex: !@findModel.useRegex}
+    @updateModel {pattern: @findEditor.getText(), useRegex: !@findModel.useRegex}
     @selectFirstMarkerAfterCursor()
 
   toggleCaseOption: =>
-    @findModel.update {pattern: @findEditor.getText(), caseInsensitive: !@findModel.caseInsensitive}
+    @updateModel {pattern: @findEditor.getText(), caseInsensitive: !@findModel.caseInsensitive}
     @selectFirstMarkerAfterCursor()
 
   toggleSelectionOption: =>
-    @findModel.update {pattern: @findEditor.getText(), inCurrentSelection: !@findModel.inCurrentSelection}
+    @updateModel {pattern: @findEditor.getText(), inCurrentSelection: !@findModel.inCurrentSelection}
     @selectFirstMarkerAfterCursor()
 
   setOptionButtonState: (optionButton, selected) ->

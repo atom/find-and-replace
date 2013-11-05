@@ -295,6 +295,15 @@ describe 'FindView', ->
         findView.findEditor.trigger 'find-and-replace:toggle-regex-option'
         expect(editor.getSelectedBufferRange()).toEqual [[1, 6], [1, 10]]
 
+      describe "when an invalid regex is entered", ->
+        it "displays an error", ->
+          editor.setCursorBufferPosition([2,0])
+          findView.findEditor.trigger 'find-and-replace:toggle-regex-option'
+          findView.findEditor.setText 'i[t'
+          findView.findEditor.trigger 'core:confirm'
+          expect(findView.errorMessages.children()).toHaveLength 1
+          expect(findView.infoMessages.children()).toHaveLength 0
+
     describe "when case sensitivity is toggled", ->
       beforeEach ->
         editor.setText "-----\nwords\nWORDs\n"
