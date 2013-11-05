@@ -94,7 +94,7 @@ class FindModel
     _.find @editSession.findMarkers(attributes), (marker) -> marker.isValid()
 
   createMarker: (range) ->
-    markerAttributes = { class: @constructor.markerClass, invalidation: 'inside', replicate: false }
+    markerAttributes = { class: @constructor.markerClass, invalidation: 'inside', replicate: false, isCurrent: false }
     @editSession.markBufferRange(range, markerAttributes)
 
   destroyAllMarkers: ->

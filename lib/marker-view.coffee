@@ -1,4 +1,4 @@
-{_} = require 'atom'
+{$, _} = require 'atom'
 {Subscriber} = require 'emissary'
 
 module.exports =
@@ -13,6 +13,7 @@ class MarkerView
     @updateNeeded = @marker.isValid()
 
     @subscribe @marker, 'changed', (event) => @onMarkerChanged(event)
+    @subscribe @marker, 'attributes-changed', ({isCurrent}) => @updateCurrentClass(isCurrent)
     @subscribe @marker, 'destroyed', => @remove()
     @subscribe @editor, 'editor:display-updated', => @updateDisplay()
 
@@ -38,6 +39,12 @@ class MarkerView
     {start, end} = @getScreenRange()
     [firstRenderedRow, lastRenderedRow] = [@editor.firstRenderedScreenRow, @editor.lastRenderedScreenRow]
     end.row >= firstRenderedRow and start.row <= lastRenderedRow
+
+  updateCurrentClass: (isCurrent) ->
+    if isCurrent
+      $(@element).addClass('current-result')
+    else
+      $(@element).removeClass('current-result')
 
   updateDisplay: ->
     return unless @isUpdateNeeded()
