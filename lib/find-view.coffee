@@ -1,5 +1,5 @@
 shell = require 'shell'
-{Editor, View} = require 'atom'
+{$$$, Editor, View} = require 'atom'
 FindModel = require './find-model'
 FindResultsView = require './find-results-view'
 History = require './history'
@@ -9,6 +9,9 @@ class FindView extends View
 
   @content: ->
     @div tabIndex: -1, class: 'find-and-replace tool-panel panel-bottom', =>
+      @ul outlet: 'errorMessages', class: 'error-messages block'
+      @ul outlet: 'infoMessages', class: 'info-messages block'
+
       @div class: 'find-container block', =>
         @label class: 'text-subtle', 'Find'
 
@@ -48,6 +51,8 @@ class FindView extends View
       @showFind()
     else if showReplace
       @showReplace()
+
+    @clearMessages()
 
   serialize: ->
     findHistory: @findHistory.serialize()
@@ -123,25 +128,30 @@ class FindView extends View
     @findNext()
 
   findNext: (focusEditorAfter = true) =>
-    @findModel.update {pattern: @findEditor.getText()}
-    if @markers.length == 0
-      shell.beep()
-    else
-      @selectFirstMarkerAfterCursor()
-      rootView.focus() if focusEditorAfter
+    @findAndSelectResult(@selectFirstMarkerAfterCursor, focusEditorAfter)
 
   findPrevious: (focusEditorAfter = true) =>
-    @findModel.update {pattern: @findEditor.getText()}
+    @findAndSelectResult(@selectFirstMarkerBeforeCursor, focusEditorAfter)
+
+  findAndSelectResult: (selectFunction, focusEditorAfter = true) =>
+    @clearMessages()
+    pattern = @findEditor.getText()
+    @findModel.update { pattern }
+
     if @markers.length == 0
+      @addInfoMessage("No results found for '#{pattern}'")
       shell.beep()
     else
-      @selectFirstMarkerBeforeCursor()
+      selectFunction()
       rootView.focus() if focusEditorAfter
 
   replaceNext: =>
-    @findModel.update {pattern: @findEditor.getText()}
+    @clearMessages()
+    pattern = @findEditor.getText()
+    @findModel.update { pattern }
 
     if @markers.length == 0
+      @addInfoMessage("No results found for '#{pattern}'")
       shell.beep()
     else
       unless currentMarker = @currentResultMarker
@@ -177,7 +187,7 @@ class FindView extends View
 
     @resultCounter.text text
 
-  selectFirstMarkerAfterCursor: ->
+  selectFirstMarkerAfterCursor: =>
     markerIndex = @firstMarkerIndexAfterCursor()
     @selectMarkerAtIndex(markerIndex)
 
@@ -191,7 +201,7 @@ class FindView extends View
       return index if markerStartPosition.isGreaterThan(start)
     0
 
-  selectFirstMarkerBeforeCursor: ->
+  selectFirstMarkerBeforeCursor: =>
     markerIndex = @firstMarkerIndexBeforeCursor()
     @selectMarkerAtIndex(markerIndex)
 
@@ -222,6 +232,18 @@ class FindView extends View
   setSelectionAsFindPattern: =>
     pattern = @findModel.getEditSession().getSelectedText()
     @findModel.update {pattern}
+
+  clearMessages: ->
+    @errorMessages.hide().empty()
+    @infoMessages.hide().empty()
+
+  addInfoMessage: (message) ->
+    @infoMessages.append($$$ -> @li message)
+    @infoMessages.show()
+
+  addErrorMessage: (message) ->
+    @errorMessages.append($$$ -> @li message)
+    @errorMessages.show()
 
   toggleRegexOption: =>
     @findModel.update {pattern: @findEditor.getText(), useRegex: !@findModel.useRegex}
