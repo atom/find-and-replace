@@ -81,6 +81,8 @@ class ProjectFindView extends View
     @pathsEditor.on 'focus', -> self.setLastFocusedElement(this)
     @pathsEditor.on 'blur', -> self.setLastFocusedElement(this)
 
+    rootView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
+
   attach: ->
     if @hasParent()
       el = @lastFocusedElement or @findEditor
@@ -148,6 +150,12 @@ class ProjectFindView extends View
   addErrorMessage: (message) ->
     @errorMessages.append($$$ -> @li message)
     @errorMessages.show()
+
+  setSelectionAsFindPattern: =>
+    editor = rootView.getActiveView()
+    if editor
+      pattern = editor.activeEditSession.getSelectedText()
+      @findEditor.setText(pattern)
 
   replaceAll: ->
     @clearMessages()

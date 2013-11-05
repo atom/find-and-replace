@@ -278,6 +278,13 @@ describe 'ProjectFindView', ->
         projectFindView.replaceEditor.trigger 'core:move-down'
         expect(projectFindView.replaceEditor.getText()).toEqual ''
 
+    describe "when find-and-replace:set-find-pattern is triggered", ->
+      it "places the selected text into the find editor", ->
+        editor.setSelectedBufferRange([[1,6],[1,10]])
+        rootView.trigger 'find-and-replace:use-selection-as-find-pattern'
+
+        expect(projectFindView.findEditor.getText()).toBe 'sort'
+
   describe "replacing", ->
     [testDir, sampleJs, sampleCoffee] = []
 
