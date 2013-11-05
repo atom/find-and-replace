@@ -31,4 +31,4 @@ class ResultView extends View
     null
 
   confirm: ->
-    rootView.open(@filePath)
+    rootView.openSingletonSync(@filePath, split: 'left')

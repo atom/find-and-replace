@@ -124,6 +124,35 @@ describe 'ResultsView', ->
 
       runs ->
         resultsView = getResultsView()
+        resultsView.selectFirstResult()
+
+        # open something in sample.coffee
+        _.times 3, -> resultsView.trigger 'core:move-down'
+        resultsView.trigger 'core:confirm'
+
+        activePane = rootView.getActivePane()
+        expect(activePane[0]).toBe rootView.getPanes()[0][0]
+        expect(rootView.getActiveView().getPath()).toContain('sample.')
+
+        # open something in sample.js
+        resultsView.focus()
+        _.times 6, -> resultsView.trigger 'core:move-down'
+        resultsView.trigger 'core:confirm'
+
+        activePane = rootView.getActivePane()
+        expect(activePane[0]).toBe rootView.getPanes()[0][0]
+        expect(rootView.getActiveView().getPath()).toContain('sample.')
+
+    it "arrows through the list without selecting paths", ->
+      rootView.openSync('sample.js')
+      projectFindView.findEditor.setText('items')
+      projectFindView.trigger 'core:confirm'
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        resultsView = getResultsView()
 
         lastSelectedItem = null
 

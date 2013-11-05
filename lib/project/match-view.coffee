@@ -22,5 +22,5 @@ class SearchResultView extends View
   initialize: ({@filePath, @match}) ->
 
   confirm: ->
-    rootView.open(@filePath).done (editSession) =>
-      editSession.setSelectedBufferRange(@match.range, autoscroll: true)
+    editSession = rootView.openSingletonSync(@filePath, split: 'left')
+    editSession.setSelectedBufferRange(@match.range, autoscroll: true)
