@@ -47,6 +47,8 @@ class ProjectFindView extends View
     @regexOptionButton.addClass('selected') if @model.useRegex
     @caseOptionButton.addClass('selected') if @model.caseSensitive
 
+    @clearMessages()
+
   serialize: ->
     attached: @hasParent()
     findHistory: @findHistory.serialize()
