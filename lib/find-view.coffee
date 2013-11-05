@@ -229,10 +229,23 @@ class FindView extends View
       @findModel.getEditSession().setSelectedBufferRange(marker.getBufferRange(), autoscroll: true)
 
   setCurrentMarkerFromSelection: =>
+    if @currentResultMarker
+      # HACK/TODO: telepath does not emit an event when attributes change. This
+      # is the event I want, so emitting myself.
+      @currentResultMarker.setAttributes(isCurrent: false)
+      @currentResultMarker.emit('attributes-changed', {isCurrent: false})
+
     @currentResultMarker = null
     if @markers? and @markers.length and editSession = @findModel.getEditSession()
       selectedBufferRange = editSession.getSelectedBufferRange()
       @currentResultMarker = @findModel.findMarker(selectedBufferRange)
+
+      if @currentResultMarker
+        # HACK/TODO: telepath does not emit an event when attributes change. This
+        # is the event I want, so emitting myself.
+        @currentResultMarker.setAttributes(isCurrent: true)
+        @currentResultMarker.emit('attributes-changed', {isCurrent: true})
+
     @updateResultCounter()
 
   setSelectionAsFindPattern: =>
