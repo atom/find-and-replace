@@ -19,6 +19,8 @@ class ResultView extends View
     @renderMatches(matches)
 
   renderMatches: (matches) ->
+    selectedIndex = @matches.find('.selected').index()
+
     @matches.empty()
     @description.text("(#{matches?.length})")
 
@@ -28,7 +30,7 @@ class ResultView extends View
       @show()
       @matches.append new MatchView({@filePath, match}) for match in matches
 
-    null
+    @matches.children().eq(selectedIndex).addClass('selected') if selectedIndex > -1
 
   confirm: ->
     rootView.openSingletonSync(@filePath, split: 'left')

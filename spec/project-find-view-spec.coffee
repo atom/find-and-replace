@@ -1,7 +1,7 @@
 shell = require 'shell'
 path = require 'path'
 
-{fs, $, RootView} = require 'atom'
+{_, fs, $, RootView} = require 'atom'
 Q = require 'q'
 
 ResultsPaneView = require '../lib/project/results-pane'
@@ -229,11 +229,17 @@ describe 'ProjectFindView', ->
             expect(resultsView.find("li > ul > li")).toHaveLength(13)
             expect(resultsPaneView.previewCount.text()).toBe "13 matches in 2 files for 'items'"
 
+            resultsView.selectFirstResult()
+            _.times 7, -> resultsView.selectNextResult()
+
+            expect(resultsView.find("li > ul:eq(1) > li:eq(0)")).toHaveClass 'selected'
+
             buffer.setText('there is one "items" in this file')
             buffer.trigger('contents-modified')
 
             expect(resultsView.find("li > ul > li")).toHaveLength(8)
             expect(resultsPaneView.previewCount.text()).toBe "8 matches in 2 files for 'items'"
+            expect(resultsView.find("li > ul:eq(1) > li:eq(0)")).toHaveClass 'selected'
 
             buffer.setText('no matches in this file')
             buffer.trigger('contents-modified')
