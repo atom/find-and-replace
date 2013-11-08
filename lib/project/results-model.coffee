@@ -44,6 +44,26 @@ class ResultsModel
 
     promise
 
+  replace: (pattern, replacementText, paths) ->
+    regex = @getRegex(pattern)
+
+    pathsReplaced = 0
+    replacements = 0
+
+    promise = project.replace regex, replacementText, paths, (result) =>
+      if result and result.replacements
+        pathsReplaced++
+        replacements += result.replacements
+      @emit('path-replaced', result)
+
+    promise.done =>
+      @clear()
+      @emit('finished-replacing', {pathsReplaced, replacements})
+
+    @emit('replace', promise)
+
+    promise
+
   toggleUseRegex: ->
     @useRegex = not @useRegex
 

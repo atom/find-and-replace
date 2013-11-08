@@ -20,9 +20,7 @@ describe 'ProjectFindView', ->
   beforeEach ->
     window.rootView = new RootView()
     project.setPath(path.join(__dirname, 'fixtures'))
-    rootView.openSync('sample.js')
     rootView.attachToDom()
-    editor = rootView.getActiveView()
     pack = atom.activatePackage("find-and-replace", immediate: true)
     projectFindView = pack.mainModule.projectFindView
 
@@ -36,7 +34,7 @@ describe 'ProjectFindView', ->
       projectFindView.findEditor.setText('items')
 
     it "attaches ProjectFindView to the root view", ->
-      editor.trigger 'project-find:show'
+      rootView.trigger 'project-find:show'
       expect(rootView.find('.project-find')).toExist()
       expect(projectFindView.find('.preview-block')).not.toBeVisible()
       expect(projectFindView.find('.loading')).not.toBeVisible()
@@ -45,7 +43,10 @@ describe 'ProjectFindView', ->
   describe "finding", ->
     describe "when core:cancel is triggered", ->
       beforeEach ->
-        editor.trigger 'project-find:show'
+        rootView.openSync('sample.js')
+        editor = rootView.getActiveView()
+
+        rootView.trigger 'project-find:show'
         projectFindView.focus()
 
       it "detaches from the root view", ->
@@ -321,7 +322,7 @@ describe 'ProjectFindView', ->
         expect(projectFindView.findEditor.getText()).toBe 'sort'
 
   describe "replacing", ->
-    [testDir, sampleJs, sampleCoffee] = []
+    [testDir, sampleJs, sampleCoffee, replacePromise] = []
 
     beforeEach ->
       testDir = "/tmp/atom-find-and-replace"
@@ -333,6 +334,9 @@ describe 'ProjectFindView', ->
       fs.copy(require.resolve('./fixtures/sample.js'), sampleJs)
       rootView.trigger 'project-find:show'
       project.setPath(testDir)
+
+      spy = spyOn(projectFindView, 'replaceAll').andCallFake ->
+        replacePromise = spy.originalValue.call(projectFindView)
 
     afterEach ->
       fs.remove(testDir)
@@ -349,6 +353,10 @@ describe 'ProjectFindView', ->
           projectFindView.replaceEditor.setText('sunshine')
           projectFindView.replaceAllButton.click()
 
+        waitsForPromise ->
+          replacePromise
+
+        runs ->
           expect(projectFindView.errorMessages).not.toBeVisible()
           expect(projectFindView.infoMessages).toBeVisible()
           expect(projectFindView.infoMessages.find('li').text()).toContain 'Replaced'
@@ -401,22 +409,25 @@ describe 'ProjectFindView', ->
 
         it "runs the search, and replaces all the matches", ->
           projectFindView.replaceEditor.setText('sunshine')
-
           projectFindView.trigger 'project-find:replace-all'
           expect(projectFindView.errorMessages).not.toBeVisible()
 
-          resultsPaneView = getExistingResultsPane()
-          resultsView = resultsPaneView.resultsView
+          waitsForPromise ->
+            replacePromise
 
-          expect(resultsView).toBeVisible()
-          expect(resultsView.find("li > ul > li")).toHaveLength(0)
+          runs ->
+            resultsPaneView = getExistingResultsPane()
+            resultsView = resultsPaneView.resultsView
 
-          expect(projectFindView.infoMessages.find('li').text()).toBe "Replaced 13 results in 2 files"
+            expect(resultsView).toBeVisible()
+            expect(resultsView.find("li > ul > li")).toHaveLength(0)
 
-          sampleJsContent = fs.read sampleJs
-          expect(sampleJsContent.match(/items/g)).toBeFalsy()
-          expect(sampleJsContent.match(/sunshine/g)).toHaveLength 6
+            expect(projectFindView.infoMessages.find('li').text()).toBe "Replaced 13 results in 2 files"
 
-          sampleCoffeeContent = fs.read sampleCoffee
-          expect(sampleCoffeeContent.match(/items/g)).toBeFalsy()
-          expect(sampleCoffeeContent.match(/sunshine/g)).toHaveLength 7
+            sampleJsContent = fs.read sampleJs
+            expect(sampleJsContent.match(/items/g)).toBeFalsy()
+            expect(sampleJsContent.match(/sunshine/g)).toHaveLength 6
+
+            sampleCoffeeContent = fs.read sampleCoffee
+            expect(sampleCoffeeContent.match(/items/g)).toBeFalsy()
+            expect(sampleCoffeeContent.match(/sunshine/g)).toHaveLength 7

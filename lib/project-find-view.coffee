@@ -162,27 +162,15 @@ class ProjectFindView extends View
   replaceAll: ->
     @clearMessages()
 
-    unless @model.getPathCount()
-      shell.beep()
+    pattern = @findEditor.getText()
+    replacementText = @replaceEditor.getText()
+    promise = @model.replace(pattern, replacementText, @model.getPaths())
 
-      @addInfoMessage("Nothing replaced")
+    if @model.getPathCount()
+      @model.once 'finished-replacing', ({pathsReplaced, replacements}) =>
+        @addInfoMessage("Replaced #{_.pluralize(replacements, 'result')} in #{_.pluralize(pathsReplaced, 'file')}")
     else
-      regex = @model.getRegex(@findEditor.getText())
-      replacementText = @replaceEditor.getText()
-      pathsReplaced = {}
-      replacementsCount = 0
-      for filePath in @model.getPaths()
-        continue if pathsReplaced[filePath]
+      shell.beep()
+      @addInfoMessage("Nothing replaced")
 
-        result = @model.getResult(filePath)
-
-        replacementsCount += result.length
-        buffer = project.bufferForPathSync(filePath)
-        pathsReplaced[buffer.getPath()] = true
-
-        newText = buffer.getText().replace(regex, replacementText)
-        buffer.setText(newText)
-        buffer.save()
-
-      @model.clear()
-      @addInfoMessage("Replaced #{_.pluralize(replacementsCount, 'result')} in #{_.pluralize(Object.keys(pathsReplaced).length, 'file')}")
+    promise
