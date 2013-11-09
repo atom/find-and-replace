@@ -91,7 +91,6 @@ class ProjectFindView extends View
   handleEventsForReplace: ->
     @replacementsMade = 0
     @model.on 'replace', (promise) =>
-      # if @model.getPathCount()
       @replacementsMade = 0
       @replacmentInfoBlock.show()
       @replacementProgress.removeAttr('value')
