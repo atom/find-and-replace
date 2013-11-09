@@ -376,9 +376,14 @@ describe 'ProjectFindView', ->
           spyOn(project, 'scan')
           spyOn(shell, 'beep')
           projectFindView.trigger 'project-find:replace-all'
-          expect(project.scan).not.toHaveBeenCalled()
-          expect(shell.beep).toHaveBeenCalled()
-          expect(projectFindView.infoMessages.find('li').text()).toBe "Nothing replaced"
+
+          waitsForPromise ->
+            replacePromise
+
+          runs ->
+            expect(project.scan).not.toHaveBeenCalled()
+            expect(shell.beep).toHaveBeenCalled()
+            expect(projectFindView.infoMessages.find('li').text()).toBe "Nothing replaced"
 
       describe "when the search text has changed since that last search", ->
         beforeEach ->
@@ -396,9 +401,14 @@ describe 'ProjectFindView', ->
           expect(projectFindView.resultsView).not.toBeVisible()
 
           projectFindView.trigger 'project-find:replace-all'
-          expect(project.scan).not.toHaveBeenCalled()
-          expect(shell.beep).toHaveBeenCalled()
-          expect(projectFindView.infoMessages.find('li').text()).toBe "Nothing replaced"
+
+          waitsForPromise ->
+            replacePromise
+
+          runs ->
+            expect(project.scan).not.toHaveBeenCalled()
+            expect(shell.beep).toHaveBeenCalled()
+            expect(projectFindView.infoMessages.find('li').text()).toBe "Nothing replaced"
 
       describe "when the text in the search box triggered the results", ->
         beforeEach ->
