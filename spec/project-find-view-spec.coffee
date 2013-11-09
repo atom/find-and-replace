@@ -41,11 +41,12 @@ describe 'ProjectFindView', ->
       expect(projectFindView.findEditor.getSelectedBufferRange()).toEqual [[0, 0], [0, 5]]
 
   describe "finding", ->
+    beforeEach ->
+      rootView.openSync('sample.js')
+      editor = rootView.getActiveView()
+
     describe "when core:cancel is triggered", ->
       beforeEach ->
-        rootView.openSync('sample.js')
-        editor = rootView.getActiveView()
-
         rootView.trigger 'project-find:show'
         projectFindView.focus()
 
