@@ -13,6 +13,9 @@ class ProjectFindView extends View
 
       @ul outlet: 'errorMessages', class: 'error-messages block'
       @ul outlet: 'infoMessages', class: 'info-messages block'
+      @div outlet: 'replacmentInfoBlock', class: 'block', =>
+        @progress outlet: 'replacementProgress', class: 'inline-block'
+        @span outlet: 'replacmentInfo', class: 'inline-block', 'Replaced 2 files of 10 files'
 
       @div class: 'find-container block', =>
         @label class: 'text-subtle', 'Find'
@@ -83,6 +86,29 @@ class ProjectFindView extends View
 
     rootView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
 
+    @handleEventsForReplace()
+
+  handleEventsForReplace: ->
+    @replacementsMade = 0
+    @model.on 'replace', (promise) =>
+      # if @model.getPathCount()
+      @replacementsMade = 0
+      @replacmentInfoBlock.show()
+      @replacementProgress.removeAttr('value')
+
+    @model.on 'path-replaced', (result) =>
+      @replacementsMade++
+      @replacementProgress[0].value = @replacementsMade / @model.getPathCount()
+      @replacmentInfo.text("Replaced #{@replacementsMade} of #{_.pluralize(@model.getPathCount(), 'file')}")
+
+    @model.on 'finished-replacing', ({pathsReplaced, replacements}) =>
+      @replacmentInfoBlock.hide()
+      if pathsReplaced
+        @addInfoMessage("Replaced #{_.pluralize(replacements, 'result')} in #{_.pluralize(pathsReplaced, 'file')}")
+      else
+        shell.beep()
+        @addInfoMessage("Nothing replaced")
+
   attach: ->
     if @hasParent()
       el = @lastFocusedElement or @findEditor
@@ -136,12 +162,19 @@ class ProjectFindView extends View
     @showResultPane()
     @model.search(@findEditor.getText(), paths)
 
+  replaceAll: ->
+    @clearMessages()
+    pattern = @findEditor.getText()
+    replacementText = @replaceEditor.getText()
+    @model.replace(pattern, replacementText, @model.getPaths())
+
   showResultPane: ->
     options = null
     options = {split: 'right'} if config.get('find-and-replace.openProjectFindResultsInRightPane')
     rootView.openSingletonSync(ResultsPaneView.URI, options)
 
   clearMessages: ->
+    # @replacmentInfoBlock.hide()
     @errorMessages.hide().empty()
     @infoMessages.hide().empty()
 
@@ -158,19 +191,3 @@ class ProjectFindView extends View
     if editor
       pattern = editor.activeEditSession.getSelectedText()
       @findEditor.setText(pattern)
-
-  replaceAll: ->
-    @clearMessages()
-
-    pattern = @findEditor.getText()
-    replacementText = @replaceEditor.getText()
-    promise = @model.replace(pattern, replacementText, @model.getPaths())
-
-    if @model.getPathCount()
-      @model.once 'finished-replacing', ({pathsReplaced, replacements}) =>
-        @addInfoMessage("Replaced #{_.pluralize(replacements, 'result')} in #{_.pluralize(pathsReplaced, 'file')}")
-    else
-      shell.beep()
-      @addInfoMessage("Nothing replaced")
-
-    promise
