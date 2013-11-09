@@ -174,7 +174,7 @@ class ProjectFindView extends View
     rootView.openSingletonSync(ResultsPaneView.URI, options)
 
   clearMessages: ->
-    # @replacmentInfoBlock.hide()
+    @replacmentInfoBlock.hide()
     @errorMessages.hide().empty()
     @infoMessages.hide().empty()
 
