@@ -1,4 +1,5 @@
 shell = require 'shell'
+os = require 'os'
 path = require 'path'
 
 {_, fs, $, RootView} = require 'atom'
@@ -326,13 +327,13 @@ describe 'ProjectFindView', ->
     [testDir, sampleJs, sampleCoffee, replacePromise] = []
 
     beforeEach ->
-      testDir = "/tmp/atom-find-and-replace"
-      fs.makeTree(testDir)
+      testDir = path.join(os.tmpdir(), "atom-find-and-replace")
+      fs.makeTreeSync(testDir)
       sampleJs = path.join(testDir, 'sample.js')
       sampleCoffee = path.join(testDir, 'sample.coffee')
 
-      fs.copy(require.resolve('./fixtures/sample.coffee'), sampleCoffee)
-      fs.copy(require.resolve('./fixtures/sample.js'), sampleJs)
+      fs.writeFileSync(sampleCoffee, fs.readFileSync(require.resolve('./fixtures/sample.coffee')))
+      fs.writeFileSync(sampleJs, fs.readFileSync(require.resolve('./fixtures/sample.js')))
       rootView.trigger 'project-find:show'
       project.setPath(testDir)
 
@@ -340,7 +341,26 @@ describe 'ProjectFindView', ->
         replacePromise = spy.originalValue.call(projectFindView)
 
     afterEach ->
-      fs.remove(testDir)
+      # On Windows, you can not remove a watched directory/file, therefore we
+      # have to close the project before attempting to delete. Unfortunately,
+      # Pathwatcher's close function is also not synchronous. Once
+      # atom/node-pathwatcher#4 is implemented this should be alot cleaner.
+      activePane = rootView.getActivePane()
+      for item in (activePane?.getItems() or [])
+        spyOn(item, 'shouldPromptToSave').andReturn(false) if item.shouldPromptToSave?
+        activePane.destroyItem(item)
+
+      success = false
+      runs ->
+        retry = setInterval ->
+          try
+            fs.removeSync(testDir)
+            success = true
+            clearInterval(retry)
+          catch e
+            success = false
+        , 50
+      waitsFor -> success
 
     describe "when the replace button is pressed", ->
       it "runs the search, and replaces all the matches", ->
