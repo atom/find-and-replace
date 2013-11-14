@@ -1,4 +1,3 @@
-shell = require 'shell'
 path = require 'path'
 
 {fs, $, RootView} = require 'atom'

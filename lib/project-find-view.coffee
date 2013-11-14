@@ -1,5 +1,3 @@
-shell = require 'shell'
-
 {_, $, $$$, Editor, View} = require 'atom'
 
 History = require './history'
@@ -105,7 +103,7 @@ class ProjectFindView extends View
       if pathsReplaced
         @addInfoMessage("Replaced #{_.pluralize(replacements, 'result')} in #{_.pluralize(pathsReplaced, 'file')}")
       else
-        shell.beep()
+        atom.beep()
         @addInfoMessage("Nothing replaced")
 
   attach: ->

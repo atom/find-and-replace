@@ -1,4 +1,3 @@
-shell = require 'shell'
 os = require 'os'
 path = require 'path'
 
@@ -394,7 +393,7 @@ describe 'ProjectFindView', ->
       describe "when no search has been run", ->
         it "does not replace anything", ->
           spyOn(project, 'scan')
-          spyOn(shell, 'beep')
+          spyOn(atom, 'beep')
           projectFindView.trigger 'project-find:replace-all'
 
           waitsForPromise ->
@@ -402,7 +401,7 @@ describe 'ProjectFindView', ->
 
           runs ->
             expect(project.scan).not.toHaveBeenCalled()
-            expect(shell.beep).toHaveBeenCalled()
+            expect(atom.beep).toHaveBeenCalled()
             expect(projectFindView.infoMessages.find('li').text()).toBe "Nothing replaced"
 
       describe "when the search text has changed since that last search", ->
@@ -415,7 +414,7 @@ describe 'ProjectFindView', ->
 
         it "clears the search results and does not replace anything", ->
           spyOn(project, 'scan')
-          spyOn(shell, 'beep')
+          spyOn(atom, 'beep')
 
           projectFindView.findEditor.setText('sort')
           expect(projectFindView.resultsView).not.toBeVisible()
@@ -427,7 +426,7 @@ describe 'ProjectFindView', ->
 
           runs ->
             expect(project.scan).not.toHaveBeenCalled()
-            expect(shell.beep).toHaveBeenCalled()
+            expect(atom.beep).toHaveBeenCalled()
             expect(projectFindView.infoMessages.find('li').text()).toBe "Nothing replaced"
 
       describe "when the text in the search box triggered the results", ->

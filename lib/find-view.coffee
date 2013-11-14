@@ -1,4 +1,3 @@
-shell = require 'shell'
 {$$$, Editor, View} = require 'atom'
 FindModel = require './find-model'
 FindResultsView = require './find-results-view'
@@ -140,7 +139,7 @@ class FindView extends View
 
     if @markers.length == 0
       @addInfoMessage("No results found for '#{pattern}'") unless @hasErrors()
-      shell.beep()
+      atom.beep()
     else
       selectFunction()
       rootView.focus() if focusEditorAfter
@@ -152,7 +151,7 @@ class FindView extends View
 
     if @markers.length == 0
       @addInfoMessage("No results found for '#{pattern}'") unless @hasErrors()
-      shell.beep()
+      atom.beep()
     else
       unless currentMarker = @currentResultMarker
         markerIndex = @firstMarkerIndexAfterCursor()

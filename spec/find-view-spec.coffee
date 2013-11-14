@@ -1,13 +1,12 @@
 {_, $, RootView} = require 'atom'
 
-shell = require 'shell'
 path = require 'path'
 
 describe 'FindView', ->
   [editor, findView] = []
 
   beforeEach ->
-    spyOn(shell, 'beep')
+    spyOn(atom, 'beep')
     window.rootView = new RootView()
     project.setPath(path.join(__dirname, 'fixtures'))
     rootView.openSync('sample.js')
@@ -93,7 +92,7 @@ describe 'FindView', ->
 
       findView.findEditor.trigger 'core:confirm'
       expect(editor.getCursorBufferPosition()).toEqual [2,0]
-      expect(shell.beep).toHaveBeenCalled()
+      expect(atom.beep).toHaveBeenCalled()
       expect(findView.find(':focus')).toExist()
 
       expect(findView.infoMessages.children()).toHaveLength 1
@@ -270,10 +269,10 @@ describe 'FindView', ->
         editor.setCursorBufferPosition([2,0])
         findView.findEditor.setText 'notinthefilebro'
         findView.findEditor.trigger 'core:confirm'
-        shell.beep.reset()
+        atom.beep.reset()
 
         editor.insertText("blah blah")
-        expect(shell.beep).not.toHaveBeenCalled()
+        expect(atom.beep).not.toHaveBeenCalled()
 
     describe "when finding within a selection", ->
       beforeEach ->
