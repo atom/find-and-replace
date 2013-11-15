@@ -2,7 +2,7 @@ path = require 'path'
 
 {fs, $, RootView} = require 'atom'
 
-ResultsModel = require '../../lib/project/results-model.coffee'
+ResultsModel = require '../lib/project/results-model.coffee'
 
 # Default to 30 second promises
 waitsForPromise = (fn) -> window.waitsForPromise timeout: 30000, fn
