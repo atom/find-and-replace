@@ -37,8 +37,6 @@ class ProjectFindView extends View
         @subview 'pathsEditor', new Editor(mini: true)
 
   initialize: (@model, {attached, modelState, findHistory, replaceHistory, pathsHistory}={}) ->
-    @lastFocusedElement = null
-
     @handleEvents()
     @attach() if attached
     @findHistory = new History(@findEditor, findHistory)
@@ -74,14 +72,6 @@ class ProjectFindView extends View
     @model.on 'cleared', => @clearMessages()
     @findEditor.getBuffer().on 'changed', => @model.clear()
 
-    self = this
-    @findEditor.on 'focus', -> self.setLastFocusedElement(this)
-    @findEditor.on 'blur', -> self.setLastFocusedElement(this)
-    @replaceEditor.on 'focus', -> self.setLastFocusedElement(this)
-    @replaceEditor.on 'blur', -> self.setLastFocusedElement(this)
-    @pathsEditor.on 'focus', -> self.setLastFocusedElement(this)
-    @pathsEditor.on 'blur', -> self.setLastFocusedElement(this)
-
     rootView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
 
     @handleEventsForReplace()
@@ -107,14 +97,9 @@ class ProjectFindView extends View
         @addInfoMessage("Nothing replaced")
 
   attach: ->
-    if @hasParent()
-      el = @lastFocusedElement or @findEditor
-      el.focus()
-      el.selectAll?()
-    else
-      rootView.vertical.append(this)
-      @findEditor.focus()
-      @findEditor.selectAll()
+    rootView.vertical.append(this) unless @hasParent()
+    @findEditor.focus()
+    @findEditor.selectAll()
 
   detach: ->
     rootView.focus()
@@ -129,9 +114,6 @@ class ProjectFindView extends View
     @model.toggleCaseSensitive()
     if @model.caseSensitive then @caseOptionButton.addClass('selected') else @caseOptionButton.removeClass('selected')
     @confirm()
-
-  setLastFocusedElement: (element) ->
-    @lastFocusedElement = $(element)
 
   focusNextElement: (direction) ->
     elements = [@findEditor, @replaceEditor, @pathsEditor].filter (el) -> el.has(':visible').length > 0

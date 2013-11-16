@@ -40,6 +40,16 @@ describe 'ProjectFindView', ->
       expect(projectFindView.find('.loading')).not.toBeVisible()
       expect(projectFindView.findEditor.getSelectedBufferRange()).toEqual [[0, 0], [0, 5]]
 
+    describe "when thethe ProjectFindView is already attached", ->
+      beforeEach ->
+        rootView.trigger 'project-find:show'
+        projectFindView.findEditor.setSelectedBufferRange([[0, 0], [0, 0]])
+
+      it "focuses the find editor and selects all the text", ->
+        rootView.trigger 'project-find:show'
+        expect(projectFindView.findEditor.find(':focus')).toExist()
+        expect(projectFindView.findEditor.getSelectedText()).toBe "items"
+
   describe "finding", ->
     beforeEach ->
       rootView.openSync('sample.js')
