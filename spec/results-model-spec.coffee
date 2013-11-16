@@ -12,7 +12,7 @@ describe 'ResultsModel', ->
 
   beforeEach ->
     window.rootView = new RootView()
-    project.setPath(path.join(__dirname, '..', 'fixtures'))
+    project.setPath(path.join(__dirname, 'fixtures'))
     rootView.openSync('sample.js')
     rootView.attachToDom()
 
