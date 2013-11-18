@@ -20,6 +20,12 @@ describe 'FindView', ->
       editor.trigger 'find-and-replace:show'
       expect(rootView.find('.find-and-replace')).toExist()
 
+  describe "when FindView's replace editor is visible", ->
+    it "keeps the replace editor visible when find-and-replace:show is triggered", ->
+      editor.trigger 'find-and-replace:show-replace'
+      editor.trigger 'find-and-replace:show'
+      expect(findView.replaceEditor).toBeVisible()
+
   describe "when core:cancel is triggered", ->
     beforeEach ->
       editor.trigger 'find-and-replace:show'

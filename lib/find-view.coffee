@@ -96,8 +96,9 @@ class FindView extends View
     rootView.command 'find-and-replace:replace-all', @replaceAll
 
   showFind: =>
-    @attach()
-    @addClass('find-mode').removeClass('replace-mode')
+    if not @hasParent()
+      @attach()
+      @addClass('find-mode').removeClass('replace-mode')
     @findEditor.focus()
     @findEditor.selectAll()
 
