@@ -48,7 +48,7 @@ describe 'ResultsModel', ->
 
         # updates when we change the buffer
         editSession.setText('there are some items in here')
-        editSession.buffer.trigger('contents-modified')
+        editSession.buffer.emit('contents-modified')
 
         expect(resultAddedSpy.callCount).toBe 2
 
@@ -62,7 +62,7 @@ describe 'ResultsModel', ->
 
         # updates when there are no matches
         editSession.setText('no matches in here')
-        editSession.buffer.trigger('contents-modified')
+        editSession.buffer.emit('contents-modified')
 
         expect(resultAddedSpy.callCount).toBe 2
         expect(resultRemovedSpy.callCount).toBe 1
@@ -78,7 +78,7 @@ describe 'ResultsModel', ->
         spyOn(editSession, 'scan').andCallThrough()
 
         editSession.setText('no matches in here')
-        editSession.buffer.trigger('contents-modified')
+        editSession.buffer.emit('contents-modified')
 
         expect(editSession.scan).not.toHaveBeenCalled()
 

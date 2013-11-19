@@ -247,14 +247,14 @@ describe 'ProjectFindView', ->
             expect(resultsView.find("li > ul:eq(1) > li:eq(0)")).toHaveClass 'selected'
 
             buffer.setText('there is one "items" in this file')
-            buffer.trigger('contents-modified')
+            buffer.emit('contents-modified')
 
             expect(resultsView.find("li > ul > li")).toHaveLength(8)
             expect(resultsPaneView.previewCount.text()).toBe "8 matches in 2 files for 'items'"
             expect(resultsView.find("li > ul:eq(1) > li:eq(0)")).toHaveClass 'selected'
 
             buffer.setText('no matches in this file')
-            buffer.trigger('contents-modified')
+            buffer.emit('contents-modified')
 
             expect(resultsView.find("li > ul > li")).toHaveLength(7)
             expect(resultsPaneView.previewCount.text()).toBe "7 matches in 1 file for 'items'"
