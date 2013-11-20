@@ -22,5 +22,5 @@ class SearchResultView extends View
   initialize: ({@filePath, @match}) ->
 
   confirm: ->
-    editSession = rootView.openSingletonSync(@filePath, split: 'left')
+    editSession = atom.rootView.openSingletonSync(@filePath, split: 'left')
     editSession.setSelectedBufferRange(@match.range, autoscroll: true)

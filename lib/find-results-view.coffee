@@ -21,7 +21,7 @@ class FindResultsView extends View
     @destroyAllViews()
 
   getEditor: ->
-    activeView = rootView.getActiveView()
+    activeView = atom.rootView.getActiveView()
     if activeView instanceof Editor then activeView else null
 
   markersUpdated: (markers) ->

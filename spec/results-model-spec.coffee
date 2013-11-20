@@ -11,12 +11,12 @@ describe 'ResultsModel', ->
   [editSession, searchPromise, resultsModel, searchPromise] = []
 
   beforeEach ->
-    window.rootView = new RootView()
-    project.setPath(path.join(__dirname, 'fixtures'))
-    rootView.openSync('sample.js')
-    rootView.attachToDom()
+    atom.rootView = new RootView()
+    atom.project.setPath(path.join(__dirname, 'fixtures'))
+    atom.rootView.openSync('sample.js')
+    atom.rootView.attachToDom()
 
-    editor = rootView.getActiveView()
+    editor = atom.rootView.getActiveView()
     editSession = editor.activeEditSession
 
     resultsModel = new ResultsModel()

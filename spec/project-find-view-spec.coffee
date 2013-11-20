@@ -13,18 +13,18 @@ describe 'ProjectFindView', ->
   [pack, editor, projectFindView, searchPromise] = []
 
   getExistingResultsPane = ->
-    pane = rootView.panes.paneForUri(ResultsPaneView.URI)
+    pane = atom.rootView.panes.paneForUri(ResultsPaneView.URI)
     return pane.itemForUri(ResultsPaneView.URI) if pane?
     null
 
   beforeEach ->
-    window.rootView = new RootView()
-    project.setPath(path.join(__dirname, 'fixtures'))
-    rootView.attachToDom()
-    pack = atom.activatePackage("find-and-replace", immediate: true)
+    atom.rootView = new RootView()
+    atom.project.setPath(path.join(__dirname, 'fixtures'))
+    atom.rootView.attachToDom()
+    pack = atom.packages.activatePackage("find-and-replace", immediate: true)
     projectFindView = pack.mainModule.projectFindView
 
-    config.set('find-and-replace.openProjectFindResultsInRightPane', false)
+    atom.config.set('find-and-replace.openProjectFindResultsInRightPane', false)
 
     spy = spyOn(projectFindView, 'confirm').andCallFake ->
       searchPromise = spy.originalValue.call(projectFindView)
@@ -34,45 +34,45 @@ describe 'ProjectFindView', ->
       projectFindView.findEditor.setText('items')
 
     it "attaches ProjectFindView to the root view", ->
-      rootView.trigger 'project-find:show'
-      expect(rootView.find('.project-find')).toExist()
+      atom.rootView.trigger 'project-find:show'
+      expect(atom.rootView.find('.project-find')).toExist()
       expect(projectFindView.find('.preview-block')).not.toBeVisible()
       expect(projectFindView.find('.loading')).not.toBeVisible()
       expect(projectFindView.findEditor.getSelectedBufferRange()).toEqual [[0, 0], [0, 5]]
 
     describe "when thethe ProjectFindView is already attached", ->
       beforeEach ->
-        rootView.trigger 'project-find:show'
+        atom.rootView.trigger 'project-find:show'
         projectFindView.findEditor.setSelectedBufferRange([[0, 0], [0, 0]])
 
       it "focuses the find editor and selects all the text", ->
-        rootView.trigger 'project-find:show'
+        atom.rootView.trigger 'project-find:show'
         expect(projectFindView.findEditor.find(':focus')).toExist()
         expect(projectFindView.findEditor.getSelectedText()).toBe "items"
 
   describe "finding", ->
     beforeEach ->
-      rootView.openSync('sample.js')
-      editor = rootView.getActiveView()
+      atom.rootView.openSync('sample.js')
+      editor = atom.rootView.getActiveView()
 
     describe "when core:cancel is triggered", ->
       beforeEach ->
-        rootView.trigger 'project-find:show'
+        atom.rootView.trigger 'project-find:show'
         projectFindView.focus()
 
       it "detaches from the root view", ->
         $(document.activeElement).trigger 'core:cancel'
-        expect(rootView.find('.project-find')).not.toExist()
+        expect(atom.rootView.find('.project-find')).not.toExist()
 
     describe "splitting into a second pane", ->
       beforeEach ->
-        rootView.height(1000)
+        atom.rootView.height(1000)
 
         editor.trigger 'project-find:show'
 
       it "splits when option is true", ->
-        initialPane = rootView.getActivePane()
-        config.set('find-and-replace.openProjectFindResultsInRightPane', true)
+        initialPane = atom.rootView.getActivePane()
+        atom.config.set('find-and-replace.openProjectFindResultsInRightPane', true)
         projectFindView.findEditor.setText('items')
         projectFindView.trigger 'core:confirm'
 
@@ -80,11 +80,11 @@ describe 'ProjectFindView', ->
           searchPromise
 
         runs ->
-          pane1 = rootView.getActivePane()
+          pane1 = atom.rootView.getActivePane()
           expect(pane1[0]).not.toBe initialPane[0]
 
       it "does not split when option is false", ->
-        initialPane = rootView.getActivePane()
+        initialPane = atom.rootView.getActivePane()
         projectFindView.findEditor.setText('items')
         projectFindView.trigger 'core:confirm'
 
@@ -92,11 +92,11 @@ describe 'ProjectFindView', ->
           searchPromise
 
         runs ->
-          pane1 = rootView.getActivePane()
+          pane1 = atom.rootView.getActivePane()
           expect(pane1[0]).toBe initialPane[0]
 
       it "can be duplicated", ->
-        config.set('find-and-replace.openProjectFindResultsInRightPane', true)
+        atom.config.set('find-and-replace.openProjectFindResultsInRightPane', true)
         projectFindView.findEditor.setText('items')
         projectFindView.trigger 'core:confirm'
 
@@ -105,10 +105,10 @@ describe 'ProjectFindView', ->
 
         runs ->
           resultsPaneView1 = getExistingResultsPane()
-          pane1 = rootView.getActivePane()
+          pane1 = atom.rootView.getActivePane()
           pane1.splitRight(pane1.copyActiveItem())
 
-          pane2 = rootView.getActivePane()
+          pane2 = atom.rootView.getActivePane()
           resultsPaneView2 = pane2.itemForUri(ResultsPaneView.URI)
 
           expect(pane1[0]).not.toBe pane2[0]
@@ -124,8 +124,8 @@ describe 'ProjectFindView', ->
       it "serializes if the view is attached", ->
         expect(projectFindView.hasParent()).toBeFalsy()
         editor.trigger 'project-find:show'
-        atom.deactivatePackage("find-and-replace")
-        pack = atom.activatePackage("find-and-replace", immediate: true)
+        atom.packages.deactivatePackage("find-and-replace")
+        pack = atom.packages.activatePackage("find-and-replace", immediate: true)
         projectFindView = pack.mainModule.projectFindView
 
         expect(projectFindView.hasParent()).toBeTruthy()
@@ -140,8 +140,8 @@ describe 'ProjectFindView', ->
         projectFindView.regexOptionButton.click()
         expect(projectFindView.regexOptionButton).toHaveClass('selected')
 
-        atom.deactivatePackage("find-and-replace")
-        pack = atom.activatePackage("find-and-replace", immediate: true)
+        atom.packages.deactivatePackage("find-and-replace")
+        pack = atom.packages.activatePackage("find-and-replace", immediate: true)
         projectFindView = pack.mainModule.projectFindView
 
         expect(projectFindView.caseOptionButton).toHaveClass('selected')
@@ -193,7 +193,7 @@ describe 'ProjectFindView', ->
 
     describe "when core:confirm is triggered", ->
       beforeEach ->
-        rootView.trigger 'project-find:show'
+        atom.rootView.trigger 'project-find:show'
 
       describe "when the there search field is empty", ->
         it "does not run the seach", ->
@@ -278,7 +278,7 @@ describe 'ProjectFindView', ->
 
     describe "history", ->
       beforeEach ->
-        rootView.trigger 'project-find:show'
+        atom.rootView.trigger 'project-find:show'
         spyOn(project, 'scan').andCallFake -> Q()
 
         projectFindView.findEditor.setText('sort')
@@ -328,7 +328,7 @@ describe 'ProjectFindView', ->
     describe "when find-and-replace:set-find-pattern is triggered", ->
       it "places the selected text into the find editor", ->
         editor.setSelectedBufferRange([[1,6],[1,10]])
-        rootView.trigger 'find-and-replace:use-selection-as-find-pattern'
+        atom.rootView.trigger 'find-and-replace:use-selection-as-find-pattern'
 
         expect(projectFindView.findEditor.getText()).toBe 'sort'
 
@@ -343,7 +343,7 @@ describe 'ProjectFindView', ->
 
       fs.writeFileSync(sampleCoffee, fs.readFileSync(require.resolve('./fixtures/sample.coffee')))
       fs.writeFileSync(sampleJs, fs.readFileSync(require.resolve('./fixtures/sample.js')))
-      rootView.trigger 'project-find:show'
+      atom.rootView.trigger 'project-find:show'
       project.setPath(testDir)
 
       spy = spyOn(projectFindView, 'replaceAll').andCallFake ->
@@ -354,7 +354,7 @@ describe 'ProjectFindView', ->
       # have to close the project before attempting to delete. Unfortunately,
       # Pathwatcher's close function is also not synchronous. Once
       # atom/node-pathwatcher#4 is implemented this should be alot cleaner.
-      activePane = rootView.getActivePane()
+      activePane = atom.rootView.getActivePane()
       for item in (activePane?.getItems() or [])
         spyOn(item, 'shouldPromptToSave').andReturn(false) if item.shouldPromptToSave?
         activePane.destroyItem(item)

@@ -27,18 +27,18 @@ module.exports =
     # See https://github.com/atom/find-and-replace/issues/63
     ResultsPaneView.model = @resultsModel
 
-    project.registerOpener (filePath) =>
+    atom.project.registerOpener (filePath) =>
       new ResultsPaneView() if filePath is ResultsPaneView.URI
 
-    rootView.command 'project-find:show', =>
+    atom.rootView.command 'project-find:show', =>
       @findView.detach()
       @projectFindView.attach()
 
-    rootView.command 'find-and-replace:show', =>
+    atom.rootView.command 'find-and-replace:show', =>
       @projectFindView.detach()
       @findView.showFind()
 
-    rootView.command 'find-and-replace:show-replace', =>
+    atom.rootView.command 'find-and-replace:show-replace', =>
       @projectFindView.detach()
       @findView.showReplace()
 
@@ -49,7 +49,7 @@ module.exports =
       @projectFindView.detach()
 
     # in code editors
-    rootView.on 'core:cancel core:close', (event) =>
+    atom.rootView.on 'core:cancel core:close', (event) =>
       target = $(event.target)
       editor = target.parents('.editor:not(.mini)')
       return unless editor.length

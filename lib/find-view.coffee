@@ -80,20 +80,20 @@ class FindView extends View
 
     @findModel.on 'updated', @markersUpdated
 
-    rootView.on 'selection:changed', @setCurrentMarkerFromSelection
+    atom.rootView.on 'selection:changed', @setCurrentMarkerFromSelection
 
   handleFindEvents: ->
     @nextButton.on 'click', => @findNext()
     @previousButton.on 'click', => @findPrevious()
-    rootView.command 'find-and-replace:find-next', @findNext
-    rootView.command 'find-and-replace:find-previous', @findPrevious
-    rootView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
+    atom.rootView.command 'find-and-replace:find-next', @findNext
+    atom.rootView.command 'find-and-replace:find-previous', @findPrevious
+    atom.rootView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
 
   handleReplaceEvents: ->
     @replaceNextButton.on 'click', @replaceNext
     @replaceAllButton.on 'click', @replaceAll
-    rootView.command 'find-and-replace:replace-next', @replaceNext
-    rootView.command 'find-and-replace:replace-all', @replaceAll
+    atom.rootView.command 'find-and-replace:replace-next', @replaceNext
+    atom.rootView.command 'find-and-replace:replace-all', @replaceAll
 
   showFind: =>
     if not @hasParent()
@@ -111,11 +111,11 @@ class FindView extends View
 
   attach: =>
     @findResultsView.attach()
-    rootView.vertical.append(this)
+    atom.rootView.vertical.append(this)
 
   detach: =>
     @findResultsView.detach()
-    rootView.focus()
+    atom.rootView.focus()
     super()
 
   toggleFocus: =>
@@ -143,7 +143,7 @@ class FindView extends View
       atom.beep()
     else
       selectFunction()
-      rootView.focus() if focusEditorAfter
+      atom.rootView.focus() if focusEditorAfter
 
   replaceNext: =>
     @clearMessages()

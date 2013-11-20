@@ -14,12 +14,12 @@ class FindModel
     @valid = false
 
     @activePaneItemChanged()
-    rootView.on 'pane-container:active-pane-item-changed', => @activePaneItemChanged()
+    atom.rootView.on 'pane-container:active-pane-item-changed', => @activePaneItemChanged()
 
   activePaneItemChanged: ->
     @editSession?.getBuffer().off(".find")
     @editSession = null
-    paneItem = rootView.getActivePaneItem()
+    paneItem = atom.rootView.getActivePaneItem()
     @destroyAllMarkers()
 
     if paneItem?.getBuffer?()?

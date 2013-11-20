@@ -7,18 +7,18 @@ describe 'FindView', ->
 
   beforeEach ->
     spyOn(atom, 'beep')
-    window.rootView = new RootView()
-    project.setPath(path.join(__dirname, 'fixtures'))
-    rootView.openSync('sample.js')
-    rootView.attachToDom()
-    editor = rootView.getActiveView()
-    pack = atom.activatePackage("find-and-replace", immediate: true)
+    atom.rootView = new RootView()
+    atom.project.setPath(path.join(__dirname, 'fixtures'))
+    atom.rootView.openSync('sample.js')
+    atom.rootView.attachToDom()
+    editor = atom.rootView.getActiveView()
+    pack = atom.packages.activatePackage("find-and-replace", immediate: true)
     findView = pack.mainModule.findView
 
   describe "when find-and-replace:show is triggered", ->
     it "attaches FindView to the root view", ->
       editor.trigger 'find-and-replace:show'
-      expect(rootView.find('.find-and-replace')).toExist()
+      expect(atom.rootView.find('.find-and-replace')).toExist()
 
   describe "when FindView's replace editor is visible", ->
     it "keeps the replace editor visible when find-and-replace:show is triggered", ->
@@ -35,7 +35,7 @@ describe 'FindView', ->
 
     it "detaches from the root view", ->
       $(document.activeElement).trigger 'core:cancel'
-      expect(rootView.find('.find-and-replace')).not.toExist()
+      expect(atom.rootView.find('.find-and-replace')).not.toExist()
 
     it "removes highlighted matches", ->
       findResultsView = editor.find('.search-results')
@@ -53,8 +53,8 @@ describe 'FindView', ->
       findView.replaceEditor.setText("dog")
       findView.replaceAll()
 
-      atom.deactivatePackage("find-and-replace")
-      pack = atom.activatePackage("find-and-replace", immediate: true)
+      atom.packages.deactivatePackage("find-and-replace")
+      pack = atom.packages.activatePackage("find-and-replace", immediate: true)
       findView = pack.mainModule.findView
 
       findView.findEditor.trigger('core:move-up')
@@ -76,8 +76,8 @@ describe 'FindView', ->
       expect(findView.regexOptionButton).toHaveClass 'selected'
       expect(findView.selectionOptionButton).toHaveClass 'selected'
 
-      atom.deactivatePackage("find-and-replace")
-      pack = atom.activatePackage("find-and-replace", immediate: true)
+      atom.packages.deactivatePackage("find-and-replace")
+      pack = atom.packages.activatePackage("find-and-replace", immediate: true)
       findView = pack.mainModule.findView
 
       expect(findView.caseOptionButton).toHaveClass 'selected'
@@ -170,12 +170,12 @@ describe 'FindView', ->
 
     it "places the selected text into the find editor when find-and-replace:set-find-pattern is triggered", ->
       editor.setSelectedBufferRange([[1,6],[1,10]])
-      rootView.trigger 'find-and-replace:use-selection-as-find-pattern'
+      atom.rootView.trigger 'find-and-replace:use-selection-as-find-pattern'
 
       expect(findView.findEditor.getText()).toBe 'sort'
       expect(editor.getSelectedBufferRange()).toEqual [[1,6],[1,10]]
 
-      rootView.trigger 'find-and-replace:find-next'
+      atom.rootView.trigger 'find-and-replace:find-next'
       expect(editor.getSelectedBufferRange()).toEqual [[8,11],[8,15]]
 
     it "does not highlight the found text when the find view is hidden", ->
@@ -188,21 +188,21 @@ describe 'FindView', ->
     describe "when the active pane item changes", ->
       describe "when a new edit session is activated", ->
         it "reruns the search on the new edit session", ->
-          rootView.openSync('sample.coffee')
-          editor = rootView.getActiveView()
+          atom.rootView.openSync('sample.coffee')
+          editor = atom.rootView.getActiveView()
           expect(findView.resultCounter.text()).toEqual('7 found')
           expect(editor.getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
 
         it "initially highlights the found text in the new edit session", ->
           findResultsView = editor.find('.search-results')
 
-          rootView.openSync('sample.coffee')
+          atom.rootView.openSync('sample.coffee')
           expect(findResultsView.children()).toHaveLength 7
 
         it "highlights the found text in the new edit session when find next is triggered", ->
           findResultsView = editor.find('.search-results')
-          rootView.openSync('sample.coffee')
-          editor = rootView.getActiveView()
+          atom.rootView.openSync('sample.coffee')
+          editor = atom.rootView.getActiveView()
 
           findView.findEditor.trigger 'find-and-replace:find-next'
           expect(findResultsView.children()).toHaveLength 7
@@ -230,13 +230,13 @@ describe 'FindView', ->
           project.unregisterOpener(anotherOpener)
 
         it "updates the result view", ->
-          rootView.openSync "another"
+          atom.rootView.openSync "another"
           expect(findView.resultCounter.text()).toEqual('no results')
 
         it "removes all highlights", ->
           findResultsView = editor.find('.search-results')
 
-          rootView.openSync "another"
+          atom.rootView.openSync "another"
           expect(findResultsView.children()).toHaveLength 0
 
       describe "when a new edit session is activated on a different pane", ->

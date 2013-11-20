@@ -11,7 +11,7 @@ describe 'ResultsView', ->
   [pack, projectFindView, resultsView, searchPromise] = []
 
   getExistingResultsPane = ->
-    pane = rootView.panes.paneForUri(ResultsPaneView.URI)
+    pane = atom.rootView.panes.paneForUri(ResultsPaneView.URI)
     return pane.itemForUri(ResultsPaneView.URI) if pane?
     null
 
@@ -19,16 +19,16 @@ describe 'ResultsView', ->
     resultsView = getExistingResultsPane().resultsView
 
   beforeEach ->
-    window.rootView = new RootView()
-    rootView.height(1000)
-    project.setPath(path.join(__dirname, 'fixtures'))
-    rootView.attachToDom()
-    pack = atom.activatePackage("find-and-replace", immediate: true)
+    atom.rootView = new RootView()
+    atom.rootView.height(1000)
+    atom.project.setPath(path.join(__dirname, 'fixtures'))
+    atom.rootView.attachToDom()
+    pack = atom.packages.activatePackage("find-and-replace", immediate: true)
     projectFindView = pack.mainModule.projectFindView
     spy = spyOn(projectFindView, 'confirm').andCallFake ->
       searchPromise = spy.originalValue.call(projectFindView)
 
-    rootView.trigger 'project-find:show'
+    atom.rootView.trigger 'project-find:show'
 
   describe "when the result is for a long line", ->
     it "renders the context around the match", ->
@@ -71,7 +71,7 @@ describe 'ResultsView', ->
         expect(resultsView.find("li").length).toBeGreaterThan previousOperationCount
 
     it "renders all operations when core:move-to-bottom is triggered", ->
-      rootView.height(300)
+      atom.rootView.height(300)
       projectFindView.findEditor.setText('so')
       projectFindView.confirm()
 
@@ -115,7 +115,7 @@ describe 'ResultsView', ->
           expect(resultsView.find('.selected')).toExist()
 
     it "arrows through the list without selecting paths", ->
-      rootView.openSync('sample.js')
+      atom.rootView.openSync('sample.js')
       projectFindView.findEditor.setText('items')
       projectFindView.trigger 'core:confirm'
 
@@ -130,21 +130,21 @@ describe 'ResultsView', ->
         _.times 3, -> resultsView.trigger 'core:move-down'
         resultsView.trigger 'core:confirm'
 
-        activePane = rootView.getActivePane()
-        expect(activePane[0]).toBe rootView.getPanes()[0][0]
-        expect(rootView.getActiveView().getPath()).toContain('sample.')
+        activePane = atom.rootView.getActivePane()
+        expect(activePane[0]).toBe atom.rootView.getPanes()[0][0]
+        expect(atom.rootView.getActiveView().getPath()).toContain('sample.')
 
         # open something in sample.js
         resultsView.focus()
         _.times 6, -> resultsView.trigger 'core:move-down'
         resultsView.trigger 'core:confirm'
 
-        activePane = rootView.getActivePane()
-        expect(activePane[0]).toBe rootView.getPanes()[0][0]
-        expect(rootView.getActiveView().getPath()).toContain('sample.')
+        activePane = atom.rootView.getActivePane()
+        expect(activePane[0]).toBe atom.rootView.getPanes()[0][0]
+        expect(atom.rootView.getActiveView().getPath()).toContain('sample.')
 
     it "arrows through the list without selecting paths", ->
-      rootView.openSync('sample.js')
+      atom.rootView.openSync('sample.js')
       projectFindView.findEditor.setText('items')
       projectFindView.trigger 'core:confirm'
 
