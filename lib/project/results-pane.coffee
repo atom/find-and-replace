@@ -3,7 +3,7 @@ ResultsView = require './results-view'
 
 module.exports =
 class ResultsPaneView extends ScrollView
-  registerDeserializer(this)
+  atom.deserializers.add(this)
 
   @URI: "atom://find-and-replace/project-results"
 
