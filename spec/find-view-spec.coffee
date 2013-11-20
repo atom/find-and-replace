@@ -224,10 +224,10 @@ describe 'FindView', ->
 
         beforeEach ->
           anotherOpener = (pathToOpen, options) -> $('another')
-          project.registerOpener(anotherOpener)
+          atom.project.registerOpener(anotherOpener)
 
         afterEach ->
-          project.unregisterOpener(anotherOpener)
+          atom.project.unregisterOpener(anotherOpener)
 
         it "updates the result view", ->
           atom.rootView.openSync "another"
@@ -241,7 +241,7 @@ describe 'FindView', ->
 
       describe "when a new edit session is activated on a different pane", ->
         it "reruns the search on the new editSession", ->
-          newEditor = editor.getPane().splitRight(project.openSync('sample.coffee')).activeView
+          newEditor = editor.getPane().splitRight(atom.project.openSync('sample.coffee')).activeView
           expect(findView.resultCounter.text()).toEqual('7 found')
           expect(newEditor.getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
 
@@ -253,7 +253,7 @@ describe 'FindView', ->
           findResultsView = editor.find('.search-results')
 
           expect(findResultsView.children()).toHaveLength 6
-          editor.getPane().splitRight(project.openSync('sample.coffee'))
+          editor.getPane().splitRight(atom.project.openSync('sample.coffee'))
           expect(findResultsView.children()).toHaveLength 7
 
     describe "when the buffer contents change", ->

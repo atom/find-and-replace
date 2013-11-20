@@ -151,45 +151,45 @@ describe 'ProjectFindView', ->
       beforeEach ->
         editor.trigger 'project-find:show'
         projectFindView.findEditor.setText('i(\\w)ems+')
-        spyOn(project, 'scan').andCallFake -> Q()
+        spyOn(atom.project, 'scan').andCallFake -> Q()
 
       it "escapes regex patterns by default", ->
         projectFindView.trigger 'core:confirm'
-        expect(project.scan.argsForCall[0][0]).toEqual /i\(\\w\)ems\+/gi
+        expect(atom.project.scan.argsForCall[0][0]).toEqual /i\(\\w\)ems\+/gi
 
       it "toggles regex option via an event and finds files matching the pattern", ->
         expect(projectFindView.regexOptionButton).not.toHaveClass('selected')
         projectFindView.trigger 'project-find:toggle-regex-option'
         expect(projectFindView.regexOptionButton).toHaveClass('selected')
-        expect(project.scan.argsForCall[0][0]).toEqual /i(\w)ems+/gi
+        expect(atom.project.scan.argsForCall[0][0]).toEqual /i(\w)ems+/gi
 
       it "toggles regex option via a button and finds files matching the pattern", ->
         expect(projectFindView.regexOptionButton).not.toHaveClass('selected')
         projectFindView.regexOptionButton.click()
         expect(projectFindView.regexOptionButton).toHaveClass('selected')
-        expect(project.scan.argsForCall[0][0]).toEqual /i(\w)ems+/gi
+        expect(atom.project.scan.argsForCall[0][0]).toEqual /i(\w)ems+/gi
 
     describe "case sensitivity", ->
       beforeEach ->
         editor.trigger 'project-find:show'
-        spyOn(project, 'scan').andCallFake -> Q()
+        spyOn(atom.project, 'scan').andCallFake -> Q()
         projectFindView.findEditor.setText('ITEMS')
 
       it "runs a case insensitive search by default", ->
         projectFindView.trigger 'core:confirm'
-        expect(project.scan.argsForCall[0][0]).toEqual /ITEMS/gi
+        expect(atom.project.scan.argsForCall[0][0]).toEqual /ITEMS/gi
 
       it "toggles case sensitive option via an event and finds files matching the pattern", ->
         expect(projectFindView.caseOptionButton).not.toHaveClass('selected')
         projectFindView.trigger 'project-find:toggle-case-option'
         expect(projectFindView.caseOptionButton).toHaveClass('selected')
-        expect(project.scan.argsForCall[0][0]).toEqual /ITEMS/g
+        expect(atom.project.scan.argsForCall[0][0]).toEqual /ITEMS/g
 
       it "toggles case sensitive option via a button and finds files matching the pattern", ->
         expect(projectFindView.caseOptionButton).not.toHaveClass('selected')
         projectFindView.caseOptionButton.click()
         expect(projectFindView.caseOptionButton).toHaveClass('selected')
-        expect(project.scan.argsForCall[0][0]).toEqual /ITEMS/g
+        expect(atom.project.scan.argsForCall[0][0]).toEqual /ITEMS/g
 
     describe "when core:confirm is triggered", ->
       beforeEach ->
@@ -197,9 +197,9 @@ describe 'ProjectFindView', ->
 
       describe "when the there search field is empty", ->
         it "does not run the seach", ->
-          spyOn(project, 'scan')
+          spyOn(atom.project, 'scan')
           projectFindView.trigger 'core:confirm'
-          expect(project.scan).not.toHaveBeenCalled()
+          expect(atom.project.scan).not.toHaveBeenCalled()
 
       describe "when results exist", ->
         beforeEach ->
@@ -221,15 +221,15 @@ describe 'ProjectFindView', ->
             expect(projectFindView.errorMessages).not.toBeVisible()
 
         it "only searches paths matching text in the path filter", ->
-          spyOn(project, 'scan').andCallFake -> Q()
+          spyOn(atom.project, 'scan').andCallFake -> Q()
           projectFindView.pathsEditor.setText('*.js')
           projectFindView.trigger 'core:confirm'
 
-          expect(project.scan.argsForCall[0][1]['paths']).toEqual ['*.js']
+          expect(atom.project.scan.argsForCall[0][1]['paths']).toEqual ['*.js']
 
         it "updates the results list when a buffer changes", ->
           projectFindView.trigger 'core:confirm'
-          buffer = project.bufferForPathSync('sample.js')
+          buffer = atom.project.bufferForPathSync('sample.js')
 
           waitsForPromise ->
             searchPromise
@@ -262,7 +262,7 @@ describe 'ProjectFindView', ->
       describe "when no results exist", ->
         beforeEach ->
           projectFindView.findEditor.setText('notintheprojectbro')
-          spyOn(project, 'scan').andCallFake -> Q()
+          spyOn(atom.project, 'scan').andCallFake -> Q()
 
         it "displays no errors and no results", ->
           projectFindView.trigger 'core:confirm'
@@ -279,7 +279,7 @@ describe 'ProjectFindView', ->
     describe "history", ->
       beforeEach ->
         atom.rootView.trigger 'project-find:show'
-        spyOn(project, 'scan').andCallFake -> Q()
+        spyOn(atom.project, 'scan').andCallFake -> Q()
 
         projectFindView.findEditor.setText('sort')
         projectFindView.replaceEditor.setText('bort')
@@ -344,7 +344,7 @@ describe 'ProjectFindView', ->
       fs.writeFileSync(sampleCoffee, fs.readFileSync(require.resolve('./fixtures/sample.coffee')))
       fs.writeFileSync(sampleJs, fs.readFileSync(require.resolve('./fixtures/sample.js')))
       atom.rootView.trigger 'project-find:show'
-      project.setPath(testDir)
+      atom.project.setPath(testDir)
 
       spy = spyOn(projectFindView, 'replaceAll').andCallFake ->
         replacePromise = spy.originalValue.call(projectFindView)
@@ -402,7 +402,7 @@ describe 'ProjectFindView', ->
     describe "when the project-find:replace-all is triggered", ->
       describe "when no search has been run", ->
         it "does not replace anything", ->
-          spyOn(project, 'scan')
+          spyOn(atom.project, 'scan')
           spyOn(atom, 'beep')
           projectFindView.trigger 'project-find:replace-all'
 
@@ -410,7 +410,7 @@ describe 'ProjectFindView', ->
             replacePromise
 
           runs ->
-            expect(project.scan).not.toHaveBeenCalled()
+            expect(atom.project.scan).not.toHaveBeenCalled()
             expect(atom.beep).toHaveBeenCalled()
             expect(projectFindView.infoMessages.find('li').text()).toBe "Nothing replaced"
 
@@ -423,7 +423,7 @@ describe 'ProjectFindView', ->
             searchPromise
 
         it "clears the search results and does not replace anything", ->
-          spyOn(project, 'scan')
+          spyOn(atom.project, 'scan')
           spyOn(atom, 'beep')
 
           projectFindView.findEditor.setText('sort')
@@ -435,7 +435,7 @@ describe 'ProjectFindView', ->
             replacePromise
 
           runs ->
-            expect(project.scan).not.toHaveBeenCalled()
+            expect(atom.project.scan).not.toHaveBeenCalled()
             expect(atom.beep).toHaveBeenCalled()
             expect(projectFindView.infoMessages.find('li').text()).toBe "Nothing replaced"
 

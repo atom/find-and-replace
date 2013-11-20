@@ -11,7 +11,7 @@ class ResultView extends View
       @div outlet: 'pathDetails', class: 'path-details list-item', =>
         @span class: 'disclosure-arrow'
         @span class: iconClass + ' icon'
-        @span class: 'path-name bright', filePath.replace(project.getPath()+path.sep, '')
+        @span class: 'path-name bright', filePath.replace(atom.project.getPath()+path.sep, '')
         @span outlet: 'description', class: 'path-match-number'
       @ul outlet: 'matches', class: 'matches list-tree', =>
 

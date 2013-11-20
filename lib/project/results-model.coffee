@@ -35,7 +35,7 @@ class ResultsModel
     onPathsSearched = (numberOfPathsSearched) =>
       @emit('paths-searched', numberOfPathsSearched)
 
-    promise = project.scan @regex, {paths, onPathsSearched}, (result) =>
+    promise = atom.project.scan @regex, {paths, onPathsSearched}, (result) =>
       @setResult(result.filePath, result.matches)
 
     promise.done => @emit('finished-searching')
@@ -50,7 +50,7 @@ class ResultsModel
     pathsReplaced = 0
     replacements = 0
 
-    promise = project.replace regex, replacementText, paths, (result) =>
+    promise = atom.project.replace regex, replacementText, paths, (result) =>
       if result and result.replacements
         pathsReplaced++
         replacements += result.replacements
