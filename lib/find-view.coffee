@@ -2,7 +2,6 @@
 FindModel = require './find-model'
 FindResultsView = require './find-results-view'
 History = require './history'
-atom.requireWithGlobals('bootstrap/js/tooltip', {jQuery : require('atom').$})
 
 module.exports =
 class FindView extends View
