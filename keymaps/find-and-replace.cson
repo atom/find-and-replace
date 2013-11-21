@@ -1,23 +1,43 @@
-'body':
-  'meta-F': 'project-find:show'
-  'meta-f': 'find-and-replace:show'
-  'alt-meta-f': 'find-and-replace:show-replace'
+'.platform-darwin':
+  'cmd-F': 'project-find:show'
+  'cmd-f': 'find-and-replace:show'
+  'alt-cmd-f': 'find-and-replace:show-replace'
 
-'.editor':
-  'meta-g': 'find-and-replace:find-next'
-  'meta-G': 'find-and-replace:find-previous'
+'.platform-win32':
+  'ctrl-F': 'project-find:show'
+  'ctrl-f': 'find-and-replace:show'
+  'alt-ctrl-f': 'find-and-replace:show-replace'
 
-  'meta-e': 'find-and-replace:use-selection-as-find-pattern'
+'.platform-darwin .editor':
+  'cmd-g': 'find-and-replace:find-next'
+  'cmd-G': 'find-and-replace:find-previous'
 
-'.find-and-replace':
-  'meta-enter': 'find-and-replace:replace-all'
-  'alt-meta-/': 'find-and-replace:toggle-regex-option'
-  'alt-meta-c': 'find-and-replace:toggle-case-option'
-  'alt-meta-s': 'find-and-replace:toggle-selection-option'
+  'cmd-e': 'find-and-replace:use-selection-as-find-pattern'
+
+'.platform-win32 .editor':
+  'ctrl-g': 'find-and-replace:find-next'
+  'ctrl-G': 'find-and-replace:find-previous'
+
+  'ctrl-e': 'find-and-replace:use-selection-as-find-pattern'
+
+'.platform-darwin .find-and-replace':
+  'cmd-enter': 'find-and-replace:replace-all'
+  'alt-cmd-/': 'find-and-replace:toggle-regex-option'
+  'alt-cmd-c': 'find-and-replace:toggle-case-option'
+  'alt-cmd-s': 'find-and-replace:toggle-selection-option'
+
+'.platform-win32 .find-and-replace':
+  'ctrl-enter': 'find-and-replace:replace-all'
+  'alt-ctrl-/': 'find-and-replace:toggle-regex-option'
+  'alt-ctrl-c': 'find-and-replace:toggle-case-option'
+  'alt-ctrl-s': 'find-and-replace:toggle-selection-option'
 
 '.find-and-replace, .project-find, .project-find .results-view':
   'tab': 'find-and-replace:focus-next'
   'shift-tab': 'find-and-replace:focus-previous'
 
-'.project-find':
-  'meta-enter': 'project-find:replace-all'
+'.platform-darwin .project-find':
+  'cmd-enter': 'project-find:replace-all'
+
+'.platform-win32 .project-find':
+  'ctrl-enter': 'project-find:replace-all'
