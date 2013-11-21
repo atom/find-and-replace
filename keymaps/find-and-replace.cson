@@ -32,12 +32,16 @@
   'alt-ctrl-c': 'find-and-replace:toggle-case-option'
   'alt-ctrl-s': 'find-and-replace:toggle-selection-option'
 
+'.platform-darwin .project-find':
+  'alt-meta-/': 'project-find:toggle-regex-option'
+  'alt-meta-c': 'project-find:toggle-case-option'
+  'meta-enter': 'project-find:replace-all'
+
+'.platform-win32 .project-find':
+  'alt-ctrl-/': 'project-find:toggle-regex-option'
+  'alt-ctrl-c': 'project-find:toggle-case-option'
+  'ctrl-enter': 'project-find:replace-all'
+
 '.find-and-replace, .project-find, .project-find .results-view':
   'tab': 'find-and-replace:focus-next'
   'shift-tab': 'find-and-replace:focus-previous'
-
-'.platform-darwin .project-find':
-  'cmd-enter': 'project-find:replace-all'
-
-'.platform-win32 .project-find':
-  'ctrl-enter': 'project-find:replace-all'
