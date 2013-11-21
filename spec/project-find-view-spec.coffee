@@ -391,11 +391,11 @@ describe 'ProjectFindView', ->
           expect(projectFindView.infoMessages).toBeVisible()
           expect(projectFindView.infoMessages.find('li').text()).toContain 'Replaced'
 
-          sampleJsContent = fs.read sampleJs
+          sampleJsContent = fs.readFileSync(sampleJs, 'utf8')
           expect(sampleJsContent.match(/items/g)).toBeFalsy()
           expect(sampleJsContent.match(/sunshine/g)).toHaveLength 6
 
-          sampleCoffeeContent = fs.read sampleCoffee
+          sampleCoffeeContent = fs.readFileSync(sampleCoffee, 'utf8')
           expect(sampleCoffeeContent.match(/items/g)).toBeFalsy()
           expect(sampleCoffeeContent.match(/sunshine/g)).toHaveLength 7
 
@@ -464,10 +464,10 @@ describe 'ProjectFindView', ->
 
             expect(projectFindView.infoMessages.find('li').text()).toBe "Replaced 13 results in 2 files"
 
-            sampleJsContent = fs.read sampleJs
+            sampleJsContent = fs.readFileSync(sampleJs, 'utf8')
             expect(sampleJsContent.match(/items/g)).toBeFalsy()
             expect(sampleJsContent.match(/sunshine/g)).toHaveLength 6
 
-            sampleCoffeeContent = fs.read sampleCoffee
+            sampleCoffeeContent = fs.readFileSync(sampleCoffee, 'utf8')
             expect(sampleCoffeeContent.match(/items/g)).toBeFalsy()
             expect(sampleCoffeeContent.match(/sunshine/g)).toHaveLength 7
