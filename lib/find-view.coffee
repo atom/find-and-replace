@@ -65,8 +65,6 @@ class FindView extends View
   serialize: ->
     findHistory: @findHistory.serialize()
     replaceHistory: @replaceHistory.serialize()
-    showFind: @hasParent() and @hasClass('find-mode')
-    showReplace: @hasParent() and @hasClass('replace-mode')
     modelState: @findModel.serialize()
 
   handleEvents: ->
@@ -105,15 +103,12 @@ class FindView extends View
     atom.rootView.command 'find-and-replace:replace-all', @replaceAll
 
   showFind: =>
-    if not @hasParent()
-      @attach()
-      @addClass('find-mode').removeClass('replace-mode')
+    @attach() if not @hasParent()
     @findEditor.focus()
     @findEditor.selectAll()
 
   showReplace: =>
     @attach()
-    @addClass('replace-mode').removeClass('find-mode')
     @replaceEditor.redraw()
     @replaceEditor.focus()
     @replaceEditor.selectAll()
@@ -128,7 +123,7 @@ class FindView extends View
     super()
 
   toggleFocus: =>
-    if @hasClass('replace-mode') and @findEditor.find(':focus').length > 0
+    if @findEditor.find(':focus').length > 0
       @replaceEditor.focus()
     else
       @findEditor.focus()

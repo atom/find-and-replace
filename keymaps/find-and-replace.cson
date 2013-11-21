@@ -33,9 +33,9 @@
   'alt-ctrl-s': 'find-and-replace:toggle-selection-option'
 
 '.platform-darwin .project-find':
-  'alt-meta-/': 'project-find:toggle-regex-option'
-  'alt-meta-c': 'project-find:toggle-case-option'
-  'meta-enter': 'project-find:replace-all'
+  'alt-cmd-/': 'project-find:toggle-regex-option'
+  'alt-cmd-c': 'project-find:toggle-case-option'
+  'cmd-enter': 'project-find:replace-all'
 
 '.platform-win32 .project-find':
   'alt-ctrl-/': 'project-find:toggle-regex-option'
