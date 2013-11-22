@@ -1,12 +1,12 @@
 '.platform-darwin':
   'cmd-F': 'project-find:show'
   'cmd-f': 'find-and-replace:show'
-  'alt-cmd-f': 'find-and-replace:show-replace'
+  'cmd-alt-f': 'find-and-replace:show-replace'
 
 '.platform-win32':
   'ctrl-F': 'project-find:show'
   'ctrl-f': 'find-and-replace:show'
-  'alt-ctrl-f': 'find-and-replace:show-replace'
+  'ctrl-alt-f': 'find-and-replace:show-replace'
 
 '.platform-darwin .editor':
   'cmd-g': 'find-and-replace:find-next'
@@ -22,24 +22,24 @@
 
 '.platform-darwin .find-and-replace':
   'cmd-enter': 'find-and-replace:replace-all'
-  'alt-cmd-/': 'find-and-replace:toggle-regex-option'
-  'alt-cmd-c': 'find-and-replace:toggle-case-option'
-  'alt-cmd-s': 'find-and-replace:toggle-selection-option'
+  'cmd-alt-/': 'find-and-replace:toggle-regex-option'
+  'cmd-alt-c': 'find-and-replace:toggle-case-option'
+  'cmd-alt-s': 'find-and-replace:toggle-selection-option'
 
 '.platform-win32 .find-and-replace':
   'ctrl-enter': 'find-and-replace:replace-all'
-  'alt-ctrl-/': 'find-and-replace:toggle-regex-option'
-  'alt-ctrl-c': 'find-and-replace:toggle-case-option'
-  'alt-ctrl-s': 'find-and-replace:toggle-selection-option'
+  'ctrl-alt-/': 'find-and-replace:toggle-regex-option'
+  'ctrl-alt-c': 'find-and-replace:toggle-case-option'
+  'ctrl-alt-s': 'find-and-replace:toggle-selection-option'
 
 '.platform-darwin .project-find':
-  'alt-cmd-/': 'project-find:toggle-regex-option'
-  'alt-cmd-c': 'project-find:toggle-case-option'
+  'cmd-alt-/': 'project-find:toggle-regex-option'
+  'cmd-alt-c': 'project-find:toggle-case-option'
   'cmd-enter': 'project-find:replace-all'
 
 '.platform-win32 .project-find':
-  'alt-ctrl-/': 'project-find:toggle-regex-option'
-  'alt-ctrl-c': 'project-find:toggle-case-option'
+  'ctrl-alt-/': 'project-find:toggle-regex-option'
+  'ctrl-alt-c': 'project-find:toggle-case-option'
   'ctrl-enter': 'project-find:replace-all'
 
 '.find-and-replace, .project-find, .project-find .results-view':
