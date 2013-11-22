@@ -47,12 +47,13 @@ class ProjectFindView extends View
     @caseOptionButton.addClass('selected') if @model.caseSensitive
 
     @clearMessages()
-    @initializeTooltips()
 
-  initializeTooltips: ->
-    @regexOptionButton.setTooltip("Use Regex", command: 'project-find:toggle-regex-option', commandElement: @findEditor)
-    @caseOptionButton.setTooltip("Match Case", command: 'project-find:toggle-case-option', commandElement: @findEditor)
-    @replaceAllButton.setTooltip("Replace All", command: 'project-find:replace-all', commandElement: @replaceEditor)
+  afterAttach: ->
+    unless @tooltipsInitialized
+      @regexOptionButton.setTooltip("Use Regex", command: 'project-find:toggle-regex-option', commandElement: @findEditor)
+      @caseOptionButton.setTooltip("Match Case", command: 'project-find:toggle-case-option', commandElement: @findEditor)
+      @replaceAllButton.setTooltip("Replace All", command: 'project-find:replace-all', commandElement: @replaceEditor)
+      @tooltipsInitialized = true
 
   serialize: ->
     attached: @hasParent()
