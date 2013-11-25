@@ -276,7 +276,7 @@ class FindView extends View
     @selectFirstMarkerAfterCursor()
 
   toggleCaseOption: =>
-    @updateModel {pattern: @findEditor.getText(), caseInsensitive: !@findModel.caseInsensitive}
+    @updateModel {pattern: @findEditor.getText(), caseSensitive: !@findModel.caseSensitive}
     @selectFirstMarkerAfterCursor()
 
   toggleSelectionOption: =>
@@ -291,5 +291,5 @@ class FindView extends View
 
   updateOptionButtons: ->
     @setOptionButtonState(@regexOptionButton, @findModel.useRegex)
-    @setOptionButtonState(@caseOptionButton, @findModel.caseInsensitive)
+    @setOptionButtonState(@caseOptionButton, @findModel.caseSensitive)
     @setOptionButtonState(@selectionOptionButton, @findModel.inCurrentSelection)
