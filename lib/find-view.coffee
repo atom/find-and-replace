@@ -12,10 +12,8 @@ class FindView extends View
       @ul outlet: 'infoMessages', class: 'info-messages block'
 
       @div class: 'find-container block', =>
-        @label class: 'text-subtle', 'Find'
-
         @div class: 'editor-container', =>
-          @subview 'findEditor', new Editor(mini: true)
+          @subview 'findEditor', new Editor(mini: true, placeholderText: 'Find in current buffer')
 
           @div class: 'find-meta-container', =>
             @span outlet: 'resultCounter', class: 'text-subtle result-counter', ''
@@ -28,10 +26,8 @@ class FindView extends View
           @button outlet: 'selectionOptionButton', class: 'btn btn-mini option-selection', '"'
 
       @div class: 'replace-container block', =>
-        @label class: 'text-subtle', 'Replace'
-
         @div class: 'editor-container', =>
-          @subview 'replaceEditor', new Editor(mini: true)
+          @subview 'replaceEditor', new Editor(mini: true, placeholderText: 'Replace in current buffer')
 
         @div class: 'btn-group btn-toggle', =>
           @button outlet: 'replaceNextButton', class: 'btn btn-mini btn-next', 'Next'
