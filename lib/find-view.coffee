@@ -8,6 +8,9 @@ class FindView extends View
 
   @content: ->
     @div tabIndex: -1, class: 'find-and-replace tool-panel panel-bottom', =>
+      @label outlet: 'optionsLabel', class: 'options-label block', =>
+        @span 'Options: '
+        @span outlet: 'optionsMessage', 'Regex, Case Sensitive, Within Current Selection'
       @ul outlet: 'errorMessages', class: 'error-messages block'
       @ul outlet: 'infoMessages', class: 'info-messages block'
 
