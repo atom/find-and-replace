@@ -8,9 +8,9 @@ class FindView extends View
 
   @content: ->
     @div tabIndex: -1, class: 'find-and-replace tool-panel panel-bottom', =>
-      @label outlet: 'optionsLabel', class: 'options-label block', =>
+      @label class: 'options-label block', =>
         @span 'Options: '
-        @span outlet: 'optionsMessage', 'Regex, Case Sensitive, Within Current Selection'
+        @span outlet: 'optionsLabel', class: 'options'
       @ul outlet: 'errorMessages', class: 'error-messages block'
       @ul outlet: 'infoMessages', class: 'info-messages block'
 
@@ -36,7 +36,6 @@ class FindView extends View
           @button outlet: 'replaceNextButton', class: 'btn btn-mini btn-next', 'Next'
           @button outlet: 'replaceAllButton', class: 'btn btn-mini btn-all', 'All'
 
-
   initialize: ({showFind, showReplace, findHistory, replaceHistory, modelState}={}) ->
     @findModel = new FindModel(modelState)
     @findHistory = new History(@findEditor, findHistory)
@@ -51,6 +50,7 @@ class FindView extends View
       @showReplace()
 
     @clearMessages()
+    @updateOptionsLabel()
 
   afterAttach: ->
     unless @tooltipsInitialized
@@ -271,17 +271,30 @@ class FindView extends View
   hasErrors: ->
     !!@errorMessages.children().length
 
+  updateOptionsLabel: ->
+    label = []
+    label.push('Regex') if @findModel.useRegex
+    if @findModel.caseSensitive
+      label.push('Case Insensitive')
+    else
+      label.push('Case Sensitive')
+    label.push('Within Current Selectio') if @findModel.inCurrentSelection
+    @optionsLabel.text(label.join(', '))
+
   toggleRegexOption: =>
     @updateModel {pattern: @findEditor.getText(), useRegex: !@findModel.useRegex}
     @selectFirstMarkerAfterCursor()
+    @updateOptionsLabel()
 
   toggleCaseOption: =>
     @updateModel {pattern: @findEditor.getText(), caseSensitive: !@findModel.caseSensitive}
     @selectFirstMarkerAfterCursor()
+    @updateOptionsLabel()
 
   toggleSelectionOption: =>
     @updateModel {pattern: @findEditor.getText(), inCurrentSelection: !@findModel.inCurrentSelection}
     @selectFirstMarkerAfterCursor()
+    @updateOptionsLabel()
 
   setOptionButtonState: (optionButton, selected) ->
     if selected
