@@ -1,6 +1,8 @@
 @import "ui-variables";
 
-@button-width: 110px;
+@button-width: 310px;
+@option-button-width: 100px;
+@find-button-width: @button-width - @option-button-width - @component-padding;
 
 .option-button() {
   font-size: 14px;
@@ -28,9 +30,7 @@
 
   .options-label {
     color: @text-color-subtle;
-    font-size: @font-size - 2;
     position: relative;
-    top: -1px;
 
     .options {
       color: @text-color;
@@ -42,8 +42,7 @@
     display: -webkit-flex;
     -webkit-flex-direction: row;
 
-    .btn-toggle.btn-group {
-      width: @button-width;
+    .btn-group {
       margin-left: @component-padding;
     }
 
@@ -57,16 +56,31 @@
     }
   }
 
-  .replace-container {
-    .btn-toggle.btn-group .btn {
+  .btn-group-replace.btn-group {
+    width: @find-button-width;
+    .btn {
       width: 50%;
     }
   }
 
-  .find-container {
-    .btn-toggle.btn-group .btn {
+  .btn-group-replace-all.btn-group {
+    width: @option-button-width;
+    .btn {
+      width: 100%;
+    }
+  }
+
+  .btn-group-find.btn-group {
+    width: @find-button-width;
+    .btn {
+      width: 50%;
+    }
+  }
+  .btn-group-options.btn-group {
+    width: @option-button-width;
+    .btn {
       .option-button();
-      width: 33.333%;
+      width: 33.33%;
 
       &.option-selection {
         font-family: "Times New Roman";
@@ -81,9 +95,9 @@
     top: 0.35em;
     right: 0;
     z-index: 2;
+    font-size: .9em;
 
     .result-counter {
-      font-size: .9em;
       margin-right: @component-padding;
     }
   }
