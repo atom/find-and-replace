@@ -33,4 +33,4 @@ class ResultView extends View
     @matches.children().eq(selectedIndex).addClass('selected') if selectedIndex > -1
 
   confirm: ->
-    atom.rootView.openSingletonSync(@filePath, split: 'left')
+    atom.workspaceView.openSingletonSync(@filePath, split: 'left')
