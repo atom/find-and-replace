@@ -21,20 +21,23 @@ class ProjectFindView extends View
         @span outlet: 'replacmentInfo', class: 'inline-block', 'Replaced 2 files of 10 files'
 
       @div class: 'find-container block', =>
-        @subview 'findEditor', new Editor(mini: true, placeholderText: 'Find in project')
+        @div class: 'editor-container', =>
+          @subview 'findEditor', new Editor(mini: true, placeholderText: 'Find in project')
 
-        @div class: 'btn-group btn-toggle', =>
-          @button outlet: 'regexOptionButton', class: 'btn btn-mini option-regex', '.*'
-          @button outlet: 'caseOptionButton', class: 'btn btn-mini option-case-sensitive', 'Aa'
+        @div class: 'btn-group btn-toggle btn-group-options', =>
+          @button outlet: 'regexOptionButton', class: 'btn option-regex', '.*'
+          @button outlet: 'caseOptionButton', class: 'btn option-case-sensitive', 'Aa'
 
       @div class: 'replace-container block', =>
-        @subview 'replaceEditor', new Editor(mini: true, placeholderText: 'Replace in project')
+        @div class: 'editor-container', =>
+          @subview 'replaceEditor', new Editor(mini: true, placeholderText: 'Replace in project')
 
-        @div class: 'btn-group btn-toggle', =>
-          @button outlet: 'replaceAllButton', class: 'btn btn-mini', 'Replace'
+        @div class: 'btn-group btn-group-replace-all', =>
+          @button outlet: 'replaceAllButton', class: 'btn', 'Replace All'
 
       @div class: 'paths-container block', =>
-        @subview 'pathsEditor', new Editor(mini: true, placeholderText: 'File/directory pattern. eg. `src` to search in the "src" direcotry or `*.js`')
+        @div class: 'editor-container', =>
+          @subview 'pathsEditor', new Editor(mini: true, placeholderText: 'File/directory pattern. eg. `src` to search in the "src" directory or `*.js` to search all javascript files.')
 
   initialize: (@model, {attached, modelState, findHistory, replaceHistory, pathsHistory}={}) ->
     @handleEvents()
@@ -47,6 +50,7 @@ class ProjectFindView extends View
     @caseOptionButton.addClass('selected') if @model.caseSensitive
 
     @clearMessages()
+    @updateOptionsLabel()
 
   afterAttach: ->
     unless @tooltipsInitialized
@@ -115,11 +119,13 @@ class ProjectFindView extends View
   toggleRegexOption: ->
     @model.toggleUseRegex()
     if @model.useRegex then @regexOptionButton.addClass('selected') else @regexOptionButton.removeClass('selected')
+    @updateOptionsLabel()
     @confirm()
 
   toggleCaseOption: ->
     @model.toggleCaseSensitive()
     if @model.caseSensitive then @caseOptionButton.addClass('selected') else @caseOptionButton.removeClass('selected')
+    @updateOptionsLabel()
     @confirm()
 
   focusNextElement: (direction) ->
@@ -166,6 +172,15 @@ class ProjectFindView extends View
   addErrorMessage: (message) ->
     @errorMessages.append($$$ -> @li message)
     @errorMessages.show()
+
+  updateOptionsLabel: ->
+    label = []
+    label.push('Regex') if @model.useRegex
+    if @model.caseSensitive
+      label.push('Case Sensitive')
+    else
+      label.push('Case Insensitive')
+    @optionsLabel.text(label.join(', '))
 
   setSelectionAsFindPattern: =>
     editor = atom.workspaceView.getActiveView()

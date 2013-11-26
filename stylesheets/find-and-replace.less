@@ -1,9 +1,5 @@
 @import "ui-variables";
 
-@button-width: 310px;
-@option-button-width: 100px;
-@find-button-width: @button-width - @option-button-width - @component-padding;
-
 .option-button() {
   font-size: 14px;
   font-family: courier, monospace;
@@ -24,10 +20,9 @@
   margin: -1px 0 0 0;
 }
 
-.find-and-replace {
-  padding: @component-padding;
-  -webkit-user-select: none;
-
+// Both project and buffer FNR styles
+.find-and-replace,
+.project-find {
   .options-label {
     color: @text-color-subtle;
     position: relative;
@@ -38,7 +33,8 @@
   }
 
   .find-container,
-  .replace-container {
+  .replace-container,
+  .paths-container {
     display: -webkit-flex;
     -webkit-flex-direction: row;
 
@@ -55,6 +51,17 @@
       }
     }
   }
+
+}
+
+// Buffer find and replace
+.find-and-replace {
+  @button-width: 310px;
+  @option-button-width: 100px;
+  @find-button-width: @button-width - @option-button-width - @component-padding;
+
+  padding: @component-padding;
+  -webkit-user-select: none;
 
   .btn-group-replace.btn-group {
     width: @find-button-width;
@@ -103,46 +110,30 @@
   }
 }
 
-
+// Project find and replace
 .project-find {
-  @project-button-width: 72px;
+  @project-button-width: 90px;
 
   -webkit-user-select: none;
 
   .loading,
   .preview-block,
   .error-messages,
-  .replace-container,
   .filter-container {
     display: none;
   }
 
-  .find-container,
-  .replace-container,
-  .paths-container {
-    display: -webkit-flex;
-    -webkit-flex-direction: row;
-
-    .btn-toggle.btn-group {
-      // FIXME: I dont understand why I need this 5px to make the buttons not wrap
-      width: @project-button-width + 5px;
-      margin-left: @component-padding;
-    }
-
-    .editor {
-      width: 100%;
-    }
-  }
-
-  .find-container {
-    .btn-toggle.btn-group .btn {
+  .btn-group.btn-group-options {
+    width: @project-button-width;
+    .btn {
       .option-button();
       width: 50%;
     }
   }
 
-  .replace-container {
-    .btn-toggle.btn-group .btn {
+  .btn-group.btn-group-replace-all {
+    width: @project-button-width;
+    .btn {
       width: 100%;
     }
   }
