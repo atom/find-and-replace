@@ -65,6 +65,10 @@ class FindView extends View
       @caseOptionButton.setTooltip("Match Case", command: 'find-and-replace:toggle-case-option', commandElement: @findEditor)
       @selectionOptionButton.setTooltip("Only In Selection", command: 'find-and-replace:toggle-selection-option', commandElement: @findEditor)
 
+      @previousButton.setTooltip("Find Previous", command: 'find-and-replace:find-previous', commandElement: @findEditor)
+      @nextButton.setTooltip("Find Next", command: 'find-and-replace:find-next', commandElement: @findEditor)
+
+      @replacePreviousButton.setTooltip("Replace Previous", command: 'find-and-replace:replace-previous', commandElement: @replaceEditor)
       @replaceNextButton.setTooltip("Replace Next", command: 'find-and-replace:replace-next', commandElement: @replaceEditor)
       @replaceAllButton.setTooltip("Replace All", command: 'find-and-replace:replace-all', commandElement: @replaceEditor)
       @tooltipsInitialized = true
