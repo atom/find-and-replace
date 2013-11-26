@@ -420,6 +420,23 @@ describe 'FindView', ->
           expect(editor.lineForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
           expect(editor.getSelectedBufferRange()).toEqual [[2, 33], [2, 38]]
 
+    describe "replace previous", ->
+      describe "when button is clicked", ->
+        it "replaces the match after the cursor and selects the previous match", ->
+          findView.findEditor.trigger 'core:confirm'
+          findView.replacePreviousButton.click()
+          expect(findView.resultCounter.text()).toEqual('1 of 5')
+          expect(editor.lineForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
+          expect(editor.getSelectedBufferRange()).toEqual [[1, 22], [1, 27]]
+
+      describe "when command is triggered", ->
+        it "replaces the match after the cursor and selects the previous match", ->
+          findView.findEditor.trigger 'core:confirm'
+          findView.trigger 'find-and-replace:replace-previous'
+          expect(findView.resultCounter.text()).toEqual('1 of 5')
+          expect(editor.lineForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
+          expect(editor.getSelectedBufferRange()).toEqual [[1, 22], [1, 27]]
+
     describe "replace all", ->
       describe "when the replace all button is pressed", ->
         it "replaces all matched text", ->
