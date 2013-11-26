@@ -1,8 +1,5 @@
 @import "ui-variables";
 
-@label-width: 5em;
-@button-width: 110px;
-
 .option-button() {
   font-size: 14px;
   font-family: courier, monospace;
@@ -23,30 +20,25 @@
   margin: -1px 0 0 0;
 }
 
+// Both project and buffer FNR styles
 .find-and-replace,
 .project-find {
-  label {
-    min-width: @label-width;
-    text-align: right;
-    vertical-align: middle;
-    margin: 0 @component-padding 0 0;
+  .options-label {
+    color: @text-color-subtle;
+    position: relative;
 
-    // Assumed the height of an editor to vertically center
-    line-height: @component-line-height + 3px;
+    .options {
+      color: @text-color;
+    }
   }
-}
-
-.find-and-replace {
-  padding: @component-padding;
-  -webkit-user-select: none;
 
   .find-container,
-  .replace-container {
+  .replace-container,
+  .paths-container {
     display: -webkit-flex;
     -webkit-flex-direction: row;
 
-    .btn-toggle.btn-group {
-      width: @button-width;
+    .btn-group {
       margin-left: @component-padding;
     }
 
@@ -60,16 +52,42 @@
     }
   }
 
-  .replace-container {
-    .btn-toggle.btn-group .btn {
+}
+
+// Buffer find and replace
+.find-and-replace {
+  @button-width: 310px;
+  @option-button-width: 100px;
+  @find-button-width: @button-width - @option-button-width - @component-padding;
+
+  padding: @component-padding;
+  -webkit-user-select: none;
+
+  .btn-group-replace.btn-group {
+    width: @find-button-width;
+    .btn {
       width: 50%;
     }
   }
 
-  .find-container {
-    .btn-toggle.btn-group .btn {
+  .btn-group-replace-all.btn-group {
+    width: @option-button-width;
+    .btn {
+      width: 100%;
+    }
+  }
+
+  .btn-group-find.btn-group {
+    width: @find-button-width;
+    .btn {
+      width: 50%;
+    }
+  }
+  .btn-group-options.btn-group {
+    width: @option-button-width;
+    .btn {
       .option-button();
-      width: 33.333%;
+      width: 33.33%;
 
       &.option-selection {
         font-family: "Times New Roman";
@@ -84,54 +102,38 @@
     top: 0.35em;
     right: 0;
     z-index: 2;
+    font-size: .9em;
 
     .result-counter {
-      font-size: .9em;
       margin-right: @component-padding;
     }
   }
 }
 
-
+// Project find and replace
 .project-find {
-  @project-button-width: 72px;
+  @project-button-width: 90px;
 
   -webkit-user-select: none;
 
   .loading,
   .preview-block,
   .error-messages,
-  .replace-container,
   .filter-container {
     display: none;
   }
 
-  .find-container,
-  .replace-container,
-  .paths-container {
-    display: -webkit-flex;
-    -webkit-flex-direction: row;
-
-    .btn-toggle.btn-group {
-      // FIXME: I dont understand why I need this 5px to make the buttons not wrap
-      width: @project-button-width + 5px;
-      margin-left: @component-padding;
-    }
-
-    .editor {
-      width: 100%;
-    }
-  }
-
-  .find-container {
-    .btn-toggle.btn-group .btn {
+  .btn-group.btn-group-options {
+    width: @project-button-width;
+    .btn {
       .option-button();
       width: 50%;
     }
   }
 
-  .replace-container {
-    .btn-toggle.btn-group .btn {
+  .btn-group.btn-group-replace-all {
+    width: @project-button-width;
+    .btn {
       width: 100%;
     }
   }

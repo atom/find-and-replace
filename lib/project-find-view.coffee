@@ -8,33 +8,36 @@ module.exports =
 class ProjectFindView extends View
   @content: ->
     @div tabIndex: -1, class: 'project-find tool-panel panel-bottom padded', =>
+      @div class: 'block', =>
+        @span outlet: 'descriptionLabel', class: 'description'
+        @span class: 'options-label pull-right', =>
+          @span 'Finding with Options: '
+          @span outlet: 'optionsLabel', class: 'options'
 
       @ul outlet: 'errorMessages', class: 'error-messages block'
-      @ul outlet: 'infoMessages', class: 'info-messages block'
+
       @div outlet: 'replacmentInfoBlock', class: 'block', =>
         @progress outlet: 'replacementProgress', class: 'inline-block'
         @span outlet: 'replacmentInfo', class: 'inline-block', 'Replaced 2 files of 10 files'
 
       @div class: 'find-container block', =>
-        @label class: 'text-subtle', 'Find'
+        @div class: 'editor-container', =>
+          @subview 'findEditor', new Editor(mini: true, placeholderText: 'Find in project')
 
-        @subview 'findEditor', new Editor(mini: true)
-
-        @div class: 'btn-group btn-toggle', =>
-          @button outlet: 'regexOptionButton', class: 'btn btn-mini option-regex', '.*'
-          @button outlet: 'caseOptionButton', class: 'btn btn-mini option-case-sensitive', 'Aa'
+        @div class: 'btn-group btn-toggle btn-group-options', =>
+          @button outlet: 'regexOptionButton', class: 'btn option-regex', '.*'
+          @button outlet: 'caseOptionButton', class: 'btn option-case-sensitive', 'Aa'
 
       @div class: 'replace-container block', =>
-        @label outlet: 'replaceLabel', class: 'text-subtle', 'Replace'
+        @div class: 'editor-container', =>
+          @subview 'replaceEditor', new Editor(mini: true, placeholderText: 'Replace in project')
 
-        @subview 'replaceEditor', new Editor(mini: true)
-
-        @div class: 'btn-group btn-toggle', =>
-          @button outlet: 'replaceAllButton', class: 'btn btn-mini', 'Replace'
+        @div class: 'btn-group btn-group-replace-all', =>
+          @button outlet: 'replaceAllButton', class: 'btn', 'Replace All'
 
       @div class: 'paths-container block', =>
-        @label class: 'text-subtle', 'In'
-        @subview 'pathsEditor', new Editor(mini: true)
+        @div class: 'editor-container', =>
+          @subview 'pathsEditor', new Editor(mini: true, placeholderText: 'File/directory pattern. eg. `src` to search in the "src" directory or `*.js` to search all javascript files.')
 
   initialize: (@model, {attached, modelState, findHistory, replaceHistory, pathsHistory}={}) ->
     @handleEvents()
@@ -47,6 +50,7 @@ class ProjectFindView extends View
     @caseOptionButton.addClass('selected') if @model.caseSensitive
 
     @clearMessages()
+    @updateOptionsLabel()
 
   afterAttach: ->
     unless @tooltipsInitialized
@@ -77,6 +81,7 @@ class ProjectFindView extends View
     @on 'project-find:replace-all', => @replaceAll()
 
     @model.on 'cleared', => @clearMessages()
+    @model.on 'finished-searching', => @onFinishedSearching()
     @findEditor.getBuffer().on 'changed', => @model.clear()
 
     atom.workspaceView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
@@ -98,10 +103,10 @@ class ProjectFindView extends View
     @model.on 'finished-replacing', ({pathsReplaced, replacements}) =>
       @replacmentInfoBlock.hide()
       if pathsReplaced
-        @addInfoMessage("Replaced #{_.pluralize(replacements, 'result')} in #{_.pluralize(pathsReplaced, 'file')}")
+        @setInfoMessage("Replaced #{_.pluralize(replacements, 'result')} in #{_.pluralize(pathsReplaced, 'file')}")
       else
         atom.beep()
-        @addInfoMessage("Nothing replaced")
+        @setInfoMessage("Nothing replaced")
 
   attach: ->
     atom.workspaceView.vertical.append(this) unless @hasParent()
@@ -115,11 +120,13 @@ class ProjectFindView extends View
   toggleRegexOption: ->
     @model.toggleUseRegex()
     if @model.useRegex then @regexOptionButton.addClass('selected') else @regexOptionButton.removeClass('selected')
+    @updateOptionsLabel()
     @confirm()
 
   toggleCaseOption: ->
     @model.toggleCaseSensitive()
     if @model.caseSensitive then @caseOptionButton.addClass('selected') else @caseOptionButton.removeClass('selected')
+    @updateOptionsLabel()
     @confirm()
 
   focusNextElement: (direction) ->
@@ -159,18 +166,34 @@ class ProjectFindView extends View
     options = {split: 'right'} if atom.config.get('find-and-replace.openProjectFindResultsInRightPane')
     atom.workspaceView.openSingletonSync(ResultsPaneView.URI, options)
 
+  onFinishedSearching: ->
+    resultsStr = if @model.matchCount
+      "#{_.pluralize(@model.matchCount, 'result')} found in #{@model.pathCount} files"
+    else
+      'No results found'
+
+    @descriptionLabel.text("#{resultsStr} for '#{@model.pattern}'")
+
   clearMessages: ->
+    @descriptionLabel.text('Find in Project')
     @replacmentInfoBlock.hide()
     @errorMessages.hide().empty()
-    @infoMessages.hide().empty()
-
-  addInfoMessage: (message) ->
-    @infoMessages.append($$$ -> @li message)
-    @infoMessages.show()
 
   addErrorMessage: (message) ->
     @errorMessages.append($$$ -> @li message)
     @errorMessages.show()
+
+  setInfoMessage: (message) ->
+    @descriptionLabel.text(message)
+
+  updateOptionsLabel: ->
+    label = []
+    label.push('Regex') if @model.useRegex
+    if @model.caseSensitive
+      label.push('Case Sensitive')
+    else
+      label.push('Case Insensitive')
+    @optionsLabel.text(label.join(', '))
 
   setSelectionAsFindPattern: =>
     editor = atom.workspaceView.getActiveView()

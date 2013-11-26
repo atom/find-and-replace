@@ -101,20 +101,20 @@ describe 'FindView', ->
       expect(atom.beep).toHaveBeenCalled()
       expect(findView.find(':focus')).toExist()
 
-      expect(findView.infoMessages.children()).toHaveLength 1
+      expect(findView.descriptionLabel.text()).toEqual "No results found for 'notinthefilebro'"
 
     it "properly handles the info message when there are no results", ->
       findView.findEditor.setText 'item'
       findView.findEditor.trigger 'core:confirm'
-      expect(findView.infoMessages.children()).toHaveLength 0
+      expect(findView.descriptionLabel.text()).toEqual "6 results found for 'item'"
 
       findView.findEditor.setText 'notinthefilenope'
       findView.findEditor.trigger 'core:confirm'
-      expect(findView.infoMessages.children()).toHaveLength 1
+      expect(findView.descriptionLabel.text()).toEqual "No results found for 'notinthefilenope'"
 
       findView.findEditor.setText 'item'
       findView.findEditor.trigger 'core:confirm'
-      expect(findView.infoMessages.children()).toHaveLength 0
+      expect(findView.descriptionLabel.text()).toEqual "6 results found for 'item'"
 
     it "selects the first match following the cursor", ->
       expect(findView.resultCounter.text()).toEqual('2 of 6')
@@ -322,7 +322,6 @@ describe 'FindView', ->
           findView.findEditor.setText 'i[t'
           findView.findEditor.trigger 'core:confirm'
           expect(findView.errorMessages.children()).toHaveLength 1
-          expect(findView.infoMessages.children()).toHaveLength 0
 
     describe "when case sensitivity is toggled", ->
       beforeEach ->
@@ -420,6 +419,23 @@ describe 'FindView', ->
           expect(findView.resultCounter.text()).toEqual('2 of 5')
           expect(editor.lineForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
           expect(editor.getSelectedBufferRange()).toEqual [[2, 33], [2, 38]]
+
+    describe "replace previous", ->
+      describe "when button is clicked", ->
+        it "replaces the match after the cursor and selects the previous match", ->
+          findView.findEditor.trigger 'core:confirm'
+          findView.replacePreviousButton.click()
+          expect(findView.resultCounter.text()).toEqual('1 of 5')
+          expect(editor.lineForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
+          expect(editor.getSelectedBufferRange()).toEqual [[1, 22], [1, 27]]
+
+      describe "when command is triggered", ->
+        it "replaces the match after the cursor and selects the previous match", ->
+          findView.findEditor.trigger 'core:confirm'
+          findView.trigger 'find-and-replace:replace-previous'
+          expect(findView.resultCounter.text()).toEqual('1 of 5')
+          expect(editor.lineForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
+          expect(editor.getSelectedBufferRange()).toEqual [[1, 22], [1, 27]]
 
     describe "replace all", ->
       describe "when the replace all button is pressed", ->

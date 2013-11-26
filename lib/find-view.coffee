@@ -1,4 +1,4 @@
-{$$$, Editor, View} = require 'atom'
+{_, $$$, Editor, View} = require 'atom'
 FindModel = require './find-model'
 FindResultsView = require './find-results-view'
 History = require './history'
@@ -8,35 +8,40 @@ class FindView extends View
 
   @content: ->
     @div tabIndex: -1, class: 'find-and-replace tool-panel panel-bottom', =>
+      @div class: 'block', =>
+        @span outlet: 'descriptionLabel', class: 'description', 'Find in Current Buffer'
+        @span class: 'options-label pull-right', =>
+          @span 'Finding with Options: '
+          @span outlet: 'optionsLabel', class: 'options'
+
       @ul outlet: 'errorMessages', class: 'error-messages block'
-      @ul outlet: 'infoMessages', class: 'info-messages block'
 
       @div class: 'find-container block', =>
-        @label class: 'text-subtle', 'Find'
-
         @div class: 'editor-container', =>
-          @subview 'findEditor', new Editor(mini: true)
+          @subview 'findEditor', new Editor(mini: true, placeholderText: 'Find in current buffer')
 
           @div class: 'find-meta-container', =>
             @span outlet: 'resultCounter', class: 'text-subtle result-counter', ''
-            @a href: '#', outlet: 'previousButton', class: 'icon icon-chevron-left'
-            @a href: '#', outlet: 'nextButton', class: 'icon icon-chevron-right'
 
-        @div class: 'btn-group btn-toggle', =>
-          @button outlet: 'regexOptionButton', class: 'btn btn-mini option-regex', '.*'
-          @button outlet: 'caseOptionButton', class: 'btn btn-mini option-case', 'Aa'
-          @button outlet: 'selectionOptionButton', class: 'btn btn-mini option-selection', '"'
+        @div class: 'btn-group btn-group-find', =>
+          @button outlet: 'previousButton', class: 'btn', 'Find Prev'
+          @button outlet: 'nextButton', class: 'btn', 'Find Next'
+
+        @div class: 'btn-group btn-toggle btn-group-options', =>
+          @button outlet: 'regexOptionButton', class: 'btn', '.*'
+          @button outlet: 'caseOptionButton', class: 'btn', 'Aa'
+          @button outlet: 'selectionOptionButton', class: 'btn option-selection', '"'
 
       @div class: 'replace-container block', =>
-        @label class: 'text-subtle', 'Replace'
-
         @div class: 'editor-container', =>
-          @subview 'replaceEditor', new Editor(mini: true)
+          @subview 'replaceEditor', new Editor(mini: true, placeholderText: 'Replace in current buffer')
 
-        @div class: 'btn-group btn-toggle', =>
-          @button outlet: 'replaceNextButton', class: 'btn btn-mini btn-next', 'Next'
-          @button outlet: 'replaceAllButton', class: 'btn btn-mini btn-all', 'All'
+        @div class: 'btn-group btn-group-replace', =>
+          @button outlet: 'replacePreviousButton', class: 'btn btn-prev', 'Replace Prev'
+          @button outlet: 'replaceNextButton', class: 'btn btn-next', 'Replace Next'
 
+        @div class: 'btn-group btn-group-replace-all', =>
+          @button outlet: 'replaceAllButton', class: 'btn btn-all', 'Replace All'
 
   initialize: ({showFind, showReplace, findHistory, replaceHistory, modelState}={}) ->
     @findModel = new FindModel(modelState)
@@ -52,6 +57,7 @@ class FindView extends View
       @showReplace()
 
     @clearMessages()
+    @updateOptionsLabel()
 
   afterAttach: ->
     unless @tooltipsInitialized
@@ -59,6 +65,10 @@ class FindView extends View
       @caseOptionButton.setTooltip("Match Case", command: 'find-and-replace:toggle-case-option', commandElement: @findEditor)
       @selectionOptionButton.setTooltip("Only In Selection", command: 'find-and-replace:toggle-selection-option', commandElement: @findEditor)
 
+      @previousButton.setTooltip("Find Previous", command: 'find-and-replace:find-previous', commandElement: @findEditor)
+      @nextButton.setTooltip("Find Next", command: 'find-and-replace:find-next', commandElement: @findEditor)
+
+      @replacePreviousButton.setTooltip("Replace Previous", command: 'find-and-replace:replace-previous', commandElement: @replaceEditor)
       @replaceNextButton.setTooltip("Replace Next", command: 'find-and-replace:replace-next', commandElement: @replaceEditor)
       @replaceAllButton.setTooltip("Replace All", command: 'find-and-replace:replace-all', commandElement: @replaceEditor)
       @tooltipsInitialized = true
@@ -98,8 +108,10 @@ class FindView extends View
     atom.workspaceView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
 
   handleReplaceEvents: ->
+    @replacePreviousButton.on 'click', @replacePrevious
     @replaceNextButton.on 'click', @replaceNext
     @replaceAllButton.on 'click', @replaceAll
+    atom.workspaceView.command 'find-and-replace:replace-previous', @replacePrevious
     atom.workspaceView.command 'find-and-replace:replace-next', @replaceNext
     atom.workspaceView.command 'find-and-replace:replace-all', @replaceAll
 
@@ -139,32 +151,34 @@ class FindView extends View
     @findAndSelectResult(@selectFirstMarkerBeforeCursor, focusEditorAfter)
 
   findAndSelectResult: (selectFunction, focusEditorAfter = true) =>
-    @clearMessages()
     pattern = @findEditor.getText()
     @updateModel { pattern }
 
     if @markers.length == 0
-      @addInfoMessage("No results found for '#{pattern}'") unless @hasErrors()
       atom.beep()
     else
       selectFunction()
       atom.workspaceView.focus() if focusEditorAfter
 
   replaceNext: =>
-    @clearMessages()
+    @replace('findNext', 'firstMarkerIndexAfterCursor')
+
+  replacePrevious: =>
+    @replace('findPrevious', 'firstMarkerIndexBeforeCursor')
+
+  replace: (nextOrPreviousFn, nextIndexFn) ->
     pattern = @findEditor.getText()
     @updateModel { pattern }
 
     if @markers.length == 0
-      @addInfoMessage("No results found for '#{pattern}'") unless @hasErrors()
       atom.beep()
     else
       unless currentMarker = @currentResultMarker
-        markerIndex = @firstMarkerIndexAfterCursor()
+        markerIndex = @[nextIndexFn]()
         currentMarker = @markers[markerIndex]
 
       @findModel.replace([currentMarker], @replaceEditor.getText())
-      @findNext(false)
+      @[nextOrPreviousFn](false)
 
   replaceAll: =>
     @updateModel {pattern: @findEditor.getText()}
@@ -173,12 +187,14 @@ class FindView extends View
   markersUpdated: (@markers) =>
     @setCurrentMarkerFromSelection()
     @updateOptionButtons()
+    @updateDescription()
     @findResultsView.attach() if @isVisible()
     @findEditor.setText(@findModel.pattern)
     @findHistory.store()
     @replaceHistory.store()
 
   updateModel: (options) ->
+    @clearMessages()
     try
       @findModel.update(options)
     catch e
@@ -197,6 +213,11 @@ class FindView extends View
         text = "#{@markers.length} found"
 
     @resultCounter.text text
+
+  updateDescription: ->
+    results = @markers.length
+    resultsStr = if results then _.pluralize(results, 'result') else 'No results'
+    @descriptionLabel.text("#{resultsStr} found for '#{@findModel.pattern}'")
 
   selectFirstMarkerAfterCursor: =>
     markerIndex = @firstMarkerIndexAfterCursor()
@@ -259,11 +280,6 @@ class FindView extends View
 
   clearMessages: ->
     @errorMessages.hide().empty()
-    @infoMessages.hide().empty()
-
-  addInfoMessage: (message) ->
-    @infoMessages.append($$$ -> @li message)
-    @infoMessages.show()
 
   addErrorMessage: (message) ->
     @errorMessages.append($$$ -> @li message)
@@ -272,17 +288,30 @@ class FindView extends View
   hasErrors: ->
     !!@errorMessages.children().length
 
+  updateOptionsLabel: ->
+    label = []
+    label.push('Regex') if @findModel.useRegex
+    if @findModel.caseSensitive
+      label.push('Case Sensitive')
+    else
+      label.push('Case Insensitive')
+    label.push('Within Current Selection') if @findModel.inCurrentSelection
+    @optionsLabel.text(label.join(', '))
+
   toggleRegexOption: =>
     @updateModel {pattern: @findEditor.getText(), useRegex: !@findModel.useRegex}
     @selectFirstMarkerAfterCursor()
+    @updateOptionsLabel()
 
   toggleCaseOption: =>
-    @updateModel {pattern: @findEditor.getText(), caseInsensitive: !@findModel.caseInsensitive}
+    @updateModel {pattern: @findEditor.getText(), caseSensitive: !@findModel.caseSensitive}
     @selectFirstMarkerAfterCursor()
+    @updateOptionsLabel()
 
   toggleSelectionOption: =>
     @updateModel {pattern: @findEditor.getText(), inCurrentSelection: !@findModel.inCurrentSelection}
     @selectFirstMarkerAfterCursor()
+    @updateOptionsLabel()
 
   setOptionButtonState: (optionButton, selected) ->
     if selected
@@ -292,5 +321,5 @@ class FindView extends View
 
   updateOptionButtons: ->
     @setOptionButtonState(@regexOptionButton, @findModel.useRegex)
-    @setOptionButtonState(@caseOptionButton, @findModel.caseInsensitive)
+    @setOptionButtonState(@caseOptionButton, @findModel.caseSensitive)
     @setOptionButtonState(@selectionOptionButton, @findModel.inCurrentSelection)
