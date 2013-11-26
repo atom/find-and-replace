@@ -59,6 +59,11 @@ class ProjectFindView extends View
       @replaceAllButton.setTooltip("Replace All", command: 'project-find:replace-all', commandElement: @replaceEditor)
       @tooltipsInitialized = true
 
+  hideAllTooltips: ->
+    @regexOptionButton.hideTooltip()
+    @caseOptionButton.hideTooltip()
+    @replaceAllButton.hideTooltip()
+
   serialize: ->
     attached: @hasParent()
     findHistory: @findHistory.serialize()
@@ -114,6 +119,7 @@ class ProjectFindView extends View
     @findEditor.selectAll()
 
   detach: ->
+    @hideAllTooltips()
     atom.workspaceView.focus()
     super()
 

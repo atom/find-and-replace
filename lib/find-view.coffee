@@ -73,6 +73,18 @@ class FindView extends View
       @replaceAllButton.setTooltip("Replace All", command: 'find-and-replace:replace-all', commandElement: @replaceEditor)
       @tooltipsInitialized = true
 
+  hideAllTooltips: ->
+    @regexOptionButton.hideTooltip()
+    @caseOptionButton.hideTooltip()
+    @selectionOptionButton.hideTooltip()
+
+    @previousButton.hideTooltip()
+    @nextButton.hideTooltip()
+
+    @replacePreviousButton.hideTooltip()
+    @replaceNextButton.hideTooltip()
+    @replaceAllButton.hideTooltip()
+
   serialize: ->
     findHistory: @findHistory.serialize()
     replaceHistory: @replaceHistory.serialize()
@@ -131,6 +143,7 @@ class FindView extends View
     atom.workspaceView.vertical.append(this)
 
   detach: =>
+    @hideAllTooltips()
     @findResultsView.detach()
     atom.workspaceView.focus()
     super()
