@@ -24,6 +24,7 @@ class ResultsModel
     @results = {}
     @paths = []
     @active = false
+    @pattern = ''
     @emit('cleared')
 
   search: (pattern, paths)->
