@@ -388,8 +388,7 @@ describe 'ProjectFindView', ->
 
         runs ->
           expect(projectFindView.errorMessages).not.toBeVisible()
-          expect(projectFindView.infoMessages).toBeVisible()
-          expect(projectFindView.infoMessages.find('li').text()).toContain 'Replaced'
+          expect(projectFindView.descriptionLabel.text()).toContain 'Replaced'
 
           sampleJsContent = fs.readFileSync(sampleJs, 'utf8')
           expect(sampleJsContent.match(/items/g)).toBeFalsy()
@@ -412,7 +411,7 @@ describe 'ProjectFindView', ->
           runs ->
             expect(atom.project.scan).not.toHaveBeenCalled()
             expect(atom.beep).toHaveBeenCalled()
-            expect(projectFindView.infoMessages.find('li').text()).toBe "Nothing replaced"
+            expect(projectFindView.descriptionLabel.text()).toBe "Nothing replaced"
 
       describe "when the search text has changed since that last search", ->
         beforeEach ->
@@ -437,7 +436,7 @@ describe 'ProjectFindView', ->
           runs ->
             expect(atom.project.scan).not.toHaveBeenCalled()
             expect(atom.beep).toHaveBeenCalled()
-            expect(projectFindView.infoMessages.find('li').text()).toBe "Nothing replaced"
+            expect(projectFindView.descriptionLabel.text()).toBe "Nothing replaced"
 
       describe "when the text in the search box triggered the results", ->
         beforeEach ->
@@ -462,7 +461,7 @@ describe 'ProjectFindView', ->
             expect(resultsView).toBeVisible()
             expect(resultsView.find("li > ul > li")).toHaveLength(0)
 
-            expect(projectFindView.infoMessages.find('li').text()).toBe "Replaced 13 results in 2 files"
+            expect(projectFindView.descriptionLabel.text()).toBe "Replaced 13 results in 2 files"
 
             sampleJsContent = fs.readFileSync(sampleJs, 'utf8')
             expect(sampleJsContent.match(/items/g)).toBeFalsy()
