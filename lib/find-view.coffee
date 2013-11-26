@@ -9,7 +9,7 @@ class FindView extends View
   @content: ->
     @div tabIndex: -1, class: 'find-and-replace tool-panel panel-bottom', =>
       @div class: 'block', =>
-        @span outlet: 'descriptionLabel', class: 'description', 'Find in buffer'
+        @span outlet: 'descriptionLabel', class: 'description', 'Find in Current Buffer'
         @span class: 'options-label pull-right', =>
           @span 'Finding with Options: '
           @span outlet: 'optionsLabel', class: 'options'

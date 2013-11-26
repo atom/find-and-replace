@@ -8,33 +8,33 @@ module.exports =
 class ProjectFindView extends View
   @content: ->
     @div tabIndex: -1, class: 'project-find tool-panel panel-bottom padded', =>
+      @div class: 'block', =>
+        @span outlet: 'descriptionLabel', class: 'description', 'Find in Project'
+        @span class: 'options-label pull-right', =>
+          @span 'Finding with Options: '
+          @span outlet: 'optionsLabel', class: 'options'
 
       @ul outlet: 'errorMessages', class: 'error-messages block'
-      @ul outlet: 'infoMessages', class: 'info-messages block'
+
       @div outlet: 'replacmentInfoBlock', class: 'block', =>
         @progress outlet: 'replacementProgress', class: 'inline-block'
         @span outlet: 'replacmentInfo', class: 'inline-block', 'Replaced 2 files of 10 files'
 
       @div class: 'find-container block', =>
-        @label class: 'text-subtle', 'Find'
-
-        @subview 'findEditor', new Editor(mini: true)
+        @subview 'findEditor', new Editor(mini: true, placeholderText: 'Find in project')
 
         @div class: 'btn-group btn-toggle', =>
           @button outlet: 'regexOptionButton', class: 'btn btn-mini option-regex', '.*'
           @button outlet: 'caseOptionButton', class: 'btn btn-mini option-case-sensitive', 'Aa'
 
       @div class: 'replace-container block', =>
-        @label outlet: 'replaceLabel', class: 'text-subtle', 'Replace'
-
-        @subview 'replaceEditor', new Editor(mini: true)
+        @subview 'replaceEditor', new Editor(mini: true, placeholderText: 'Replace in project')
 
         @div class: 'btn-group btn-toggle', =>
           @button outlet: 'replaceAllButton', class: 'btn btn-mini', 'Replace'
 
       @div class: 'paths-container block', =>
-        @label class: 'text-subtle', 'In'
-        @subview 'pathsEditor', new Editor(mini: true)
+        @subview 'pathsEditor', new Editor(mini: true, placeholderText: 'File/directory pattern. eg. `src` to search in the "src" direcotry or `*.js`')
 
   initialize: (@model, {attached, modelState, findHistory, replaceHistory, pathsHistory}={}) ->
     @handleEvents()
@@ -162,11 +162,6 @@ class ProjectFindView extends View
   clearMessages: ->
     @replacmentInfoBlock.hide()
     @errorMessages.hide().empty()
-    @infoMessages.hide().empty()
-
-  addInfoMessage: (message) ->
-    @infoMessages.append($$$ -> @li message)
-    @infoMessages.show()
 
   addErrorMessage: (message) ->
     @errorMessages.append($$$ -> @li message)
