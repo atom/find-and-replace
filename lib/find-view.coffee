@@ -88,20 +88,20 @@ class FindView extends View
 
     @findModel.on 'updated', @markersUpdated
 
-    atom.rootView.on 'selection:changed', @setCurrentMarkerFromSelection
+    atom.workspaceView.on 'selection:changed', @setCurrentMarkerFromSelection
 
   handleFindEvents: ->
     @nextButton.on 'click', => @findNext()
     @previousButton.on 'click', => @findPrevious()
-    atom.rootView.command 'find-and-replace:find-next', @findNext
-    atom.rootView.command 'find-and-replace:find-previous', @findPrevious
-    atom.rootView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
+    atom.workspaceView.command 'find-and-replace:find-next', @findNext
+    atom.workspaceView.command 'find-and-replace:find-previous', @findPrevious
+    atom.workspaceView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
 
   handleReplaceEvents: ->
     @replaceNextButton.on 'click', @replaceNext
     @replaceAllButton.on 'click', @replaceAll
-    atom.rootView.command 'find-and-replace:replace-next', @replaceNext
-    atom.rootView.command 'find-and-replace:replace-all', @replaceAll
+    atom.workspaceView.command 'find-and-replace:replace-next', @replaceNext
+    atom.workspaceView.command 'find-and-replace:replace-all', @replaceAll
 
   showFind: =>
     @attach() if not @hasParent()
@@ -116,11 +116,11 @@ class FindView extends View
 
   attach: =>
     @findResultsView.attach()
-    atom.rootView.vertical.append(this)
+    atom.workspaceView.vertical.append(this)
 
   detach: =>
     @findResultsView.detach()
-    atom.rootView.focus()
+    atom.workspaceView.focus()
     super()
 
   toggleFocus: =>
@@ -148,7 +148,7 @@ class FindView extends View
       atom.beep()
     else
       selectFunction()
-      atom.rootView.focus() if focusEditorAfter
+      atom.workspaceView.focus() if focusEditorAfter
 
   replaceNext: =>
     @clearMessages()

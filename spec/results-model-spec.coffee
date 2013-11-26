@@ -1,6 +1,6 @@
 path = require 'path'
 
-{fs, $, RootView} = require 'atom'
+{fs, $, WorkspaceView} = require 'atom'
 
 ResultsModel = require '../lib/project/results-model.coffee'
 
@@ -11,12 +11,12 @@ describe 'ResultsModel', ->
   [editSession, searchPromise, resultsModel, searchPromise] = []
 
   beforeEach ->
-    atom.rootView = new RootView()
+    atom.workspaceView = new WorkspaceView()
     atom.project.setPath(path.join(__dirname, 'fixtures'))
-    atom.rootView.openSync('sample.js')
-    atom.rootView.attachToDom()
+    atom.workspaceView.openSync('sample.js')
+    atom.workspaceView.attachToDom()
 
-    editor = atom.rootView.getActiveView()
+    editor = atom.workspaceView.getActiveView()
     editSession = editor.activeEditSession
 
     resultsModel = new ResultsModel()

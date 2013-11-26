@@ -30,15 +30,15 @@ module.exports =
     atom.project.registerOpener (filePath) =>
       new ResultsPaneView() if filePath is ResultsPaneView.URI
 
-    atom.rootView.command 'project-find:show', =>
+    atom.workspaceView.command 'project-find:show', =>
       @findView.detach()
       @projectFindView.attach()
 
-    atom.rootView.command 'find-and-replace:show', =>
+    atom.workspaceView.command 'find-and-replace:show', =>
       @projectFindView.detach()
       @findView.showFind()
 
-    atom.rootView.command 'find-and-replace:show-replace', =>
+    atom.workspaceView.command 'find-and-replace:show-replace', =>
       @projectFindView.detach()
       @findView.showReplace()
 
@@ -49,7 +49,7 @@ module.exports =
       @projectFindView.detach()
 
     # in code editors
-    atom.rootView.on 'core:cancel core:close', (event) =>
+    atom.workspaceView.on 'core:cancel core:close', (event) =>
       target = $(event.target)
       editor = target.parents('.editor:not(.mini)')
       return unless editor.length

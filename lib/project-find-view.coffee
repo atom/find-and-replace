@@ -79,7 +79,7 @@ class ProjectFindView extends View
     @model.on 'cleared', => @clearMessages()
     @findEditor.getBuffer().on 'changed', => @model.clear()
 
-    atom.rootView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
+    atom.workspaceView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
 
     @handleEventsForReplace()
 
@@ -104,12 +104,12 @@ class ProjectFindView extends View
         @addInfoMessage("Nothing replaced")
 
   attach: ->
-    atom.rootView.vertical.append(this) unless @hasParent()
+    atom.workspaceView.vertical.append(this) unless @hasParent()
     @findEditor.focus()
     @findEditor.selectAll()
 
   detach: ->
-    atom.rootView.focus()
+    atom.workspaceView.focus()
     super()
 
   toggleRegexOption: ->
@@ -157,7 +157,7 @@ class ProjectFindView extends View
   showResultPane: ->
     options = null
     options = {split: 'right'} if atom.config.get('find-and-replace.openProjectFindResultsInRightPane')
-    atom.rootView.openSingletonSync(ResultsPaneView.URI, options)
+    atom.workspaceView.openSingletonSync(ResultsPaneView.URI, options)
 
   clearMessages: ->
     @replacmentInfoBlock.hide()
@@ -173,7 +173,7 @@ class ProjectFindView extends View
     @errorMessages.show()
 
   setSelectionAsFindPattern: =>
-    editor = atom.rootView.getActiveView()
+    editor = atom.workspaceView.getActiveView()
     if editor
       pattern = editor.activeEditSession.getSelectedText()
       @findEditor.setText(pattern)

@@ -1,4 +1,4 @@
-{_, $, RootView} = require 'atom'
+{_, $, WorkspaceView} = require 'atom'
 
 path = require 'path'
 
@@ -7,18 +7,18 @@ describe 'FindView', ->
 
   beforeEach ->
     spyOn(atom, 'beep')
-    atom.rootView = new RootView()
+    atom.workspaceView = new WorkspaceView()
     atom.project.setPath(path.join(__dirname, 'fixtures'))
-    atom.rootView.openSync('sample.js')
-    atom.rootView.attachToDom()
-    editor = atom.rootView.getActiveView()
+    atom.workspaceView.openSync('sample.js')
+    atom.workspaceView.attachToDom()
+    editor = atom.workspaceView.getActiveView()
     pack = atom.packages.activatePackage("find-and-replace", immediate: true)
     findView = pack.mainModule.findView
 
   describe "when find-and-replace:show is triggered", ->
     it "attaches FindView to the root view", ->
       editor.trigger 'find-and-replace:show'
-      expect(atom.rootView.find('.find-and-replace')).toExist()
+      expect(atom.workspaceView.find('.find-and-replace')).toExist()
 
   describe "when FindView's replace editor is visible", ->
     it "keeps the replace editor visible when find-and-replace:show is triggered", ->
@@ -35,7 +35,7 @@ describe 'FindView', ->
 
     it "detaches from the root view", ->
       $(document.activeElement).trigger 'core:cancel'
-      expect(atom.rootView.find('.find-and-replace')).not.toExist()
+      expect(atom.workspaceView.find('.find-and-replace')).not.toExist()
 
     it "removes highlighted matches", ->
       findResultsView = editor.find('.search-results')
@@ -170,12 +170,12 @@ describe 'FindView', ->
 
     it "places the selected text into the find editor when find-and-replace:set-find-pattern is triggered", ->
       editor.setSelectedBufferRange([[1,6],[1,10]])
-      atom.rootView.trigger 'find-and-replace:use-selection-as-find-pattern'
+      atom.workspaceView.trigger 'find-and-replace:use-selection-as-find-pattern'
 
       expect(findView.findEditor.getText()).toBe 'sort'
       expect(editor.getSelectedBufferRange()).toEqual [[1,6],[1,10]]
 
-      atom.rootView.trigger 'find-and-replace:find-next'
+      atom.workspaceView.trigger 'find-and-replace:find-next'
       expect(editor.getSelectedBufferRange()).toEqual [[8,11],[8,15]]
 
     it "does not highlight the found text when the find view is hidden", ->
@@ -188,21 +188,21 @@ describe 'FindView', ->
     describe "when the active pane item changes", ->
       describe "when a new edit session is activated", ->
         it "reruns the search on the new edit session", ->
-          atom.rootView.openSync('sample.coffee')
-          editor = atom.rootView.getActiveView()
+          atom.workspaceView.openSync('sample.coffee')
+          editor = atom.workspaceView.getActiveView()
           expect(findView.resultCounter.text()).toEqual('7 found')
           expect(editor.getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
 
         it "initially highlights the found text in the new edit session", ->
           findResultsView = editor.find('.search-results')
 
-          atom.rootView.openSync('sample.coffee')
+          atom.workspaceView.openSync('sample.coffee')
           expect(findResultsView.children()).toHaveLength 7
 
         it "highlights the found text in the new edit session when find next is triggered", ->
           findResultsView = editor.find('.search-results')
-          atom.rootView.openSync('sample.coffee')
-          editor = atom.rootView.getActiveView()
+          atom.workspaceView.openSync('sample.coffee')
+          editor = atom.workspaceView.getActiveView()
 
           findView.findEditor.trigger 'find-and-replace:find-next'
           expect(findResultsView.children()).toHaveLength 7
@@ -230,13 +230,13 @@ describe 'FindView', ->
           atom.project.unregisterOpener(anotherOpener)
 
         it "updates the result view", ->
-          atom.rootView.openSync "another"
+          atom.workspaceView.openSync "another"
           expect(findView.resultCounter.text()).toEqual('no results')
 
         it "removes all highlights", ->
           findResultsView = editor.find('.search-results')
 
-          atom.rootView.openSync "another"
+          atom.workspaceView.openSync "another"
           expect(findResultsView.children()).toHaveLength 0
 
       describe "when a new edit session is activated on a different pane", ->
