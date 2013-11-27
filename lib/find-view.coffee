@@ -237,7 +237,10 @@ class FindView extends View
     @selectMarkerAtIndex(markerIndex)
 
   firstMarkerIndexAfterCursor: ->
-    selection = @findModel.getEditSession().getSelection()
+    editSession = @findModel.getEditSession()
+    return -1 unless editSession
+
+    selection = editSession.getSelection()
     {start, end} = selection.getBufferRange()
     start = end if selection.isReversed()
 
@@ -251,6 +254,9 @@ class FindView extends View
     @selectMarkerAtIndex(markerIndex)
 
   firstMarkerIndexBeforeCursor: ->
+    editSession = @findModel.getEditSession()
+    return -1 unless editSession
+
     selection = @findModel.getEditSession().getSelection()
     {start, end} = selection.getBufferRange()
     start = end if selection.isReversed()
