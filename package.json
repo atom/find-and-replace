@@ -31,8 +31,7 @@
     "registry": "https://atom.cloudant.com/registry/_design/app/_rewrite"
   },
   "dependencies": {
-    "emissary": "~0.9.0",
-    "q": "~0.9"
     "emissary": "0.24.0",
+    "q": "0.9.7"
   }
 }
