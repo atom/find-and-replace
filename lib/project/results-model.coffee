@@ -29,10 +29,7 @@ class ResultsModel
     @emit('cleared')
 
   search: (pattern, paths, onlyRunIfChanged = false)->
-    if onlyRunIfChanged and pattern? and paths? and pattern == @pattern and _.isEqual(paths, @searchedPaths)
-      deferred = Q.defer()
-      deferred.resolve()
-      return deferred.promise
+    return Q() if onlyRunIfChanged and pattern? and paths? and pattern == @pattern and _.isEqual(paths, @searchedPaths)
 
     @clear()
     @active = true
