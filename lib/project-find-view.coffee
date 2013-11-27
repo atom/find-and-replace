@@ -162,17 +162,11 @@ class ProjectFindView extends View
     @model.search(@findEditor.getText(), @getPaths())
 
   replaceAll: ->
-    deferred = Q.defer()
-
-    promise = @model.search(@findEditor.getText(), @getPaths(), true)
-    promise.done =>
+    @model.search(@findEditor.getText(), @getPaths(), true).then =>
       @clearMessages()
       pattern = @findEditor.getText()
       replacementText = @replaceEditor.getText()
-      @model.replace(pattern, replacementText, @model.getPaths()).done ->
-        deferred.resolve()
-
-    deferred.promise
+      @model.replace(pattern, replacementText, @model.getPaths())
 
   getPaths: ->
     path.trim() for path in @pathsEditor.getText().trim().split(',') when path

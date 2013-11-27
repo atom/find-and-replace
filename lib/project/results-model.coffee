@@ -29,7 +29,17 @@ class ResultsModel
     @emit('cleared')
 
   search: (pattern, paths, onlyRunIfChanged = false)->
-    return Q() if onlyRunIfChanged and pattern? and paths? and pattern == @pattern and _.isEqual(paths, @searchedPaths)
+    if onlyRunIfChanged and pattern? and paths? and pattern == @pattern and _.isEqual(paths, @searchedPaths)
+      # Returning a promise that is already resolved (i.e. Q()) is problematic.
+      # Produces undefined behavior. (Maybe a Q bug?) Example:
+      #
+      # prom = @search('items', '', true).then =>
+      #   @replace('items', 'blah')
+      #
+      # prom can (and sometimes does) resolve _before_ the @replace promise!
+      deferred = Q.defer()
+      setImmediate -> deferred.resolve()
+      deferred.promise
 
     @clear()
     @active = true
