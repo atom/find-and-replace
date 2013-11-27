@@ -364,17 +364,17 @@ describe 'FindView', ->
       previousMarkers = null
 
       beforeEach ->
-        previousMarkers = _.clone(editor.activeEditSession.getMarkers())
+        previousMarkers = _.clone(editor.editor.getMarkers())
 
       it "clears existing markers for another search", ->
         findView.findEditor.setText('notinthefile')
         findView.findEditor.trigger 'core:confirm'
-        expect(editor.activeEditSession.getMarkers().length).toEqual 1
+        expect(editor.editor.getMarkers().length).toEqual 1
 
       it "clears existing markers for an empty search", ->
         findView.findEditor.setText('')
         findView.findEditor.trigger 'core:confirm'
-        expect(editor.activeEditSession.getMarkers().length).toEqual 1
+        expect(editor.editor.getMarkers().length).toEqual 1
 
   describe "replacing", ->
     beforeEach ->

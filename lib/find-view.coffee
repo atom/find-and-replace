@@ -1,4 +1,4 @@
-{_, $$$, Editor, View} = require 'atom'
+{_, $$$, EditorView, View} = require 'atom'
 FindModel = require './find-model'
 FindResultsView = require './find-results-view'
 History = require './history'
@@ -18,7 +18,7 @@ class FindView extends View
 
       @div class: 'find-container block', =>
         @div class: 'editor-container', =>
-          @subview 'findEditor', new Editor(mini: true, placeholderText: 'Find in current buffer')
+          @subview 'findEditor', new EditorView(mini: true, placeholderText: 'Find in current buffer')
 
           @div class: 'find-meta-container', =>
             @span outlet: 'resultCounter', class: 'text-subtle result-counter', ''
@@ -34,7 +34,7 @@ class FindView extends View
 
       @div class: 'replace-container block', =>
         @div class: 'editor-container', =>
-          @subview 'replaceEditor', new Editor(mini: true, placeholderText: 'Replace in current buffer')
+          @subview 'replaceEditor', new EditorView(mini: true, placeholderText: 'Replace in current buffer')
 
         @div class: 'btn-group btn-group-replace', =>
           @button outlet: 'replacePreviousButton', class: 'btn btn-prev', 'Replace Prev'

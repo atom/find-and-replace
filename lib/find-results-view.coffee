@@ -1,4 +1,4 @@
-{_, Editor, View} = require 'atom'
+{_, EditorView, View} = require 'atom'
 MarkerView = require './marker-view'
 
 module.exports =
@@ -22,7 +22,7 @@ class FindResultsView extends View
 
   getEditor: ->
     activeView = atom.workspaceView.getActiveView()
-    if activeView instanceof Editor then activeView else null
+    if activeView instanceof EditorView then activeView else null
 
   markersUpdated: (markers) ->
     editor = @getEditor()

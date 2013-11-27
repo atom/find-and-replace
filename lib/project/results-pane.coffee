@@ -1,4 +1,4 @@
-{_, $, $$$, Editor, ScrollView} = require 'atom'
+{_, $, $$$, EditorView, ScrollView} = require 'atom'
 ResultsView = require './results-view'
 
 module.exports =

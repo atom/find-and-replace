@@ -9,7 +9,7 @@ class ResultsModel
     @useRegex = state.useRegex ? false
     @caseSensitive = state.caseSensitive ? false
 
-    atom.workspaceView.eachEditSession (editSession) =>
+    atom.project.eachEditor (editSession) =>
       editSession.on 'contents-modified', => @onContentsModified(editSession)
 
     @clear()

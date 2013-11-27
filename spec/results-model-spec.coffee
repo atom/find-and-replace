@@ -17,7 +17,7 @@ describe 'ResultsModel', ->
     atom.workspaceView.attachToDom()
 
     editor = atom.workspaceView.getActiveView()
-    editSession = editor.activeEditSession
+    editSession = editor.editor
 
     resultsModel = new ResultsModel()
 

@@ -1,4 +1,4 @@
-{_, $, $$$, Editor, View} = require 'atom'
+{_, $, $$$, EditorView, View} = require 'atom'
 
 History = require './history'
 ResultsModel = require './project/results-model'
@@ -22,7 +22,7 @@ class ProjectFindView extends View
 
       @div class: 'find-container block', =>
         @div class: 'editor-container', =>
-          @subview 'findEditor', new Editor(mini: true, placeholderText: 'Find in project')
+          @subview 'findEditor', new EditorView(mini: true, placeholderText: 'Find in project')
 
         @div class: 'btn-group btn-toggle btn-group-options', =>
           @button outlet: 'regexOptionButton', class: 'btn option-regex', '.*'
@@ -30,14 +30,14 @@ class ProjectFindView extends View
 
       @div class: 'replace-container block', =>
         @div class: 'editor-container', =>
-          @subview 'replaceEditor', new Editor(mini: true, placeholderText: 'Replace in project')
+          @subview 'replaceEditor', new EditorView(mini: true, placeholderText: 'Replace in project')
 
         @div class: 'btn-group btn-group-replace-all', =>
           @button outlet: 'replaceAllButton', class: 'btn', 'Replace All'
 
       @div class: 'paths-container block', =>
         @div class: 'editor-container', =>
-          @subview 'pathsEditor', new Editor(mini: true, placeholderText: 'File/directory pattern. eg. `src` to search in the "src" directory or `*.js` to search all javascript files.')
+          @subview 'pathsEditor', new EditorView(mini: true, placeholderText: 'File/directory pattern. eg. `src` to search in the "src" directory or `*.js` to search all javascript files.')
 
   initialize: (@model, {attached, modelState, findHistory, replaceHistory, pathsHistory}={}) ->
     @handleEvents()
@@ -204,5 +204,5 @@ class ProjectFindView extends View
   setSelectionAsFindPattern: =>
     editor = atom.workspaceView.getActiveView()
     if editor
-      pattern = editor.activeEditSession.getSelectedText()
+      pattern = editor.editor.getSelectedText()
       @findEditor.setText(pattern)
