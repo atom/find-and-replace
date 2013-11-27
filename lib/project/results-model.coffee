@@ -28,18 +28,8 @@ class ResultsModel
     @pattern = ''
     @emit('cleared')
 
-  search: (pattern, paths, onlyRunIfChanged = false)->
-    if onlyRunIfChanged and pattern? and paths? and pattern == @pattern and _.isEqual(paths, @searchedPaths)
-      # Returning a promise that is already resolved (i.e. Q()) is problematic.
-      # Produces undefined behavior. (Maybe a Q bug?) Example:
-      #
-      # prom = @search('items', '', true).then =>
-      #   @replace('items', 'blah')
-      #
-      # prom can (and sometimes does) resolve _before_ the @replace promise!
-      deferred = Q.defer()
-      setImmediate -> deferred.resolve()
-      deferred.promise
+  search: (pattern, paths, onlyRunIfChanged = false) ->
+    return Q() if onlyRunIfChanged and pattern? and paths? and pattern == @pattern and _.isEqual(paths, @searchedPaths)
 
     @clear()
     @active = true
@@ -53,11 +43,8 @@ class ResultsModel
     promise = atom.project.scan @regex, {paths, onPathsSearched}, (result) =>
       @setResult(result.filePath, result.matches)
 
-    promise.done => @emit('finished-searching')
-
     @emit('search', promise)
-
-    promise
+    promise.then => @emit('finished-searching')
 
   replace: (pattern, replacementText, paths) ->
     regex = @getRegex(pattern)
@@ -71,13 +58,10 @@ class ResultsModel
         replacements += result.replacements
       @emit('path-replaced', result)
 
-    promise.done =>
+    @emit('replace', promise)
+    promise.then =>
       @clear()
       @emit('finished-replacing', {pathsReplaced, replacements})
-
-    @emit('replace', promise)
-
-    promise
 
   toggleUseRegex: ->
     @useRegex = not @useRegex
