@@ -1,3 +1,4 @@
+Q = require 'q'
 {_} = require 'atom'
 {Emitter} = require 'emissary'
 
@@ -27,11 +28,17 @@ class ResultsModel
     @pattern = ''
     @emit('cleared')
 
-  search: (pattern, paths)->
+  search: (pattern, paths, onlyRunIfChanged = false)->
+    if onlyRunIfChanged and pattern? and paths? and pattern == @pattern and _.isEqual(paths, @searchedPaths)
+      deferred = Q.defer()
+      deferred.resolve()
+      return deferred.promise
+
     @clear()
     @active = true
     @regex = @getRegex(pattern)
     @pattern = pattern
+    @searchedPaths = paths
 
     onPathsSearched = (numberOfPathsSearched) =>
       @emit('paths-searched', numberOfPathsSearched)

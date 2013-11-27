@@ -399,9 +399,12 @@ describe 'ProjectFindView', ->
           expect(sampleCoffeeContent.match(/sunshine/g)).toHaveLength 7
 
     describe "when the project-find:replace-all is triggered", ->
-      describe "when no search has been run", ->
-        it "does not replace anything", ->
-          spyOn(atom.project, 'scan')
+      describe "when there are no results", ->
+        it "doesnt replace anything", ->
+          projectFindView.findEditor.setText('nopenotinthefile')
+          projectFindView.replaceEditor.setText('sunshine')
+
+          spyOn(atom.project, 'scan').andCallThrough()
           spyOn(atom, 'beep')
           projectFindView.trigger 'project-find:replace-all'
 
@@ -409,9 +412,22 @@ describe 'ProjectFindView', ->
             replacePromise
 
           runs ->
-            expect(atom.project.scan).not.toHaveBeenCalled()
+            expect(atom.project.scan).toHaveBeenCalled()
             expect(atom.beep).toHaveBeenCalled()
             expect(projectFindView.descriptionLabel.text()).toBe "Nothing replaced"
+
+      describe "when no search has been run", ->
+        it "runs the search then replaces everything", ->
+          projectFindView.findEditor.setText('items')
+          projectFindView.replaceEditor.setText('sunshine')
+
+          projectFindView.trigger 'project-find:replace-all'
+
+          waitsForPromise ->
+            replacePromise
+
+          runs ->
+            expect(projectFindView.descriptionLabel.text()).toBe "Replaced 13 results in 2 files"
 
       describe "when the search text has changed since that last search", ->
         beforeEach ->
@@ -421,8 +437,8 @@ describe 'ProjectFindView', ->
           waitsForPromise ->
             searchPromise
 
-        it "clears the search results and does not replace anything", ->
-          spyOn(atom.project, 'scan')
+        it "clears the search results and does another replace", ->
+          spyOn(atom.project, 'scan').andCallThrough()
           spyOn(atom, 'beep')
 
           projectFindView.findEditor.setText('sort')
@@ -434,9 +450,9 @@ describe 'ProjectFindView', ->
             replacePromise
 
           runs ->
-            expect(atom.project.scan).not.toHaveBeenCalled()
-            expect(atom.beep).toHaveBeenCalled()
-            expect(projectFindView.descriptionLabel.text()).toBe "Nothing replaced"
+            expect(atom.project.scan).toHaveBeenCalled()
+            expect(atom.beep).not.toHaveBeenCalled()
+            expect(projectFindView.descriptionLabel.text()).toBe "Replaced 10 results in 2 files"
 
       describe "when the text in the search box triggered the results", ->
         beforeEach ->
