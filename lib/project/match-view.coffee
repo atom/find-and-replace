@@ -4,7 +4,7 @@ LeadingWhitespace = /^\s+/
 removeLeadingWhitespace = (string) -> string.replace(LeadingWhitespace, '')
 
 module.exports =
-class SearchResultView extends View
+class MatchView extends View
   @content: ({filePath, match}) ->
     range = Range.fromObject(match.range)
     matchStart = range.start.column - match.lineTextOffset
