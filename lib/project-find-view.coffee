@@ -162,6 +162,8 @@ class ProjectFindView extends View
     @model.search(@findEditor.getText(), @getPaths())
 
   replaceAll: ->
+    @errorMessages.empty()
+    @showResultPane()
     @model.search(@findEditor.getText(), @getPaths(), true).then =>
       @clearMessages()
       pattern = @findEditor.getText()
