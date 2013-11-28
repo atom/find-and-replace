@@ -67,6 +67,10 @@ class ResultsModel
       @clear()
       @emit('finished-replacing', {pathsReplaced, replacements})
 
+  updateReplacementPattern: (replacementPattern) ->
+    @replacementPattern = replacementPattern or 'null'
+    @emit('replacement-pattern-changed', @regex, replacementPattern)
+
   toggleUseRegex: ->
     @useRegex = not @useRegex
 

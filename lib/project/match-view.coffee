@@ -16,10 +16,13 @@ class SearchResultView extends View
       @span range.start.row + 1, class: 'line-number text-subtle'
       @span class: 'preview', =>
         @span prefix
-        @span match.matchText, class: 'match highlight-info'
+        @span match.matchText, class: 'match highlight-info', outlet: 'matchText'
         @span suffix
 
   initialize: ({@filePath, @match}) ->
+
+  updateReplacementPattern: (regex, pattern) ->
+    @matchText.text(if pattern then @match.matchText.replace(regex, pattern) else @match.matchText)
 
   confirm: ->
     editSession = atom.workspaceView.openSingletonSync(@filePath, split: 'left')
