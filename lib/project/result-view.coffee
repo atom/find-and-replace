@@ -15,22 +15,32 @@ class ResultView extends View
         @span outlet: 'description', class: 'path-match-number'
       @ul outlet: 'matches', class: 'matches list-tree', =>
 
-  initialize: (@filePath, matches) ->
-    @renderMatches(matches)
+  initialize: (@filePath, result) ->
+    @renderResult(result)
 
-  renderMatches: (matches) ->
+  renderResult: (result) ->
     selectedIndex = @matches.find('.selected').index()
 
     @matches.empty()
-    @description.text("(#{matches?.length})")
 
+    if result
+      @description.show().text("(#{matches?.length})")
+    else
+      @description.hide()
+
+    matches = result?.data
     if not matches or matches.length == 0
       @hide()
     else
       @show()
-      @matches.append new MatchView({@filePath, match}) for match in matches
+      for match in matches
+        @matches.append(new MatchView({@filePath, match}))
 
     @matches.children().eq(selectedIndex).addClass('selected') if selectedIndex > -1
+
+  updateReplacementPattern: (regex, pattern) ->
+    for matchView in @matches.children().views()
+      matchView.updateReplacementPattern(regex, pattern)
 
   confirm: ->
     atom.workspaceView.openSingletonSync(@filePath, split: 'left')
