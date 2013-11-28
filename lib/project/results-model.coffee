@@ -1,3 +1,4 @@
+Q = require 'q'
 {_} = require 'atom'
 {Emitter} = require 'emissary'
 
@@ -27,11 +28,14 @@ class ResultsModel
     @pattern = ''
     @emit('cleared')
 
-  search: (pattern, paths)->
+  search: (pattern, paths, onlyRunIfChanged = false) ->
+    return Q() if onlyRunIfChanged and pattern? and paths? and pattern == @pattern and _.isEqual(paths, @searchedPaths)
+
     @clear()
     @active = true
     @regex = @getRegex(pattern)
     @pattern = pattern
+    @searchedPaths = paths
 
     onPathsSearched = (numberOfPathsSearched) =>
       @emit('paths-searched', numberOfPathsSearched)
@@ -39,11 +43,8 @@ class ResultsModel
     promise = atom.project.scan @regex, {paths, onPathsSearched}, (result) =>
       @setResult(result.filePath, result.matches)
 
-    promise.done => @emit('finished-searching')
-
     @emit('search', promise)
-
-    promise
+    promise.then => @emit('finished-searching')
 
   replace: (pattern, replacementText, paths) ->
     regex = @getRegex(pattern)
@@ -57,13 +58,10 @@ class ResultsModel
         replacements += result.replacements
       @emit('path-replaced', result)
 
-    promise.done =>
+    @emit('replace', promise)
+    promise.then =>
       @clear()
       @emit('finished-replacing', {pathsReplaced, replacements})
-
-    @emit('replace', promise)
-
-    promise
 
   toggleUseRegex: ->
     @useRegex = not @useRegex

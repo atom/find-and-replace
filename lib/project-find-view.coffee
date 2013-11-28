@@ -1,3 +1,4 @@
+Q = require 'q'
 {_, $, $$$, EditorView, View} = require 'atom'
 
 History = require './history'
@@ -156,16 +157,21 @@ class ProjectFindView extends View
     @search()
 
   search: ->
-    paths = (path.trim() for path in @pathsEditor.getText().trim().split(',') when path)
     @errorMessages.empty()
     @showResultPane()
-    @model.search(@findEditor.getText(), paths)
+    @model.search(@findEditor.getText(), @getPaths())
 
   replaceAll: ->
-    @clearMessages()
-    pattern = @findEditor.getText()
-    replacementText = @replaceEditor.getText()
-    @model.replace(pattern, replacementText, @model.getPaths())
+    @errorMessages.empty()
+    @showResultPane()
+    @model.search(@findEditor.getText(), @getPaths(), true).then =>
+      @clearMessages()
+      pattern = @findEditor.getText()
+      replacementText = @replaceEditor.getText()
+      @model.replace(pattern, replacementText, @model.getPaths())
+
+  getPaths: ->
+    path.trim() for path in @pathsEditor.getText().trim().split(',') when path
 
   showResultPane: ->
     options = null
