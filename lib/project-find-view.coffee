@@ -173,6 +173,11 @@ class ProjectFindView extends View
   getPaths: ->
     path.trim() for path in @pathsEditor.getText().trim().split(',') when path
 
+  findInCurrentlySelectedDirectory: ->
+    selected = $('.tree-view .selected')
+    selected = selected.parents('.directory:eq(0)') if selected.is('.file')
+    @pathsEditor.setText(selected.view().getPath())
+
   showResultPane: ->
     options = null
     options = {split: 'right'} if atom.config.get('find-and-replace.openProjectFindResultsInRightPane')
