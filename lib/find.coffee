@@ -34,10 +34,10 @@ module.exports =
       @findView.detach()
       @projectFindView.attach()
 
-    atom.workspaceView.command 'project-find:show-in-current-directory', =>
+    atom.workspaceView.command 'project-find:show-in-current-directory', (e) =>
       @findView.detach()
       @projectFindView.attach()
-      @projectFindView.findInCurrentlySelectedDirectory()
+      @projectFindView.findInCurrentlySelectedDirectory($(e.target))
 
     atom.workspaceView.command 'find-and-replace:show', =>
       @projectFindView.detach()

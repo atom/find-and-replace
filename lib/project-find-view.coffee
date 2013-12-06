@@ -173,10 +173,22 @@ class ProjectFindView extends View
   getPaths: ->
     path.trim() for path in @pathsEditor.getText().trim().split(',') when path
 
-  findInCurrentlySelectedDirectory: ->
-    selected = $('.tree-view .selected')
+  findFileParent: (node) ->
+    parent = node.parent()
+    return parent if parent.is('.file') or parent.is('.directory')
+    @findFileParent(parent)
+
+  findInCurrentlySelectedDirectory: (selectedNode) ->
+    selected = @findFileParent(selectedNode)
     selected = selected.parents('.directory:eq(0)') if selected.is('.file')
-    @pathsEditor.setText(selected.view().getPath())
+    absPath = selected.view().getPath()
+
+    relPath = if atom.project.getPath() == absPath
+      ''
+    else
+      absPath.replace(new RegExp("^#{atom.project.getPath()}/"), '')
+
+    @pathsEditor.setText(relPath)
 
   showResultPane: ->
     options = null

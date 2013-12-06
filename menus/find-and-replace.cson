@@ -15,5 +15,5 @@
 ]
 
 'context-menu':
-  '.tree-view .directory.entry':
+  '.tree-view > li.directory':
     'Find in this directory': 'project-find:show-in-current-directory'
