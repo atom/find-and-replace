@@ -13,3 +13,7 @@
     { 'type': 'separator' }
   ]
 ]
+
+'context-menu':
+  '.tree-view .directory.entry':
+    'Find in this directory': 'project-find:show-in-current-directory'
