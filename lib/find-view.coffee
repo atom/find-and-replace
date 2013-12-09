@@ -128,6 +128,10 @@ class FindView extends View
     atom.workspaceView.command 'find-and-replace:replace-all', @replaceAll
 
   showFind: =>
+    unless @findEditor.getText()
+      editorView = atom.workspaceView.getActiveView()
+      @findEditor.setText(editorView.getSelectedText()) if editorView
+
     @attach() if not @hasParent()
     @findEditor.focus()
     @findEditor.selectAll()
