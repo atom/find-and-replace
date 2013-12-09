@@ -116,6 +116,11 @@ class ProjectFindView extends View
 
   attach: ->
     atom.workspaceView.vertical.append(this) unless @hasParent()
+
+    unless @findEditor.getText()
+      editorView = atom.workspaceView.getActiveView()
+      @findEditor.setText(editorView.getSelectedText()) if editorView
+
     @findEditor.focus()
     @findEditor.selectAll()
 

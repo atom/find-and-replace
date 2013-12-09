@@ -40,6 +40,25 @@ describe 'ProjectFindView', ->
       expect(projectFindView.find('.loading')).not.toBeVisible()
       expect(projectFindView.findEditor.getSelectedBufferRange()).toEqual [[0, 0], [0, 5]]
 
+    describe "with an open buffer", ->
+      beforeEach ->
+        projectFindView.findEditor.setText('')
+        atom.workspaceView.openSync('sample.js')
+        editor = atom.workspaceView.getActiveView()
+
+      it "populates the findEditor with selection when there is a selection", ->
+        editor.setSelectedBufferRange([[2, 8], [2, 13]])
+        atom.workspaceView.trigger 'project-find:show'
+        expect(atom.workspaceView.find('.project-find')).toExist()
+        expect(projectFindView.findEditor.getText()).toBe('items')
+
+        projectFindView.findEditor.setText('')
+
+        editor.setSelectedBufferRange([[2, 14], [2, 20]])
+        atom.workspaceView.trigger 'project-find:show'
+        expect(atom.workspaceView.find('.project-find')).toExist()
+        expect(projectFindView.findEditor.getText()).toBe('length')
+
     describe "when thethe ProjectFindView is already attached", ->
       beforeEach ->
         atom.workspaceView.trigger 'project-find:show'
