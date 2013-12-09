@@ -39,6 +39,11 @@ module.exports =
       @projectFindView.attach()
       @projectFindView.findInCurrentlySelectedDirectory($(e.target))
 
+    atom.workspaceView.command 'find-and-replace:use-selection-as-find-pattern', =>
+      return if @projectFindView.isOnDom() or @findView.isOnDom()
+      @projectFindView.detach()
+      @findView.showFind()
+
     atom.workspaceView.command 'find-and-replace:show', =>
       @projectFindView.detach()
       @findView.showFind()
