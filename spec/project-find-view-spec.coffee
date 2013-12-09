@@ -1,7 +1,7 @@
 os = require 'os'
 path = require 'path'
 
-{_, fs, $, WorkspaceView} = require 'atom'
+{_, fs, $, View, WorkspaceView} = require 'atom'
 Q = require 'q'
 
 ResultsPaneView = require '../lib/project/results-pane'
@@ -49,6 +49,57 @@ describe 'ProjectFindView', ->
         atom.workspaceView.trigger 'project-find:show'
         expect(projectFindView.findEditor.find(':focus')).toExist()
         expect(projectFindView.findEditor.getSelectedText()).toBe "items"
+
+  describe "when project-find:show-in-current-directory is triggered", ->
+    [nested, tree] = []
+
+    class DirElement extends View
+      @content: (path) ->
+        @div class: 'directory', =>
+          @div class: 'nested-thing', =>
+            @span outlet: 'name', class: 'name', path
+            @ul outlet: 'files', class: 'files'
+      initialize: (@path) ->
+      getPath: -> @path
+      createFiles: (names) ->
+        for name in names
+          @files.append(new FileElement(path.join(@path, name)))
+
+    class FileElement extends View
+      @content: (path) ->
+        @li class: 'file', =>
+          @span outlet: 'name', class: 'name', path
+      initialize: (@path) ->
+      getPath: -> @path
+
+    beforeEach ->
+      projectFindView.findEditor.setText('items')
+
+      p = atom.project.getPath()
+      tree = new DirElement(p)
+      tree.createFiles(['one.js', 'two.js'])
+
+      nested = new DirElement(path.join(p, 'nested'))
+      nested.createFiles([path.join('nested', 'another.js')])
+
+      tree.files.append(nested)
+      atom.workspaceView.append(tree)
+
+    it "populates the pathsEditor when triggered with a directory", ->
+      nested.name.trigger 'project-find:show-in-current-directory'
+      expect(atom.workspaceView.find('.project-find')).toExist()
+      expect(projectFindView.pathsEditor.getText()).toBe('nested')
+
+      tree.name.trigger 'project-find:show-in-current-directory'
+      expect(projectFindView.pathsEditor.getText()).toBe('')
+
+    it "populates the pathsEditor when triggered with a file", ->
+      nested.files.find('> .file:eq(0)').view().name.trigger 'project-find:show-in-current-directory'
+      expect(atom.workspaceView.find('.project-find')).toExist()
+      expect(projectFindView.pathsEditor.getText()).toBe('nested')
+
+      tree.files.find('> .file:eq(0)').view().name.trigger 'project-find:show-in-current-directory'
+      expect(projectFindView.pathsEditor.getText()).toBe('')
 
   describe "finding", ->
     beforeEach ->
