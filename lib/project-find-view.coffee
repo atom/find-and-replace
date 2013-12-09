@@ -173,6 +173,23 @@ class ProjectFindView extends View
   getPaths: ->
     path.trim() for path in @pathsEditor.getText().trim().split(',') when path
 
+  findFileParent: (node) ->
+    parent = node.parent()
+    return parent if parent.is('.file') or parent.is('.directory')
+    @findFileParent(parent)
+
+  findInCurrentlySelectedDirectory: (selectedNode) ->
+    selected = @findFileParent(selectedNode)
+    selected = selected.parents('.directory:eq(0)') if selected.is('.file')
+    absPath = selected.view().getPath()
+
+    relPath = if atom.project.getPath() == absPath
+      ''
+    else
+      absPath.replace(new RegExp("^#{atom.project.getPath()}/"), '')
+
+    @pathsEditor.setText(relPath)
+
   showResultPane: ->
     options = null
     options = {split: 'right'} if atom.config.get('find-and-replace.openProjectFindResultsInRightPane')

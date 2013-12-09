@@ -5,6 +5,7 @@
   "version": "0.55.0",
   "activationEvents": [
     "project-find:show",
+    "project-find:show-in-current-directory",
     "find-and-replace:show",
     "find-and-replace:find-next",
     "find-and-replace:find-previous",
