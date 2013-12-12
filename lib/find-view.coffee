@@ -108,7 +108,7 @@ class FindView extends View
     @caseOptionButton.on 'click', @toggleCaseOption
     @selectionOptionButton.on 'click', @toggleSelectionOption
 
-    @findModel.on 'updated', @markersUpdated
+    @subscribe @findModel, 'updated', @markersUpdated
 
     atom.workspaceView.on 'selection:changed', @setCurrentMarkerFromSelection
 
