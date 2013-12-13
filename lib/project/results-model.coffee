@@ -3,7 +3,11 @@ Q = require 'q'
 {Emitter} = require 'emissary'
 
 class Result
-  constructor: (@data) ->
+  @create: (result) ->
+    if result.matches?.length then new Result(result) else null
+
+  constructor: (result) ->
+    _.extend(this, result)
 
 module.exports =
 class ResultsModel
@@ -47,7 +51,7 @@ class ResultsModel
       @emit('paths-searched', numberOfPathsSearched)
 
     promise = atom.project.scan @regex, {paths, onPathsSearched}, (result) =>
-      @setResult(result.filePath, if result.matches?.length then new Result(result.matches) else null)
+      @setResult(result.filePath, Result.create(result))
 
     @emit('search', promise)
     promise.then => @emit('finished-searching')
@@ -104,12 +108,12 @@ class ResultsModel
 
   addResult: (filePath, result) ->
     if @results[filePath]
-      @matchCount -= @results[filePath].data.length
+      @matchCount -= @results[filePath].matches.length
     else
       @pathCount++
       @paths.push(filePath)
 
-    @matchCount += result.data.length
+    @matchCount += result.matches.length
 
     @results[filePath] = result
     @emit('result-added', filePath, result)
@@ -117,7 +121,7 @@ class ResultsModel
   removeResult: (filePath) ->
     if @results[filePath]
       @pathCount--
-      @matchCount -= @results[filePath].data.length
+      @matchCount -= @results[filePath].matches.length
 
       @paths = _.without(@paths, filePath)
       delete @results[filePath]
@@ -139,6 +143,6 @@ class ResultsModel
     editSession.scan @regex, (match) ->
       matches.push(match)
 
-    result = if matches?.length then new Result(matches) else null
+    result = Result.create({matches})
     @setResult(editSession.getPath(), result)
     @emit('finished-searching')

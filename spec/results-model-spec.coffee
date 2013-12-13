@@ -41,7 +41,7 @@ describe 'ResultsModel', ->
         expect(resultAddedSpy.callCount).toBe 1
 
         result = resultsModel.getResult(editSession.getPath())
-        expect(result.data.length).toBe 6
+        expect(result.matches.length).toBe 6
         expect(resultsModel.getPathCount()).toBe 1
         expect(resultsModel.getMatchCount()).toBe 6
         expect(resultsModel.getPaths()).toEqual [editSession.getPath()]
@@ -53,12 +53,12 @@ describe 'ResultsModel', ->
         expect(resultAddedSpy.callCount).toBe 2
 
         result = resultsModel.getResult(editSession.getPath())
-        expect(result.data.length).toBe 1
+        expect(result.matches.length).toBe 1
         expect(resultsModel.getPathCount()).toBe 1
         expect(resultsModel.getMatchCount()).toBe 1
         expect(resultsModel.getPaths()).toEqual [editSession.getPath()]
 
-        expect(result.data[0].lineText).toBe 'there are some items in here'
+        expect(result.matches[0].lineText).toBe 'there are some items in here'
 
         # updates when there are no matches
         editSession.setText('no matches in here')

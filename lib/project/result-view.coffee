@@ -28,7 +28,7 @@ class ResultView extends View
     else
       @description.hide()
 
-    matches = result?.data
+    matches = result?.matches
     if not matches or matches.length == 0
       @hide()
     else
