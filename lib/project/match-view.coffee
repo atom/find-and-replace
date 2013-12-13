@@ -31,7 +31,7 @@ class MatchView extends View
       @replacementText.show()
       @matchText.removeClass('highlight-info').addClass('highlight-error')
     else
-      @replacementText.hide()
+      @replacementText.text('').hide()
       @matchText.removeClass('highlight-error').addClass('highlight-info')
 
   confirm: ->
