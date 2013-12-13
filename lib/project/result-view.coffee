@@ -4,7 +4,7 @@ path = require 'path'
 
 module.exports =
 class ResultView extends View
-  @content: (model, filePath, matches) ->
+  @content: (model, filePath, result) ->
     iconClass = if fs.isReadmePath(filePath) then 'icon-book' else 'icon-file-text'
 
     @li class: 'path list-nested-item', 'data-path': _.escapeAttribute(filePath), =>
@@ -19,6 +19,7 @@ class ResultView extends View
     @renderResult(result)
 
   renderResult: (result) ->
+    matches = result?.matches
     selectedIndex = @matches.find('.selected').index()
 
     @matches.empty()
@@ -28,7 +29,6 @@ class ResultView extends View
     else
       @description.hide()
 
-    matches = result?.matches
     if not matches or matches.length == 0
       @hide()
     else
