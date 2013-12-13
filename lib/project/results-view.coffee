@@ -35,7 +35,6 @@ class ResultsView extends ScrollView
     @model.on 'result-added', @addResult
     @model.on 'result-removed', @removeResult
     @model.on 'cleared', @clear
-    @model.on 'replacement-pattern-changed', @onReplacementPatternChanged
 
     @renderResults()
 
@@ -65,7 +64,7 @@ class ResultsView extends ScrollView
     for filePath in paths[@lastRenderedResultIndex..]
       result = @model.getResult(filePath)
       break if not renderAll and not @shouldRenderMoreResults()
-      resultView = new ResultView(filePath, result)
+      resultView = new ResultView(@model, filePath, result)
       @append(resultView)
       @lastRenderedResultIndex++
 
@@ -76,10 +75,6 @@ class ResultsView extends ScrollView
 
   selectFirstResult: ->
     @find('.search-result:first').addClass('selected')
-
-  onReplacementPatternChanged: (regex, pattern) =>
-    for resultView in @children().views()
-      resultView.updateReplacementPattern(regex, pattern)
 
   selectNextResult: ->
     selectedView = @find('.selected').view()

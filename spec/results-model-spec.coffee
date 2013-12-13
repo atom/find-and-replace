@@ -31,7 +31,7 @@ describe 'ResultsModel', ->
       runs ->
         resultsModel.on 'result-added', resultAddedSpy
         resultsModel.on 'result-removed', resultRemovedSpy
-        searchPromise = resultsModel.search('items', ['*.js'])
+        searchPromise = resultsModel.search('items', '', ['*.js'])
 
       waitsForPromise ->
         searchPromise

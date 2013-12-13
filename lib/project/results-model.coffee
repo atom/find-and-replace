@@ -32,7 +32,7 @@ class ResultsModel
     @replacementPattern = null
     @emit('cleared')
 
-  search: (pattern, paths, onlyRunIfChanged = false) ->
+  search: (pattern, replacementPattern, paths, onlyRunIfChanged = false) ->
     return Q() if onlyRunIfChanged and pattern? and paths? and pattern == @pattern and _.isEqual(paths, @searchedPaths)
 
     @clear()
@@ -40,6 +40,8 @@ class ResultsModel
     @regex = @getRegex(pattern)
     @pattern = pattern
     @searchedPaths = paths
+
+    @updateReplacementPattern(replacementPattern)
 
     onPathsSearched = (numberOfPathsSearched) =>
       @emit('paths-searched', numberOfPathsSearched)
@@ -50,13 +52,15 @@ class ResultsModel
     @emit('search', promise)
     promise.then => @emit('finished-searching')
 
-  replace: (pattern, replacementText, paths) ->
+  replace: (pattern, replacementPattern, paths) ->
     regex = @getRegex(pattern)
+
+    @updateReplacementPattern(replacementPattern)
 
     pathsReplaced = 0
     replacements = 0
 
-    promise = atom.project.replace regex, replacementText, paths, (result) =>
+    promise = atom.project.replace regex, replacementPattern, paths, (result) =>
       if result and result.replacements
         pathsReplaced++
         replacements += result.replacements
@@ -68,7 +72,7 @@ class ResultsModel
       @emit('finished-replacing', {pathsReplaced, replacements})
 
   updateReplacementPattern: (replacementPattern) ->
-    @replacementPattern = replacementPattern or 'null'
+    @replacementPattern = replacementPattern or null
     @emit('replacement-pattern-changed', @regex, replacementPattern)
 
   toggleUseRegex: ->

@@ -4,7 +4,7 @@ path = require 'path'
 
 module.exports =
 class ResultView extends View
-  @content: (filePath, matches) ->
+  @content: (model, filePath, matches) ->
     iconClass = if fs.isReadmePath(filePath) then 'icon-book' else 'icon-file-text'
 
     @li class: 'path list-nested-item', 'data-path': _.escapeAttribute(filePath), =>
@@ -15,7 +15,7 @@ class ResultView extends View
         @span outlet: 'description', class: 'path-match-number'
       @ul outlet: 'matches', class: 'matches list-tree', =>
 
-  initialize: (@filePath, result) ->
+  initialize: (@model, @filePath, result) ->
     @renderResult(result)
 
   renderResult: (result) ->
@@ -34,13 +34,9 @@ class ResultView extends View
     else
       @show()
       for match in matches
-        @matches.append(new MatchView({@filePath, match}))
+        @matches.append(new MatchView(@model, {@filePath, match}))
 
     @matches.children().eq(selectedIndex).addClass('selected') if selectedIndex > -1
-
-  updateReplacementPattern: (regex, pattern) ->
-    for matchView in @matches.children().views()
-      matchView.updateReplacementPattern(regex, pattern)
 
   confirm: ->
     atom.workspaceView.openSingletonSync(@filePath, split: 'left')
