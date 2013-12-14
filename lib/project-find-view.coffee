@@ -115,7 +115,7 @@ class ProjectFindView extends View
         @setInfoMessage("Nothing replaced")
 
   attach: ->
-    atom.workspaceView.vertical.append(this) unless @hasParent()
+    atom.workspaceView.panes.after(this) unless @hasParent()
 
     unless @findEditor.getText()
       editorView = atom.workspaceView.getActiveView()

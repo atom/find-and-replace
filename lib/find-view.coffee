@@ -144,7 +144,7 @@ class FindView extends View
 
   attach: =>
     @findResultsView.attach()
-    atom.workspaceView.vertical.append(this)
+    atom.workspaceView.panes.after(this)
 
   detach: =>
     @hideAllTooltips()
