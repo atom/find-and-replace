@@ -44,18 +44,18 @@ class ResultsView extends ScrollView
   hasResults: ->
     @model.getResultCount() > 0
 
-  addResult: (filePath, matches) =>
+  addResult: (filePath, result) =>
     resultView = @getResultView(filePath)
 
     if resultView
-      resultView.renderMatches(matches)
+      resultView.renderResult(result)
     else
       @renderResults()
       @selectFirstResult() if @getPathCount() == 1
 
   removeResult: (filePath) =>
     resultView = @getResultView(filePath)
-    resultView.renderMatches(null) if resultView
+    resultView.renderResult(null) if resultView
 
   renderResults: ({renderAll}={}) ->
     return unless renderAll or @shouldRenderMoreResults()
@@ -64,7 +64,7 @@ class ResultsView extends ScrollView
     for filePath in paths[@lastRenderedResultIndex..]
       result = @model.getResult(filePath)
       break if not renderAll and not @shouldRenderMoreResults()
-      resultView = new ResultView(filePath, result)
+      resultView = new ResultView(@model, filePath, result)
       @append(resultView)
       @lastRenderedResultIndex++
 

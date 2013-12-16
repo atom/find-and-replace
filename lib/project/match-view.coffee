@@ -4,8 +4,8 @@ LeadingWhitespace = /^\s+/
 removeLeadingWhitespace = (string) -> string.replace(LeadingWhitespace, '')
 
 module.exports =
-class SearchResultView extends View
-  @content: ({filePath, match}) ->
+class MatchView extends View
+  @content: (model, {filePath, match}) ->
     range = Range.fromObject(match.range)
     matchStart = range.start.column - match.lineTextOffset
     matchEnd = range.end.column - match.lineTextOffset
@@ -16,10 +16,23 @@ class SearchResultView extends View
       @span range.start.row + 1, class: 'line-number text-subtle'
       @span class: 'preview', =>
         @span prefix
-        @span match.matchText, class: 'match highlight-info'
+        @span match.matchText, class: 'match highlight-info', outlet: 'matchText'
+        @span match.matchText, class: 'replacement highlight-success', outlet: 'replacementText'
         @span suffix
 
-  initialize: ({@filePath, @match}) ->
+  initialize: (@model, {@filePath, @match}) ->
+    @render()
+    @subscribe @model, 'replacement-pattern-changed', @render
+
+  render: =>
+    if @model.replacementPattern and @model.regex
+      replacementText = @match.matchText.replace(@model.regex, @model.replacementPattern)
+      @replacementText.text(replacementText)
+      @replacementText.show()
+      @matchText.removeClass('highlight-info').addClass('highlight-error')
+    else
+      @replacementText.text('').hide()
+      @matchText.removeClass('highlight-error').addClass('highlight-info')
 
   confirm: ->
     editSession = atom.workspaceView.openSingletonSync(@filePath, split: 'left')

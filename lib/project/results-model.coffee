@@ -2,6 +2,13 @@ Q = require 'q'
 {_} = require 'atom'
 {Emitter} = require 'emissary'
 
+class Result
+  @create: (result) ->
+    if result.matches?.length then new Result(result) else null
+
+  constructor: (result) ->
+    _.extend(this, result)
+
 module.exports =
 class ResultsModel
   Emitter.includeInto(this)
@@ -26,9 +33,10 @@ class ResultsModel
     @paths = []
     @active = false
     @pattern = ''
+    @replacementPattern = null
     @emit('cleared')
 
-  search: (pattern, paths, onlyRunIfChanged = false) ->
+  search: (pattern, replacementPattern, paths, onlyRunIfChanged = false) ->
     return Q() if onlyRunIfChanged and pattern? and paths? and pattern == @pattern and _.isEqual(paths, @searchedPaths)
 
     @clear()
@@ -37,22 +45,26 @@ class ResultsModel
     @pattern = pattern
     @searchedPaths = paths
 
+    @updateReplacementPattern(replacementPattern)
+
     onPathsSearched = (numberOfPathsSearched) =>
       @emit('paths-searched', numberOfPathsSearched)
 
     promise = atom.project.scan @regex, {paths, onPathsSearched}, (result) =>
-      @setResult(result.filePath, result.matches)
+      @setResult(result.filePath, Result.create(result))
 
     @emit('search', promise)
     promise.then => @emit('finished-searching')
 
-  replace: (pattern, replacementText, paths) ->
+  replace: (pattern, replacementPattern, paths) ->
     regex = @getRegex(pattern)
+
+    @updateReplacementPattern(replacementPattern)
 
     pathsReplaced = 0
     replacements = 0
 
-    promise = atom.project.replace regex, replacementText, paths, (result) =>
+    promise = atom.project.replace regex, replacementPattern, paths, (result) =>
       if result and result.replacements
         pathsReplaced++
         replacements += result.replacements
@@ -62,6 +74,10 @@ class ResultsModel
     promise.then =>
       @clear()
       @emit('finished-replacing', {pathsReplaced, replacements})
+
+  updateReplacementPattern: (replacementPattern) ->
+    @replacementPattern = replacementPattern or null
+    @emit('replacement-pattern-changed', @regex, replacementPattern)
 
   toggleUseRegex: ->
     @useRegex = not @useRegex
@@ -84,28 +100,28 @@ class ResultsModel
   getResult: (filePath) ->
     @results[filePath]
 
-  setResult: (filePath, matches) ->
-    if matches and matches.length
-      @addResult(filePath, matches)
+  setResult: (filePath, result) ->
+    if result
+      @addResult(filePath, result)
     else
       @removeResult(filePath)
 
-  addResult: (filePath, matches) ->
+  addResult: (filePath, result) ->
     if @results[filePath]
-      @matchCount -= @results[filePath].length
+      @matchCount -= @results[filePath].matches.length
     else
       @pathCount++
       @paths.push(filePath)
 
-    @matchCount += matches.length
+    @matchCount += result.matches.length
 
-    @results[filePath] = matches
-    @emit('result-added', filePath, matches)
+    @results[filePath] = result
+    @emit('result-added', filePath, result)
 
   removeResult: (filePath) ->
     if @results[filePath]
       @pathCount--
-      @matchCount -= @results[filePath].length
+      @matchCount -= @results[filePath].matches.length
 
       @paths = _.without(@paths, filePath)
       delete @results[filePath]
@@ -127,5 +143,6 @@ class ResultsModel
     editSession.scan @regex, (match) ->
       matches.push(match)
 
-    @setResult(editSession.getPath(), matches)
+    result = Result.create({matches})
+    @setResult(editSession.getPath(), result)
     @emit('finished-searching')

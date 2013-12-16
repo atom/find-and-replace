@@ -4,7 +4,7 @@ path = require 'path'
 
 module.exports =
 class ResultView extends View
-  @content: (filePath, matches) ->
+  @content: (model, filePath, result) ->
     iconClass = if fs.isReadmePath(filePath) then 'icon-book' else 'icon-file-text'
 
     @li class: 'path list-nested-item', 'data-path': _.escapeAttribute(filePath), =>
@@ -15,20 +15,26 @@ class ResultView extends View
         @span outlet: 'description', class: 'path-match-number'
       @ul outlet: 'matches', class: 'matches list-tree', =>
 
-  initialize: (@filePath, matches) ->
-    @renderMatches(matches)
+  initialize: (@model, @filePath, result) ->
+    @renderResult(result)
 
-  renderMatches: (matches) ->
+  renderResult: (result) ->
+    matches = result?.matches
     selectedIndex = @matches.find('.selected').index()
 
     @matches.empty()
-    @description.text("(#{matches?.length})")
+
+    if result
+      @description.show().text("(#{matches?.length})")
+    else
+      @description.hide()
 
     if not matches or matches.length == 0
       @hide()
     else
       @show()
-      @matches.append new MatchView({@filePath, match}) for match in matches
+      for match in matches
+        @matches.append(new MatchView(@model, {@filePath, match}))
 
     @matches.children().eq(selectedIndex).addClass('selected') if selectedIndex > -1
 

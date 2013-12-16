@@ -95,6 +95,7 @@ class ProjectFindView extends View
     @handleEventsForReplace()
 
   handleEventsForReplace: ->
+    @replaceEditor.editor.on 'contents-modified', => @model.updateReplacementPattern(@replaceEditor.getText())
     @replacementsMade = 0
     @model.on 'replace', (promise) =>
       @replacementsMade = 0
@@ -164,16 +165,18 @@ class ProjectFindView extends View
   search: ->
     @errorMessages.empty()
     @showResultPane()
-    @model.search(@findEditor.getText(), @getPaths())
+    @model.search(@findEditor.getText(), @replaceEditor.getText(), @getPaths())
 
   replaceAll: ->
     @errorMessages.empty()
     @showResultPane()
-    @model.search(@findEditor.getText(), @getPaths(), true).then =>
+
+    pattern = @findEditor.getText()
+    replacementPattern = @replaceEditor.getText()
+
+    @model.search(pattern, replacementPattern, @getPaths(), true).then =>
       @clearMessages()
-      pattern = @findEditor.getText()
-      replacementText = @replaceEditor.getText()
-      @model.replace(pattern, replacementText, @model.getPaths())
+      @model.replace(pattern, replacementPattern, @model.getPaths())
 
   getPaths: ->
     path.trim() for path in @pathsEditor.getText().trim().split(',') when path

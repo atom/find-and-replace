@@ -45,6 +45,55 @@ describe 'ResultsView', ->
         expect(resultsView.find('.preview').text()).toBe 'a b c d e f g h i j k l abcdefghijklmnopqrstuvwxyz'
         expect(resultsView.find('.match').text()).toBe 'ghijkl'
 
+  describe "rendering replacement text", ->
+    modifiedDelay = null
+    beforeEach ->
+      projectFindView.findEditor.setText('ghijkl')
+      modifiedDelay = projectFindView.replaceEditor.getBuffer().stoppedChangingDelay
+
+    it "renders the replacement when doing a search and there is a replacement pattern", ->
+      projectFindView.replaceEditor.setText('cats')
+      projectFindView.trigger 'core:confirm'
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        resultsView = getResultsView()
+
+        expect(resultsView.find('.preview').length).toBe 1
+        expect(resultsView.find('.match').text()).toBe 'ghijkl'
+        expect(resultsView.find('.replacement').text()).toBe 'cats'
+
+    it "renders the replacement when changing the text in the replacement field", ->
+      projectFindView.trigger 'core:confirm'
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        resultsView = getResultsView()
+
+        expect(resultsView.find('.match').text()).toBe 'ghijkl'
+        expect(resultsView.find('.match')).toHaveClass 'highlight-info'
+        expect(resultsView.find('.replacement').text()).toBe ''
+        expect(resultsView.find('.replacement')).toBeHidden()
+
+        projectFindView.replaceEditor.setText('cats')
+        advanceClock(modifiedDelay)
+
+        expect(resultsView.find('.match').text()).toBe 'ghijkl'
+        expect(resultsView.find('.match')).toHaveClass 'highlight-error'
+        expect(resultsView.find('.replacement').text()).toBe 'cats'
+        expect(resultsView.find('.replacement')).toBeVisible()
+
+        projectFindView.replaceEditor.setText('')
+        advanceClock(modifiedDelay)
+
+        expect(resultsView.find('.match').text()).toBe 'ghijkl'
+        expect(resultsView.find('.match')).toHaveClass 'highlight-info'
+        expect(resultsView.find('.replacement')).toBeHidden()
+
   describe "when list is scrollable", ->
     it "adds more operations to the DOM when `scrollBottom` nears the `pixelOverdraw`", ->
       projectFindView.findEditor.setText(' ')
