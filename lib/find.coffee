@@ -29,9 +29,7 @@ module.exports =
 
     @paneView = null
     atom.project.registerOpener (filePath) =>
-      if filePath is ResultsPaneView.URI
-        @paneView = new ResultsPaneView() unless @paneView
-        @paneView
+      @paneView ?= new ResultsPaneView() if filePath is ResultsPaneView.URI
 
     atom.workspaceView.command 'project-find:show', =>
       @findView.detach()
