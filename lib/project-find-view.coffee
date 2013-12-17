@@ -76,6 +76,7 @@ class ProjectFindView extends View
     @on 'core:confirm', => @confirm()
     @on 'find-and-replace:focus-next', => @focusNextElement(1)
     @on 'find-and-replace:focus-previous', => @focusNextElement(-1)
+    @on 'core:cancel core:close', => @detach()
 
     @on 'project-find:toggle-regex-option', => @toggleRegexOption()
     @regexOptionButton.click => @toggleRegexOption()
@@ -125,6 +126,8 @@ class ProjectFindView extends View
     @findEditor.selectAll()
 
   detach: ->
+    return unless @hasParent()
+
     @hideAllTooltips()
     atom.workspaceView.focus()
     super()

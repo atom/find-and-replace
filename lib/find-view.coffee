@@ -99,6 +99,7 @@ class FindView extends View
 
     @on 'find-and-replace:focus-next', @toggleFocus
     @on 'find-and-replace:focus-previous', @toggleFocus
+    @on 'core:cancel core:close', @detach
 
     @command 'find-and-replace:toggle-regex-option', @toggleRegexOption
     @command 'find-and-replace:toggle-case-option', @toggleCaseOption
@@ -147,6 +148,8 @@ class FindView extends View
     atom.workspaceView.vertical.append(this)
 
   detach: =>
+    return unless @hasParent()
+
     @hideAllTooltips()
     @findResultsView.detach()
     atom.workspaceView.focus()
