@@ -20,12 +20,15 @@ class ResultsPaneView extends ScrollView
             @span outlet: 'searchedCount', class: 'searched-count'
             @span ' paths searched'
 
-      @subview 'resultsView', new ResultsView
+      @subview 'resultsView', new ResultsView(@model)
 
   initialize: ->
     super
     @loadingMessage.hide()
-    @setModel(@constructor.model) if @constructor.model
+
+    @model = @constructor.model
+    @handleEvents()
+    @onFinishedSearching()
 
   getPane: ->
     @parent('.item-views').parent('.pane').view()
@@ -41,11 +44,6 @@ class ResultsPaneView extends ScrollView
 
   focus: ->
     @resultsView.focus()
-
-  setModel: (@model) ->
-    @resultsView.setModel(@model)
-    @handleEvents()
-    @onFinishedSearching()
 
   getResultCountText: ->
     if @resultsView.getPathCount() > 0

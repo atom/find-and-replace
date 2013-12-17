@@ -6,7 +6,7 @@ class ResultsView extends ScrollView
   @content: ->
     @ol class: 'results-view list-tree focusable-panel', tabindex: -1
 
-  initialize: ->
+  initialize: (@model) ->
     super
 
     @pixelOverdraw = 100
@@ -31,7 +31,6 @@ class ResultsView extends ScrollView
       view.addClass('selected')
       view.confirm()
 
-  setModel: (@model) ->
     @subscribe @model, 'result-added', @addResult
     @subscribe @model, 'result-removed', @removeResult
     @subscribe @model, 'cleared', @clear
