@@ -22,6 +22,7 @@ describe 'ProjectFindView', ->
     atom.project.setPath(path.join(__dirname, 'fixtures'))
     atom.workspaceView.attachToDom()
     pack = atom.packages.activatePackage("find-and-replace", immediate: true)
+    pack.mainModule.createProjectFindView()
     projectFindView = pack.mainModule.projectFindView
 
     atom.config.set('find-and-replace.openProjectFindResultsInRightPane', false)
@@ -196,6 +197,7 @@ describe 'ProjectFindView', ->
         editor.trigger 'project-find:show'
         atom.packages.deactivatePackage("find-and-replace")
         pack = atom.packages.activatePackage("find-and-replace", immediate: true)
+        pack.mainModule.createProjectFindView()
         projectFindView = pack.mainModule.projectFindView
 
         expect(projectFindView.hasParent()).toBeTruthy()
@@ -212,6 +214,7 @@ describe 'ProjectFindView', ->
 
         atom.packages.deactivatePackage("find-and-replace")
         pack = atom.packages.activatePackage("find-and-replace", immediate: true)
+        pack.mainModule.createProjectFindView()
         projectFindView = pack.mainModule.projectFindView
 
         expect(projectFindView.caseOptionButton).toHaveClass('selected')

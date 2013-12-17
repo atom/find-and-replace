@@ -13,6 +13,7 @@ describe 'FindView', ->
     atom.workspaceView.attachToDom()
     editor = atom.workspaceView.getActiveView()
     pack = atom.packages.activatePackage("find-and-replace", immediate: true)
+    pack.mainModule.createFindView()
     findView = pack.mainModule.findView
 
   describe "when find-and-replace:show is triggered", ->
@@ -68,6 +69,7 @@ describe 'FindView', ->
 
       atom.packages.deactivatePackage("find-and-replace")
       pack = atom.packages.activatePackage("find-and-replace", immediate: true)
+      pack.mainModule.createFindView()
       findView = pack.mainModule.findView
 
       findView.findEditor.trigger('core:move-up')
@@ -91,6 +93,7 @@ describe 'FindView', ->
 
       atom.packages.deactivatePackage("find-and-replace")
       pack = atom.packages.activatePackage("find-and-replace", immediate: true)
+      pack.mainModule.createFindView()
       findView = pack.mainModule.findView
 
       expect(findView.caseOptionButton).toHaveClass 'selected'
