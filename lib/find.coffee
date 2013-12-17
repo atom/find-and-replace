@@ -9,10 +9,50 @@ module.exports =
   configDefaults:
     openProjectFindResultsInRightPane: false
 
-  activate: ({viewState, projectViewState, resultsModelState, paneViewState}={}) ->
-    @resultsModel = new ResultsModel(resultsModelState)
-    @projectFindView = new ProjectFindView(@resultsModel, projectViewState)
-    @findView = new FindView(viewState)
+  activate: ({@viewState, @projectViewState, @resultsModelState}={}) ->
+    atom.project.registerOpener (filePath) =>
+      new ResultsPaneView() if filePath is ResultsPaneView.URI
+
+    atom.workspaceView.command 'project-find:show', =>
+      @createProjectFindView()
+      @findView?.detach()
+      @projectFindView.attach()
+
+    atom.workspaceView.command 'project-find:show-in-current-directory', (e) =>
+      @createProjectFindView()
+      @findView?.detach()
+      @projectFindView.attach()
+      @projectFindView.findInCurrentlySelectedDirectory($(e.target))
+
+    atom.workspaceView.command 'find-and-replace:use-selection-as-find-pattern', =>
+      return if @projectFindView?.isOnDom() or @findView?.isOnDom()
+
+      @createFindView()
+      @projectFindView?.detach()
+      @findView.showFind()
+
+    atom.workspaceView.command 'find-and-replace:show', =>
+      @createFindView()
+      @projectFindView?.detach()
+      @findView.showFind()
+
+    atom.workspaceView.command 'find-and-replace:show-replace', =>
+      @createFindView()
+      @projectFindView?.detach()
+      @findView.showReplace()
+
+    # in code editors
+    atom.workspaceView.on 'core:cancel core:close', (event) =>
+      target = $(event.target)
+      editor = target.parents('.editor:not(.mini)')
+      return unless editor.length
+
+      @findView?.detach()
+      @projectFindView?.detach()
+
+  createProjectFindView: ->
+    @resultsModel ?= new ResultsModel(@resultsModelState)
+    @projectFindView ?= new ProjectFindView(@resultsModel, @projectViewState)
 
     # HACK: Soooo, we need to get the model to the pane view whenever it is
     # created. Creation could come from the opener below, or, more problematic,
@@ -27,54 +67,20 @@ module.exports =
     # See https://github.com/atom/find-and-replace/issues/63
     ResultsPaneView.model = @resultsModel
 
-    atom.project.registerOpener (filePath) =>
-      new ResultsPaneView() if filePath is ResultsPaneView.URI
-
-    atom.workspaceView.command 'project-find:show', =>
-      @findView.detach()
-      @projectFindView.attach()
-
-    atom.workspaceView.command 'project-find:show-in-current-directory', (e) =>
-      @findView.detach()
-      @projectFindView.attach()
-      @projectFindView.findInCurrentlySelectedDirectory($(e.target))
-
-    atom.workspaceView.command 'find-and-replace:use-selection-as-find-pattern', =>
-      return if @projectFindView.isOnDom() or @findView.isOnDom()
-      @projectFindView.detach()
-      @findView.showFind()
-
-    atom.workspaceView.command 'find-and-replace:show', =>
-      @projectFindView.detach()
-      @findView.showFind()
-
-    atom.workspaceView.command 'find-and-replace:show-replace', =>
-      @projectFindView.detach()
-      @findView.showReplace()
-
-    @findView.on 'core:cancel core:close', =>
-      @findView.detach()
-
-    @projectFindView.on 'core:cancel core:close', =>
-      @projectFindView.detach()
-
-    # in code editors
-    atom.workspaceView.on 'core:cancel core:close', (event) =>
-      target = $(event.target)
-      editor = target.parents('.editor:not(.mini)')
-      return unless editor.length
-
-      @findView.detach()
-      @projectFindView.detach()
+  createFindView: ->
+    @findView ?= new FindView(@viewState)
 
   deactivate: ->
-    @findView.remove()
+    @findView?.remove()
     @findView = null
 
-    @projectFindView.remove()
+    @projectFindView?.remove()
     @projectFindView = null
 
+    ResultsPaneView.model = null
+    @resultsModel = null
+
   serialize: ->
-    viewState: @findView.serialize()
-    projectViewState: @projectFindView.serialize()
-    resultsModelState: @resultsModel.serialize()
+    viewState: @findView?.serialize() ? @viewState
+    projectViewState: @projectFindView?.serialize() ? @projectViewState
+    resultsModelState: @resultsModel?.serialize() ? @resultsModelState
