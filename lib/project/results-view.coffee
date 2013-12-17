@@ -32,17 +32,12 @@ class ResultsView extends ScrollView
       view.confirm()
 
   setModel: (@model) ->
-    @model.on 'result-added', @addResult
-    @model.on 'result-removed', @removeResult
-    @model.on 'cleared', @clear
-
+    @subscribe @model, 'result-added', @addResult
+    @subscribe @model, 'result-removed', @removeResult
+    @subscribe @model, 'cleared', @clear
     @renderResults()
 
   beforeRemove: ->
-    if @model
-      @model.off 'result-added', @addResult
-      @model.off 'result-removed', @removeResult
-      @model.off 'cleared', @clear
     @clear()
 
   hasResults: ->

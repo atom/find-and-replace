@@ -54,9 +54,9 @@ class ResultsPaneView extends ScrollView
       "No matches found for '#{@model.getPattern()}'"
 
   handleEvents: ->
-    @model.on 'search', @onSearch
-    @model.on 'finished-searching', @onFinishedSearching
-    @model.on 'paths-searched', @onPathsSearched
+    @subscribe @model, 'search', @onSearch
+    @subscribe @model, 'finished-searching', @onFinishedSearching
+    @subscribe @model, 'paths-searched', @onPathsSearched
 
   onSearch: (deferred) =>
     @loadingMessage.show()
