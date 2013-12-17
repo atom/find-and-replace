@@ -9,17 +9,17 @@ module.exports =
   configDefaults:
     openProjectFindResultsInRightPane: false
 
-  activate: ({viewState, projectViewState, resultsModelState, paneViewState}={}) ->
+  activate: ({@viewState, @projectViewState, @resultsModelState}={}) ->
     atom.project.registerOpener (filePath) =>
       new ResultsPaneView() if filePath is ResultsPaneView.URI
 
     atom.workspaceView.command 'project-find:show', =>
-      @createProjectFindView(projectViewState, resultsModelState)
+      @createProjectFindView()
       @findView?.detach()
       @projectFindView.attach()
 
     atom.workspaceView.command 'project-find:show-in-current-directory', (e) =>
-      @createProjectFindView(projectViewState, resultsModelState)
+      @createProjectFindView()
       @findView?.detach()
       @projectFindView.attach()
       @projectFindView.findInCurrentlySelectedDirectory($(e.target))
@@ -27,17 +27,17 @@ module.exports =
     atom.workspaceView.command 'find-and-replace:use-selection-as-find-pattern', =>
       return if @projectFindView?.isOnDom() or @findView?.isOnDom()
 
-      @createFindView(viewState)
+      @createFindView()
       @projectFindView?.detach()
       @findView.showFind()
 
     atom.workspaceView.command 'find-and-replace:show', =>
-      @createFindView(viewState)
+      @createFindView()
       @projectFindView?.detach()
       @findView.showFind()
 
     atom.workspaceView.command 'find-and-replace:show-replace', =>
-      @createFindView(viewState)
+      @createFindView()
       @projectFindView?.detach()
       @findView.showReplace()
 
@@ -50,9 +50,9 @@ module.exports =
       @findView?.detach()
       @projectFindView?.detach()
 
-  createProjectFindView: (projectViewState, resultsModelState) ->
-    @resultsModel ?= new ResultsModel(resultsModelState)
-    @projectFindView ?= new ProjectFindView(@resultsModel, projectViewState)
+  createProjectFindView: ->
+    @resultsModel ?= new ResultsModel(@resultsModelState)
+    @projectFindView ?= new ProjectFindView(@resultsModel, @projectViewState)
 
     # HACK: Soooo, we need to get the model to the pane view whenever it is
     # created. Creation could come from the opener below, or, more problematic,
@@ -67,8 +67,8 @@ module.exports =
     # See https://github.com/atom/find-and-replace/issues/63
     ResultsPaneView.model = @resultsModel
 
-  createFindView: (viewState) ->
-    @findView ?= new FindView(viewState)
+  createFindView: ->
+    @findView ?= new FindView(@viewState)
 
   deactivate: ->
     @findView?.remove()
@@ -77,7 +77,10 @@ module.exports =
     @projectFindView?.remove()
     @projectFindView = null
 
+    ResultsPaneView.model = null
+    @resultsModel = null
+
   serialize: ->
-    viewState: @findView.serialize()
-    projectViewState: @projectFindView.serialize()
-    resultsModelState: @resultsModel.serialize()
+    viewState: @findView?.serialize() ? @viewState
+    projectViewState: @projectFindView?.serialize() ? @projectViewState
+    resultsModelState: @resultsModel?.serialize() ? @resultsModelState
