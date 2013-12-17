@@ -27,9 +27,8 @@ module.exports =
     # See https://github.com/atom/find-and-replace/issues/63
     ResultsPaneView.model = @resultsModel
 
-    @paneView = null
     atom.project.registerOpener (filePath) =>
-      @paneView ?= new ResultsPaneView() if filePath is ResultsPaneView.URI
+      new ResultsPaneView() if filePath is ResultsPaneView.URI
 
     atom.workspaceView.command 'project-find:show', =>
       @findView.detach()

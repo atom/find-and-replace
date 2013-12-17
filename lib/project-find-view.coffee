@@ -86,8 +86,8 @@ class ProjectFindView extends View
     @replaceAllButton.on 'click', => @replaceAll()
     @on 'project-find:replace-all', => @replaceAll()
 
-    @model.on 'cleared', => @clearMessages()
-    @model.on 'finished-searching', => @onFinishedSearching()
+    @subscribe @model, 'cleared', => @clearMessages()
+    @subscribe @model, 'finished-searching', => @onFinishedSearching()
     @findEditor.getBuffer().on 'changed', => @model.clear()
 
     atom.workspaceView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
@@ -97,17 +97,17 @@ class ProjectFindView extends View
   handleEventsForReplace: ->
     @replaceEditor.editor.on 'contents-modified', => @model.updateReplacementPattern(@replaceEditor.getText())
     @replacementsMade = 0
-    @model.on 'replace', (promise) =>
+    @subscribe @model, 'replace', (promise) =>
       @replacementsMade = 0
       @replacmentInfoBlock.show()
       @replacementProgress.removeAttr('value')
 
-    @model.on 'path-replaced', (result) =>
+    @subscribe @model, 'path-replaced', (result) =>
       @replacementsMade++
       @replacementProgress[0].value = @replacementsMade / @model.getPathCount()
       @replacmentInfo.text("Replaced #{@replacementsMade} of #{_.pluralize(@model.getPathCount(), 'file')}")
 
-    @model.on 'finished-replacing', ({pathsReplaced, replacements}) =>
+    @subscribe @model, 'finished-replacing', ({pathsReplaced, replacements}) =>
       @replacmentInfoBlock.hide()
       if pathsReplaced
         @setInfoMessage("Replaced #{_.pluralize(replacements, 'result')} in #{_.pluralize(pathsReplaced, 'file')}")
