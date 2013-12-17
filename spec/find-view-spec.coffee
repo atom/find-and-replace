@@ -471,11 +471,11 @@ describe 'FindView', ->
       describe "when the regex option is true", ->
         it "replaces $1, $2, etc... with substring matches", ->
           findView.findEditor.trigger 'find-and-replace:toggle-regex-option'
-          findView.findEditor.setText('i(t)e(m)s')
-          findView.replaceEditor.setText('$2i$1$1ens')
+          findView.findEditor.setText('(items)([\\.;])')
+          findView.replaceEditor.setText('$2$1')
           editor.trigger 'find-and-replace:replace-all'
-          expect(editor.getText()).not.toMatch /items/
-          expect(editor.getText().match(/\bmittens\b/g)).toHaveLength 6
+          expect(editor.getText()).toMatch /;items/
+          expect(editor.getText()).toMatch /\.items/
 
       describe "when the regex option is false", ->
         it "replaces the matches with without any regex subsitions", ->
