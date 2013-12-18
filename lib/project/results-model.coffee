@@ -38,13 +38,13 @@ class ResultsModel
     @paths = []
     @active = false
     @pattern = ''
-    @emit('search-state-cleared')
+    @emit('search-state-cleared', @getResultsSummary())
 
   clearReplacementState: ->
     @replacementPattern = null
     @replacedPathCount = null
     @replacementCount = null
-    @emit('replacement-state-cleared')
+    @emit('replacement-state-cleared', @getResultsSummary())
 
   search: (pattern, searchPaths, replacementPattern, {onlyRunIfChanged, keepReplacementState}={}) ->
     return Q() if onlyRunIfChanged and pattern? and searchPaths? and pattern == @pattern and _.isEqual(searchPaths, @searchedPaths)
