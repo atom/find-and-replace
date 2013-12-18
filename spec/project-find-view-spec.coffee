@@ -491,6 +491,12 @@ describe 'ProjectFindView', ->
             expect(projectFindView.descriptionLabel.text()).toContain 'Replaced items with items-123 13 times in 2 files'
             expect(projectFindView.descriptionLabel.text()).toContain "13 results found in 2 files for 'items'"
 
+            projectFindView.replaceEditor.setText('cats')
+            advanceClock(projectFindView.replaceEditor.getBuffer().stoppedChangingDelay)
+
+            expect(projectFindView.descriptionLabel.text()).not.toContain 'Replaced items'
+            expect(projectFindView.descriptionLabel.text()).toContain "13 results found in 2 files for 'items'"
+
     describe "when the project-find:replace-all is triggered", ->
       describe "when there are no results", ->
         it "doesnt replace anything", ->
