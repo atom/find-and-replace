@@ -28,7 +28,7 @@ class ResultsPaneView extends ScrollView
 
     @model = @constructor.model
     @handleEvents()
-    @onFinishedSearching()
+    @onFinishedSearching(@model.getResultsSummary())
 
   getPane: ->
     @parent('.item-views').parent('.pane').view()
@@ -44,12 +44,6 @@ class ResultsPaneView extends ScrollView
 
   focus: ->
     @resultsView.focus()
-
-  getResultCountText: ->
-    if @resultsView.getPathCount() > 0
-      "#{_.pluralize(@resultsView.getMatchCount(), 'match', 'matches')} in #{_.pluralize(@resultsView.getPathCount(), 'file')} for '#{@model.getPattern()}'"
-    else
-      "No matches found for '#{@model.getPattern()}'"
 
   handleEvents: ->
     @subscribe @model, 'search', @onSearch
@@ -76,11 +70,28 @@ class ResultsPaneView extends ScrollView
 
     deferred.done =>
       @loadingMessage.hide()
-      @previewCount.text(@getResultCountText())
 
   onPathsSearched: (numberOfPathsSearched) =>
     if @showSearchedCountBlock
       @searchedCount.text(numberOfPathsSearched)
 
-  onFinishedSearching: =>
-    @previewCount.text(@getResultCountText())
+  onFinishedSearching: ({pattern, matchCount, pathCount, replacementPattern, pathsReplaced, replacements}) =>
+    message = @getSearchResultsMessage(pattern, matchCount, pathCount)
+
+    if pathsReplaced?
+      replace = @getReplacementResultsMessage(pattern, replacementPattern, pathsReplaced, replacements)
+      message = "<span class=\"text-highlight\">#{replace}.</span> #{message}"
+
+    @previewCount.html(message)
+
+  getReplacementResultsMessage: (pattern, replacementPattern, pathsReplaced, replacements) ->
+    if pathsReplaced
+      "Replaced <span class=\"highlight-error\">#{pattern}</span> with <span class=\"highlight-success\">#{replacementPattern}</span> #{_.pluralize(replacements, 'time')} in #{_.pluralize(pathsReplaced, 'file')}"
+    else
+      "Nothing replaced"
+
+  getSearchResultsMessage: (pattern, matchCount, pathCount) ->
+    if matchCount
+      "#{_.pluralize(matchCount, 'result')} found in #{_.pluralize(pathCount, 'file')} for '#{pattern}'"
+    else
+      "No results found for '#{pattern}'"

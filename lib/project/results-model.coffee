@@ -36,7 +36,7 @@ class ResultsModel
     @replacementPattern = null
     @emit('cleared')
 
-  search: (pattern, replacementPattern, paths, onlyRunIfChanged = false) ->
+  search: (pattern, replacementPattern, paths, {onlyRunIfChanged, pathsReplaced, replacements}={}) ->
     return Q() if onlyRunIfChanged and pattern? and paths? and pattern == @pattern and _.isEqual(paths, @searchedPaths)
 
     @clear()
@@ -54,7 +54,7 @@ class ResultsModel
       @setResult(result.filePath, Result.create(result))
 
     @emit('search', promise)
-    promise.then => @emit('finished-searching')
+    promise.then => @emit('finished-searching', {@pattern, @pathCount, @matchCount, replacementPattern, pathsReplaced, replacements})
 
   replace: (pattern, replacementPattern, paths) ->
     regex = @getRegex(pattern)
@@ -72,8 +72,9 @@ class ResultsModel
 
     @emit('replace', promise)
     promise.then =>
-      @clear()
-      @emit('finished-replacing', {pathsReplaced, replacements})
+      replacementResult = {pattern, replacementPattern, pathsReplaced, replacements}
+      @emit('finished-replacing', replacementResult)
+      @search(pattern, replacementPattern, paths, replacementResult)
 
   updateReplacementPattern: (replacementPattern) ->
     @replacementPattern = replacementPattern or null
@@ -84,6 +85,11 @@ class ResultsModel
 
   toggleCaseSensitive: ->
     @caseSensitive = not @caseSensitive
+
+  getResultsSummary: ->
+    pattern: @getPattern()
+    pathCount: @getPathCount()
+    matchCount: @getMatchCount()
 
   getPathCount: ->
     @pathCount
@@ -145,4 +151,4 @@ class ResultsModel
 
     result = Result.create({matches})
     @setResult(editSession.getPath(), result)
-    @emit('finished-searching')
+    # @emit('finished-searching', @getResultsSummary())
