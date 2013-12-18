@@ -290,7 +290,7 @@ describe 'ProjectFindView', ->
             expect(resultsView).toBeVisible()
             resultsView.scrollToBottom() # To load ALL the results
             expect(resultsView.find("li > ul > li")).toHaveLength(13)
-            expect(resultsPaneView.previewCount.text()).toBe "13 matches in 2 files for 'items'"
+            expect(resultsPaneView.previewCount.text()).toBe "13 results found in 2 files for 'items'"
             expect(projectFindView.errorMessages).not.toBeVisible()
 
         it "only searches paths matching text in the path filter", ->
@@ -312,7 +312,7 @@ describe 'ProjectFindView', ->
             resultsView = resultsPaneView.resultsView
             resultsView.scrollToBottom() # To load ALL the results
             expect(resultsView.find("li > ul > li")).toHaveLength(13)
-            expect(resultsPaneView.previewCount.text()).toBe "13 matches in 2 files for 'items'"
+            expect(resultsPaneView.previewCount.text()).toBe "13 results found in 2 files for 'items'"
 
             resultsView.selectFirstResult()
             _.times 7, -> resultsView.selectNextResult()
@@ -323,14 +323,14 @@ describe 'ProjectFindView', ->
             buffer.emit('contents-modified')
 
             expect(resultsView.find("li > ul > li")).toHaveLength(8)
-            expect(resultsPaneView.previewCount.text()).toBe "8 matches in 2 files for 'items'"
+            expect(resultsPaneView.previewCount.text()).toBe "8 results found in 2 files for 'items'"
             expect(resultsView.find("li > ul:eq(1) > li:eq(0)")).toHaveClass 'selected'
 
             buffer.setText('no matches in this file')
             buffer.emit('contents-modified')
 
             expect(resultsView.find("li > ul > li")).toHaveLength(7)
-            expect(resultsPaneView.previewCount.text()).toBe "7 matches in 1 file for 'items'"
+            expect(resultsPaneView.previewCount.text()).toBe "7 results found in 1 file for 'items'"
 
       describe "when no results exist", ->
         beforeEach ->
@@ -487,7 +487,8 @@ describe 'ProjectFindView', ->
           runs ->
             expect(atom.project.scan).toHaveBeenCalled()
             expect(atom.beep).toHaveBeenCalled()
-            expect(projectFindView.descriptionLabel.text()).toBe "Nothing replaced"
+            expect(projectFindView.descriptionLabel.text()).toContain "Nothing replaced"
+            expect(projectFindView.descriptionLabel.text()).toContain "No more results found for 'nopenotinthefile'"
 
       describe "when no search has been run", ->
         it "runs the search then replaces everything", ->
@@ -500,7 +501,8 @@ describe 'ProjectFindView', ->
             replacePromise
 
           runs ->
-            expect(projectFindView.descriptionLabel.text()).toBe "Replaced 13 results in 2 files"
+            expect(projectFindView.descriptionLabel.text()).toContain "Replaced items with sunshine 13 times in 2 files"
+            expect(projectFindView.descriptionLabel.text()).toContain "No more results found for 'items'"
 
       describe "when the search text has changed since that last search", ->
         beforeEach ->
@@ -515,6 +517,7 @@ describe 'ProjectFindView', ->
           spyOn(atom, 'beep')
 
           projectFindView.findEditor.setText('sort')
+          projectFindView.replaceEditor.setText('ok')
           expect(projectFindView.resultsView).not.toBeVisible()
 
           projectFindView.trigger 'project-find:replace-all'
@@ -525,7 +528,8 @@ describe 'ProjectFindView', ->
           runs ->
             expect(atom.project.scan).toHaveBeenCalled()
             expect(atom.beep).not.toHaveBeenCalled()
-            expect(projectFindView.descriptionLabel.text()).toBe "Replaced 10 results in 2 files"
+            expect(projectFindView.descriptionLabel.text()).toContain "Replaced sort with ok 10 times in 2 files"
+            expect(projectFindView.descriptionLabel.text()).toContain "No more results found for 'sort'"
 
       describe "when the text in the search box triggered the results", ->
         beforeEach ->
@@ -550,7 +554,8 @@ describe 'ProjectFindView', ->
             expect(resultsView).toBeVisible()
             expect(resultsView.find("li > ul > li")).toHaveLength(0)
 
-            expect(projectFindView.descriptionLabel.text()).toBe "Replaced 13 results in 2 files"
+            expect(projectFindView.descriptionLabel.text()).toContain "Replaced items with sunshine 13 times in 2 files"
+            expect(projectFindView.descriptionLabel.text()).toContain "No more results found for 'items'"
 
             sampleJsContent = fs.readFileSync(sampleJs, 'utf8')
             expect(sampleJsContent.match(/items/g)).toBeFalsy()
