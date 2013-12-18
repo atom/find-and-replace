@@ -25,7 +25,7 @@ class MatchView extends View
     @subscribe @model, 'replacement-pattern-changed', @render
 
   render: =>
-    if @model.replacementPattern and @model.regex
+    if @model.replacementPattern and @model.regex and not @model.replacedPathCount?
       replacementText = @match.matchText.replace(@model.regex, @model.replacementPattern)
       @replacementText.text(replacementText)
       @replacementText.show()
