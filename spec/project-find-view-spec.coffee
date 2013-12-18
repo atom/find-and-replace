@@ -471,6 +471,26 @@ describe 'ProjectFindView', ->
           expect(sampleCoffeeContent.match(/items/g)).toBeFalsy()
           expect(sampleCoffeeContent.match(/sunshine/g)).toHaveLength 7
 
+      describe "when there are search results after a replace", ->
+        it "runs the search after the replace", ->
+          projectFindView.findEditor.setText('items')
+          projectFindView.trigger 'core:confirm'
+
+          waitsForPromise ->
+            searchPromise
+
+          runs ->
+            projectFindView.replaceEditor.setText('items-123')
+            projectFindView.replaceAllButton.click()
+
+          waitsForPromise ->
+            replacePromise
+
+          runs ->
+            expect(projectFindView.errorMessages).not.toBeVisible()
+            expect(projectFindView.descriptionLabel.text()).toContain 'Replaced items with items-123 13 times in 2 files'
+            expect(projectFindView.descriptionLabel.text()).toContain "13 results found in 2 files for 'items'"
+
     describe "when the project-find:replace-all is triggered", ->
       describe "when there are no results", ->
         it "doesnt replace anything", ->
