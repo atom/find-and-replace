@@ -89,8 +89,10 @@ class ProjectFindView extends View
     @on 'project-find:replace-all', => @replaceAll()
 
     @subscribe @model, 'cleared', => @clearMessages()
+    @subscribe @model, 'replacement-state-cleared', (results) => @generateResultsMessage(results)
     @subscribe @model, 'finished-searching', (result) => @onFinishedSearching(result)
     @findEditor.getBuffer().on 'changed', => @model.clear()
+    @replaceEditor.getBuffer().on 'changed', => @model.clearReplacementState()
 
     atom.workspaceView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
 
@@ -202,10 +204,11 @@ class ProjectFindView extends View
   onFinishedReplacing: (results) ->
     atom.beep() unless results.replacedPathCount
     @replacmentInfoBlock.hide()
-    @setInfoMessage(Util.getReplacementResultsMessage(results))
 
   onFinishedSearching: (results) ->
-    console.log 'fin search', results
+    @generateResultsMessage(results)
+
+  generateResultsMessage: (results) =>
     @setInfoMessage(Util.getResultsMessage(results))
 
   clearMessages: ->
