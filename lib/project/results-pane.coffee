@@ -49,6 +49,7 @@ class ResultsPaneView extends ScrollView
   handleEvents: ->
     @subscribe @model, 'search', @onSearch
     @subscribe @model, 'cleared', @onCleared
+    @subscribe @model, 'replacement-state-cleared', @onReplacementStateCleared
     @subscribe @model, 'finished-searching', @onFinishedSearching
     @subscribe @model, 'paths-searched', @onPathsSearched
 
@@ -78,6 +79,9 @@ class ResultsPaneView extends ScrollView
       @searchedCount.text(numberOfPathsSearched)
 
   onFinishedSearching: (results) =>
+    @previewCount.html(Util.getResultsMessage(results))
+
+  onReplacementStateCleared: (results) =>
     @previewCount.html(Util.getResultsMessage(results))
 
   onCleared: =>
