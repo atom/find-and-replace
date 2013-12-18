@@ -1,5 +1,6 @@
 {_, $, $$$, EditorView, ScrollView} = require 'atom'
 ResultsView = require './results-view'
+Util = require './util'
 
 module.exports =
 class ResultsPaneView extends ScrollView
@@ -47,6 +48,7 @@ class ResultsPaneView extends ScrollView
 
   handleEvents: ->
     @subscribe @model, 'search', @onSearch
+    @subscribe @model, 'cleared', @onCleared
     @subscribe @model, 'finished-searching', @onFinishedSearching
     @subscribe @model, 'paths-searched', @onPathsSearched
 
@@ -75,23 +77,8 @@ class ResultsPaneView extends ScrollView
     if @showSearchedCountBlock
       @searchedCount.text(numberOfPathsSearched)
 
-  onFinishedSearching: ({pattern, matchCount, pathCount, replacementPattern, pathsReplaced, replacements}) =>
-    message = @getSearchResultsMessage(pattern, matchCount, pathCount)
+  onFinishedSearching: (results) =>
+    @previewCount.html(Util.getResultsMessage(results))
 
-    if pathsReplaced?
-      replace = @getReplacementResultsMessage(pattern, replacementPattern, pathsReplaced, replacements)
-      message = "<span class=\"text-highlight\">#{replace}.</span> #{message}"
-
-    @previewCount.html(message)
-
-  getReplacementResultsMessage: (pattern, replacementPattern, pathsReplaced, replacements) ->
-    if pathsReplaced
-      "Replaced <span class=\"highlight-error\">#{pattern}</span> with <span class=\"highlight-success\">#{replacementPattern}</span> #{_.pluralize(replacements, 'time')} in #{_.pluralize(pathsReplaced, 'file')}"
-    else
-      "Nothing replaced"
-
-  getSearchResultsMessage: (pattern, matchCount, pathCount) ->
-    if matchCount
-      "#{_.pluralize(matchCount, 'result')} found in #{_.pluralize(pathCount, 'file')} for '#{pattern}'"
-    else
-      "No results found for '#{pattern}'"
+  onCleared: =>
+    @previewCount.text('Find in project results')

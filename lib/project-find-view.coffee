@@ -2,6 +2,7 @@ Q = require 'q'
 {_, $, $$$, EditorView, View} = require 'atom'
 
 History = require './history'
+Util = require './project/util'
 ResultsModel = require './project/results-model'
 ResultsPaneView = require './project/results-pane'
 
@@ -160,7 +161,7 @@ class ProjectFindView extends View
   search: ->
     @errorMessages.empty()
     @showResultPane()
-    @model.search(@findEditor.getText(), @replaceEditor.getText(), @getPaths())
+    @model.search(@findEditor.getText(), @getPaths(), @replaceEditor.getText())
 
   replaceAll: ->
     @errorMessages.empty()
@@ -169,9 +170,9 @@ class ProjectFindView extends View
     pattern = @findEditor.getText()
     replacementPattern = @replaceEditor.getText()
 
-    @model.search(pattern, replacementPattern, @getPaths(), onlyRunIfChanged: true).then =>
+    @model.search(pattern, @getPaths(), replacementPattern, onlyRunIfChanged: true).then =>
       @clearMessages()
-      @model.replace(pattern, replacementPattern, @model.getPaths())
+      @model.replace(pattern, @getPaths(), replacementPattern, @model.getPaths())
 
   getPaths: ->
     path.trim() for path in @pathsEditor.getText().trim().split(',') when path
@@ -198,31 +199,14 @@ class ProjectFindView extends View
     options = {split: 'right'} if atom.config.get('find-and-replace.openProjectFindResultsInRightPane')
     atom.workspaceView.openSingletonSync(ResultsPaneView.URI, options)
 
-  onFinishedReplacing: ({pathsReplaced, replacements}) ->
+  onFinishedReplacing: (results) ->
+    atom.beep() unless results.replacedPathCount
     @replacmentInfoBlock.hide()
-    @setInfoMessage(@getReplacementResultsMessage())
+    @setInfoMessage(Util.getReplacementResultsMessage(results))
 
-  onFinishedSearching: ({pattern, matchCount, pathCount, replacementPattern, pathsReplaced, replacements}) ->
-    # atom.beep() unless matchCount
-    message = @getSearchResultsMessage(pattern, matchCount, pathCount)
-
-    if pathsReplaced?
-      replace = @getReplacementResultsMessage(pattern, replacementPattern, pathsReplaced, replacements)
-      message = "<span class=\"text-highlight\">#{replace}</span>. #{message}"
-
-    @setInfoMessage(message)
-
-  getReplacementResultsMessage: (pattern, replacementPattern, pathsReplaced, replacements) ->
-    if pathsReplaced
-      "Replaced <span class=\"highlight-error\">#{pattern}</span> with <span class=\"highlight-success\">#{replacementPattern}</span> #{_.pluralize(replacements, 'time')} in #{_.pluralize(pathsReplaced, 'file')}"
-    else
-      "Nothing replaced"
-
-  getSearchResultsMessage: (pattern, matchCount, pathCount) ->
-    if matchCount
-      "#{_.pluralize(matchCount, 'result')} found in #{_.pluralize(pathCount, 'file')} for '#{pattern}'"
-    else
-      "No results found for '#{pattern}'"
+  onFinishedSearching: (results) ->
+    console.log 'fin search', results
+    @setInfoMessage(Util.getResultsMessage(results))
 
   clearMessages: ->
     @descriptionLabel.text('Find in Project')
