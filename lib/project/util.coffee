@@ -10,23 +10,14 @@ module.exports =
     pattern = @escapeHtml(pattern)
     pattern.replace(/\n/g, '\\n').replace(/\t/g, '\\t')
 
-  getResultsMessage: (results) ->
-    message = @getSearchResultsMessage(results)
-
-    if results.replacedPathCount?
-      replace = @getReplacementResultsMessage(results)
-      message = "<span class=\"text-highlight\">#{replace}</span>. #{message}"
-
-    message
-
   getReplacementResultsMessage: ({pattern, replacementPattern, replacedPathCount, replacementCount}) ->
     if replacedPathCount
-      "Replaced <span class=\"highlight-error\">#{@sanitizePattern(pattern)}</span> with <span class=\"highlight-success\">#{@sanitizePattern(replacementPattern)}</span> #{_.pluralize(replacementCount, 'time')} in #{_.pluralize(replacedPathCount, 'file')}"
+      "<span class=\"text-highlight\">Replaced <span class=\"highlight-error\">#{@sanitizePattern(pattern)}</span> with <span class=\"highlight-success\">#{@sanitizePattern(replacementPattern)}</span> #{_.pluralize(replacementCount, 'time')} in #{_.pluralize(replacedPathCount, 'file')}</span>"
     else
-      "Nothing replaced"
+      "<span class=\"text-highlight\">Nothing replaced</span>"
 
   getSearchResultsMessage: ({pattern, matchCount, pathCount, replacedPathCount}) ->
     if matchCount
-      "#{_.pluralize(matchCount, 'result')} found in #{_.pluralize(pathCount, 'file')} for '#{@sanitizePattern(pattern)}'"
+      "#{_.pluralize(matchCount, 'result')} found in #{_.pluralize(pathCount, 'file')} for <span class=\"highlight-info\">#{@sanitizePattern(pattern)}</span>"
     else
       "No #{if replacedPathCount? then 'more' else ''} results found for '#{pattern}'"

@@ -79,10 +79,10 @@ class ResultsPaneView extends ScrollView
       @searchedCount.text(numberOfPathsSearched)
 
   onFinishedSearching: (results) =>
-    @previewCount.html(Util.getResultsMessage(results))
+    @previewCount.html(Util.getSearchResultsMessage(results))
 
   onReplacementStateCleared: (results) =>
-    @previewCount.html(Util.getResultsMessage(results))
+    @previewCount.html(Util.getSearchResultsMessage(results))
 
   onCleared: =>
     @previewCount.text('Find in project results')

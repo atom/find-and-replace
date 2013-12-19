@@ -209,7 +209,9 @@ class ProjectFindView extends View
     @generateResultsMessage(results)
 
   generateResultsMessage: (results) =>
-    @setInfoMessage(Util.getResultsMessage(results))
+    message = Util.getSearchResultsMessage(results)
+    message = Util.getReplacementResultsMessage(results) if results.replacedPathCount?
+    @setInfoMessage(message)
 
   clearMessages: ->
     @descriptionLabel.text('Find in Project')
