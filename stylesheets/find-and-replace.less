@@ -142,9 +142,34 @@
 .preview-pane {
   display: -webkit-flex;
   -webkit-flex-direction: column;
+  position: relative;
 
   .panel-heading {
     -webkit-flex-shrink: 0;
+  }
+
+  .no-results-overlay {
+    display: -webkit-flex;
+    position: absolute;
+    visibility: hidden;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    font-size: @font-size * 3;
+    font-weight: bold;
+    color: rgba(0, 0, 0, .2);
+    -webkit-align-items: center;
+    text-align: center;
+
+    div {
+      width: 100%;
+    }
+  }
+
+  &.no-results .no-results-overlay {
+    visibility: visible;
   }
 
   .results-view {

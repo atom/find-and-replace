@@ -22,6 +22,8 @@ class ResultsPaneView extends ScrollView
             @span ' paths searched'
 
       @subview 'resultsView', new ResultsView(@model)
+      @div class: 'no-results-overlay', =>
+        @div 'No Results'
 
   initialize: ->
     super
@@ -59,6 +61,7 @@ class ResultsPaneView extends ScrollView
     @previewCount.text('Searching...')
     @searchedCount.text('0')
     @searchedCountBlock.hide()
+    @removeClass('no-results')
 
     @previewCount.show()
     @resultsView.focus()
@@ -79,10 +82,19 @@ class ResultsPaneView extends ScrollView
       @searchedCount.text(numberOfPathsSearched)
 
   onFinishedSearching: (results) =>
+    @hideOrShowNoResults(results)
     @previewCount.html(Util.getSearchResultsMessage(results))
 
   onReplacementStateCleared: (results) =>
+    @hideOrShowNoResults(results)
     @previewCount.html(Util.getSearchResultsMessage(results))
 
   onCleared: =>
+    @addClass('no-results')
     @previewCount.text('Find in project results')
+
+  hideOrShowNoResults: (results) ->
+    if results.pathCount
+      @removeClass('no-results')
+    else
+      @addClass('no-results')
