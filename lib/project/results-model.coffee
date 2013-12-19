@@ -26,6 +26,11 @@ class ResultsModel
     {@useRegex, @caseSensitive}
 
   clear: ->
+    @clearSearchState()
+    @clearReplacementState()
+    @emit('cleared', @getResultsSummary())
+
+  clearSearchState: ->
     @pathCount = 0
     @matchCount = 0
     @regex = null
@@ -33,47 +38,56 @@ class ResultsModel
     @paths = []
     @active = false
     @pattern = ''
+    @emit('search-state-cleared', @getResultsSummary())
+
+  clearReplacementState: ->
     @replacementPattern = null
-    @emit('cleared')
+    @replacedPathCount = null
+    @replacementCount = null
+    @emit('replacement-state-cleared', @getResultsSummary())
 
-  search: (pattern, replacementPattern, paths, onlyRunIfChanged = false) ->
-    return Q() if onlyRunIfChanged and pattern? and paths? and pattern == @pattern and _.isEqual(paths, @searchedPaths)
+  search: (pattern, searchPaths, replacementPattern, {onlyRunIfChanged, keepReplacementState}={}) ->
+    return Q() if onlyRunIfChanged and pattern? and searchPaths? and pattern == @pattern and _.isEqual(searchPaths, @searchedPaths)
 
-    @clear()
+    if keepReplacementState
+      @clearSearchState()
+    else
+      @clear()
+
     @active = true
     @regex = @getRegex(pattern)
     @pattern = pattern
-    @searchedPaths = paths
+    @searchedPaths = searchPaths
 
     @updateReplacementPattern(replacementPattern)
 
     onPathsSearched = (numberOfPathsSearched) =>
       @emit('paths-searched', numberOfPathsSearched)
 
-    promise = atom.project.scan @regex, {paths, onPathsSearched}, (result) =>
+    promise = atom.project.scan @regex, {paths: searchPaths, onPathsSearched}, (result) =>
       @setResult(result.filePath, Result.create(result))
 
     @emit('search', promise)
-    promise.then => @emit('finished-searching')
+    promise.then => @emit('finished-searching', @getResultsSummary())
 
-  replace: (pattern, replacementPattern, paths) ->
+  replace: (pattern, searchPaths, replacementPattern, replacementPaths) ->
     regex = @getRegex(pattern)
 
     @updateReplacementPattern(replacementPattern)
 
-    pathsReplaced = 0
-    replacements = 0
+    @replacedPathCount = 0
+    @replacementCount = 0
 
-    promise = atom.project.replace regex, replacementPattern, paths, (result) =>
+    promise = atom.project.replace regex, replacementPattern, replacementPaths, (result) =>
       if result and result.replacements
-        pathsReplaced++
-        replacements += result.replacements
+        @replacedPathCount++
+        @replacementCount += result.replacements
       @emit('path-replaced', result)
 
     @emit('replace', promise)
     promise.then =>
-      @clear()
-      @emit('finished-replacing', {pathsReplaced, replacements})
+      @emit('finished-replacing', @getResultsSummary())
+      @search(pattern, searchPaths, replacementPattern, {keepReplacementState: true})
 
   updateReplacementPattern: (replacementPattern) ->
     @replacementPattern = replacementPattern or null
@@ -85,6 +99,17 @@ class ResultsModel
   toggleCaseSensitive: ->
     @caseSensitive = not @caseSensitive
 
+  getResultsSummary: ->
+    pattern = @pattern or ''
+    {
+      pattern
+      @pathCount
+      @matchCount
+      @replacementPattern
+      @replacedPathCount
+      @replacementCount
+    }
+
   getPathCount: ->
     @pathCount
 
@@ -94,7 +119,7 @@ class ResultsModel
   getPattern: ->
     @pattern or ''
 
-  getPaths: (filePath) ->
+  getPaths: ->
     @paths
 
   getResult: (filePath) ->
@@ -145,4 +170,4 @@ class ResultsModel
 
     result = Result.create({matches})
     @setResult(editSession.getPath(), result)
-    @emit('finished-searching')
+    @emit('finished-searching', @getResultsSummary())

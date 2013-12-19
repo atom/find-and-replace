@@ -140,11 +140,20 @@
 }
 
 .preview-pane {
+  position: relative;
   display: -webkit-flex;
   -webkit-flex-direction: column;
 
   .panel-heading {
     -webkit-flex-shrink: 0;
+  }
+
+  .no-results-overlay {
+    visibility: hidden;
+  }
+
+  &.no-results .no-results-overlay {
+    visibility: visible;
   }
 
   .results-view {

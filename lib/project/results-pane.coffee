@@ -1,5 +1,6 @@
 {_, $, $$$, EditorView, ScrollView} = require 'atom'
 ResultsView = require './results-view'
+Util = require './util'
 
 module.exports =
 class ResultsPaneView extends ScrollView
@@ -21,6 +22,8 @@ class ResultsPaneView extends ScrollView
             @span ' paths searched'
 
       @subview 'resultsView', new ResultsView(@model)
+      @ul class: 'centered background-message no-results-overlay', =>
+        @li 'No Results'
 
   initialize: ->
     super
@@ -28,7 +31,7 @@ class ResultsPaneView extends ScrollView
 
     @model = @constructor.model
     @handleEvents()
-    @onFinishedSearching()
+    @onFinishedSearching(@model.getResultsSummary())
 
   getPane: ->
     @parent('.item-views').parent('.pane').view()
@@ -45,14 +48,10 @@ class ResultsPaneView extends ScrollView
   focus: ->
     @resultsView.focus()
 
-  getResultCountText: ->
-    if @resultsView.getPathCount() > 0
-      "#{_.pluralize(@resultsView.getMatchCount(), 'match', 'matches')} in #{_.pluralize(@resultsView.getPathCount(), 'file')} for '#{@model.getPattern()}'"
-    else
-      "No matches found for '#{@model.getPattern()}'"
-
   handleEvents: ->
     @subscribe @model, 'search', @onSearch
+    @subscribe @model, 'cleared', @onCleared
+    @subscribe @model, 'replacement-state-cleared', @onReplacementStateCleared
     @subscribe @model, 'finished-searching', @onFinishedSearching
     @subscribe @model, 'paths-searched', @onPathsSearched
 
@@ -62,6 +61,7 @@ class ResultsPaneView extends ScrollView
     @previewCount.text('Searching...')
     @searchedCount.text('0')
     @searchedCountBlock.hide()
+    @removeClass('no-results')
 
     @previewCount.show()
     @resultsView.focus()
@@ -76,11 +76,25 @@ class ResultsPaneView extends ScrollView
 
     deferred.done =>
       @loadingMessage.hide()
-      @previewCount.text(@getResultCountText())
 
   onPathsSearched: (numberOfPathsSearched) =>
     if @showSearchedCountBlock
       @searchedCount.text(numberOfPathsSearched)
 
-  onFinishedSearching: =>
-    @previewCount.text(@getResultCountText())
+  onFinishedSearching: (results) =>
+    @hideOrShowNoResults(results)
+    @previewCount.html(Util.getSearchResultsMessage(results))
+
+  onReplacementStateCleared: (results) =>
+    @hideOrShowNoResults(results)
+    @previewCount.html(Util.getSearchResultsMessage(results))
+
+  onCleared: =>
+    @addClass('no-results')
+    @previewCount.text('Find in project results')
+
+  hideOrShowNoResults: (results) ->
+    if results.pathCount
+      @removeClass('no-results')
+    else
+      @addClass('no-results')

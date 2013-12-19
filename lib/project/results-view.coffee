@@ -33,7 +33,7 @@ class ResultsView extends ScrollView
 
     @subscribe @model, 'result-added', @addResult
     @subscribe @model, 'result-removed', @removeResult
-    @subscribe @model, 'cleared', @clear
+    @subscribe @model, 'search-state-cleared', @clear
     @renderResults()
 
   beforeRemove: ->
