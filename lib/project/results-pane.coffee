@@ -22,8 +22,8 @@ class ResultsPaneView extends ScrollView
             @span ' paths searched'
 
       @subview 'resultsView', new ResultsView(@model)
-      @div class: 'no-results-overlay', =>
-        @div 'No Results'
+      @ul class: 'centered background-message no-results-overlay', =>
+        @li 'No Results'
 
   initialize: ->
     super
