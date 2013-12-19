@@ -90,7 +90,7 @@ class ProjectFindView extends View
 
     @subscribe @model, 'cleared', => @clearMessages()
     @subscribe @model, 'replacement-state-cleared', (results) => @generateResultsMessage(results)
-    @subscribe @model, 'finished-searching', (result) => @onFinishedSearching(result)
+    @subscribe @model, 'finished-searching', (results) => @generateResultsMessage(results)
     @findEditor.getBuffer().on 'changed', => @model.clear()
     @replaceEditor.getBuffer().on 'changed', => @model.clearReplacementState()
 
@@ -204,9 +204,6 @@ class ProjectFindView extends View
   onFinishedReplacing: (results) ->
     atom.beep() unless results.replacedPathCount
     @replacmentInfoBlock.hide()
-
-  onFinishedSearching: (results) ->
-    @generateResultsMessage(results)
 
   generateResultsMessage: (results) =>
     message = Util.getSearchResultsMessage(results)
