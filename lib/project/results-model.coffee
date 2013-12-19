@@ -28,7 +28,7 @@ class ResultsModel
   clear: ->
     @clearSearchState()
     @clearReplacementState()
-    @emit('cleared')
+    @emit('cleared', @getResultsSummary())
 
   clearSearchState: ->
     @pathCount = 0
