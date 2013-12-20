@@ -4,7 +4,7 @@ Q = require 'q'
 
 class Result
   @create: (result) ->
-    if result.matches?.length then new Result(result) else null
+    if result? and result.matches?.length then new Result(result) else null
 
   constructor: (result) ->
     _.extend(this, result)
@@ -49,7 +49,10 @@ class ResultsModel
   search: (pattern, searchPaths, replacementPattern, {onlyRunIfChanged, keepReplacementState}={}) ->
     return Q() if onlyRunIfChanged and pattern? and searchPaths? and pattern == @pattern and _.isEqual(searchPaths, @searchedPaths)
 
-    @markResults()
+    if keepReplacementState
+      @clearSearchState()
+    else
+      @clear()
 
     @active = true
     @regex = @getRegex(pattern)
@@ -65,9 +68,7 @@ class ResultsModel
       @setResult(result.filePath, Result.create(result))
 
     @emit('search', promise)
-    promise.then =>
-      @removeMarkedResults()
-      @emit('finished-searching', @getResultsSummary())
+    promise.then => @emit('finished-searching', @getResultsSummary())
 
   replace: (pattern, searchPaths, replacementPattern, replacementPaths) ->
     regex = @getRegex(pattern)
@@ -121,25 +122,10 @@ class ResultsModel
   getPaths: ->
     @paths
 
-  markResults: ->
-    @markedResults = {}
-    for filePath, val of @results
-      @markedResults[filePath] = true
-    @markedResults
-
-  removeMarkedResults: ->
-    for filePath, val of @markedResults
-      @removeResult(filePath)
-    @markedResults = null
-
-  unmarkResult: (filePath) ->
-    delete @markedResults[filePath]
-
   getResult: (filePath) ->
     @results[filePath]
 
   setResult: (filePath, result) ->
-    @unmarkResult(filePath)
     if result
       @addResult(filePath, result)
     else
