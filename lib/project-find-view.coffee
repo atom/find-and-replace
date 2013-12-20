@@ -1,3 +1,4 @@
+path = require 'path'
 Q = require 'q'
 {_, $, $$$, EditorView, View} = require 'atom'
 
@@ -192,7 +193,9 @@ class ProjectFindView extends View
     relPath = if atom.project.getPath() == absPath
       ''
     else
-      absPath.replace(new RegExp("^#{atom.project.getPath()}/"), '')
+      projectPath = "#{atom.project.getPath()}#{path.sep}"
+      projectPath = projectPath.replace(/\\/g, '\\\\') if path.sep is '\\'
+      absPath.replace(new RegExp("^#{projectPath}"), '')
 
     @pathsEditor.setText(relPath)
 
