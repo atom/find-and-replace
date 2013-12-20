@@ -93,7 +93,7 @@ class ProjectFindView extends View
     @subscribe @model, 'finished-searching', (results) => @generateResultsMessage(results)
 
     @findEditor.editor.on 'contents-modified', =>
-      @runRealtimeSearch(onlyRunIfChanged: true) if @findEditor.getText().length > 2
+      @liveSearch(onlyRunIfChanged: true) if @findEditor.getText().length > 2
 
     atom.workspaceView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
 
@@ -134,13 +134,13 @@ class ProjectFindView extends View
     @model.toggleUseRegex()
     if @model.useRegex then @regexOptionButton.addClass('selected') else @regexOptionButton.removeClass('selected')
     @updateOptionsLabel()
-    @runRealtimeSearch()
+    @liveSearch()
 
   toggleCaseOption: ->
     @model.toggleCaseSensitive()
     if @model.caseSensitive then @caseOptionButton.addClass('selected') else @caseOptionButton.removeClass('selected')
     @updateOptionsLabel()
-    @runRealtimeSearch()
+    @liveSearch()
 
   focusNextElement: (direction) ->
     elements = [@findEditor, @replaceEditor, @pathsEditor].filter (el) -> el.has(':visible').length > 0
@@ -169,7 +169,7 @@ class ProjectFindView extends View
     @showResultPane()
     @model.search(@findEditor.getText(), @getPaths(), @replaceEditor.getText(), onlyRunIfChanged: true)
 
-  runRealtimeSearch: (options) ->
+  liveSearch: (options) ->
     return Q() unless @model.active
     @errorMessages.empty()
     @model.search(@findEditor.getText(), @getPaths(), @replaceEditor.getText(), options)

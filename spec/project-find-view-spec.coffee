@@ -32,7 +32,7 @@ describe 'ProjectFindView', ->
       resultsPane = atom.workspaceView.find('.preview-pane').view()
       searchPromise
 
-    liveSpy = spyOn(projectFindView, 'runRealtimeSearch').andCallFake (options) ->
+    liveSpy = spyOn(projectFindView, 'liveSearch').andCallFake (options) ->
       searchPromise = liveSpy.originalValue.call(projectFindView, options)
       resultsPane = atom.workspaceView.find('.preview-pane').view()
       searchPromise
