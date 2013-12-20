@@ -428,7 +428,10 @@ describe 'ProjectFindView', ->
     describe "history", ->
       beforeEach ->
         atom.workspaceView.trigger 'project-find:show'
-        spyOn(atom.project, 'scan').andCallFake -> Q()
+        spyOn(atom.project, 'scan').andCallFake ->
+          promise = Q()
+          promise.cancel = ->
+          promise
 
         projectFindView.findEditor.setText('sort')
         projectFindView.replaceEditor.setText('bort')
