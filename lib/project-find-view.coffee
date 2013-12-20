@@ -91,14 +91,17 @@ class ProjectFindView extends View
     @subscribe @model, 'cleared', => @clearMessages()
     @subscribe @model, 'replacement-state-cleared', (results) => @generateResultsMessage(results)
     @subscribe @model, 'finished-searching', (results) => @generateResultsMessage(results)
-    @findEditor.getBuffer().on 'changed', => @model.clear()
-    @replaceEditor.getBuffer().on 'changed', => @model.clearReplacementState()
+
+    # @findEditor.getBuffer().on 'changed', => @runSearch()
+    @findEditor.editor.on 'contents-modified', =>
+      @runRealtimeSearch() if @findEditor.getText().length > 2
 
     atom.workspaceView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
 
     @handleEventsForReplace()
 
   handleEventsForReplace: ->
+    @replaceEditor.getBuffer().on 'changed', => @model.clearReplacementState()
     @replaceEditor.editor.on 'contents-modified', => @model.updateReplacementPattern(@replaceEditor.getText())
     @replacementsMade = 0
     @subscribe @model, 'replace', (promise) =>
@@ -164,6 +167,11 @@ class ProjectFindView extends View
     @errorMessages.empty()
     @showResultPane()
     @model.search(@findEditor.getText(), @getPaths(), @replaceEditor.getText())
+
+  runRealtimeSearch: ->
+    return unless @model.active
+    @errorMessages.empty()
+    @model.search(@findEditor.getText(), @getPaths(), @replaceEditor.getText(), onlyRunIfChanged: true)
 
   replaceAll: ->
     @errorMessages.empty()

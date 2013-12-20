@@ -64,7 +64,6 @@ class ResultsPaneView extends ScrollView
     @removeClass('no-results')
 
     @previewCount.show()
-    @resultsView.focus()
 
     # We'll only show the paths searched message after 500ms. It's too fast to
     # see on short searches, and slows them down.
