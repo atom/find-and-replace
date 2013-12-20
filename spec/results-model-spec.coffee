@@ -84,3 +84,36 @@ describe 'ResultsModel', ->
 
         expect(resultsModel.getPathCount()).toBe 0
         expect(resultsModel.getMatchCount()).toBe 0
+
+  describe "cancelling a search", ->
+    cancelledSpy = null
+    beforeEach ->
+      cancelledSpy = jasmine.createSpy()
+      resultsModel.on 'cancelled-searching', cancelledSpy
+
+    it "populates the model with all the results, and updates in response to changes in the buffer", ->
+      runs ->
+        searchPromise = resultsModel.search('items', ['*.js'], '')
+
+        expect(resultsModel.inProgressSearchPromise).toBeTruthy()
+        resultsModel.clear()
+        expect(resultsModel.inProgressSearchPromise).toBeFalsy()
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        expect(cancelledSpy).toHaveBeenCalled()
+
+    it "populates the model with all the results, and updates in response to changes in the buffer", ->
+      runs ->
+        searchPromise = resultsModel.search('items', ['*.js'], '')
+        searchPromise = resultsModel.search('sort', ['*.js'], '')
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        expect(cancelledSpy).toHaveBeenCalled()
+        expect(resultsModel.getPathCount()).toBe 1
+        expect(resultsModel.getMatchCount()).toBe 5
