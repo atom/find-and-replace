@@ -32,6 +32,11 @@ describe 'ProjectFindView', ->
       resultsPane = atom.workspaceView.find('.preview-pane').view()
       searchPromise
 
+    liveSpy = spyOn(projectFindView, 'runRealtimeSearch').andCallFake (options) ->
+      searchPromise = liveSpy.originalValue.call(projectFindView, options)
+      resultsPane = atom.workspaceView.find('.preview-pane').view()
+      searchPromise
+
   describe "when project-find:show is triggered", ->
     beforeEach ->
       projectFindView.findEditor.setText('items')
@@ -192,6 +197,36 @@ describe 'ProjectFindView', ->
           expect(resultsPaneView2.find('li > ul > li')).toHaveLength length
 
           expect(resultsPaneView2.previewCount.html()).toEqual resultsPaneView1.previewCount.html()
+
+    describe "live searching when user types in the find box", ->
+      triggerBufferModified = ->
+        advanceClock(projectFindView.findEditor.getBuffer().stoppedChangingDelay + 1)
+
+      describe "when no search has been run yet", ->
+        beforeEach ->
+          spyOn(atom.project, 'scan')
+
+        it "displays the results and no errors", ->
+          projectFindView.findEditor.setText('items')
+          triggerBufferModified()
+          expect(atom.project.scan).not.toHaveBeenCalled()
+
+      describe "when a search has been run already", ->
+        beforeEach ->
+          projectFindView.findEditor.setText('items')
+          projectFindView.trigger 'core:confirm'
+          waitsForPromise -> searchPromise
+
+        it "finds results for the new find pattern", ->
+          expect(projectFindView.descriptionLabel.text()).toContain "13 results"
+
+          projectFindView.findEditor.setText('sort')
+          triggerBufferModified()
+
+          waitsForPromise -> searchPromise
+
+          runs ->
+            expect(projectFindView.descriptionLabel.text()).toContain "10 results found in 2 files"
 
     describe "serialization", ->
       it "serializes if the view is attached", ->

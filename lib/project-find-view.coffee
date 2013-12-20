@@ -170,7 +170,7 @@ class ProjectFindView extends View
     @model.search(@findEditor.getText(), @getPaths(), @replaceEditor.getText(), onlyRunIfChanged: true)
 
   runRealtimeSearch: (options) ->
-    return unless @model.active
+    return Q() unless @model.active
     @errorMessages.empty()
     @model.search(@findEditor.getText(), @getPaths(), @replaceEditor.getText(), options)
 
