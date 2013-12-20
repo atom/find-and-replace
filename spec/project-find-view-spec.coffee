@@ -206,10 +206,34 @@ describe 'ProjectFindView', ->
         beforeEach ->
           spyOn(atom.project, 'scan')
 
-        it "displays the results and no errors", ->
+        it "does not run the search", ->
           projectFindView.findEditor.setText('items')
           triggerBufferModified()
           expect(atom.project.scan).not.toHaveBeenCalled()
+
+      describe "when a search has been run already and the results have been closed", ->
+        beforeEach ->
+          spyOn(atom.project, 'scan').andCallFake -> Q()
+          projectFindView.findEditor.setText('items')
+          projectFindView.trigger 'core:confirm'
+          waitsForPromise -> searchPromise
+          runs ->
+            atom.workspaceView.getActivePane().destroyItem(getExistingResultsPane())
+            atom.project.scan.reset()
+
+        it "displays the results and no errors", ->
+          projectFindView.findEditor.setText('sort')
+          triggerBufferModified()
+          expect(atom.project.scan).not.toHaveBeenCalled()
+
+        it "will run the search again when the pane is opened again", ->
+          projectFindView.trigger 'core:confirm'
+          waitsForPromise -> searchPromise
+
+          runs ->
+            projectFindView.findEditor.setText('sort')
+            triggerBufferModified()
+            expect(atom.project.scan).toHaveBeenCalled()
 
       describe "when a search has been run already", ->
         beforeEach ->
