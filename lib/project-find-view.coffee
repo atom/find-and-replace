@@ -92,7 +92,6 @@ class ProjectFindView extends View
     @subscribe @model, 'replacement-state-cleared', (results) => @generateResultsMessage(results)
     @subscribe @model, 'finished-searching', (results) => @generateResultsMessage(results)
 
-    # @findEditor.getBuffer().on 'changed', => @runSearch()
     @findEditor.editor.on 'contents-modified', =>
       @runRealtimeSearch() if @findEditor.getText().length > 2
 
@@ -155,7 +154,9 @@ class ProjectFindView extends View
     elements[focusedIndex].selectAll() if elements[focusedIndex].selectAll
 
   confirm: ->
-    return if @findEditor.getText().length == 0
+    if @findEditor.getText().length == 0
+      @model.clear()
+      return
 
     @findHistory.store()
     @replaceHistory.store()
