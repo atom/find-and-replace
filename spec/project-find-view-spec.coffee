@@ -232,39 +232,52 @@ describe 'ProjectFindView', ->
         projectFindView.trigger 'core:confirm'
         expect(atom.project.scan.argsForCall[0][0]).toEqual /i\(\\w\)ems\+/gi
 
-      it "toggles regex option via an event and finds files matching the pattern", ->
-        expect(projectFindView.regexOptionButton).not.toHaveClass('selected')
-        projectFindView.trigger 'project-find:toggle-regex-option'
-        expect(projectFindView.regexOptionButton).toHaveClass('selected')
-        expect(atom.project.scan.argsForCall[0][0]).toEqual /i(\w)ems+/gi
+      describe "when search has not been run yet", ->
+        it "toggles regex option via an event but does not run the search", ->
+          expect(projectFindView.regexOptionButton).not.toHaveClass('selected')
+          projectFindView.trigger 'project-find:toggle-regex-option'
+          expect(projectFindView.regexOptionButton).toHaveClass('selected')
+          expect(atom.project.scan).not.toHaveBeenCalled()
 
-      it "toggles regex option via a button and finds files matching the pattern", ->
-        expect(projectFindView.regexOptionButton).not.toHaveClass('selected')
-        projectFindView.regexOptionButton.click()
-        expect(projectFindView.regexOptionButton).toHaveClass('selected')
-        expect(atom.project.scan.argsForCall[0][0]).toEqual /i(\w)ems+/gi
+      describe "when search has been run", ->
+        beforeEach ->
+          projectFindView.trigger 'core:confirm'
+          waitsForPromise -> searchPromise
+
+        it "toggles regex option via an event and finds files matching the pattern", ->
+          expect(projectFindView.regexOptionButton).not.toHaveClass('selected')
+          projectFindView.trigger 'project-find:toggle-regex-option'
+          expect(projectFindView.regexOptionButton).toHaveClass('selected')
+          expect(atom.project.scan.mostRecentCall.args[0]).toEqual /i(\w)ems+/gi
+
+        it "toggles regex option via a button and finds files matching the pattern", ->
+          expect(projectFindView.regexOptionButton).not.toHaveClass('selected')
+          projectFindView.regexOptionButton.click()
+          expect(projectFindView.regexOptionButton).toHaveClass('selected')
+          expect(atom.project.scan.mostRecentCall.args[0]).toEqual /i(\w)ems+/gi
 
     describe "case sensitivity", ->
       beforeEach ->
         editor.trigger 'project-find:show'
         spyOn(atom.project, 'scan').andCallFake -> Q()
         projectFindView.findEditor.setText('ITEMS')
+        projectFindView.trigger 'core:confirm'
+        waitsForPromise -> searchPromise
 
       it "runs a case insensitive search by default", ->
-        projectFindView.trigger 'core:confirm'
         expect(atom.project.scan.argsForCall[0][0]).toEqual /ITEMS/gi
 
       it "toggles case sensitive option via an event and finds files matching the pattern", ->
         expect(projectFindView.caseOptionButton).not.toHaveClass('selected')
         projectFindView.trigger 'project-find:toggle-case-option'
         expect(projectFindView.caseOptionButton).toHaveClass('selected')
-        expect(atom.project.scan.argsForCall[0][0]).toEqual /ITEMS/g
+        expect(atom.project.scan.mostRecentCall.args[0]).toEqual /ITEMS/g
 
       it "toggles case sensitive option via a button and finds files matching the pattern", ->
         expect(projectFindView.caseOptionButton).not.toHaveClass('selected')
         projectFindView.caseOptionButton.click()
         expect(projectFindView.caseOptionButton).toHaveClass('selected')
-        expect(atom.project.scan.argsForCall[0][0]).toEqual /ITEMS/g
+        expect(atom.project.scan.mostRecentCall.args[0]).toEqual /ITEMS/g
 
     describe "when core:confirm is triggered", ->
       beforeEach ->
