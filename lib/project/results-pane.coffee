@@ -30,8 +30,13 @@ class ResultsPaneView extends ScrollView
     @loadingMessage.hide()
 
     @model = @constructor.model
+    @model.setActive(true)
+
     @handleEvents()
     @onFinishedSearching(@model.getResultsSummary())
+
+  beforeRemove: ->
+    @model.setActive(false)
 
   getPane: ->
     @parent('.item-views').parent('.pane').view()
