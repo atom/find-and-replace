@@ -271,10 +271,12 @@ describe 'ProjectFindView', ->
         atom.workspaceView.trigger 'project-find:show'
 
       describe "when the there search field is empty", ->
-        it "does not run the seach", ->
+        it "does not run the seach but clears the model", ->
           spyOn(atom.project, 'scan')
+          spyOn(projectFindView.model, 'clear')
           projectFindView.trigger 'core:confirm'
           expect(atom.project.scan).not.toHaveBeenCalled()
+          expect(projectFindView.model.clear).toHaveBeenCalled()
 
       describe "when results exist", ->
         beforeEach ->
