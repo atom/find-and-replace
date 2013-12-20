@@ -52,8 +52,6 @@ class ResultsModel
     @emit('replacement-state-cleared', @getResultsSummary())
 
   search: (pattern, searchPaths, replacementPattern, {onlyRunIfChanged, keepReplacementState}={}) ->
-    @active = true
-
     return Q() if onlyRunIfChanged and pattern? and searchPaths? and pattern == @pattern and _.isEqual(searchPaths, @searchedPaths)
 
     if keepReplacementState
@@ -61,6 +59,7 @@ class ResultsModel
     else
       @clear()
 
+    @active = true
     @regex = @getRegex(pattern)
     @pattern = pattern
     @searchedPaths = searchPaths
