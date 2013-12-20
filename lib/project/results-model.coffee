@@ -31,6 +31,8 @@ class ResultsModel
     @emit('cleared', @getResultsSummary())
 
   clearSearchState: ->
+    atom.project.cancelScan()
+
     @pathCount = 0
     @matchCount = 0
     @regex = null
