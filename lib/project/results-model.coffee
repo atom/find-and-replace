@@ -77,6 +77,7 @@ class ResultsModel
 
     @updateReplacementPattern(replacementPattern)
 
+    @active = false # not active until the search after finish
     @replacedPathCount = 0
     @replacementCount = 0
 
@@ -94,6 +95,11 @@ class ResultsModel
   updateReplacementPattern: (replacementPattern) ->
     @replacementPattern = replacementPattern or null
     @emit('replacement-pattern-changed', @regex, replacementPattern)
+
+  setActive: (isActive) ->
+    @active = isActive if (isActive and @pattern) or not isActive
+
+  getActive: -> @active
 
   toggleUseRegex: ->
     @useRegex = not @useRegex
