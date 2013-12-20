@@ -376,6 +376,34 @@ describe 'FindView', ->
 
         expect(findResultsView.children()).toHaveLength 0
 
+    describe "when user types in the find editor", ->
+      advance = ->
+        advanceClock(findView.findEditor.getBuffer().stoppedChangingDelay + 1)
+
+      beforeEach ->
+        findView.findEditor.focus()
+
+      it "updates the search results", ->
+        expect(findView.descriptionLabel.text()).toContain "6 results"
+
+        findView.findEditor.setText 'why do I need these 2 lines? The editor does not trigger contents-modified without them'
+        advance()
+
+        findView.findEditor.setText ''
+        advance()
+        expect(findView.descriptionLabel.text()).toContain "No results"
+        expect(findView.find(':focus')).toExist()
+
+        findView.findEditor.setText 'sort'
+        advance()
+        expect(findView.descriptionLabel.text()).toContain "5 results"
+        expect(findView.find(':focus')).toExist()
+
+        findView.findEditor.setText 'items'
+        advance()
+        expect(findView.descriptionLabel.text()).toContain "6 results"
+        expect(findView.find(':focus')).toExist()
+
     describe "when another find is called", ->
       previousMarkers = null
 
