@@ -1,4 +1,3 @@
-path = require 'path'
 Q = require 'q'
 {_, $, $$$, EditorView, View} = require 'atom'
 
