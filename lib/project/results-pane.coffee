@@ -91,6 +91,8 @@ class ResultsPaneView extends ScrollView
   onCleared: =>
     @addClass('no-results')
     @previewCount.text('Find in project results')
+    @loadingMessage.hide()
+    @searchedCountBlock.hide()
 
   hideOrShowNoResults: (results) ->
     if results.pathCount
