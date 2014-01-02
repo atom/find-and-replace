@@ -188,12 +188,7 @@ class ProjectFindView extends View
     selected = @findFileParent(selectedNode)
     selected = selected.parents('.directory:eq(0)') if selected.is('.file')
     absPath = selected.view().getPath()
-
-    relPath = if atom.project.getPath() == absPath
-      ''
-    else
-      absPath.replace(new RegExp("^#{atom.project.getPath()}/"), '')
-
+    relPath = atom.project.relativize(absPath)
     @pathsEditor.setText(relPath)
 
   showResultPane: ->
