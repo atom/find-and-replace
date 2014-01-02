@@ -43,7 +43,7 @@ describe 'ResultsView', ->
         resultsView = getResultsView()
 
         expect(resultsView.find('.preview').length).toBe 1
-        expect(resultsView.find('.preview').text()).toBe 'a b c d e f g h i j k l abcdefghijklmnopqrstuvwxyz'
+        expect(resultsView.find('.preview').text()).toBe 'test test test test test test test test test test test a b c d e f g h i j k l abcdefghijklmnopqrstuvwxyz'
         expect(resultsView.find('.match').text()).toBe 'ghijkl'
 
   describe "rendering replacement text", ->
