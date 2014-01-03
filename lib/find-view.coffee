@@ -114,6 +114,7 @@ class FindView extends View
     atom.workspaceView.on 'selection:changed', @setCurrentMarkerFromSelection
 
   handleFindEvents: ->
+    @findEditor.editor.on 'contents-modified', => @liveSearch()
     @nextButton.on 'click', => @findNext()
     @previousButton.on 'click', => @findPrevious()
     atom.workspaceView.command 'find-and-replace:find-next', @findNext
@@ -163,6 +164,10 @@ class FindView extends View
 
   confirm: ->
     @findNext()
+
+  liveSearch: ->
+    pattern = @findEditor.getText()
+    @updateModel { pattern }
 
   findNext: (focusEditorAfter = true) =>
     @findAndSelectResult(@selectFirstMarkerAfterCursor, focusEditorAfter)
