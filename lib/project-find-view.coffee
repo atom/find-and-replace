@@ -116,7 +116,7 @@ class ProjectFindView extends View
     @subscribe @model, 'finished-replacing', (result) => @onFinishedReplacing(result)
 
   attach: ->
-    atom.workspaceView.vertical.append(this) unless @hasParent()
+    atom.workspaceView.panes.after(this) unless @hasParent()
 
     @setSelectionAsFindPattern() unless @findEditor.getText()
 
