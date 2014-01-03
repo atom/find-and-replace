@@ -4,7 +4,7 @@ Q = require 'q'
 
 class Result
   @create: (result) ->
-    if result.matches?.length then new Result(result) else null
+    if result?.matches?.length then new Result(result) else null
 
   constructor: (result) ->
     _.extend(this, result)
@@ -38,6 +38,11 @@ class ResultsModel
     @paths = []
     @active = false
     @pattern = ''
+
+    if @inProgressSearchPromise?
+      @inProgressSearchPromise.cancel()
+      @inProgressSearchPromise = null
+
     @emit('search-state-cleared', @getResultsSummary())
 
   clearReplacementState: ->
@@ -64,17 +69,22 @@ class ResultsModel
     onPathsSearched = (numberOfPathsSearched) =>
       @emit('paths-searched', numberOfPathsSearched)
 
-    promise = atom.project.scan @regex, {paths: searchPaths, onPathsSearched}, (result) =>
+    @inProgressSearchPromise = atom.project.scan @regex, {paths: searchPaths, onPathsSearched}, (result) =>
       @setResult(result.filePath, Result.create(result))
 
-    @emit('search', promise)
-    promise.then => @emit('finished-searching', @getResultsSummary())
+    @emit('search', @inProgressSearchPromise)
+    @inProgressSearchPromise.then =>
+      @inProgressSearchPromise = null
+      @emit('finished-searching', @getResultsSummary())
+    , (reason) =>
+      @emit('cancelled-searching') if reason == 'cancelled'
 
   replace: (pattern, searchPaths, replacementPattern, replacementPaths) ->
     regex = @getRegex(pattern)
 
     @updateReplacementPattern(replacementPattern)
 
+    @active = false # not active until the search after finish
     @replacedPathCount = 0
     @replacementCount = 0
 
@@ -92,6 +102,11 @@ class ResultsModel
   updateReplacementPattern: (replacementPattern) ->
     @replacementPattern = replacementPattern or null
     @emit('replacement-pattern-changed', @regex, replacementPattern)
+
+  setActive: (isActive) ->
+    @active = isActive if (isActive and @pattern) or not isActive
+
+  getActive: -> @active
 
   toggleUseRegex: ->
     @useRegex = not @useRegex

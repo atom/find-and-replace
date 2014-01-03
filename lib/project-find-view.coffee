@@ -91,14 +91,16 @@ class ProjectFindView extends View
     @subscribe @model, 'cleared', => @clearMessages()
     @subscribe @model, 'replacement-state-cleared', (results) => @generateResultsMessage(results)
     @subscribe @model, 'finished-searching', (results) => @generateResultsMessage(results)
-    @findEditor.getBuffer().on 'changed', => @model.clear()
-    @replaceEditor.getBuffer().on 'changed', => @model.clearReplacementState()
+
+    @findEditor.editor.on 'contents-modified', =>
+      @liveSearch(onlyRunIfChanged: true) if @findEditor.getText().length > 2
 
     atom.workspaceView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
 
     @handleEventsForReplace()
 
   handleEventsForReplace: ->
+    @replaceEditor.getBuffer().on 'changed', => @model.clearReplacementState()
     @replaceEditor.editor.on 'contents-modified', => @model.updateReplacementPattern(@replaceEditor.getText())
     @replacementsMade = 0
     @subscribe @model, 'replace', (promise) =>
@@ -132,13 +134,13 @@ class ProjectFindView extends View
     @model.toggleUseRegex()
     if @model.useRegex then @regexOptionButton.addClass('selected') else @regexOptionButton.removeClass('selected')
     @updateOptionsLabel()
-    @confirm()
+    @liveSearch()
 
   toggleCaseOption: ->
     @model.toggleCaseSensitive()
     if @model.caseSensitive then @caseOptionButton.addClass('selected') else @caseOptionButton.removeClass('selected')
     @updateOptionsLabel()
-    @confirm()
+    @liveSearch()
 
   focusNextElement: (direction) ->
     elements = [@findEditor, @replaceEditor, @pathsEditor].filter (el) -> el.has(':visible').length > 0
@@ -152,7 +154,9 @@ class ProjectFindView extends View
     elements[focusedIndex].selectAll() if elements[focusedIndex].selectAll
 
   confirm: ->
-    return if @findEditor.getText().length == 0
+    if @findEditor.getText().length == 0
+      @model.clear()
+      return
 
     @findHistory.store()
     @replaceHistory.store()
@@ -163,7 +167,12 @@ class ProjectFindView extends View
   search: ->
     @errorMessages.empty()
     @showResultPane()
-    @model.search(@findEditor.getText(), @getPaths(), @replaceEditor.getText())
+    @model.search(@findEditor.getText(), @getPaths(), @replaceEditor.getText(), onlyRunIfChanged: true)
+
+  liveSearch: (options) ->
+    return Q() unless @model.active
+    @errorMessages.empty()
+    @model.search(@findEditor.getText(), @getPaths(), @replaceEditor.getText(), options)
 
   replaceAll: ->
     @errorMessages.empty()

@@ -30,8 +30,13 @@ class ResultsPaneView extends ScrollView
     @loadingMessage.hide()
 
     @model = @constructor.model
+    @model.setActive(true)
+
     @handleEvents()
     @onFinishedSearching(@model.getResultsSummary())
+
+  beforeRemove: ->
+    @model.setActive(false)
 
   getPane: ->
     @parent('.item-views').parent('.pane').view()
@@ -64,7 +69,6 @@ class ResultsPaneView extends ScrollView
     @removeClass('no-results')
 
     @previewCount.show()
-    @resultsView.focus()
 
     # We'll only show the paths searched message after 500ms. It's too fast to
     # see on short searches, and slows them down.
@@ -92,6 +96,8 @@ class ResultsPaneView extends ScrollView
   onCleared: =>
     @addClass('no-results')
     @previewCount.text('Find in project results')
+    @loadingMessage.hide()
+    @searchedCountBlock.hide()
 
   hideOrShowNoResults: (results) ->
     if results.pathCount

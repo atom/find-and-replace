@@ -32,6 +32,11 @@ describe 'ProjectFindView', ->
       resultsPane = atom.workspaceView.find('.preview-pane').view()
       searchPromise
 
+    liveSpy = spyOn(projectFindView, 'liveSearch').andCallFake (options) ->
+      searchPromise = liveSpy.originalValue.call(projectFindView, options)
+      resultsPane = atom.workspaceView.find('.preview-pane').view()
+      searchPromise
+
   describe "when project-find:show is triggered", ->
     beforeEach ->
       projectFindView.findEditor.setText('items')
@@ -193,6 +198,60 @@ describe 'ProjectFindView', ->
 
           expect(resultsPaneView2.previewCount.html()).toEqual resultsPaneView1.previewCount.html()
 
+    describe "live searching when user types in the find box", ->
+      triggerBufferModified = ->
+        advanceClock(projectFindView.findEditor.getBuffer().stoppedChangingDelay + 1)
+
+      describe "when no search has been run yet", ->
+        beforeEach ->
+          spyOn(atom.project, 'scan')
+
+        it "does not run the search", ->
+          projectFindView.findEditor.setText('items')
+          triggerBufferModified()
+          expect(atom.project.scan).not.toHaveBeenCalled()
+
+      describe "when a search has been run already and the results have been closed", ->
+        beforeEach ->
+          spyOn(atom.project, 'scan').andCallFake -> Q()
+          projectFindView.findEditor.setText('items')
+          projectFindView.trigger 'core:confirm'
+          waitsForPromise -> searchPromise
+          runs ->
+            atom.workspaceView.getActivePane().destroyItem(getExistingResultsPane())
+            atom.project.scan.reset()
+
+        it "displays the results and no errors", ->
+          projectFindView.findEditor.setText('sort')
+          triggerBufferModified()
+          expect(atom.project.scan).not.toHaveBeenCalled()
+
+        it "will run the search again when the pane is opened again", ->
+          projectFindView.trigger 'core:confirm'
+          waitsForPromise -> searchPromise
+
+          runs ->
+            projectFindView.findEditor.setText('sort')
+            triggerBufferModified()
+            expect(atom.project.scan).toHaveBeenCalled()
+
+      describe "when a search has been run already", ->
+        beforeEach ->
+          projectFindView.findEditor.setText('items')
+          projectFindView.trigger 'core:confirm'
+          waitsForPromise -> searchPromise
+
+        it "finds results for the new find pattern", ->
+          expect(projectFindView.descriptionLabel.text()).toContain "13 results"
+
+          projectFindView.findEditor.setText('sort')
+          triggerBufferModified()
+
+          waitsForPromise -> searchPromise
+
+          runs ->
+            expect(projectFindView.descriptionLabel.text()).toContain "10 results found in 2 files"
+
     describe "serialization", ->
       it "serializes if the view is attached", ->
         expect(projectFindView.hasParent()).toBeFalsy()
@@ -232,49 +291,64 @@ describe 'ProjectFindView', ->
         projectFindView.trigger 'core:confirm'
         expect(atom.project.scan.argsForCall[0][0]).toEqual /i\(\\w\)ems\+/gi
 
-      it "toggles regex option via an event and finds files matching the pattern", ->
-        expect(projectFindView.regexOptionButton).not.toHaveClass('selected')
-        projectFindView.trigger 'project-find:toggle-regex-option'
-        expect(projectFindView.regexOptionButton).toHaveClass('selected')
-        expect(atom.project.scan.argsForCall[0][0]).toEqual /i(\w)ems+/gi
+      describe "when search has not been run yet", ->
+        it "toggles regex option via an event but does not run the search", ->
+          expect(projectFindView.regexOptionButton).not.toHaveClass('selected')
+          projectFindView.trigger 'project-find:toggle-regex-option'
+          expect(projectFindView.regexOptionButton).toHaveClass('selected')
+          expect(atom.project.scan).not.toHaveBeenCalled()
 
-      it "toggles regex option via a button and finds files matching the pattern", ->
-        expect(projectFindView.regexOptionButton).not.toHaveClass('selected')
-        projectFindView.regexOptionButton.click()
-        expect(projectFindView.regexOptionButton).toHaveClass('selected')
-        expect(atom.project.scan.argsForCall[0][0]).toEqual /i(\w)ems+/gi
+      describe "when search has been run", ->
+        beforeEach ->
+          projectFindView.trigger 'core:confirm'
+          waitsForPromise -> searchPromise
+
+        it "toggles regex option via an event and finds files matching the pattern", ->
+          expect(projectFindView.regexOptionButton).not.toHaveClass('selected')
+          projectFindView.trigger 'project-find:toggle-regex-option'
+          expect(projectFindView.regexOptionButton).toHaveClass('selected')
+          expect(atom.project.scan.mostRecentCall.args[0]).toEqual /i(\w)ems+/gi
+
+        it "toggles regex option via a button and finds files matching the pattern", ->
+          expect(projectFindView.regexOptionButton).not.toHaveClass('selected')
+          projectFindView.regexOptionButton.click()
+          expect(projectFindView.regexOptionButton).toHaveClass('selected')
+          expect(atom.project.scan.mostRecentCall.args[0]).toEqual /i(\w)ems+/gi
 
     describe "case sensitivity", ->
       beforeEach ->
         editor.trigger 'project-find:show'
         spyOn(atom.project, 'scan').andCallFake -> Q()
         projectFindView.findEditor.setText('ITEMS')
+        projectFindView.trigger 'core:confirm'
+        waitsForPromise -> searchPromise
 
       it "runs a case insensitive search by default", ->
-        projectFindView.trigger 'core:confirm'
         expect(atom.project.scan.argsForCall[0][0]).toEqual /ITEMS/gi
 
       it "toggles case sensitive option via an event and finds files matching the pattern", ->
         expect(projectFindView.caseOptionButton).not.toHaveClass('selected')
         projectFindView.trigger 'project-find:toggle-case-option'
         expect(projectFindView.caseOptionButton).toHaveClass('selected')
-        expect(atom.project.scan.argsForCall[0][0]).toEqual /ITEMS/g
+        expect(atom.project.scan.mostRecentCall.args[0]).toEqual /ITEMS/g
 
       it "toggles case sensitive option via a button and finds files matching the pattern", ->
         expect(projectFindView.caseOptionButton).not.toHaveClass('selected')
         projectFindView.caseOptionButton.click()
         expect(projectFindView.caseOptionButton).toHaveClass('selected')
-        expect(atom.project.scan.argsForCall[0][0]).toEqual /ITEMS/g
+        expect(atom.project.scan.mostRecentCall.args[0]).toEqual /ITEMS/g
 
     describe "when core:confirm is triggered", ->
       beforeEach ->
         atom.workspaceView.trigger 'project-find:show'
 
       describe "when the there search field is empty", ->
-        it "does not run the seach", ->
+        it "does not run the seach but clears the model", ->
           spyOn(atom.project, 'scan')
+          spyOn(projectFindView.model, 'clear')
           projectFindView.trigger 'core:confirm'
           expect(atom.project.scan).not.toHaveBeenCalled()
+          expect(projectFindView.model.clear).toHaveBeenCalled()
 
       describe "when results exist", ->
         beforeEach ->
@@ -354,7 +428,10 @@ describe 'ProjectFindView', ->
     describe "history", ->
       beforeEach ->
         atom.workspaceView.trigger 'project-find:show'
-        spyOn(atom.project, 'scan').andCallFake -> Q()
+        spyOn(atom.project, 'scan').andCallFake ->
+          promise = Q()
+          promise.cancel = ->
+          promise
 
         projectFindView.findEditor.setText('sort')
         projectFindView.replaceEditor.setText('bort')
