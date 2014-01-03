@@ -4,7 +4,7 @@ Q = require 'q'
 
 class Result
   @create: (result) ->
-    if result? and result.matches?.length then new Result(result) else null
+    if result?.matches?.length then new Result(result) else null
 
   constructor: (result) ->
     _.extend(this, result)
