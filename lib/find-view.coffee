@@ -145,7 +145,7 @@ class FindView extends View
 
   attach: =>
     @findResultsView.attach()
-    atom.workspaceView.vertical.append(this)
+    atom.workspaceView.prependToBottom(this)
 
   detach: =>
     return unless @hasParent()
