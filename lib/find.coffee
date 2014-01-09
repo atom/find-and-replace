@@ -1,9 +1,11 @@
+{_, $, $$} = require 'atom'
+
+SelectNext = require './select-next'
 FindModel = require './find-model'
 FindView = require './find-view'
 ProjectFindView = require './project-find-view'
 ResultsModel = require './project/results-model'
 ResultsPaneView = require './project/results-pane'
-{_, $, $$} = require 'atom'
 
 module.exports =
   configDefaults:
@@ -49,6 +51,11 @@ module.exports =
 
       @findView?.detach()
       @projectFindView?.detach()
+
+    atom.workspaceView.eachEditorView (editorView) ->
+      selectNext = new SelectNext(editorView.editor)
+      editorView.command 'find-and-replace:select-next', =>
+        selectNext.findAndSelectNext()
 
   createProjectFindView: ->
     @resultsModel ?= new ResultsModel(@resultsModelState)
