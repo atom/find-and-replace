@@ -10,27 +10,43 @@ class SelectNext
   findAndSelectNext: ->
     if @editor.getSelection().isEmpty()
       @selectWord()
-      @wordSelected = @isWordSelected(@editor.getSelection())
     else
       @selectNextOccurrence()
 
+  findAndSelectAll: ->
+    @selectWord() if @editor.getSelection().isEmpty()
+    @selectAllOccurrences()
+
   selectWord: ->
     @editor.selectWord()
+    @wordSelected = @isWordSelected(@editor.getSelection())
+
+  selectAllOccurrences: ->
+    range = [[0, 0], @editor.getEofBufferPosition()]
+    @scanForNextOcurrence range, ({range, stop}) =>
+      console.log range.toString()
+      @addSelection(range)
 
   selectNextOccurrence: ->
+    range = [@editor.getSelection().getBufferRange().end, @editor.getEofBufferPosition()]
+    @scanForNextOcurrence range, ({range, stop}) =>
+      @addSelection(range)
+      stop()
+
+  addSelection: (range) ->
+    selection = @editor.addSelectionForBufferRange(range)
+    selection.once 'destroyed', => @wordSelected = null
+
+  scanForNextOcurrence: (range, callback) ->
     selection = @editor.getSelection()
-    range = [selection.getBufferRange().end, @editor.getEofBufferPosition()]
     text = _.escapeRegExp(selection.getText())
 
     @wordSelected ?= @isWordSelected(selection)
     if @wordSelected
       nonWordCharacters = atom.config.get('editor.nonWordCharacters')
-      text = "(?!^|[\\s#{_.escapeRegExp(nonWordCharacters)}])+#{text}(?=[\\s#{_.escapeRegExp(nonWordCharacters)}]|$)+"
+      text = "(^|(?![\\s#{_.escapeRegExp(nonWordCharacters)}])+)#{text}(?=$|[\\s#{_.escapeRegExp(nonWordCharacters)}]|$)+"
 
-    @editor.scanInBufferRange new RegExp(text), range, ({range, stop}) =>
-      selection = @editor.addSelectionForBufferRange(range)
-      selection.once 'destroyed', => @wordSelected = null
-      stop()
+    @editor.scanInBufferRange(new RegExp(text, 'g'), range, callback)
 
   isNonWordCharacter: (character) ->
     nonWordCharacters = atom.config.get('editor.nonWordCharacters')

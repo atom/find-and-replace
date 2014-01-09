@@ -56,6 +56,8 @@ module.exports =
       selectNext = new SelectNext(editorView.editor)
       editorView.command 'find-and-replace:select-next', ->
         selectNext.findAndSelectNext()
+      editorView.command 'find-and-replace:select-all', ->
+        selectNext.findAndSelectAll()
 
   createProjectFindView: ->
     @resultsModel ?= new ResultsModel(@resultsModelState)
