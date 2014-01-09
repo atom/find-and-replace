@@ -2,7 +2,7 @@ path = require 'path'
 {WorkspaceView} = require 'atom'
 SelectNext = require '../lib/select-next'
 
-fdescribe "SelectNext", ->
+describe "SelectNext", ->
   [editorView] = []
 
   beforeEach ->
