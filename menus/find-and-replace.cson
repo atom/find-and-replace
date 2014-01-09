@@ -3,6 +3,7 @@
   'submenu': [
     { 'label': 'Find in Buffer', 'command': 'find-and-replace:show'}
     { 'label': 'Replace in Buffer', 'command': 'find-and-replace:show-replace'}
+    { 'label': 'Select Next', 'command': 'find-and-replace:select-next'}
     { 'type': 'separator' }
     { 'label': 'Find in Project', 'command': 'project-find:show'}
     { 'type': 'separator' }
