@@ -1,4 +1,4 @@
-{_, $, $$$, EditorView, ScrollView} = require 'atom'
+{ScrollView} = require 'atom'
 ResultsView = require './results-view'
 Util = require './util'
 

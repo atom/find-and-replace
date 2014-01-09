@@ -1,4 +1,4 @@
-{_, $, $$} = require 'atom'
+{_, $} = require 'atom'
 
 SelectNext = require './select-next'
 FindModel = require './find-model'
