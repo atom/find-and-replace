@@ -11,7 +11,7 @@
 '.platform-darwin .editor':
   'cmd-g': 'find-and-replace:find-next'
   'cmd-G': 'find-and-replace:find-previous'
-
+  'cmd-d': 'find-and-replace:select-next'
   'cmd-e': 'find-and-replace:use-selection-as-find-pattern'
 
 '.platform-win32 .editor':
