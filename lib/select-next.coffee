@@ -22,6 +22,7 @@ class SelectNext
     selection = @editor.getSelection()
     range = [selection.getBufferRange().end, @editor.getEofBufferPosition()]
     text = _.escapeRegExp(selection.getText())
+
     @wordSelected ?= @isWordSelected(selection)
     if @wordSelected
       nonWordCharacters = atom.config.get('editor.nonWordCharacters')
