@@ -35,8 +35,7 @@ class SelectNext
 
   isNonWordCharacter: (character) ->
     nonWordCharacters = atom.config.get('editor.nonWordCharacters')
-    regex = "[\\s#{_.escapeRegExp(nonWordCharacters)}]"
-    new RegExp(regex).test(character)
+    new RegExp("[\\s#{_.escapeRegExp(nonWordCharacters)}]").test(character)
 
   isNonWordCharacterToTheLeft: (selection) ->
     selectionStart = selection.getBufferRange().start
