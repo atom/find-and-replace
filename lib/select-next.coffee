@@ -1,4 +1,4 @@
-{_} = require 'atom'
+{_, Range} = require 'atom'
 
 # Find and select the next occurrence of the currently selected text.
 #
@@ -11,6 +11,7 @@ class SelectNext
     selection = @editor.getSelection()
     if selection.isEmpty()
       @selectWord()
+      @wordSelected = @isWordSelected(selection)
     else
       @selectNextOccurrence()
 
@@ -21,6 +22,40 @@ class SelectNext
     selection = @editor.getSelection()
     range = [selection.getBufferRange().end, @editor.getEofBufferPosition()]
     text = _.escapeRegExp(selection.getText())
+    @wordSelected ?= @isWordSelected(selection)
+    if @wordSelected
+      nonWordCharacters = atom.config.get('editor.nonWordCharacters')
+      text = "(?!^|[\\s#{_.escapeRegExp(nonWordCharacters)}])+#{text}(?=[\\s#{_.escapeRegExp(nonWordCharacters)}]|$)+"
+
     @editor.scanInBufferRange new RegExp(text), range, ({range, stop}) =>
-      @editor.addSelectionForBufferRange(range)
+      selection = @editor.addSelectionForBufferRange(range)
+      selection.once 'destroyed', => @wordSelected = null
       stop()
+
+  isNonWordCharacter: (character) ->
+    nonWordCharacters = atom.config.get('editor.nonWordCharacters')
+    regex = "[\\s#{_.escapeRegExp(nonWordCharacters)}]"
+    new RegExp(regex).test(character)
+
+  isNonWordCharacterToTheLeft: (selection) ->
+    selectionStart = selection.getBufferRange().start
+    range = Range.fromPointWithDelta(selectionStart, 0, -1)
+    @isNonWordCharacter(@editor.getTextInBufferRange(range))
+
+  isNonWordCharacterToTheRight: (selection) ->
+    selectionEnd = selection.getBufferRange().end
+    range = Range.fromPointWithDelta(selectionEnd, 0, 1)
+    @isNonWordCharacter(@editor.getTextInBufferRange(range))
+
+  isWordSelected: (selection) ->
+    if selection.getBufferRange().isSingleLine()
+      selectionRange = selection.getBufferRange()
+      lineRange = @editor.bufferRangeForBufferRow(selectionRange.start.row)
+      nonWordCharacterToTheLeft = _.isEqual(selectionRange.start, lineRange.start) or
+        @isNonWordCharacterToTheLeft(selection)
+      nonWordCharacterToTheRight = _.isEqual(selectionRange.end, lineRange.end) or
+        @isNonWordCharacterToTheRight(selection)
+
+      nonWordCharacterToTheLeft and nonWordCharacterToTheRight
+    else
+      false
