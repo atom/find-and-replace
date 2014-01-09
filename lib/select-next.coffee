@@ -43,7 +43,7 @@ class SelectNext
     @wordSelected ?= @isWordSelected(selection)
     if @wordSelected
       nonWordCharacters = atom.config.get('editor.nonWordCharacters')
-      text = "(^|(?![\\s#{_.escapeRegExp(nonWordCharacters)}])+)#{text}(?=$|[\\s#{_.escapeRegExp(nonWordCharacters)}]|$)+"
+      text = "(^|(?![\\s#{_.escapeRegExp(nonWordCharacters)}]+))#{text}(?=$|[\\s#{_.escapeRegExp(nonWordCharacters)}]|$)+"
 
     @editor.scanInBufferRange(new RegExp(text, 'g'), range, callback)
 
