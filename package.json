@@ -12,7 +12,8 @@
     "find-and-replace:use-selection-as-find-pattern",
     "find-and-replace:show-replace",
     "find-and-replace:replace-next",
-    "find-and-replace:replace-all"
+    "find-and-replace:replace-all",
+    "find-and-replace:select-next"
   ],
   "devDependencies": {
     "jasmine-focused": "0.14.0",
