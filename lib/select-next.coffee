@@ -8,10 +8,9 @@ class SelectNext
   constructor: (@editor) ->
 
   findAndSelectNext: ->
-    selection = @editor.getSelection()
-    if selection.isEmpty()
+    if @editor.getSelection().isEmpty()
       @selectWord()
-      @wordSelected = @isWordSelected(selection)
+      @wordSelected = @isWordSelected(@editor.getSelection())
     else
       @selectNextOccurrence()
 
