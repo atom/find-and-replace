@@ -20,7 +20,7 @@ fdescribe "SelectNext", ->
         editorView.trigger 'find-and-replace:select-next'
         expect(editorView.getSelectedBufferRanges()).toEqual [[[1, 2], [1, 5]]]
 
-    describe "when there is a single selection", ->
+    describe "when there is selected text", ->
       it "selects the next occurrence of the selected text", ->
         editorView.setSelectedBufferRange([[0, 0], [0, 3]])
 
