@@ -54,7 +54,7 @@ module.exports =
 
     atom.workspaceView.eachEditorView (editorView) ->
       selectNext = new SelectNext(editorView.editor)
-      editorView.command 'find-and-replace:select-next', =>
+      editorView.command 'find-and-replace:select-next', ->
         selectNext.findAndSelectNext()
 
   createProjectFindView: ->
