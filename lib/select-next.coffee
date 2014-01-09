@@ -24,7 +24,6 @@ class SelectNext
   selectAllOccurrences: ->
     range = [[0, 0], @editor.getEofBufferPosition()]
     @scanForNextOcurrence range, ({range, stop}) =>
-      console.log range.toString()
       @addSelection(range)
 
   selectNextOccurrence: ->
