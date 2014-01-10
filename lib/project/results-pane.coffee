@@ -4,12 +4,7 @@ Util = require './util'
 
 module.exports =
 class ResultsPaneView extends ScrollView
-  atom.deserializers.add(this)
-
   @URI: "atom://find-and-replace/project-results"
-
-  @deserialize: (state) ->
-    new ResultsPaneView()
 
   @content: ->
     @div class: 'preview-pane pane-item', =>
@@ -38,11 +33,11 @@ class ResultsPaneView extends ScrollView
   beforeRemove: ->
     @model.setActive(false)
 
+  copy: ->
+    new ResultsPaneView()
+
   getPane: ->
     @parent('.item-views').parent('.pane').view()
-
-  serialize: ->
-    deserializer: 'ResultsPaneView'
 
   getTitle: ->
     "Project Find Results"
