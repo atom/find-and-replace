@@ -214,7 +214,8 @@ class FindView extends View
     @updateOptionButtons()
     @updateDescription()
     @findResultsView.attach() if @isVisible()
-    @findEditor.setText(@findModel.pattern)
+    if @findModel.pattern isnt @findEditor.getText()
+      @findEditor.setText(@findModel.pattern)
     @findHistory.store()
     @replaceHistory.store()
 
