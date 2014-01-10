@@ -73,11 +73,12 @@ class ResultsModel
       @setResult(result.filePath, Result.create(result))
 
     @emit('search', @inProgressSearchPromise)
-    @inProgressSearchPromise.then =>
-      @inProgressSearchPromise = null
-      @emit('finished-searching', @getResultsSummary())
-    , (reason) =>
-      @emit('cancelled-searching') if reason == 'cancelled'
+    @inProgressSearchPromise.then (message) =>
+      if message == 'cancelled'
+        @emit('cancelled-searching')
+      else
+        @inProgressSearchPromise = null
+        @emit('finished-searching', @getResultsSummary())
 
   replace: (pattern, searchPaths, replacementPattern, replacementPaths) ->
     regex = @getRegex(pattern)
