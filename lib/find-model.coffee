@@ -43,16 +43,17 @@ class FindModel
     return unless markers?.length > 0
 
     @replacing = true
-    for marker in markers
-      bufferRange = marker.getBufferRange()
-      replacementText = null
-      if @useRegex
-        textToReplace = @editSession.getTextInBufferRange(bufferRange)
-        replacementText = textToReplace.replace(@getRegex(), replacementPattern)
-      @editSession.setTextInBufferRange(bufferRange, replacementText ? replacementPattern)
+    @editSession.transact =>
+      for marker in markers
+        bufferRange = marker.getBufferRange()
+        replacementText = null
+        if @useRegex
+          textToReplace = @editSession.getTextInBufferRange(bufferRange)
+          replacementText = textToReplace.replace(@getRegex(), replacementPattern)
+        @editSession.setTextInBufferRange(bufferRange, replacementText ? replacementPattern)
 
-      marker.destroy()
-      @markers.splice(@markers.indexOf(marker), 1)
+        marker.destroy()
+        @markers.splice(@markers.indexOf(marker), 1)
     @replacing = false
 
     @emit 'updated', _.clone(@markers)

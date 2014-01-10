@@ -490,6 +490,11 @@ describe 'FindView', ->
           expect(editor.getText().match(/\bcats\b/g)).toHaveLength 6
           expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 0]]
 
+        it "all changes are undoable in one transaction", ->
+          $('.find-and-replace .btn-all').click()
+          editor.undo()
+          expect(editor.getText()).not.toMatch /\bcats\b/g
+
       describe "when the 'find-and-replace:replace-all' event is triggered", ->
         it "replaces all matched text", ->
           editor.trigger 'find-and-replace:replace-all'
