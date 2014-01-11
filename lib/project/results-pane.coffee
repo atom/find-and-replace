@@ -37,7 +37,7 @@ class ResultsPaneView extends ScrollView
     new ResultsPaneView()
 
   getPane: ->
-    @parent('.item-views').parent('.pane').view()
+    @parents('.pane').view()
 
   getTitle: ->
     "Project Find Results"
