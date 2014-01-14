@@ -3,7 +3,7 @@
 path = require 'path'
 
 describe 'FindView', ->
-  [editor, findView] = []
+  [editorView, editor, findView] = []
 
   beforeEach ->
     spyOn(atom, 'beep')
@@ -11,38 +11,39 @@ describe 'FindView', ->
     atom.project.setPath(path.join(__dirname, 'fixtures'))
     atom.workspaceView.openSync('sample.js')
     atom.workspaceView.attachToDom()
-    editor = atom.workspaceView.getActiveView()
+    editorView = atom.workspaceView.getActiveView()
+    editor = editorView.getEditor()
     pack = atom.packages.activatePackage("find-and-replace", immediate: true)
     pack.mainModule.createFindView()
     findView = pack.mainModule.findView
 
   describe "when find-and-replace:show is triggered", ->
     it "attaches FindView to the root view", ->
-      editor.trigger 'find-and-replace:show'
+      editorView.trigger 'find-and-replace:show'
       expect(atom.workspaceView.find('.find-and-replace')).toExist()
 
     it "populates the findEditor with selection when there is a selection", ->
       editor.setSelectedBufferRange([[2, 8], [2, 13]])
-      editor.trigger 'find-and-replace:show'
+      editorView.trigger 'find-and-replace:show'
       expect(atom.workspaceView.find('.find-and-replace')).toExist()
       expect(findView.findEditor.getText()).toBe('items')
 
       findView.findEditor.setText('')
 
       editor.setSelectedBufferRange([[2, 14], [2, 20]])
-      editor.trigger 'find-and-replace:show'
+      editorView.trigger 'find-and-replace:show'
       expect(atom.workspaceView.find('.find-and-replace')).toExist()
       expect(findView.findEditor.getText()).toBe('length')
 
   describe "when FindView's replace editor is visible", ->
     it "keeps the replace editor visible when find-and-replace:show is triggered", ->
-      editor.trigger 'find-and-replace:show-replace'
-      editor.trigger 'find-and-replace:show'
+      editorView.trigger 'find-and-replace:show-replace'
+      editorView.trigger 'find-and-replace:show'
       expect(findView.replaceEditor).toBeVisible()
 
   describe "when core:cancel is triggered", ->
     beforeEach ->
-      editor.trigger 'find-and-replace:show'
+      editorView.trigger 'find-and-replace:show'
       findView.findEditor.setText 'items'
       findView.findEditor.trigger 'core:confirm'
       findView.focus()
@@ -52,7 +53,7 @@ describe 'FindView', ->
       expect(atom.workspaceView.find('.find-and-replace')).not.toExist()
 
     it "removes highlighted matches", ->
-      findResultsView = editor.find('.search-results')
+      findResultsView = editorView.find('.search-results')
 
       $(document.activeElement).trigger 'core:cancel'
       expect(findResultsView.parent()).not.toExist()
@@ -103,7 +104,7 @@ describe 'FindView', ->
   describe "finding", ->
     beforeEach ->
       editor.setCursorBufferPosition([2,0])
-      editor.trigger 'find-and-replace:show'
+      editorView.trigger 'find-and-replace:show'
       findView.findEditor.setText 'items'
       findView.findEditor.trigger 'core:confirm'
 
@@ -139,7 +140,7 @@ describe 'FindView', ->
       findView.findEditor.trigger 'core:confirm'
       expect(findView.resultCounter.text()).toEqual('3 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[2, 34], [2, 39]]
-      expect(editor.find(':focus')).toExist()
+      expect(editorView.find(':focus')).toExist()
 
     it "selects the next match when the next match button is pressed", ->
       findView.nextButton.click()
@@ -147,7 +148,7 @@ describe 'FindView', ->
       expect(editor.getSelectedBufferRange()).toEqual [[2, 34], [2, 39]]
 
     it "selects the next match when the 'find-and-replace:find-next' event is triggered", ->
-      editor.trigger('find-and-replace:find-next')
+      editorView.trigger('find-and-replace:find-next')
       expect(findView.resultCounter.text()).toEqual('3 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[2, 34], [2, 39]]
 
@@ -164,7 +165,7 @@ describe 'FindView', ->
       expect(editor.getSelectedBufferRange()).toEqual [[1, 27], [1, 22]]
 
     it "selects the previous match when the 'find-and-replace:find-previous' event is triggered", ->
-      editor.trigger('find-and-replace:find-previous')
+      editorView.trigger('find-and-replace:find-previous')
       expect(findView.resultCounter.text()).toEqual('1 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[1, 27], [1, 22]]
 
@@ -198,41 +199,41 @@ describe 'FindView', ->
       findView.findEditor.trigger 'core:cancel'
       findView.findEditor.trigger 'find-and-replace:find-next'
 
-      findResultsView = editor.find('.search-results')
+      findResultsView = editorView.find('.search-results')
       expect(findResultsView.parent()).not.toExist()
 
     describe "when the active pane item changes", ->
       describe "when a new edit session is activated", ->
         it "reruns the search on the new edit session", ->
           atom.workspaceView.openSync('sample.coffee')
-          editor = atom.workspaceView.getActiveView()
+          editor = atom.workspaceView.getActivePaneItem()
           expect(findView.resultCounter.text()).toEqual('7 found')
           expect(editor.getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
 
         it "initially highlights the found text in the new edit session", ->
-          findResultsView = editor.find('.search-results')
+          findResultsView = editorView.find('.search-results')
 
           atom.workspaceView.openSync('sample.coffee')
           expect(findResultsView.children()).toHaveLength 7
 
         it "highlights the found text in the new edit session when find next is triggered", ->
-          findResultsView = editor.find('.search-results')
+          findResultsView = editorView.find('.search-results')
           atom.workspaceView.openSync('sample.coffee')
-          editor = atom.workspaceView.getActiveView()
+          editorView = atom.workspaceView.getActiveView()
 
           findView.findEditor.trigger 'find-and-replace:find-next'
           expect(findResultsView.children()).toHaveLength 7
-          expect(findResultsView.parent()[0]).toBe editor.underlayer[0]
+          expect(findResultsView.parent()[0]).toBe editorView.underlayer[0]
 
       describe "when all active pane items are closed", ->
         it "updates the result count", ->
-          editor.trigger 'core:close'
+          editorView.trigger 'core:close'
           expect(findView.resultCounter.text()).toEqual('no results')
 
         it "removes all highlights", ->
-          findResultsView = editor.find('.search-results')
+          findResultsView = editorView.find('.search-results')
 
-          editor.trigger 'core:close'
+          editorView.trigger 'core:close'
           expect(findResultsView.children()).toHaveLength 0
 
       describe "when the active pane item is not an edit session", ->
@@ -250,31 +251,31 @@ describe 'FindView', ->
           expect(findView.resultCounter.text()).toEqual('no results')
 
         it "removes all highlights", ->
-          findResultsView = editor.find('.search-results')
+          findResultsView = editorView.find('.search-results')
 
           atom.workspaceView.openSync "another"
           expect(findResultsView.children()).toHaveLength 0
 
       describe "when a new edit session is activated on a different pane", ->
         it "reruns the search on the new editSession", ->
-          newEditor = editor.getPane().splitRight(atom.project.openSync('sample.coffee')).activeView
+          newEditorView = editorView.getPane().splitRight(atom.project.openSync('sample.coffee')).activeView
           expect(findView.resultCounter.text()).toEqual('7 found')
-          expect(newEditor.getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
+          expect(newEditorView.getEditor().getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
 
           findView.findEditor.trigger 'find-and-replace:find-next'
           expect(findView.resultCounter.text()).toEqual('1 of 7')
-          expect(newEditor.getSelectedBufferRange()).toEqual [[1, 9], [1, 14]]
+          expect(newEditorView.getEditor().getSelectedBufferRange()).toEqual [[1, 9], [1, 14]]
 
         it "highlights the found text in the new edit session (and removes the highlights from the other)", ->
-          findResultsView = editor.find('.search-results')
+          findResultsView = editorView.find('.search-results')
 
           expect(findResultsView.children()).toHaveLength 6
-          editor.getPane().splitRight(atom.project.openSync('sample.coffee'))
+          editorView.getPane().splitRight(atom.project.openSync('sample.coffee'))
           expect(findResultsView.children()).toHaveLength 7
 
     describe "when the buffer contents change", ->
       it "re-runs the search", ->
-        findResultsView = editor.find('.search-results')
+        findResultsView = editorView.find('.search-results')
         editor.setSelectedBufferRange([[1, 26], [1, 27]])
         editor.insertText("")
 
@@ -365,10 +366,10 @@ describe 'FindView', ->
     describe "highlighting search results", ->
       [findResultsView] = []
       beforeEach ->
-        findResultsView = editor.find('.search-results')
+        findResultsView = editorView.find('.search-results')
 
       it "only highlights matches", ->
-        expect(findResultsView.parent()[0]).toBe editor.underlayer[0]
+        expect(findResultsView.parent()[0]).toBe editorView.underlayer[0]
         expect(findResultsView.children()).toHaveLength 6
 
         findView.findEditor.setText 'notinthefilebro'
@@ -378,7 +379,7 @@ describe 'FindView', ->
 
     describe "when user types in the find editor", ->
       advance = ->
-        advanceClock(findView.findEditor.getBuffer().stoppedChangingDelay + 1)
+        advanceClock(findView.findEditor.getEditor().getBuffer().stoppedChangingDelay + 1)
 
       beforeEach ->
         findView.findEditor.focus()
@@ -408,22 +409,22 @@ describe 'FindView', ->
       previousMarkers = null
 
       beforeEach ->
-        previousMarkers = _.clone(editor.editor.getMarkers())
+        previousMarkers = _.clone(editor.getMarkers())
 
       it "clears existing markers for another search", ->
         findView.findEditor.setText('notinthefile')
         findView.findEditor.trigger 'core:confirm'
-        expect(editor.editor.getMarkers().length).toEqual 1
+        expect(editor.getMarkers().length).toEqual 1
 
       it "clears existing markers for an empty search", ->
         findView.findEditor.setText('')
         findView.findEditor.trigger 'core:confirm'
-        expect(editor.editor.getMarkers().length).toEqual 1
+        expect(editor.getMarkers().length).toEqual 1
 
   describe "replacing", ->
     beforeEach ->
       editor.setCursorBufferPosition([2,0])
-      editor.trigger 'find-and-replace:show-replace'
+      editorView.trigger 'find-and-replace:show-replace'
       findView.findEditor.setText('items')
       findView.replaceEditor.setText('cats')
 
@@ -459,7 +460,7 @@ describe 'FindView', ->
 
       describe "when the 'find-and-replace:replace-next' event is triggered", ->
         it "replaces the match after the cursor and selects the next match", ->
-          editor.trigger 'find-and-replace:replace-next'
+          editorView.trigger 'find-and-replace:replace-next'
           expect(findView.resultCounter.text()).toEqual('2 of 5')
           expect(editor.lineForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
           expect(editor.getSelectedBufferRange()).toEqual [[2, 33], [2, 38]]
@@ -497,7 +498,7 @@ describe 'FindView', ->
 
       describe "when the 'find-and-replace:replace-all' event is triggered", ->
         it "replaces all matched text", ->
-          editor.trigger 'find-and-replace:replace-all'
+          editorView.trigger 'find-and-replace:replace-all'
           expect(findView.resultCounter.text()).toEqual('no results')
           expect(editor.getText()).not.toMatch /items/
           expect(editor.getText().match(/\bcats\b/g)).toHaveLength 6
@@ -509,7 +510,7 @@ describe 'FindView', ->
           findView.findEditor.trigger 'find-and-replace:toggle-regex-option'
           findView.findEditor.setText('(items)([\\.;])')
           findView.replaceEditor.setText('$2$1')
-          editor.trigger 'find-and-replace:replace-all'
+          editorView.trigger 'find-and-replace:replace-all'
           expect(editor.getText()).toMatch /;items/
           expect(editor.getText()).toMatch /\.items/
 
@@ -517,7 +518,7 @@ describe 'FindView', ->
         it "replaces the matches with without any regex subsitions", ->
           findView.findEditor.setText('items')
           findView.replaceEditor.setText('$&cats')
-          editor.trigger 'find-and-replace:replace-all'
+          editorView.trigger 'find-and-replace:replace-all'
           expect(editor.getText()).not.toMatch /items/
           expect(editor.getText().match(/\$&cats\b/g)).toHaveLength 6
 
@@ -537,7 +538,7 @@ describe 'FindView', ->
       [oneRange, twoRange, threeRange] = []
 
       beforeEach ->
-        editor.trigger 'find-and-replace:show'
+        editorView.trigger 'find-and-replace:show'
         editor.setText("zero\none\ntwo\nthree\n")
         findView.findEditor.setText('one')
         findView.findEditor.trigger 'core:confirm'

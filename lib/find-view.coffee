@@ -114,7 +114,7 @@ class FindView extends View
     atom.workspaceView.on 'selection:changed', @setCurrentMarkerFromSelection
 
   handleFindEvents: ->
-    @findEditor.editor.on 'contents-modified', => @liveSearch()
+    @findEditor.getEditor().on 'contents-modified', => @liveSearch()
     @nextButton.on 'click', => @findNext()
     @previousButton.on 'click', => @findPrevious()
     atom.workspaceView.command 'find-and-replace:find-next', @findNext
@@ -131,18 +131,18 @@ class FindView extends View
 
   showFind: =>
     unless @findEditor.getText()
-      editorView = atom.workspaceView.getActiveView()
-      @findEditor.setText(editorView.getSelectedText()) if editorView?.getSelectedText?
+      editor = atom.workspaceView.getActivePaneItem()
+      @findEditor.setText(editor.getSelectedText()) if editor?.getSelectedText?
 
     @attach() if not @hasParent()
     @findEditor.focus()
-    @findEditor.selectAll()
+    @findEditor.getEditor().selectAll()
 
   showReplace: =>
     @attach()
     @replaceEditor.redraw()
     @replaceEditor.focus()
-    @replaceEditor.selectAll()
+    @replaceEditor.getEditor().selectAll()
 
   attach: =>
     @findResultsView.attach()
