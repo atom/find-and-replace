@@ -16,9 +16,6 @@
     "find-and-replace:select-next",
     "find-and-replace:select-all"
   ],
-  "devDependencies": {
-    "q": "~0.9.7"
-  },
   "repository": "https://github.com/atom/find-and-replace",
   "engines": {
     "atom": "*"
