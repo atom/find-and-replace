@@ -429,13 +429,13 @@ describe 'FindView', ->
       findView.replaceEditor.setText('cats')
 
     describe "when the replacement string contains an escaped char", ->
-      it "inserts tabs", ->
+      it "inserts tabs, newlines and carriage returns", ->
         findView.replaceEditor.setText('\\r\\t\\n')
         findView.replaceEditor.trigger 'core:confirm'
         expect(editor.getText()).toMatch(/\r\t\n/)
 
-      it "doesn't insert a tab if there are multiple backspaces in front of the `t`", ->
         findView.replaceEditor.setText('\\\\t\\n')
+      it "doesn't insert a escaped char if there are multiple backspaces in front of the char", ->
         findView.replaceEditor.trigger 'core:confirm'
         expect(editor.getText()).toMatch(/\\\\t\n/)
 
