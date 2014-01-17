@@ -125,5 +125,4 @@ class FindModel
     if @useRegex
       new RegExp(pattern, flags)
     else
-      escapedPattern = _.escapeRegExp(pattern)
-      new RegExp(escapedPattern, flags)
+      new RegExp(_.escapeRegExp(pattern), flags)
