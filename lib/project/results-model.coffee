@@ -85,6 +85,7 @@ class ResultsModel
     regex = @getRegex(pattern)
 
     @updateReplacementPattern(replacementPattern)
+    replacementPattern = escapeHelper.unescapeNewlinesAndTabs(replacementPattern)
 
     @active = false # not active until the search after finish
     @replacedPathCount = 0
