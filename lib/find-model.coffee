@@ -68,6 +68,8 @@ class FindModel
         '\n'
       else if char == 'r'
         '\r'
+      else if char == '\\'
+        '\\'
       else
         match
 

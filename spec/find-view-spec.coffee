@@ -434,10 +434,10 @@ describe 'FindView', ->
         findView.replaceEditor.trigger 'core:confirm'
         expect(editor.getText()).toMatch(/\r\t\n/)
 
-        findView.replaceEditor.setText('\\\\t\\n')
       it "doesn't insert a escaped char if there are multiple backspaces in front of the char", ->
+        findView.replaceEditor.setText('\\\\t\\\t')
         findView.replaceEditor.trigger 'core:confirm'
-        expect(editor.getText()).toMatch(/\\\\t\n/)
+        expect(editor.getText()).toMatch(/\\t\\\t/)
 
     describe "replace next", ->
       describe "when core:confirm is triggered", ->
