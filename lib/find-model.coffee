@@ -43,7 +43,7 @@ class FindModel
   replace: (markers, replacementPattern) ->
     return unless markers?.length > 0
 
-    replacementPattern = escapeHelper.unescapeNewlinesAndTabs(replacementPattern)
+    replacementPattern = escapeHelper.unescapeEscapeSequence(replacementPattern)
 
     @replacing = true
     @editSession.transact =>
@@ -120,7 +120,7 @@ class FindModel
     flags = 'g'
     flags += 'i' unless @caseSensitive
 
-    pattern = escapeHelper.unescapeNewlinesAndTabs(@pattern)
+    pattern = escapeHelper.unescapeEscapeSequence(@pattern)
 
     if @useRegex
       new RegExp(pattern, flags)

@@ -1,5 +1,5 @@
 module.exports =
-  unescapeNewlinesAndTabs: (string) ->
+  unescapeEscapeSequence: (string) ->
     string.replace /\\(.)/gm, (match, char) ->
       if char == 't'
         '\t'
