@@ -42,13 +42,7 @@ class FindModel
   replace: (markers, replacementPattern) ->
     return unless markers?.length > 0
 
-    replacementPattern = replacementPattern.replace /\\(.)/gm, (match, char) ->
-      if char == 't'
-        '\t'
-      else if char == 'n'
-        '\n'
-      else
-        match
+    replacementPattern = @unescapeNewlinesAndTabs(replacementPattern)
 
     @replacing = true
     @editSession.transact =>
@@ -65,6 +59,15 @@ class FindModel
     @replacing = false
 
     @emit 'updated', _.clone(@markers)
+
+  unescapeNewlinesAndTabs: (string) ->
+    string.replace /\\(.)/gm, (match, char) ->
+      if char == 't'
+        '\t'
+      else if char == 'n'
+        '\n'
+      else
+        match
 
   updateMarkers: ->
     if not @editSession? or not @pattern
