@@ -118,7 +118,7 @@ describe 'FindView', ->
         findView.findEditor.trigger 'core:confirm'
         expect(editor.getSelectedBufferRange()).toEqual [[0, 0], [0, 1]]
 
-      it "doesn't insert a escaped char if there are multiple backspaces in front of the char", ->
+      it "doesn't insert a escaped char if there are multiple backslashs in front of the char", ->
         findView.findEditor.setText('\\\\t')
         findView.findEditor.trigger 'core:confirm'
         expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 2]]
@@ -449,7 +449,7 @@ describe 'FindView', ->
         findView.replaceEditor.trigger 'core:confirm'
         expect(editor.getText()).toMatch(/\r\t\n/)
 
-      it "doesn't insert a escaped char if there are multiple backspaces in front of the char", ->
+      it "doesn't insert a escaped char if there are multiple backslashs in front of the char", ->
         findView.replaceEditor.setText('\\\\t\\\t')
         findView.replaceEditor.trigger 'core:confirm'
         expect(editor.getText()).toMatch(/\\t\\\t/)

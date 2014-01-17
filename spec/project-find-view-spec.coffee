@@ -155,7 +155,7 @@ describe 'ProjectFindView', ->
           expect(resultsView).toBeVisible()
           expect(resultsView.find("li > ul > li")).toHaveLength(2)
 
-      it "doesn't insert a escaped char if there are multiple backspaces in front of the char", ->
+      it "doesn't insert a escaped char if there are multiple backslashs in front of the char", ->
         projectFindView.findEditor.setText('\\\\t')
         projectFindView.trigger 'core:confirm'
 
@@ -579,7 +579,7 @@ describe 'ProjectFindView', ->
           fileContent = fs.readFileSync(filePath, 'utf8')
           expect(fileContent).toBe("\t\nb\n\t")
 
-      it "doesn't insert a escaped char if there are multiple backspaces in front of the char", ->
+      it "doesn't insert a escaped char if there are multiple backslashs in front of the char", ->
         projectFindView.findEditor.setText('a')
         projectFindView.replaceEditor.setText('\\\\t')
         projectFindView.trigger 'project-find:replace-all'
