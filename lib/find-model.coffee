@@ -132,8 +132,10 @@ class FindModel
     flags = 'g'
     flags += 'i' unless @caseSensitive
 
+    pattern = @unescapeNewlinesAndTabs(@pattern)
+
     if @useRegex
-      new RegExp(@pattern, flags)
+      new RegExp(pattern, flags)
     else
-      escapedPattern = _.escapeRegExp(@pattern)
+      escapedPattern = _.escapeRegExp(pattern)
       new RegExp(escapedPattern, flags)
