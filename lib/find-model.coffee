@@ -42,6 +42,14 @@ class FindModel
   replace: (markers, replacementPattern) ->
     return unless markers?.length > 0
 
+    replacementPattern = replacementPattern.replace /\\(.)/gm, (match, char) ->
+      if char == 't'
+        '\t'
+      else if char == 'n'
+        '\n'
+      else
+        match
+
     @replacing = true
     @editSession.transact =>
       for marker in markers
