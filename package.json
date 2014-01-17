@@ -24,7 +24,7 @@
     "atom": "*"
   },
   "dependencies": {
-    "emissary": "0.22.0",
+    "emissary": "1.x",
     "q": "0.9.7"
   }
 }
