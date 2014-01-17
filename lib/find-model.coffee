@@ -1,5 +1,6 @@
 {_} = require 'atom'
 {Emitter} = require 'emissary'
+escapeHelper = require './escape-helper'
 
 module.exports =
 class FindModel
@@ -42,7 +43,7 @@ class FindModel
   replace: (markers, replacementPattern) ->
     return unless markers?.length > 0
 
-    replacementPattern = @unescapeNewlinesAndTabs(replacementPattern)
+    replacementPattern = escapeHelper.unescapeNewlinesAndTabs(replacementPattern)
 
     @replacing = true
     @editSession.transact =>
@@ -59,19 +60,6 @@ class FindModel
     @replacing = false
 
     @emit 'updated', _.clone(@markers)
-
-  unescapeNewlinesAndTabs: (string) ->
-    string.replace /\\(.)/gm, (match, char) ->
-      if char == 't'
-        '\t'
-      else if char == 'n'
-        '\n'
-      else if char == 'r'
-        '\r'
-      else if char == '\\'
-        '\\'
-      else
-        match
 
   updateMarkers: ->
     if not @editSession? or not @pattern
@@ -132,7 +120,7 @@ class FindModel
     flags = 'g'
     flags += 'i' unless @caseSensitive
 
-    pattern = @unescapeNewlinesAndTabs(@pattern)
+    pattern = escapeHelper.unescapeNewlinesAndTabs(@pattern)
 
     if @useRegex
       new RegExp(pattern, flags)
