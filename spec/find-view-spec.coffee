@@ -108,6 +108,21 @@ describe 'FindView', ->
       findView.findEditor.setText 'items'
       findView.findEditor.trigger 'core:confirm'
 
+    describe "when the find string contains an escaped char", ->
+      beforeEach ->
+        editor.setText("\t\n\\t")
+        editor.setCursorBufferPosition([0,0])
+
+      it "finds the escape char", ->
+        findView.findEditor.setText('\\t')
+        findView.findEditor.trigger 'core:confirm'
+        expect(editor.getSelectedBufferRange()).toEqual [[0, 0], [0, 1]]
+
+      it "doesn't insert a escaped char if there are multiple backslashs in front of the char", ->
+        findView.findEditor.setText('\\\\t')
+        findView.findEditor.trigger 'core:confirm'
+        expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 2]]
+
     it "doesn't change the selection, beeps if there are no matches and keeps focus on the find view", ->
       editor.setCursorBufferPosition([2,0])
       findView.findEditor.setText 'notinthefilebro'
@@ -427,6 +442,17 @@ describe 'FindView', ->
       editorView.trigger 'find-and-replace:show-replace'
       findView.findEditor.setText('items')
       findView.replaceEditor.setText('cats')
+
+    describe "when the replacement string contains an escaped char", ->
+      it "inserts tabs, newlines and carriage returns", ->
+        findView.replaceEditor.setText('\\r\\t\\n')
+        findView.replaceEditor.trigger 'core:confirm'
+        expect(editor.getText()).toMatch(/\r\t\n/)
+
+      it "doesn't insert a escaped char if there are multiple backslashs in front of the char", ->
+        findView.replaceEditor.setText('\\\\t\\\t')
+        findView.replaceEditor.trigger 'core:confirm'
+        expect(editor.getText()).toMatch(/\\t\\\t/)
 
     describe "replace next", ->
       describe "when core:confirm is triggered", ->

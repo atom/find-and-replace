@@ -1,6 +1,7 @@
 Q = require 'q'
 {_} = require 'atom'
 {Emitter} = require 'emissary'
+escapeHelper = require '../escape-helper'
 
 class Result
   @create: (result) ->
@@ -84,6 +85,7 @@ class ResultsModel
     regex = @getRegex(pattern)
 
     @updateReplacementPattern(replacementPattern)
+    replacementPattern = escapeHelper.unescapeEscapeSequence(replacementPattern)
 
     @active = false # not active until the search after finish
     @replacedPathCount = 0
@@ -171,6 +173,8 @@ class ResultsModel
   getRegex: (pattern) ->
     flags = 'g'
     flags += 'i' unless @caseSensitive
+
+    pattern = escapeHelper.unescapeEscapeSequence(pattern)
 
     if @useRegex
       new RegExp(pattern, flags)

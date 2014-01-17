@@ -1,5 +1,6 @@
 {_} = require 'atom'
 {Emitter} = require 'emissary'
+escapeHelper = require './escape-helper'
 
 module.exports =
 class FindModel
@@ -41,6 +42,8 @@ class FindModel
 
   replace: (markers, replacementPattern) ->
     return unless markers?.length > 0
+
+    replacementPattern = escapeHelper.unescapeEscapeSequence(replacementPattern)
 
     @replacing = true
     @editSession.transact =>
@@ -117,8 +120,9 @@ class FindModel
     flags = 'g'
     flags += 'i' unless @caseSensitive
 
+    pattern = escapeHelper.unescapeEscapeSequence(@pattern)
+
     if @useRegex
-      new RegExp(@pattern, flags)
+      new RegExp(pattern, flags)
     else
-      escapedPattern = _.escapeRegExp(@pattern)
-      new RegExp(escapedPattern, flags)
+      new RegExp(_.escapeRegExp(pattern), flags)

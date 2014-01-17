@@ -1,5 +1,6 @@
 os = require 'os'
 path = require 'path'
+temp = require 'temp'
 
 {_, fs, $, View, WorkspaceView} = require 'atom'
 Q = require 'q'
@@ -133,6 +134,39 @@ describe 'ProjectFindView', ->
     beforeEach ->
       atom.workspaceView.openSync('sample.js')
       editorView = atom.workspaceView.getActiveView()
+
+    describe "when the find string contains an escaped char", ->
+      beforeEach ->
+        projectPath = temp.mkdirSync("atom")
+        fs.writeFileSync(path.join(projectPath, "tabs.txt"), "\t\n\\\t\n\\\\t")
+        atom.project.setPath(projectPath)
+        atom.workspaceView.trigger 'project-find:show'
+
+      it "finds the escape char", ->
+        projectFindView.findEditor.setText('\\t')
+        projectFindView.trigger 'core:confirm'
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          resultsPaneView = getExistingResultsPane()
+          resultsView = resultsPaneView.resultsView
+          expect(resultsView).toBeVisible()
+          expect(resultsView.find("li > ul > li")).toHaveLength(2)
+
+      it "doesn't insert a escaped char if there are multiple backslashs in front of the char", ->
+        projectFindView.findEditor.setText('\\\\t')
+        projectFindView.trigger 'core:confirm'
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          resultsPaneView = getExistingResultsPane()
+          resultsView = resultsPaneView.resultsView
+          expect(resultsView).toBeVisible()
+          expect(resultsView.find("li > ul > li")).toHaveLength(1)
 
     describe "when core:cancel is triggered", ->
       beforeEach ->
@@ -522,6 +556,40 @@ describe 'ProjectFindView', ->
             success = false
         , 50
       waitsFor -> success
+
+    describe "when the replace string contains an escaped char", ->
+      filePath = null
+
+      beforeEach ->
+        projectPath = temp.mkdirSync("atom")
+        filePath = path.join(projectPath, "tabs.txt")
+        fs.writeFileSync(filePath, "a\nb\na")
+        atom.project.setPath(projectPath)
+        atom.workspaceView.trigger 'project-find:show'
+
+      it "finds the escape char", ->
+        projectFindView.findEditor.setText('a')
+        projectFindView.replaceEditor.setText('\\t')
+        projectFindView.trigger 'project-find:replace-all'
+
+        waitsForPromise ->
+          replacePromise
+
+        runs ->
+          fileContent = fs.readFileSync(filePath, 'utf8')
+          expect(fileContent).toBe("\t\nb\n\t")
+
+      it "doesn't insert a escaped char if there are multiple backslashs in front of the char", ->
+        projectFindView.findEditor.setText('a')
+        projectFindView.replaceEditor.setText('\\\\t')
+        projectFindView.trigger 'project-find:replace-all'
+
+        waitsForPromise ->
+          replacePromise
+
+        runs ->
+          fileContent = fs.readFileSync(filePath, 'utf8')
+          expect(fileContent).toBe("\\t\nb\n\\t")
 
     describe "when the replace button is pressed", ->
       it "runs the search, and replaces all the matches", ->
