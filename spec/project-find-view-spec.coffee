@@ -1,5 +1,6 @@
 os = require 'os'
 path = require 'path'
+temp = require 'temp'
 
 {_, fs, $, View, WorkspaceView} = require 'atom'
 Q = require 'q'
@@ -133,6 +134,39 @@ describe 'ProjectFindView', ->
     beforeEach ->
       atom.workspaceView.openSync('sample.js')
       editorView = atom.workspaceView.getActiveView()
+
+    describe "when the find string contains an escaped char", ->
+      beforeEach ->
+        projectPath = temp.mkdirSync("atom")
+        fs.writeFileSync(path.join(projectPath, "tabs.txt"), "\t\n\\\t\n\\\\t")
+        atom.project.setPath(projectPath)
+        atom.workspaceView.trigger 'project-find:show'
+
+      it "finds the escape char", ->
+        projectFindView.findEditor.setText('\\t')
+        projectFindView.trigger 'core:confirm'
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          resultsPaneView = getExistingResultsPane()
+          resultsView = resultsPaneView.resultsView
+          expect(resultsView).toBeVisible()
+          expect(resultsView.find("li > ul > li")).toHaveLength(2)
+
+      it "doesn't insert a escaped char if there are multiple backspaces in front of the char", ->
+        projectFindView.findEditor.setText('\\\\t')
+        projectFindView.trigger 'core:confirm'
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          resultsPaneView = getExistingResultsPane()
+          resultsView = resultsPaneView.resultsView
+          expect(resultsView).toBeVisible()
+          expect(resultsView.find("li > ul > li")).toHaveLength(1)
 
     describe "when core:cancel is triggered", ->
       beforeEach ->
