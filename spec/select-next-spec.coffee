@@ -54,6 +54,19 @@ describe "SelectNext", ->
           [[5, 6], [5, 9]]
         ]
 
+        editor.setText "Testing reallyTesting"
+        editor.setCursorBufferPosition([0, 0])
+
+        editorView.trigger 'find-and-replace:select-next'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[0, 0], [0, 7]]
+        ]
+
+        editorView.trigger 'find-and-replace:select-next'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[0, 0], [0, 7]]
+        ]
+
     describe "when part of a word is selected", ->
       it "selects the next occurrence of the selected text", ->
         editor.setText """
