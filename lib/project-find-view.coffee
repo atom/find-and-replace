@@ -166,7 +166,11 @@ class ProjectFindView extends View
 
     @errorMessages.empty()
     @showResultPane()
-    @model.search(@findEditor.getText(), @getPaths(), @replaceEditor.getText(), {onlyRunIfChanged})
+
+    try
+      @model.search(@findEditor.getText(), @getPaths(), @replaceEditor.getText(), {onlyRunIfChanged})
+    catch e
+      @addErrorMessage(e.message)
 
   replaceAll: ->
     @errorMessages.empty()

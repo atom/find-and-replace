@@ -266,6 +266,12 @@ describe 'ProjectFindView', ->
         projectFindView.trigger 'core:confirm'
         expect(atom.project.scan.argsForCall[0][0]).toEqual /i\(\\w\)ems\+/gi
 
+      it "shows an error when the regex pattern is invalid", ->
+        projectFindView.trigger 'project-find:toggle-regex-option'
+        projectFindView.findEditor.setText('[')
+        projectFindView.trigger 'core:confirm'
+        expect(projectFindView.errorMessages).toBeVisible()
+
       describe "when search has not been run yet", ->
         it "toggles regex option via an event but does not run the search", ->
           expect(projectFindView.regexOptionButton).not.toHaveClass('selected')
