@@ -33,11 +33,6 @@ describe 'ProjectFindView', ->
       resultsPane = atom.workspaceView.find('.preview-pane').view()
       searchPromise
 
-    liveSpy = spyOn(projectFindView, 'liveSearch').andCallFake (options) ->
-      searchPromise = liveSpy.originalValue.call(projectFindView, options)
-      resultsPane = atom.workspaceView.find('.preview-pane').view()
-      searchPromise
-
   describe "when project-find:show is triggered", ->
     beforeEach ->
       projectFindView.findEditor.setText('items')
@@ -231,60 +226,6 @@ describe 'ProjectFindView', ->
           expect(resultsPaneView2.find('li > ul > li')).toHaveLength length
 
           expect(resultsPaneView2.previewCount.html()).toEqual resultsPaneView1.previewCount.html()
-
-    describe "live searching when user types in the find box", ->
-      triggerBufferModified = ->
-        advanceClock(projectFindView.findEditor.getEditor().getBuffer().stoppedChangingDelay + 1)
-
-      describe "when no search has been run yet", ->
-        beforeEach ->
-          spyOn(atom.project, 'scan')
-
-        it "does not run the search", ->
-          projectFindView.findEditor.setText('items')
-          triggerBufferModified()
-          expect(atom.project.scan).not.toHaveBeenCalled()
-
-      describe "when a search has been run already and the results have been closed", ->
-        beforeEach ->
-          spyOn(atom.project, 'scan').andCallFake -> Q()
-          projectFindView.findEditor.setText('items')
-          projectFindView.trigger 'core:confirm'
-          waitsForPromise -> searchPromise
-          runs ->
-            atom.workspaceView.getActivePane().destroyItem(getExistingResultsPane())
-            atom.project.scan.reset()
-
-        it "displays the results and no errors", ->
-          projectFindView.findEditor.setText('sort')
-          triggerBufferModified()
-          expect(atom.project.scan).not.toHaveBeenCalled()
-
-        it "will run the search again when the pane is opened again", ->
-          projectFindView.trigger 'core:confirm'
-          waitsForPromise -> searchPromise
-
-          runs ->
-            projectFindView.findEditor.setText('sort')
-            triggerBufferModified()
-            expect(atom.project.scan).toHaveBeenCalled()
-
-      describe "when a search has been run already", ->
-        beforeEach ->
-          projectFindView.findEditor.setText('items')
-          projectFindView.trigger 'core:confirm'
-          waitsForPromise -> searchPromise
-
-        it "finds results for the new find pattern", ->
-          expect(projectFindView.descriptionLabel.text()).toContain "13 results"
-
-          projectFindView.findEditor.setText('sort')
-          triggerBufferModified()
-
-          waitsForPromise -> searchPromise
-
-          runs ->
-            expect(projectFindView.descriptionLabel.text()).toContain "10 results found in 2 files"
 
     describe "serialization", ->
       it "serializes if the view is attached", ->
