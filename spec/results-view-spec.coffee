@@ -50,7 +50,7 @@ describe 'ResultsView', ->
     modifiedDelay = null
     beforeEach ->
       projectFindView.findEditor.setText('ghijkl')
-      modifiedDelay = projectFindView.replaceEditor.getBuffer().stoppedChangingDelay
+      modifiedDelay = projectFindView.replaceEditor.getEditor().getBuffer().stoppedChangingDelay
 
     it "renders the replacement when doing a search and there is a replacement pattern", ->
       projectFindView.replaceEditor.setText('cats')
@@ -182,7 +182,7 @@ describe 'ResultsView', ->
 
         activePane = atom.workspaceView.getActivePane()
         expect(activePane[0]).toBe atom.workspaceView.getPanes()[0][0]
-        expect(atom.workspaceView.getActiveView().getPath()).toContain('sample.')
+        expect(atom.workspaceView.getActivePaneItem().getPath()).toContain('sample.')
 
         # open something in sample.js
         resultsView.focus()
@@ -191,7 +191,7 @@ describe 'ResultsView', ->
 
         activePane = atom.workspaceView.getActivePane()
         expect(activePane[0]).toBe atom.workspaceView.getPanes()[0][0]
-        expect(atom.workspaceView.getActiveView().getPath()).toContain('sample.')
+        expect(atom.workspaceView.getActivePaneItem().getPath()).toContain('sample.')
 
     it "arrows through the list without selecting paths", ->
       atom.workspaceView.openSync('sample.js')

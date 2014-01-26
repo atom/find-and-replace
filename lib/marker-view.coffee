@@ -11,6 +11,7 @@ class MarkerView
     @element = document.createElement('div')
     @element.className = 'marker'
     @updateNeeded = @marker.isValid()
+    @oldScreenRange = @getScreenRange()
 
     @subscribe @marker, 'changed', (event) => @onMarkerChanged(event)
     @subscribe @marker, 'attributes-changed', ({isCurrent}) => @updateCurrentClass(isCurrent)
@@ -36,9 +37,13 @@ class MarkerView
   isUpdateNeeded: ->
     return false unless @updateNeeded and @editSession == @editor.editor
 
-    {start, end} = @getScreenRange()
-    [firstRenderedRow, lastRenderedRow] = [@editor.firstRenderedScreenRow, @editor.lastRenderedScreenRow]
-    end.row >= firstRenderedRow and start.row <= lastRenderedRow
+    oldScreenRange = @oldScreenRange
+    newScreenRange = @getScreenRange()
+    @oldScreenRange = newScreenRange
+    @intersectsRenderedScreenRows(oldScreenRange) or @intersectsRenderedScreenRows(newScreenRange)
+
+  intersectsRenderedScreenRows: (range) ->
+    range.intersectsRowRange(@editor.firstRenderedScreenRow, @editor.lastRenderedScreenRow)
 
   updateCurrentClass: (isCurrent) ->
     if isCurrent

@@ -97,8 +97,8 @@ class ProjectFindView extends View
     @handleEventsForReplace()
 
   handleEventsForReplace: ->
-    @replaceEditor.getBuffer().on 'changed', => @model.clearReplacementState()
-    @replaceEditor.editor.on 'contents-modified', => @model.updateReplacementPattern(@replaceEditor.getText())
+    @replaceEditor.getEditor().getBuffer().on 'changed', => @model.clearReplacementState()
+    @replaceEditor.getEditor().on 'contents-modified', => @model.updateReplacementPattern(@replaceEditor.getText())
     @replacementsMade = 0
     @subscribe @model, 'replace', (promise) =>
       @replacementsMade = 0
@@ -118,7 +118,7 @@ class ProjectFindView extends View
     @setSelectionAsFindPattern() unless @findEditor.getText()
 
     @findEditor.focus()
-    @findEditor.selectAll()
+    @findEditor.getEditor().selectAll()
 
   detach: ->
     return unless @hasParent()
@@ -148,7 +148,7 @@ class ProjectFindView extends View
     focusedIndex = 0 if focusedIndex >= elements.length
     focusedIndex = elements.length - 1 if focusedIndex < 0
     elements[focusedIndex].focus()
-    elements[focusedIndex].selectAll() if elements[focusedIndex].selectAll
+    elements[focusedIndex].getEditor?().selectAll()
 
   confirm: ->
     if @findEditor.getText().length == 0
@@ -230,7 +230,7 @@ class ProjectFindView extends View
     @optionsLabel.text(label.join(', '))
 
   setSelectionAsFindPattern: =>
-    editor = atom.workspaceView.getActiveView()
+    editor = atom.workspaceView.getActivePaneItem()
     if editor?.getSelectedText?
       pattern = editor.getSelectedText()
       @findEditor.setText(pattern)
