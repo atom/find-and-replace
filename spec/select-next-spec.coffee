@@ -145,29 +145,29 @@ describe "SelectNext", ->
           [[5, 6], [5, 9]]
         ]
 
-  describe "when a word is selected", ->
-    it "find and selects all occurrences", ->
-      editor.setText """
-        for
-        information
-        format
-        another for
-        fork
-        a 3rd for is here
-      """
+    describe "when a word is selected", ->
+      it "find and selects all occurrences", ->
+        editor.setText """
+          for
+          information
+          format
+          another for
+          fork
+          a 3rd for is here
+        """
 
-      editor.setSelectedBufferRange([[3, 8], [3, 11]])
+        editor.setSelectedBufferRange([[3, 8], [3, 11]])
 
-      editorView.trigger 'find-and-replace:select-all'
-      expect(editor.getSelectedBufferRanges()).toEqual [
-        [[0, 0], [0, 3]]
-        [[3, 8], [3, 11]]
-        [[5, 6], [5, 9]]
-      ]
+        editorView.trigger 'find-and-replace:select-all'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[0, 0], [0, 3]]
+          [[3, 8], [3, 11]]
+          [[5, 6], [5, 9]]
+        ]
 
-      editorView.trigger 'find-and-replace:select-all'
-      expect(editor.getSelectedBufferRanges()).toEqual [
-        [[0, 0], [0, 3]]
-        [[3, 8], [3, 11]]
-        [[5, 6], [5, 9]]
-      ]
+        editorView.trigger 'find-and-replace:select-all'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[0, 0], [0, 3]]
+          [[3, 8], [3, 11]]
+          [[5, 6], [5, 9]]
+        ]
