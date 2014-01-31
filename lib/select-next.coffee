@@ -43,7 +43,7 @@ class SelectNext
     @wordSelected ?= @isWordSelected(selection)
     if @wordSelected
       nonWordCharacters = atom.config.get('editor.nonWordCharacters')
-      text = "(^|[\\s#{_.escapeRegExp(nonWordCharacters)}]+)#{text}(?=$|[\\s#{_.escapeRegExp(nonWordCharacters)}]+)"
+      text = "(^|[ \t#{_.escapeRegExp(nonWordCharacters)}]+)#{text}(?=$|[\\s#{_.escapeRegExp(nonWordCharacters)}]+)"
 
     @editor.scanInBufferRange new RegExp(text, 'g'), range, (result) ->
       if prefix = result.match[1]
@@ -52,7 +52,7 @@ class SelectNext
 
   isNonWordCharacter: (character) ->
     nonWordCharacters = atom.config.get('editor.nonWordCharacters')
-    new RegExp("[\\s#{_.escapeRegExp(nonWordCharacters)}]").test(character)
+    new RegExp("[ \t#{_.escapeRegExp(nonWordCharacters)}]").test(character)
 
   isNonWordCharacterToTheLeft: (selection) ->
     selectionStart = selection.getBufferRange().start

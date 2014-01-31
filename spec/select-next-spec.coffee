@@ -119,6 +119,31 @@ describe "SelectNext", ->
           [[5, 6], [5, 9]]
         ]
 
+    describe "when the word is at a line boundary", ->
+      it "does not select the newlines", ->
+        editor.setText """
+          a
+
+          a
+        """
+
+        editorView.trigger 'find-and-replace:select-next'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[0, 0], [0, 1]]
+        ]
+
+        editorView.trigger 'find-and-replace:select-next'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[0, 0], [0, 1]]
+          [[2, 0], [2, 1]]
+        ]
+
+        editorView.trigger 'find-and-replace:select-next'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[0, 0], [0, 1]]
+          [[2, 0], [2, 1]]
+        ]
+
   describe "find-and-replace:select-all", ->
     describe "when there is no selection", ->
       it "find and selects all occurrences", ->
