@@ -35,5 +35,5 @@ class MatchView extends View
       @matchText.removeClass('highlight-error').addClass('highlight-info')
 
   confirm: ->
-    editSession = atom.workspaceView.openSingletonSync(@filePath, split: 'left')
-    editSession.setSelectedBufferRange(@match.range, autoscroll: true)
+    atom.workspaceView.open(@filePath, split: 'left').then (editor) =>
+      editor.setSelectedBufferRange(@match.range, autoscroll: true)

@@ -163,23 +163,21 @@ class ProjectFindView extends View
     return Q() if onlyRunIfActive and not @model.active
 
     @errorMessages.empty()
-    @showResultPane()
-
-    try
-      @model.search(@findEditor.getText(), @getPaths(), @replaceEditor.getText(), {onlyRunIfChanged})
-    catch e
-      @addErrorMessage(e.message)
+    @showResultPane().then =>
+      try
+        @model.search(@findEditor.getText(), @getPaths(), @replaceEditor.getText(), {onlyRunIfChanged})
+      catch e
+        @addErrorMessage(e.message)
 
   replaceAll: ->
     @errorMessages.empty()
-    @showResultPane()
+    @showResultPane().then =>
+      pattern = @findEditor.getText()
+      replacementPattern = @replaceEditor.getText()
 
-    pattern = @findEditor.getText()
-    replacementPattern = @replaceEditor.getText()
-
-    @model.search(pattern, @getPaths(), replacementPattern, onlyRunIfChanged: true).then =>
-      @clearMessages()
-      @model.replace(pattern, @getPaths(), replacementPattern, @model.getPaths())
+      @model.search(pattern, @getPaths(), replacementPattern, onlyRunIfChanged: true).then =>
+        @clearMessages()
+        @model.replace(pattern, @getPaths(), replacementPattern, @model.getPaths())
 
   getPaths: ->
     path.trim() for path in @pathsEditor.getText().trim().split(',') when path
@@ -199,7 +197,7 @@ class ProjectFindView extends View
   showResultPane: ->
     options = null
     options = {split: 'right'} if atom.config.get('find-and-replace.openProjectFindResultsInRightPane')
-    atom.workspaceView.openSingletonSync(ResultsPaneView.URI, options)
+    atom.workspaceView.open(ResultsPaneView.URI, options)
 
   onFinishedReplacing: (results) ->
     atom.beep() unless results.replacedPathCount
