@@ -89,6 +89,13 @@ module.exports =
     ResultsPaneView.model = null
     @resultsModel = null
 
+    atom.workspaceView.off 'project-find:show'
+    atom.workspaceView.off 'core:cancel core:close'
+    atom.workspaceView.off 'find-and-replace:show-replace'
+    atom.workspaceView.off 'find-and-replace:show'
+    atom.workspaceView.off 'find-and-replace:use-selection-as-find-pattern'
+    atom.workspaceView.off 'project-find:show-in-current-directory'
+
   serialize: ->
     viewState: @findView?.serialize() ? @viewState
     projectViewState: @projectFindView?.serialize() ? @projectViewState
