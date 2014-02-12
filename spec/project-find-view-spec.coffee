@@ -74,7 +74,7 @@ describe 'ProjectFindView', ->
 
       it "focuses the find editor and selects all the text", ->
         atom.workspaceView.trigger 'project-find:show'
-        expect(projectFindView.findEditor.find(':focus')).toExist()
+        expect(projectFindView.findEditor).toHaveFocus()
         expect(projectFindView.findEditor.getEditor().getSelectedText()).toBe "items"
 
   describe "when project-find:show-in-current-directory is triggered", ->

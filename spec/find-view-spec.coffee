@@ -182,7 +182,7 @@ describe 'FindView', ->
       findView.findEditor.trigger 'core:confirm'
       expect(editor.getCursorBufferPosition()).toEqual [2,0]
       expect(atom.beep).toHaveBeenCalled()
-      expect(findView.find(':focus')).toExist()
+      expect(findView).toHaveFocus()
 
       expect(findView.descriptionLabel.text()).toEqual "No results found for 'notinthefilebro'"
 
@@ -206,7 +206,7 @@ describe 'FindView', ->
       findView.findEditor.trigger 'core:confirm'
       expect(findView.resultCounter.text()).toEqual('3 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[2, 34], [2, 39]]
-      expect(editorView.find(':focus')).toExist()
+      expect(editorView).toHaveFocus()
 
     it "selects the next match when the next match button is pressed", ->
       findView.nextButton.click()
@@ -459,17 +459,17 @@ describe 'FindView', ->
         findView.findEditor.setText ''
         advance()
         expect(findView.descriptionLabel.text()).toContain "No results"
-        expect(findView.find(':focus')).toExist()
+        expect(findView).toHaveFocus()
 
         findView.findEditor.setText 'sort'
         advance()
         expect(findView.descriptionLabel.text()).toContain "5 results"
-        expect(findView.find(':focus')).toExist()
+        expect(findView).toHaveFocus()
 
         findView.findEditor.setText 'items'
         advance()
         expect(findView.descriptionLabel.text()).toContain "6 results"
-        expect(findView.find(':focus')).toExist()
+        expect(findView).toHaveFocus()
 
     describe "when another find is called", ->
       previousMarkers = null
