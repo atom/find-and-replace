@@ -243,16 +243,6 @@ describe 'ProjectFindView', ->
           expect(resultsPaneView2.previewCount.html()).toEqual resultsPaneView1.previewCount.html()
 
     describe "serialization", ->
-      it "serializes if the view is attached", ->
-        expect(projectFindView.hasParent()).toBeFalsy()
-        editorView.trigger 'project-find:show'
-        atom.packages.deactivatePackage("find-and-replace")
-        pack = atom.packages.activatePackage("find-and-replace", immediate: true)
-        pack.mainModule.createProjectFindView()
-        projectFindView = pack.mainModule.projectFindView
-
-        expect(projectFindView.hasParent()).toBeTruthy()
-
       it "serializes if the case and regex options", ->
         editorView.trigger 'project-find:show'
         expect(projectFindView.caseOptionButton).not.toHaveClass('selected')

@@ -41,9 +41,8 @@ class ProjectFindView extends View
         @div class: 'editor-container', =>
           @subview 'pathsEditor', new EditorView(mini: true, placeholderText: 'File/directory pattern. eg. `src` to search in the "src" directory or `*.js` to search all javascript files.')
 
-  initialize: (@model, {attached, modelState, findHistory, replaceHistory, pathsHistory}={}) ->
+  initialize: (@model, {modelState, findHistory, replaceHistory, pathsHistory}={}) ->
     @handleEvents()
-    @attach() if attached
     @findHistory = new History(@findEditor, findHistory)
     @replaceHistory = new History(@replaceEditor, replaceHistory)
     @pathsHistory = new History(@pathsEditor, pathsHistory)
@@ -67,7 +66,6 @@ class ProjectFindView extends View
     @replaceAllButton.hideTooltip()
 
   serialize: ->
-    attached: @hasParent()
     findHistory: @findHistory.serialize()
     replaceHistory: @replaceHistory.serialize()
     pathsHistory: @pathsHistory.serialize()
