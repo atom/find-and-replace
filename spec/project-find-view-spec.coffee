@@ -276,13 +276,23 @@ describe 'ProjectFindView', ->
 
       it "escapes regex patterns by default", ->
         projectFindView.trigger 'core:confirm'
-        expect(atom.project.scan.argsForCall[0][0]).toEqual /i\(\\w\)ems\+/gi
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          expect(atom.project.scan.argsForCall[0][0]).toEqual /i\(\\w\)ems\+/gi
 
       it "shows an error when the regex pattern is invalid", ->
         projectFindView.trigger 'project-find:toggle-regex-option'
         projectFindView.findEditor.setText('[')
         projectFindView.trigger 'core:confirm'
-        expect(projectFindView.errorMessages).toBeVisible()
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          expect(projectFindView.errorMessages).toBeVisible()
 
       describe "when search has not been run yet", ->
         it "toggles regex option via an event but does not run the search", ->
@@ -299,14 +309,24 @@ describe 'ProjectFindView', ->
         it "toggles regex option via an event and finds files matching the pattern", ->
           expect(projectFindView.regexOptionButton).not.toHaveClass('selected')
           projectFindView.trigger 'project-find:toggle-regex-option'
-          expect(projectFindView.regexOptionButton).toHaveClass('selected')
-          expect(atom.project.scan.mostRecentCall.args[0]).toEqual /i(\w)ems+/gi
+
+          waitsForPromise ->
+            searchPromise
+
+          runs ->
+            expect(projectFindView.regexOptionButton).toHaveClass('selected')
+            expect(atom.project.scan.mostRecentCall.args[0]).toEqual /i(\w)ems+/gi
 
         it "toggles regex option via a button and finds files matching the pattern", ->
           expect(projectFindView.regexOptionButton).not.toHaveClass('selected')
           projectFindView.regexOptionButton.click()
-          expect(projectFindView.regexOptionButton).toHaveClass('selected')
-          expect(atom.project.scan.mostRecentCall.args[0]).toEqual /i(\w)ems+/gi
+
+          waitsForPromise ->
+            searchPromise
+
+          runs ->
+            expect(projectFindView.regexOptionButton).toHaveClass('selected')
+            expect(atom.project.scan.mostRecentCall.args[0]).toEqual /i(\w)ems+/gi
 
     describe "case sensitivity", ->
       beforeEach ->
@@ -322,14 +342,24 @@ describe 'ProjectFindView', ->
       it "toggles case sensitive option via an event and finds files matching the pattern", ->
         expect(projectFindView.caseOptionButton).not.toHaveClass('selected')
         projectFindView.trigger 'project-find:toggle-case-option'
-        expect(projectFindView.caseOptionButton).toHaveClass('selected')
-        expect(atom.project.scan.mostRecentCall.args[0]).toEqual /ITEMS/g
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          expect(projectFindView.caseOptionButton).toHaveClass('selected')
+          expect(atom.project.scan.mostRecentCall.args[0]).toEqual /ITEMS/g
 
       it "toggles case sensitive option via a button and finds files matching the pattern", ->
         expect(projectFindView.caseOptionButton).not.toHaveClass('selected')
         projectFindView.caseOptionButton.click()
-        expect(projectFindView.caseOptionButton).toHaveClass('selected')
-        expect(atom.project.scan.mostRecentCall.args[0]).toEqual /ITEMS/g
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          expect(projectFindView.caseOptionButton).toHaveClass('selected')
+          expect(atom.project.scan.mostRecentCall.args[0]).toEqual /ITEMS/g
 
     describe "when core:confirm is triggered", ->
       beforeEach ->
@@ -367,7 +397,11 @@ describe 'ProjectFindView', ->
           projectFindView.pathsEditor.setText('*.js')
           projectFindView.trigger 'core:confirm'
 
-          expect(atom.project.scan.argsForCall[0][1]['paths']).toEqual ['*.js']
+          waitsForPromise ->
+            searchPromise
+
+          runs ->
+            expect(atom.project.scan.argsForCall[0][1]['paths']).toEqual ['*.js']
 
         it "updates the results list when a buffer changes", ->
           projectFindView.trigger 'core:confirm'
@@ -599,7 +633,7 @@ describe 'ProjectFindView', ->
           runs ->
             expect(projectFindView.errorMessages).not.toBeVisible()
 
-            expect(resultsPane.previewCount.text()).toContain '13 results found in 2 files for items'
+            expect(getExistingResultsPane().previewCount.text()).toContain '13 results found in 2 files for items'
             expect(projectFindView.descriptionLabel.text()).toContain 'Replaced items with items-123 13 times in 2 files'
 
             projectFindView.replaceEditor.setText('cats')

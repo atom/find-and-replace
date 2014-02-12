@@ -171,6 +171,8 @@ describe 'ResultsView', ->
       atom.workspaceView.openSync('sample.js')
       projectFindView.findEditor.setText('items')
       projectFindView.trigger 'core:confirm'
+      openHandler = jasmine.createSpy("open handler")
+      atom.workspaceView.model.on 'uri-opened', openHandler
 
       waitsForPromise ->
         searchPromise
@@ -181,19 +183,26 @@ describe 'ResultsView', ->
 
         # open something in sample.coffee
         _.times 3, -> resultsView.trigger 'core:move-down'
+        openHandler.reset()
         resultsView.trigger 'core:confirm'
 
-        activePane = atom.workspaceView.getActivePane()
-        expect(activePane[0]).toBe atom.workspaceView.getPanes()[0][0]
+      waitsFor ->
+        openHandler.callCount == 1
+
+      runs ->
         expect(atom.workspaceView.getActivePaneItem().getPath()).toContain('sample.')
 
         # open something in sample.js
         resultsView.focus()
         _.times 6, -> resultsView.trigger 'core:move-down'
+        openHandler.reset()
         resultsView.trigger 'core:confirm'
 
+      waitsFor ->
+        openHandler.callCount == 1
+
+      runs ->
         activePane = atom.workspaceView.getActivePane()
-        expect(activePane[0]).toBe atom.workspaceView.getPanes()[0][0]
         expect(atom.workspaceView.getActivePaneItem().getPath()).toContain('sample.')
 
     it "arrows through the list without selecting paths", ->
