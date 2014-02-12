@@ -12,7 +12,11 @@ describe "SelectNext", ->
     atom.workspaceView.attachToDom()
     editorView = atom.workspaceView.getActiveView()
     editor = editorView.getEditor()
-    atom.packages.activatePackage("find-and-replace", immediate: true)
+    promise = atom.packages.activatePackage("find-and-replace")
+    editorView.trigger 'find-and-replace:show'
+
+    waitsForPromise ->
+      promise
 
   describe "find-and-replace:select-next", ->
     describe "when nothing is selected", ->

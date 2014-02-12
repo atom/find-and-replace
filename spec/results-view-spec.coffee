@@ -23,13 +23,16 @@ describe 'ResultsView', ->
     atom.workspaceView.height(1000)
     atom.project.setPath(path.join(__dirname, 'fixtures'))
     atom.workspaceView.attachToDom()
-    pack = atom.packages.activatePackage("find-and-replace", immediate: true)
-    pack.mainModule.createProjectFindView()
-    projectFindView = pack.mainModule.projectFindView
-    spy = spyOn(projectFindView, 'confirm').andCallFake ->
-      searchPromise = spy.originalValue.call(projectFindView)
+    promise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
+      mainModule.createProjectFindView()
+      {projectFindView} = mainModule
+      spy = spyOn(projectFindView, 'confirm').andCallFake ->
+        searchPromise = spy.originalValue.call(projectFindView)
 
     atom.workspaceView.trigger 'project-find:show'
+
+    waitsForPromise ->
+      promise
 
   describe "when the result is for a long line", ->
     it "renders the context around the match", ->

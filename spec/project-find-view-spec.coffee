@@ -11,7 +11,7 @@ ResultsPaneView = require '../lib/project/results-pane'
 waitsForPromise = (fn) -> window.waitsForPromise timeout: 30000, fn
 
 describe 'ProjectFindView', ->
-  [pack, editorView, projectFindView, searchPromise, resultsPane] = []
+  [activationPromise, editorView, projectFindView, searchPromise, resultsPane] = []
 
   getExistingResultsPane = ->
     pane = atom.workspaceView.panes.paneForUri(ResultsPaneView.URI)
@@ -22,23 +22,27 @@ describe 'ProjectFindView', ->
     atom.workspaceView = new WorkspaceView()
     atom.project.setPath(path.join(__dirname, 'fixtures'))
     atom.workspaceView.attachToDom()
-    pack = atom.packages.activatePackage("find-and-replace", immediate: true)
-    pack.mainModule.createProjectFindView()
-    projectFindView = pack.mainModule.projectFindView
 
     atom.config.set('find-and-replace.openProjectFindResultsInRightPane', false)
-
-    spy = spyOn(projectFindView, 'confirm').andCallFake ->
-      searchPromise = spy.originalValue.call(projectFindView)
-      resultsPane = atom.workspaceView.find('.preview-pane').view()
-      searchPromise
+    activationPromise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
+      mainModule.createProjectFindView()
+      {projectFindView} = mainModule
+      spy = spyOn(projectFindView, 'confirm').andCallFake ->
+        searchPromise = spy.originalValue.call(projectFindView)
+        resultsPane = atom.workspaceView.find('.preview-pane').view()
+        searchPromise
 
   describe "when project-find:show is triggered", ->
     beforeEach ->
-      projectFindView.findEditor.setText('items')
+      atom.workspaceView.trigger 'project-find:show'
+
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        projectFindView.findEditor.setText('items')
 
     it "attaches ProjectFindView to the root view", ->
-      atom.workspaceView.trigger 'project-find:show'
       expect(atom.workspaceView.find('.project-find')).toExist()
       expect(projectFindView.find('.preview-block')).not.toBeVisible()
       expect(projectFindView.find('.loading')).not.toBeVisible()
@@ -66,7 +70,6 @@ describe 'ProjectFindView', ->
 
     describe "when thethe ProjectFindView is already attached", ->
       beforeEach ->
-        atom.workspaceView.trigger 'project-find:show'
         projectFindView.findEditor.getEditor().setSelectedBufferRange([[0, 0], [0, 0]])
 
       it "focuses the find editor and selects all the text", ->
@@ -97,8 +100,6 @@ describe 'ProjectFindView', ->
       getPath: -> @path
 
     beforeEach ->
-      projectFindView.findEditor.setText('items')
-
       p = atom.project.getPath()
       tree = new DirElement(p)
       tree.createFiles(['one.js', 'two.js'])
@@ -111,24 +112,38 @@ describe 'ProjectFindView', ->
 
     it "populates the pathsEditor when triggered with a directory", ->
       nested.name.trigger 'project-find:show-in-current-directory'
-      expect(atom.workspaceView.find('.project-find')).toExist()
-      expect(projectFindView.pathsEditor.getText()).toBe('nested')
 
-      tree.name.trigger 'project-find:show-in-current-directory'
-      expect(projectFindView.pathsEditor.getText()).toBe('')
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        expect(atom.workspaceView.find('.project-find')).toExist()
+        expect(projectFindView.pathsEditor.getText()).toBe('nested')
+
+        tree.name.trigger 'project-find:show-in-current-directory'
+        expect(projectFindView.pathsEditor.getText()).toBe('')
 
     it "populates the pathsEditor when triggered with a file", ->
       nested.files.find('> .file:eq(0)').view().name.trigger 'project-find:show-in-current-directory'
-      expect(atom.workspaceView.find('.project-find')).toExist()
-      expect(projectFindView.pathsEditor.getText()).toBe('nested')
 
-      tree.files.find('> .file:eq(0)').view().name.trigger 'project-find:show-in-current-directory'
-      expect(projectFindView.pathsEditor.getText()).toBe('')
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        expect(atom.workspaceView.find('.project-find')).toExist()
+        expect(projectFindView.pathsEditor.getText()).toBe('nested')
+
+        tree.files.find('> .file:eq(0)').view().name.trigger 'project-find:show-in-current-directory'
+        expect(projectFindView.pathsEditor.getText()).toBe('')
 
   describe "finding", ->
     beforeEach ->
       atom.workspaceView.openSync('sample.js')
       editorView = atom.workspaceView.getActiveView()
+      atom.workspaceView.trigger 'project-find:show'
+
+      waitsForPromise ->
+        activationPromise
 
     describe "when the find string contains an escaped char", ->
       beforeEach ->
@@ -249,12 +264,19 @@ describe 'ProjectFindView', ->
         expect(projectFindView.regexOptionButton).toHaveClass('selected')
 
         atom.packages.deactivatePackage("find-and-replace")
-        pack = atom.packages.activatePackage("find-and-replace", immediate: true)
-        pack.mainModule.createProjectFindView()
-        projectFindView = pack.mainModule.projectFindView
 
-        expect(projectFindView.caseOptionButton).toHaveClass('selected')
-        expect(projectFindView.regexOptionButton).toHaveClass('selected')
+        activationPromise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
+          mainModule.createProjectFindView()
+          {projectFindView} = mainModule
+
+        editorView.trigger 'project-find:show'
+
+        waitsForPromise ->
+          activationPromise
+
+        runs ->
+          expect(projectFindView.caseOptionButton).toHaveClass('selected')
+          expect(projectFindView.regexOptionButton).toHaveClass('selected')
 
     describe "regex", ->
       beforeEach ->
@@ -477,10 +499,14 @@ describe 'ProjectFindView', ->
       fs.writeFileSync(sampleCoffee, fs.readFileSync(require.resolve('./fixtures/sample.coffee')))
       fs.writeFileSync(sampleJs, fs.readFileSync(require.resolve('./fixtures/sample.js')))
       atom.workspaceView.trigger 'project-find:show'
-      atom.project.setPath(testDir)
 
-      spy = spyOn(projectFindView, 'replaceAll').andCallFake ->
-        replacePromise = spy.originalValue.call(projectFindView)
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        atom.project.setPath(testDir)
+        spy = spyOn(projectFindView, 'replaceAll').andCallFake ->
+          replacePromise = spy.originalValue.call(projectFindView)
 
     afterEach ->
       # On Windows, you can not remove a watched directory/file, therefore we

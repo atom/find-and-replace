@@ -3,7 +3,7 @@
 path = require 'path'
 
 describe 'FindView', ->
-  [editorView, editor, findView] = []
+  [editorView, editor, findView, activationPromise] = []
 
   beforeEach ->
     spyOn(atom, 'beep')
@@ -13,40 +13,60 @@ describe 'FindView', ->
     atom.workspaceView.attachToDom()
     editorView = atom.workspaceView.getActiveView()
     editor = editorView.getEditor()
-    pack = atom.packages.activatePackage("find-and-replace", immediate: true)
-    pack.mainModule.createFindView()
-    findView = pack.mainModule.findView
+
+    activationPromise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
+      mainModule.createFindView()
+      {findView} = mainModule
 
   describe "when find-and-replace:show is triggered", ->
     it "attaches FindView to the root view", ->
       editorView.trigger 'find-and-replace:show'
-      expect(atom.workspaceView.find('.find-and-replace')).toExist()
+
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        expect(atom.workspaceView.find('.find-and-replace')).toExist()
 
     it "populates the findEditor with selection when there is a selection", ->
       editor.setSelectedBufferRange([[2, 8], [2, 13]])
       editorView.trigger 'find-and-replace:show'
-      expect(atom.workspaceView.find('.find-and-replace')).toExist()
-      expect(findView.findEditor.getText()).toBe('items')
 
-      findView.findEditor.setText('')
+      waitsForPromise ->
+        activationPromise
 
-      editor.setSelectedBufferRange([[2, 14], [2, 20]])
-      editorView.trigger 'find-and-replace:show'
-      expect(atom.workspaceView.find('.find-and-replace')).toExist()
-      expect(findView.findEditor.getText()).toBe('length')
+      runs ->
+        expect(atom.workspaceView.find('.find-and-replace')).toExist()
+        expect(findView.findEditor.getText()).toBe('items')
+
+        findView.findEditor.setText('')
+
+        editor.setSelectedBufferRange([[2, 14], [2, 20]])
+        editorView.trigger 'find-and-replace:show'
+        expect(atom.workspaceView.find('.find-and-replace')).toExist()
+        expect(findView.findEditor.getText()).toBe('length')
 
   describe "when FindView's replace editor is visible", ->
     it "keeps the replace editor visible when find-and-replace:show is triggered", ->
       editorView.trigger 'find-and-replace:show-replace'
-      editorView.trigger 'find-and-replace:show'
-      expect(findView.replaceEditor).toBeVisible()
+
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        editorView.trigger 'find-and-replace:show'
+        expect(findView.replaceEditor).toBeVisible()
 
   describe "when core:cancel is triggered", ->
     beforeEach ->
       editorView.trigger 'find-and-replace:show'
-      findView.findEditor.setText 'items'
-      findView.findEditor.trigger 'core:confirm'
-      findView.focus()
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        findView.findEditor.setText 'items'
+        findView.findEditor.trigger 'core:confirm'
+        findView.focus()
 
     it "detaches from the root view", ->
       $(document.activeElement).trigger 'core:cancel'
@@ -60,53 +80,84 @@ describe 'FindView', ->
 
   describe "serialization", ->
     it "serializes find and replace history", ->
-      findView.findEditor.setText("items")
-      findView.replaceEditor.setText("cat")
-      findView.replaceAll()
+      editorView.trigger 'find-and-replace:show'
 
-      findView.findEditor.setText("sort")
-      findView.replaceEditor.setText("dog")
-      findView.replaceAll()
+      waitsForPromise ->
+        activationPromise
 
-      atom.packages.deactivatePackage("find-and-replace")
-      pack = atom.packages.activatePackage("find-and-replace", immediate: true)
-      pack.mainModule.createFindView()
-      findView = pack.mainModule.findView
+      runs ->
+        findView.findEditor.setText("items")
+        findView.replaceEditor.setText("cat")
+        findView.replaceAll()
 
-      findView.findEditor.trigger('core:move-up')
-      expect(findView.findEditor.getText()).toBe 'sort'
+        findView.findEditor.setText("sort")
+        findView.replaceEditor.setText("dog")
+        findView.replaceAll()
 
-      findView.replaceEditor.trigger('core:move-up')
-      expect(findView.replaceEditor.getText()).toBe 'dog'
+        atom.packages.deactivatePackage("find-and-replace")
+
+        activationPromise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
+          mainModule.createFindView()
+          {findView} = mainModule
+
+        editorView.trigger 'find-and-replace:show'
+
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        findView.findEditor.trigger('core:move-up')
+        expect(findView.findEditor.getText()).toBe 'sort'
+
+        findView.replaceEditor.trigger('core:move-up')
+        expect(findView.replaceEditor.getText()).toBe 'dog'
 
     it "serializes find options ", ->
-      expect(findView.caseOptionButton).not.toHaveClass 'selected'
-      expect(findView.regexOptionButton).not.toHaveClass 'selected'
-      expect(findView.selectionOptionButton).not.toHaveClass 'selected'
+      editorView.trigger 'find-and-replace:show'
 
-      findView.caseOptionButton.click()
-      findView.regexOptionButton.click()
-      findView.selectionOptionButton.click()
+      waitsForPromise ->
+        activationPromise
 
-      expect(findView.caseOptionButton).toHaveClass 'selected'
-      expect(findView.regexOptionButton).toHaveClass 'selected'
-      expect(findView.selectionOptionButton).toHaveClass 'selected'
+      runs ->
+        expect(findView.caseOptionButton).not.toHaveClass 'selected'
+        expect(findView.regexOptionButton).not.toHaveClass 'selected'
+        expect(findView.selectionOptionButton).not.toHaveClass 'selected'
 
-      atom.packages.deactivatePackage("find-and-replace")
-      pack = atom.packages.activatePackage("find-and-replace", immediate: true)
-      pack.mainModule.createFindView()
-      findView = pack.mainModule.findView
+        findView.caseOptionButton.click()
+        findView.regexOptionButton.click()
+        findView.selectionOptionButton.click()
 
-      expect(findView.caseOptionButton).toHaveClass 'selected'
-      expect(findView.regexOptionButton).toHaveClass 'selected'
-      expect(findView.selectionOptionButton).toHaveClass 'selected'
+        expect(findView.caseOptionButton).toHaveClass 'selected'
+        expect(findView.regexOptionButton).toHaveClass 'selected'
+        expect(findView.selectionOptionButton).toHaveClass 'selected'
+
+        atom.packages.deactivatePackage("find-and-replace")
+
+        activationPromise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
+          mainModule.createFindView()
+          {findView} = mainModule
+
+        editorView.trigger 'find-and-replace:show'
+
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        expect(findView.caseOptionButton).toHaveClass 'selected'
+        expect(findView.regexOptionButton).toHaveClass 'selected'
+        expect(findView.selectionOptionButton).toHaveClass 'selected'
 
   describe "finding", ->
     beforeEach ->
       editor.setCursorBufferPosition([2,0])
       editorView.trigger 'find-and-replace:show'
-      findView.findEditor.setText 'items'
-      findView.findEditor.trigger 'core:confirm'
+
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        findView.findEditor.setText 'items'
+        findView.findEditor.trigger 'core:confirm'
 
     describe "when the find string contains an escaped char", ->
       beforeEach ->
@@ -440,8 +491,13 @@ describe 'FindView', ->
     beforeEach ->
       editor.setCursorBufferPosition([2,0])
       editorView.trigger 'find-and-replace:show-replace'
-      findView.findEditor.setText('items')
-      findView.replaceEditor.setText('cats')
+
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        findView.findEditor.setText('items')
+        findView.replaceEditor.setText('cats')
 
     describe "when the replacement string contains an escaped char", ->
       it "inserts tabs, newlines and carriage returns", ->
@@ -549,6 +605,12 @@ describe 'FindView', ->
           expect(editor.getText().match(/\$&cats\b/g)).toHaveLength 6
 
   describe "history", ->
+    beforeEach ->
+      editorView.trigger 'find-and-replace:show'
+
+      waitsForPromise ->
+        activationPromise
+
     describe "when there is no history", ->
       it "retains unsearched text", ->
         text = 'something I want to search for but havent yet'
