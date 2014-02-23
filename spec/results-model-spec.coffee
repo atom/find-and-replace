@@ -1,6 +1,6 @@
 path = require 'path'
 
-{fs, $, WorkspaceView} = require 'atom'
+{$, WorkspaceView} = require 'atom'
 
 ResultsModel = require '../lib/project/results-model.coffee'
 
