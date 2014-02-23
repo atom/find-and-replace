@@ -1,4 +1,5 @@
-{_, $, ScrollView} = require 'atom'
+_ = require 'underscore-plus'
+{$, ScrollView} = require 'atom'
 ResultView = require './result-view'
 
 module.exports =

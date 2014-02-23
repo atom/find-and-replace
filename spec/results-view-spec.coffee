@@ -1,5 +1,6 @@
 path = require 'path'
-{_, WorkspaceView} = require 'atom'
+_ = require 'underscore-plus'
+{WorkspaceView} = require 'atom'
 path = require 'path'
 
 ResultsPaneView = require '../lib/project/results-pane'

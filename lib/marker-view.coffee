@@ -1,4 +1,4 @@
-{$, _} = require 'atom'
+{$} = require 'atom'
 {Subscriber} = require 'emissary'
 
 module.exports =

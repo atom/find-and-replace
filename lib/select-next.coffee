@@ -1,4 +1,5 @@
-{_, Range} = require 'atom'
+_ = require 'underscore-plus'
+{Range} = require 'atom'
 
 # Find and select the next occurrence of the currently selected text.
 #

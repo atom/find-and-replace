@@ -1,4 +1,5 @@
-{_, $, fs, View} = require 'atom'
+_ = require 'underscore-plus'
+{$, fs, View} = require 'atom'
 MatchView = require './match-view'
 path = require 'path'
 

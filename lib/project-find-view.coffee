@@ -1,5 +1,6 @@
 Q = require 'q'
-{_, $, $$$, EditorView, View} = require 'atom'
+_ = require 'underscore-plus'
+{$, $$$, EditorView, View} = require 'atom'
 
 History = require './history'
 Util = require './project/util'

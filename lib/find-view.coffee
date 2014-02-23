@@ -1,4 +1,5 @@
-{_, $$$, EditorView, View} = require 'atom'
+_ = require 'underscore-plus'
+{$$$, EditorView, View} = require 'atom'
 FindModel = require './find-model'
 FindResultsView = require './find-results-view'
 History = require './history'

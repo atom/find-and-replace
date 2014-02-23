@@ -2,7 +2,8 @@ os = require 'os'
 path = require 'path'
 temp = require 'temp'
 
-{_, fs, $, View, WorkspaceView} = require 'atom'
+_ = require 'underscore-plus'
+{fs, $, View, WorkspaceView} = require 'atom'
 Q = require 'q'
 
 ResultsPaneView = require '../lib/project/results-pane'

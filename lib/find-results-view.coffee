@@ -1,4 +1,5 @@
-{_, EditorView, View} = require 'atom'
+_ = require 'underscore-plus'
+{EditorView, View} = require 'atom'
 MarkerView = require './marker-view'
 
 module.exports =

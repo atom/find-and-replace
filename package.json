@@ -24,6 +24,7 @@
   "dependencies": {
     "emissary": "1.x",
     "q": "0.9.7",
-    "temp": "0.6.0"
+    "temp": "0.6.0",
+    "underscore-plus": "1.x"
   }
 }

@@ -1,4 +1,4 @@
-{_} = require 'atom'
+_ = require 'underscore-plus'
 {Emitter} = require 'emissary'
 escapeHelper = require './escape-helper'
 

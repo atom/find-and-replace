@@ -1,5 +1,5 @@
 Q = require 'q'
-{_} = require 'atom'
+_ = require 'underscore-plus'
 {Emitter} = require 'emissary'
 escapeHelper = require '../escape-helper'
 
