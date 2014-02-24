@@ -1,4 +1,4 @@
-{_} = require 'atom'
+_ = require 'underscore-plus'
 
 module.exports =
   escapeHtml: (str) ->
