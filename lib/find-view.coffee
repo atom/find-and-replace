@@ -170,10 +170,10 @@ class FindView extends View
     pattern = @findEditor.getText()
     @updateModel { pattern }
 
-  findNext: (focusEditorAfter = true) =>
+  findNext: (focusEditorAfter = false) =>
     @findAndSelectResult(@selectFirstMarkerAfterCursor, focusEditorAfter)
 
-  findPrevious: (focusEditorAfter = true) =>
+  findPrevious: (focusEditorAfter = false) =>
     @findAndSelectResult(@selectFirstMarkerBeforeCursor, focusEditorAfter)
 
   findAndSelectResult: (selectFunction, focusEditorAfter = true) =>
