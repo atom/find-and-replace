@@ -170,13 +170,13 @@ class FindView extends View
     pattern = @findEditor.getText()
     @updateModel { pattern }
 
-  findNext: (focusEditorAfter = true) =>
-    @findAndSelectResult(@selectFirstMarkerAfterCursor, focusEditorAfter)
+  findNext: =>
+    @findAndSelectResult(@selectFirstMarkerAfterCursor)
 
   findPrevious: (focusEditorAfter = true) =>
-    @findAndSelectResult(@selectFirstMarkerBeforeCursor, focusEditorAfter)
+    @findAndSelectResult(@selectFirstMarkerBeforeCursor)
 
-  findAndSelectResult: (selectFunction, focusEditorAfter = true) =>
+  findAndSelectResult: (selectFunction) =>
     pattern = @findEditor.getText()
     @updateModel { pattern }
 
@@ -184,7 +184,6 @@ class FindView extends View
       atom.beep()
     else
       selectFunction()
-      atom.workspaceView.focus() if focusEditorAfter
 
   replaceNext: =>
     @replace('findNext', 'firstMarkerIndexAfterCursor')

@@ -207,7 +207,7 @@ describe 'FindView', ->
       findView.findEditor.trigger 'core:confirm'
       expect(findView.resultCounter.text()).toEqual('3 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[2, 34], [2, 39]]
-      expect(editorView).toHaveFocus()
+      expect(findView.findEditor).toHaveFocus()
 
     it "selects the next match when the next match button is pressed", ->
       findView.nextButton.click()
