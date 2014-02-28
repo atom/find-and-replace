@@ -23,7 +23,7 @@ class ResultsView extends ScrollView
       @renderResults() if @shouldRenderMoreResults()
 
     @on 'core:confirm', =>
-      @find('.selected').view?().confirm?()
+      @find('.selected').view()?.confirm?()
       false
 
     @on 'mousedown', '.match-result, .path', (e) =>

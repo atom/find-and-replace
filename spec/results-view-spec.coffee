@@ -305,3 +305,16 @@ describe 'ResultsView', ->
         selectedItem = resultsView.find('.selected')
         expect(selectedItem).toHaveClass('search-result')
         expect(selectedItem[0]).toBe resultsView.find('.path:eq(0) .search-result:last')[0]
+
+
+  describe "when the results view is empty", ->
+    it "ignores core:confirm events", ->
+      projectFindView.findEditor.setText('thiswillnotmatchanythingintheproject')
+      projectFindView.trigger 'core:confirm'
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        resultsView = getResultsView()
+        expect(-> resultsView.trigger('core:confirm')).not.toThrow()
