@@ -214,10 +214,12 @@ describe 'FindView', ->
       expect(findView.resultCounter.text()).toEqual('3 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[2, 34], [2, 39]]
 
-    it "selects the next match when the 'find-and-replace:find-next' event is triggered", ->
+    it "selects the next match when the 'find-and-replace:find-next' event is triggered and correctly focuses the editor", ->
+      expect(findView).toHaveFocus()
       editorView.trigger('find-and-replace:find-next')
       expect(findView.resultCounter.text()).toEqual('3 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[2, 34], [2, 39]]
+      expect(editorView).toHaveFocus()
 
     it "will re-run search if 'find-and-replace:find-next' is triggered after changing the findEditor's text", ->
       findView.findEditor.setText 'sort'
@@ -231,10 +233,12 @@ describe 'FindView', ->
       expect(findView.resultCounter.text()).toEqual('1 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[1, 27], [1, 22]]
 
-    it "selects the previous match when the 'find-and-replace:find-previous' event is triggered", ->
+    it "selects the previous match when the 'find-and-replace:find-previous' event is triggered and correctly focuses the editor", ->
+      expect(findView).toHaveFocus()
       editorView.trigger('find-and-replace:find-previous')
       expect(findView.resultCounter.text()).toEqual('1 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[1, 27], [1, 22]]
+      expect(editorView).toHaveFocus()
 
     it "will re-run search if 'find-and-replace:find-previous' is triggered after changing the findEditor's text", ->
       findView.findEditor.setText 'sort'

@@ -118,8 +118,8 @@ class FindView extends View
     @findEditor.getEditor().on 'contents-modified', => @liveSearch()
     @nextButton.on 'click', => @findNext()
     @previousButton.on 'click', => @findPrevious()
-    atom.workspaceView.command 'find-and-replace:find-next', @findNext
-    atom.workspaceView.command 'find-and-replace:find-previous', @findPrevious
+    atom.workspaceView.command 'find-and-replace:find-next', => @findNext(true)
+    atom.workspaceView.command 'find-and-replace:find-previous', => @findPrevious(true)
     atom.workspaceView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
 
   handleReplaceEvents: ->
@@ -169,13 +169,13 @@ class FindView extends View
     pattern = @findEditor.getText()
     @updateModel { pattern }
 
-  findNext: =>
-    @findAndSelectResult(@selectFirstMarkerAfterCursor)
+  findNext: (focusEditorAfter=false) =>
+    @findAndSelectResult(@selectFirstMarkerAfterCursor, focusEditorAfter)
 
-  findPrevious: (focusEditorAfter = true) =>
-    @findAndSelectResult(@selectFirstMarkerBeforeCursor)
+  findPrevious: (focusEditorAfter=false) =>
+    @findAndSelectResult(@selectFirstMarkerBeforeCursor, focusEditorAfter)
 
-  findAndSelectResult: (selectFunction) =>
+  findAndSelectResult: (selectFunction, focusEditorAfter) =>
     pattern = @findEditor.getText()
     @updateModel { pattern }
 
@@ -183,6 +183,7 @@ class FindView extends View
       atom.beep()
     else
       selectFunction()
+      atom.workspaceView.focus() if focusEditorAfter
 
   replaceNext: =>
     @replace('findNext', 'firstMarkerIndexAfterCursor')
