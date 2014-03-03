@@ -52,12 +52,17 @@ module.exports =
       @findView?.detach()
       @projectFindView?.detach()
 
-    atom.workspaceView.eachEditorView (editorView) ->
+    atom.workspaceView.eachEditorView (editorView) =>
       selectNext = new SelectNext(editorView.editor)
-      editorView.command 'find-and-replace:select-next', ->
+      editorView.command 'find-and-replace:select-next', =>
         selectNext.findAndSelectNext()
+        @createFindView().setSelectionAsFindPattern()
       editorView.command 'find-and-replace:select-all', ->
         selectNext.findAndSelectAll()
+
+    atom.workspaceView.on 'mousedown.find-and-replace', '.editor .line', (event) =>
+      if event.originalEvent?.detail is 2
+        @createFindView().setSelectionAsFindPattern()
 
   createProjectFindView: ->
     @resultsModel ?= new ResultsModel(@resultsModelState)
@@ -95,6 +100,7 @@ module.exports =
     atom.workspaceView.off 'find-and-replace:show'
     atom.workspaceView.off 'find-and-replace:use-selection-as-find-pattern'
     atom.workspaceView.off 'project-find:show-in-current-directory'
+    atom.workspaceView.off '.find-and-replace'
 
   serialize: ->
     viewState: @findView?.serialize() ? @viewState
