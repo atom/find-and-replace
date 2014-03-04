@@ -57,18 +57,16 @@ describe 'ProjectFindView', ->
         projectFindView.findEditor.setText('')
         editor = atom.workspaceView.openSync('sample.js')
 
-      it "populates the findEditor with selection when there is a selection", ->
+      it "preserves the findEditor's last value when there is a selection", ->
         editor.setSelectedBufferRange([[2, 8], [2, 13]])
         atom.workspaceView.trigger 'project-find:show'
         expect(atom.workspaceView.find('.project-find')).toExist()
         expect(projectFindView.findEditor.getText()).toBe('items')
 
-        projectFindView.findEditor.setText('')
-
         editor.setSelectedBufferRange([[2, 14], [2, 20]])
         atom.workspaceView.trigger 'project-find:show'
         expect(atom.workspaceView.find('.project-find')).toExist()
-        expect(projectFindView.findEditor.getText()).toBe('length')
+        expect(projectFindView.findEditor.getText()).toBe('items')
 
     describe "when thethe ProjectFindView is already attached", ->
       beforeEach ->

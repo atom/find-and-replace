@@ -29,7 +29,7 @@ describe 'FindView', ->
       runs ->
         expect(atom.workspaceView.find('.find-and-replace')).toExist()
 
-    it "populates the findEditor with selection when there is a selection", ->
+    it "preserves the findEditor's last value when there is a selection", ->
       editor.setSelectedBufferRange([[2, 8], [2, 13]])
       editorView.trigger 'find-and-replace:show'
 
@@ -37,15 +37,14 @@ describe 'FindView', ->
         activationPromise
 
       runs ->
+        findView.findEditor.setText('items')
         expect(atom.workspaceView.find('.find-and-replace')).toExist()
         expect(findView.findEditor.getText()).toBe('items')
-
-        findView.findEditor.setText('')
 
         editor.setSelectedBufferRange([[2, 14], [2, 20]])
         editorView.trigger 'find-and-replace:show'
         expect(atom.workspaceView.find('.find-and-replace')).toExist()
-        expect(findView.findEditor.getText()).toBe('length')
+        expect(findView.findEditor.getText()).toBe('items')
 
   describe "when FindView's replace editor is visible", ->
     it "keeps the replace editor visible when find-and-replace:show is triggered", ->
