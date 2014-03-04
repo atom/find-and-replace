@@ -150,6 +150,7 @@ describe 'FindView', ->
 
   describe "finding", ->
     beforeEach ->
+      atom.config.set('find-and-replace.focusEditorAfterSearch', false)
       editor.setCursorBufferPosition([2,0])
       editorView.trigger 'find-and-replace:show'
 
@@ -174,6 +175,16 @@ describe 'FindView', ->
         findView.findEditor.setText('\\\\t')
         findView.findEditor.trigger 'core:confirm'
         expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 2]]
+
+    describe "when focusEditorAfterSearch is set", ->
+      beforeEach ->
+        atom.config.set('find-and-replace.focusEditorAfterSearch', true)
+        findView.findEditor.trigger 'core:confirm'
+
+      it "selects the first match following the cursor and correctly focuses the editor", ->
+        expect(findView.resultCounter.text()).toEqual('3 of 6')
+        expect(editor.getSelectedBufferRange()).toEqual [[2, 34], [2, 39]]
+        expect(editorView).toHaveFocus()
 
     it "doesn't change the selection, beeps if there are no matches and keeps focus on the find view", ->
       editor.setCursorBufferPosition([2,0])
