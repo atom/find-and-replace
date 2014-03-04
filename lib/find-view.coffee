@@ -166,6 +166,7 @@ class FindView extends View
 
   confirm: ->
     @findNext(atom.config.get('find-and-replace.focusEditorAfterSearch'))
+    @findHistory.store()
 
   liveSearch: ->
     pattern = @findEditor.getText()
@@ -196,6 +197,7 @@ class FindView extends View
   replace: (nextOrPreviousFn, nextIndexFn) ->
     pattern = @findEditor.getText()
     @updateModel { pattern }
+    @replaceHistory.store()
 
     if @markers.length == 0
       atom.beep()
@@ -208,6 +210,7 @@ class FindView extends View
       @[nextOrPreviousFn](false)
 
   replaceAll: =>
+    @replaceHistory.store()
     @updateModel {pattern: @findEditor.getText()}
     @findModel.replace(@markers, @replaceEditor.getText())
 
@@ -218,8 +221,6 @@ class FindView extends View
     @findResultsView.attach() if @isVisible()
     if @findModel.pattern isnt @findEditor.getText()
       @findEditor.setText(@findModel.pattern)
-    @findHistory.store()
-    @replaceHistory.store()
 
   updateModel: (options) ->
     @clearMessages()

@@ -727,3 +727,26 @@ describe 'FindView', ->
 
         findView.findEditor.trigger 'core:move-up'
         expect(findView.findEditor.getText()).toEqual 'three'
+
+      describe "when user types in the find editor", ->
+        advance = ->
+          advanceClock(findView.findEditor.getEditor().getBuffer().stoppedChangingDelay + 1)
+
+        beforeEach ->
+          findView.findEditor.focus()
+
+        it "does not add live searches to the history", ->
+          expect(findView.descriptionLabel.text()).toContain "1 result"
+
+          findView.findEditor.setText 'FIXME: necessary first search for some reason'
+          advance()
+
+          findView.findEditor.setText 'nope'
+          advance()
+          expect(findView.descriptionLabel.text()).toContain 'nope'
+          findView.findEditor.setText 'zero'
+          advance()
+          expect(findView.descriptionLabel.text()).toContain "zero"
+
+          findView.findEditor.trigger 'core:move-up'
+          expect(findView.findEditor.getText()).toEqual 'three'
