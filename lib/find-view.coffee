@@ -163,7 +163,7 @@ class FindView extends View
       @findEditor.focus()
 
   confirm: ->
-    @findNext()
+    @findNext(atom.config.get('find-and-replace.focusEditorAfterSearch'))
 
   liveSearch: ->
     pattern = @findEditor.getText()

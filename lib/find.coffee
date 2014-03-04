@@ -9,6 +9,7 @@ ResultsPaneView = require './project/results-pane'
 
 module.exports =
   configDefaults:
+    focusEditorAfterSearch: false
     openProjectFindResultsInRightPane: false
 
   activate: ({@viewState, @projectViewState, @resultsModelState}={}) ->
