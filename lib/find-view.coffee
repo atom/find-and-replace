@@ -132,7 +132,9 @@ class FindView extends View
 
   showFind: =>
     editor = atom.workspaceView.getActivePaneItem()
-    @findEditor.setText(editor.getSelectedText()) if editor?.getSelectedText?
+    selectedText = editor?.getSelectedText?()
+    if selectedText and selectedText.indexOf('\n') < 0
+      @findEditor.setText(editor.getSelectedText()) if editor?.getSelectedText?()
 
     @attach() if not @hasParent()
     @findEditor.focus()

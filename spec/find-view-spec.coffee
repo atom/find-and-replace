@@ -47,6 +47,29 @@ describe 'FindView', ->
         expect(atom.workspaceView.find('.find-and-replace')).toExist()
         expect(findView.findEditor.getText()).toBe('length')
 
+    it "does not change the findEditor text when there is no selection", ->
+      editor.setSelectedBufferRange([[2, 8], [2, 8]])
+      editorView.trigger 'find-and-replace:show'
+
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        findView.findEditor.setText 'kitten'
+        editorView.trigger 'find-and-replace:show'
+        expect(findView.findEditor.getText()).toBe('kitten')
+
+    it "does not change the findEditor text when there is a multiline selection", ->
+      editor.setSelectedBufferRange([[2, 8], [3, 12]])
+      editorView.trigger 'find-and-replace:show'
+
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        expect(atom.workspaceView.find('.find-and-replace')).toExist()
+        expect(findView.findEditor.getText()).toBe('')
+
   describe "when FindView's replace editor is visible", ->
     it "keeps the replace editor visible when find-and-replace:show is triggered", ->
       editorView.trigger 'find-and-replace:show-replace'
