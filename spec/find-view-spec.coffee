@@ -262,6 +262,16 @@ describe 'FindView', ->
       expect(findView.resultCounter.text()).toEqual('3 of 5')
       expect(editor.getSelectedBufferRange()).toEqual [[8, 11], [8, 15]]
 
+    it "'find-and-replace:find-next' adds to the findEditor's history", ->
+      findView.findEditor.setText 'sort'
+      findView.findEditor.trigger 'find-and-replace:find-next'
+
+      expect(findView.resultCounter.text()).toEqual('3 of 5')
+
+      findView.findEditor.setText 'nope'
+      findView.findEditor.trigger 'core:move-up'
+      expect(findView.findEditor.getText()).toEqual 'sort'
+
     it "selects the previous match when the previous match button is pressed", ->
       findView.previousButton.click()
       expect(findView.resultCounter.text()).toEqual('1 of 6')
