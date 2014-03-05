@@ -197,6 +197,7 @@ class FindView extends View
   replace: (nextOrPreviousFn, nextIndexFn) ->
     pattern = @findEditor.getText()
     @updateModel { pattern }
+    @findHistory.store()
     @replaceHistory.store()
 
     if @markers.length == 0
@@ -210,8 +211,9 @@ class FindView extends View
       @[nextOrPreviousFn](false)
 
   replaceAll: =>
-    @replaceHistory.store()
     @updateModel {pattern: @findEditor.getText()}
+    @replaceHistory.store()
+    @findHistory.store()
     @findModel.replace(@markers, @replaceEditor.getText())
 
   markersUpdated: (@markers) =>
