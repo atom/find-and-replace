@@ -116,8 +116,8 @@ class FindView extends View
 
   handleFindEvents: ->
     @findEditor.getEditor().on 'contents-modified', => @liveSearch()
-    @nextButton.on 'click', => @findNext()
-    @previousButton.on 'click', => @findPrevious()
+    @nextButton.on 'click', => @findNext(true)
+    @previousButton.on 'click', => @findPrevious(true)
     atom.workspaceView.command 'find-and-replace:find-next', => @findNext(true)
     atom.workspaceView.command 'find-and-replace:find-previous', => @findPrevious(true)
     atom.workspaceView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
