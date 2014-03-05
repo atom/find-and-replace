@@ -116,8 +116,8 @@ class FindView extends View
 
   handleFindEvents: ->
     @findEditor.getEditor().on 'contents-modified', => @liveSearch()
-    @nextButton.on 'click', => @findNext()
-    @previousButton.on 'click', => @findPrevious()
+    @nextButton.on 'click', => @findNext(true)
+    @previousButton.on 'click', => @findPrevious(true)
     atom.workspaceView.command 'find-and-replace:find-next', => @findNext(true)
     atom.workspaceView.command 'find-and-replace:find-previous', => @findPrevious(true)
     atom.workspaceView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
@@ -180,6 +180,7 @@ class FindView extends View
   findAndSelectResult: (selectFunction, focusEditorAfter) =>
     pattern = @findEditor.getText()
     @updateModel { pattern }
+    @findHistory.store()
 
     if @markers.length == 0
       atom.beep()
@@ -196,6 +197,8 @@ class FindView extends View
   replace: (nextOrPreviousFn, nextIndexFn) ->
     pattern = @findEditor.getText()
     @updateModel { pattern }
+    @findHistory.store()
+    @replaceHistory.store()
 
     if @markers.length == 0
       atom.beep()
@@ -209,6 +212,8 @@ class FindView extends View
 
   replaceAll: =>
     @updateModel {pattern: @findEditor.getText()}
+    @replaceHistory.store()
+    @findHistory.store()
     @findModel.replace(@markers, @replaceEditor.getText())
 
   markersUpdated: (@markers) =>
@@ -218,8 +223,6 @@ class FindView extends View
     @findResultsView.attach() if @isVisible()
     if @findModel.pattern isnt @findEditor.getText()
       @findEditor.setText(@findModel.pattern)
-    @findHistory.store()
-    @replaceHistory.store()
 
   updateModel: (options) ->
     @clearMessages()

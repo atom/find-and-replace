@@ -116,7 +116,11 @@ describe 'FindView', ->
 
         findView.findEditor.setText("sort")
         findView.replaceEditor.setText("dog")
-        findView.replaceAll()
+        findView.replaceNext()
+
+        findView.findEditor.setText("shift")
+        findView.replaceEditor.setText("ok")
+        findView.findNext(false)
 
         atom.packages.deactivatePackage("find-and-replace")
 
@@ -131,10 +135,16 @@ describe 'FindView', ->
 
       runs ->
         findView.findEditor.trigger('core:move-up')
+        expect(findView.findEditor.getText()).toBe 'shift'
+        findView.findEditor.trigger('core:move-up')
         expect(findView.findEditor.getText()).toBe 'sort'
+        findView.findEditor.trigger('core:move-up')
+        expect(findView.findEditor.getText()).toBe 'items'
 
         findView.replaceEditor.trigger('core:move-up')
         expect(findView.replaceEditor.getText()).toBe 'dog'
+        findView.replaceEditor.trigger('core:move-up')
+        expect(findView.replaceEditor.getText()).toBe 'cat'
 
     it "serializes find options ", ->
       editorView.trigger 'find-and-replace:show'
@@ -261,6 +271,16 @@ describe 'FindView', ->
 
       expect(findView.resultCounter.text()).toEqual('3 of 5')
       expect(editor.getSelectedBufferRange()).toEqual [[8, 11], [8, 15]]
+
+    it "'find-and-replace:find-next' adds to the findEditor's history", ->
+      findView.findEditor.setText 'sort'
+      findView.findEditor.trigger 'find-and-replace:find-next'
+
+      expect(findView.resultCounter.text()).toEqual('3 of 5')
+
+      findView.findEditor.setText 'nope'
+      findView.findEditor.trigger 'core:move-up'
+      expect(findView.findEditor.getText()).toEqual 'sort'
 
     it "selects the previous match when the previous match button is pressed", ->
       findView.previousButton.click()
@@ -727,3 +747,26 @@ describe 'FindView', ->
 
         findView.findEditor.trigger 'core:move-up'
         expect(findView.findEditor.getText()).toEqual 'three'
+
+      describe "when user types in the find editor", ->
+        advance = ->
+          advanceClock(findView.findEditor.getEditor().getBuffer().stoppedChangingDelay + 1)
+
+        beforeEach ->
+          findView.findEditor.focus()
+
+        it "does not add live searches to the history", ->
+          expect(findView.descriptionLabel.text()).toContain "1 result"
+
+          findView.findEditor.setText 'FIXME: necessary first search for some reason'
+          advance()
+
+          findView.findEditor.setText 'nope'
+          advance()
+          expect(findView.descriptionLabel.text()).toContain 'nope'
+          findView.findEditor.setText 'zero'
+          advance()
+          expect(findView.descriptionLabel.text()).toContain "zero"
+
+          findView.findEditor.trigger 'core:move-up'
+          expect(findView.findEditor.getText()).toEqual 'three'
