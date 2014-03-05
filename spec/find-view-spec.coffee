@@ -116,7 +116,11 @@ describe 'FindView', ->
 
         findView.findEditor.setText("sort")
         findView.replaceEditor.setText("dog")
-        findView.replaceAll()
+        findView.replaceNext()
+
+        findView.findEditor.setText("shift")
+        findView.replaceEditor.setText("ok")
+        findView.findNext(false)
 
         atom.packages.deactivatePackage("find-and-replace")
 
@@ -131,10 +135,16 @@ describe 'FindView', ->
 
       runs ->
         findView.findEditor.trigger('core:move-up')
+        expect(findView.findEditor.getText()).toBe 'shift'
+        findView.findEditor.trigger('core:move-up')
         expect(findView.findEditor.getText()).toBe 'sort'
+        findView.findEditor.trigger('core:move-up')
+        expect(findView.findEditor.getText()).toBe 'items'
 
         findView.replaceEditor.trigger('core:move-up')
         expect(findView.replaceEditor.getText()).toBe 'dog'
+        findView.replaceEditor.trigger('core:move-up')
+        expect(findView.replaceEditor.getText()).toBe 'cat'
 
     it "serializes find options ", ->
       editorView.trigger 'find-and-replace:show'
