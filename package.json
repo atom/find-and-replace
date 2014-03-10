@@ -24,7 +24,7 @@
   "dependencies": {
     "emissary": "1.x",
     "fs-plus": "2.x",
-    "q": "0.9.7",
+    "q": "^1.0.0",
     "temp": "0.6.0",
     "underscore-plus": "1.x"
   }
