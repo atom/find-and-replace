@@ -517,7 +517,7 @@ describe 'FindView', ->
 
         findView.findEditor.setText ''
         advance()
-        expect(findView.descriptionLabel.text()).toContain "No results"
+        expect(findView.descriptionLabel.text()).toContain "Find in Current Buffer"
         expect(findView).toHaveFocus()
 
         findView.findEditor.setText 'sort'

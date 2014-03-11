@@ -115,7 +115,12 @@ class FindView extends View
     atom.workspaceView.on 'selection:changed', @setCurrentMarkerFromSelection
 
   handleFindEvents: ->
-    @findEditor.getEditor().on 'contents-modified', => @liveSearch()
+    @findEditor.getEditor().on 'contents-modified', =>
+      if @findEditor.getText().length > 1
+        @liveSearch()
+      else if @findEditor.getText().length == 0
+        @descriptionLabel.text('Find in Current Buffer')
+
     @nextButton.on 'click', => @findNext(true)
     @previousButton.on 'click', => @findPrevious(true)
     atom.workspaceView.command 'find-and-replace:find-next', => @findNext(true)
