@@ -116,10 +116,10 @@ class FindView extends View
 
   handleFindEvents: ->
     @findEditor.getEditor().on 'contents-modified', =>
-      if @findEditor.getText().length > 1
+      if @findEditor.getText().length isnt 1
         @liveSearch()
-      else if @findEditor.getText().length == 0
-        @descriptionLabel.text('Find in Current Buffer')
+      else
+        @updateDescription()
 
     @nextButton.on 'click', => @findNext(true)
     @previousButton.on 'click', => @findPrevious(true)
@@ -241,7 +241,7 @@ class FindView extends View
       index = @markers.indexOf(@currentResultMarker)
       text = "#{ index + 1} of #{@markers.length}"
     else
-      if not @markers? or @markers.length == 0
+      if not @markers? or @markers.length == 0 or @findEditor.getText().length == 1
         text = "no results"
       else if @markers.length == 1
         text = "1 found"
@@ -251,9 +251,14 @@ class FindView extends View
     @resultCounter.text text
 
   updateDescription: ->
-    results = @markers.length
-    resultsStr = if results then _.pluralize(results, 'result') else 'No results'
-    @descriptionLabel.text("#{resultsStr} found for '#{@findModel.pattern}'")
+    if @findEditor.getText().length > 1
+      results = @markers.length
+      resultsStr = if results then _.pluralize(results, 'result') else 'No results'
+      text = "#{resultsStr} found for '#{@findModel.pattern}'"
+    else
+      text = 'Find in Current Buffer'
+
+    @descriptionLabel.text text
 
   selectFirstMarkerAfterCursor: =>
     markerIndex = @firstMarkerIndexAfterCursor()
