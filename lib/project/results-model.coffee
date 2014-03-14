@@ -183,6 +183,7 @@ class ResultsModel
 
   onContentsModified: (editSession) =>
     return unless @active
+    return unless editSession.getPath()
 
     matches = []
     editSession.scan @regex, (match) ->

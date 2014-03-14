@@ -85,6 +85,28 @@ describe 'ResultsModel', ->
         expect(resultsModel.getPathCount()).toBe 0
         expect(resultsModel.getMatchCount()).toBe 0
 
+    it "ignores changes in untitled buffers", ->
+      resultAddedSpy = jasmine.createSpy()
+      resultRemovedSpy = jasmine.createSpy()
+
+      waitsForPromise ->
+        atom.workspaceView.open()
+
+      runs ->
+        resultsModel.on 'result-added', resultAddedSpy
+        resultsModel.on 'result-removed', resultRemovedSpy
+        searchPromise = resultsModel.search('items', ['*.js'], '')
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        editSession = atom.workspaceView.getActiveView().editor
+        editSession.setText('items\nitems')
+        spyOn(editSession, 'scan').andCallThrough()
+        editSession.buffer.emit('contents-modified')
+        expect(editSession.scan).not.toHaveBeenCalled()
+
   describe "cancelling a search", ->
     cancelledSpy = null
     beforeEach ->
