@@ -35,7 +35,7 @@ class SelectNext
         found = true
         stop()
     find [@editor.getSelection().getBufferRange().end, @editor.getEofBufferPosition()]
-    if !found
+    unless found
       find [[0,0], @editor.getSelection().getBufferRange().start]
 
   addSelection: (range) ->
