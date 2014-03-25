@@ -286,7 +286,7 @@ describe 'ProjectFindView', ->
           expect(resultsPaneView2.previewCount.html()).toEqual resultsPaneView1.previewCount.html()
 
     describe "serialization", ->
-      it "serializes if the case and regex options", ->
+      it "serializes if the case, regex and follow options", ->
         editorView.trigger 'project-find:show'
         expect(projectFindView.caseOptionButton).not.toHaveClass('selected')
         projectFindView.caseOptionButton.click()
@@ -295,6 +295,10 @@ describe 'ProjectFindView', ->
         expect(projectFindView.regexOptionButton).not.toHaveClass('selected')
         projectFindView.regexOptionButton.click()
         expect(projectFindView.regexOptionButton).toHaveClass('selected')
+
+        expect(projectFindView.followOptionButton).not.toHaveClass('selected')
+        projectFindView.followOptionButton.click()
+        expect(projectFindView.followOptionButton).toHaveClass('selected')
 
         atom.packages.deactivatePackage("find-and-replace")
 
@@ -310,6 +314,7 @@ describe 'ProjectFindView', ->
         runs ->
           expect(projectFindView.caseOptionButton).toHaveClass('selected')
           expect(projectFindView.regexOptionButton).toHaveClass('selected')
+          expect(projectFindView.followOptionButton).toHaveClass('selected')
 
     describe "regex", ->
       beforeEach ->
@@ -403,6 +408,39 @@ describe 'ProjectFindView', ->
         runs ->
           expect(projectFindView.caseOptionButton).toHaveClass('selected')
           expect(atom.project.scan.mostRecentCall.args[0]).toEqual /ITEMS/g
+
+    describe "follow symbolic link", ->
+      beforeEach ->
+        editorView.trigger 'project-find:show'
+        spyOn(atom.project, 'scan').andCallFake -> Q()
+        projectFindView.findEditor.setText('find in symbolic')
+        projectFindView.trigger 'core:confirm'
+        waitsForPromise -> searchPromise
+
+      it "runs a follow symbolic link search off by default", ->
+        expect(atom.project.scan.argsForCall[0][1]['follow']).toBeFalsy()
+
+      it "toggles follow symbolic link option via an event and finds files with following symbolic link", ->
+        expect(projectFindView.followOptionButton).not.toHaveClass('selected')
+        projectFindView.trigger 'project-find:toggle-follow-option'
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          expect(projectFindView.followOptionButton).toHaveClass('selected')
+          expect(atom.project.scan.mostRecentCall.args[1]['follow']).toBeTruthy()
+
+      it "toggles follow symbolic link option via a button and finds files with following symbolic link", ->
+        expect(projectFindView.followOptionButton).not.toHaveClass('selected')
+        projectFindView.followOptionButton.click()
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          expect(projectFindView.followOptionButton).toHaveClass('selected')
+          expect(atom.project.scan.mostRecentCall.args[1]['follow']).toBeTruthy()
 
     describe "when core:confirm is triggered", ->
       beforeEach ->

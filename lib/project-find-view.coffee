@@ -30,6 +30,7 @@ class ProjectFindView extends View
         @div class: 'btn-group btn-toggle btn-group-options', =>
           @button outlet: 'regexOptionButton', class: 'btn option-regex', '.*'
           @button outlet: 'caseOptionButton', class: 'btn option-case-sensitive', 'Aa'
+          @button outlet: 'followOptionButton', class: 'btn option-follow-symbolic-link', '➦'
 
       @div class: 'replace-container block', =>
         @div class: 'editor-container', =>
@@ -51,6 +52,7 @@ class ProjectFindView extends View
 
     @regexOptionButton.addClass('selected') if @model.useRegex
     @caseOptionButton.addClass('selected') if @model.caseSensitive
+    @followOptionButton.addClass('selected') if @model.followSymbolicLink
 
     @clearMessages()
     @updateOptionsLabel()
@@ -59,12 +61,14 @@ class ProjectFindView extends View
     unless @tooltipsInitialized
       @regexOptionButton.setTooltip("Use Regex", command: 'project-find:toggle-regex-option', commandElement: @findEditor)
       @caseOptionButton.setTooltip("Match Case", command: 'project-find:toggle-case-option', commandElement: @findEditor)
+      @followOptionButton.setTooltip("Follow Symbolic Link", command: 'project-find:toggle-follow-option', commandElement: @findEditor)
       @replaceAllButton.setTooltip("Replace All", command: 'project-find:replace-all', commandElement: @replaceEditor)
       @tooltipsInitialized = true
 
   hideAllTooltips: ->
     @regexOptionButton.hideTooltip()
     @caseOptionButton.hideTooltip()
+    @followOptionButton.hideTooltip()
     @replaceAllButton.hideTooltip()
 
   serialize: ->
@@ -84,6 +88,9 @@ class ProjectFindView extends View
 
     @on 'project-find:toggle-case-option', => @toggleCaseOption()
     @caseOptionButton.click => @toggleCaseOption()
+
+    @on 'project-find:toggle-follow-option', => @toggleFollowOption()
+    @followOptionButton.click => @toggleFollowOption()
 
     @replaceAllButton.on 'click', => @replaceAll()
     @on 'project-find:replace-all', => @replaceAll()
@@ -138,6 +145,12 @@ class ProjectFindView extends View
   toggleCaseOption: ->
     @model.toggleCaseSensitive()
     if @model.caseSensitive then @caseOptionButton.addClass('selected') else @caseOptionButton.removeClass('selected')
+    @updateOptionsLabel()
+    @search(onlyRunIfActive: true)
+
+  toggleFollowOption: ->
+    @model.toggleFollowSymbolicLink()
+    if @model.followSymbolicLink then @followOptionButton.addClass('selected') else @followOptionButton.removeClass('selected')
     @updateOptionsLabel()
     @search(onlyRunIfActive: true)
 
@@ -233,6 +246,7 @@ class ProjectFindView extends View
       label.push('Case Sensitive')
     else
       label.push('Case Insensitive')
+    label.push('Follow Symbolic Link') if @model.followSymbolicLink
     @optionsLabel.text(label.join(', '))
 
   setSelectionAsFindPattern: =>
