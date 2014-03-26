@@ -564,7 +564,7 @@ describe 'FindView', ->
         findView.replaceEditor.trigger 'core:confirm'
         expect(editor.getText()).toMatch(/\t\n/)
 
-      it "carriage returns", ->
+      it "inserts carriage returns", ->
         textWithCarriageReturns = editor.getText().replace(/\n/g, "\r")
         editor.setText(textWithCarriageReturns)
 
