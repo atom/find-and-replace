@@ -3,7 +3,7 @@
   'cmd-f': 'find-and-replace:show'
   'cmd-alt-f': 'find-and-replace:show-replace'
 
-'.platform-win32':
+'.platform-win32, .platform-linux':
   'ctrl-F': 'project-find:show'
   'ctrl-f': 'find-and-replace:show'
   'ctrl-alt-f': 'find-and-replace:show-replace'
@@ -15,7 +15,7 @@
   'cmd-d': 'find-and-replace:select-next'
   'cmd-e': 'find-and-replace:use-selection-as-find-pattern'
 
-'.platform-win32 .editor':
+'.platform-win32 .editor, .platform-linux .editor':
   'ctrl-g': 'find-and-replace:find-next'
   'ctrl-G': 'find-and-replace:find-previous'
 
@@ -27,7 +27,7 @@
   'cmd-alt-c': 'find-and-replace:toggle-case-option'
   'cmd-alt-s': 'find-and-replace:toggle-selection-option'
 
-'.platform-win32 .find-and-replace':
+'.platform-win32 .find-and-replace, .platform-linux .find-and-replace':
   'ctrl-enter': 'find-and-replace:replace-all'
   'ctrl-alt-/': 'find-and-replace:toggle-regex-option'
   'ctrl-alt-c': 'find-and-replace:toggle-case-option'
@@ -38,7 +38,7 @@
   'cmd-alt-c': 'project-find:toggle-case-option'
   'cmd-enter': 'project-find:replace-all'
 
-'.platform-win32 .project-find':
+'.platform-win32 .project-find, .platform-linux .project-find':
   'ctrl-alt-/': 'project-find:toggle-regex-option'
   'ctrl-alt-c': 'project-find:toggle-case-option'
   'ctrl-enter': 'project-find:replace-all'
