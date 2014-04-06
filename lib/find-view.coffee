@@ -130,7 +130,10 @@ class FindView extends View
     atom.workspaceView.command 'find-and-replace:replace-next', @replaceNext
     atom.workspaceView.command 'find-and-replace:replace-all', @replaceAll
 
-  showFind: =>
+  showFind: (incremental=0)=>
+
+    @incremental = incremental
+
     editor = atom.workspaceView.getActivePaneItem()
     selectedText = editor?.getSelectedText?()
     if selectedText and selectedText.indexOf('\n') < 0
@@ -170,6 +173,10 @@ class FindView extends View
   liveSearch: ->
     pattern = @findEditor.getText()
     @updateModel { pattern }
+    if @incremental > 0
+      @findAndSelectResult(@selectFirstMarkerAfterCursor, false)
+    else if @incremental < 0
+      @findAndSelectResult(@selectFirstMarkerBeforeCursor, false)
 
   findNext: (focusEditorAfter=false) =>
     @findAndSelectResult(@selectFirstMarkerAfterCursor, focusEditorAfter)
