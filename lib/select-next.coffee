@@ -24,20 +24,25 @@ class SelectNext
 
   selectAllOccurrences: ->
     range = [[0, 0], @editor.getEofBufferPosition()]
-    @scanForNextOcurrence range, ({range, stop}) =>
+    @scanForNextOccurrence range, ({range, stop}) =>
       @addSelection(range)
 
   selectNextOccurrence: ->
-    range = [@editor.getSelection().getBufferRange().end, @editor.getEofBufferPosition()]
-    @scanForNextOcurrence range, ({range, stop}) =>
-      @addSelection(range)
-      stop()
+    found = false
+    find = (range) =>
+      @scanForNextOccurrence range, ({range, stop}) =>
+        @addSelection(range)
+        found = true
+        stop()
+    find [@editor.getSelection().getBufferRange().end, @editor.getEofBufferPosition()]
+    unless found
+      find [[0,0], @editor.getSelection().getBufferRange().start]
 
   addSelection: (range) ->
     selection = @editor.addSelectionForBufferRange(range)
     selection.once 'destroyed', => @wordSelected = null
 
-  scanForNextOcurrence: (range, callback) ->
+  scanForNextOccurrence: (range, callback) ->
     selection = @editor.getSelection()
     text = _.escapeRegExp(selection.getText())
 
