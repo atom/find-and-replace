@@ -34,7 +34,7 @@ class SelectNext
 
   findNextOccurrence: (scanRange) ->
     foundRange = null
-    @scanForNextOccurrence scanRange, ({range, stop}) =>
+    @scanForNextOccurrence scanRange, ({range, stop}) ->
       foundRange = range
       stop()
     foundRange
