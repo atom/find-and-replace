@@ -28,15 +28,16 @@ class SelectNext
       @addSelection(range)
 
   selectNextOccurrence: ->
-    found = false
-    find = (range) =>
-      @scanForNextOccurrence range, ({range, stop}) =>
-        @addSelection(range)
-        found = true
-        stop()
-    find [@editor.getSelection().getBufferRange().end, @editor.getEofBufferPosition()]
-    unless found
-      find [[0,0], @editor.getSelection().getBufferRange().start]
+    range = @findNextOccurrence([@editor.getSelection().getBufferRange().end, @editor.getEofBufferPosition()])
+    range ?= @findNextOccurrence([[0,0], @editor.getSelection(0).getBufferRange().start])
+    @addSelection(range) if range?
+
+  findNextOccurrence: (scanRange) ->
+    foundRange = null
+    @scanForNextOccurrence scanRange, ({range, stop}) =>
+      foundRange = range
+      stop()
+    foundRange
 
   addSelection: (range) ->
     selection = @editor.addSelectionForBufferRange(range)
