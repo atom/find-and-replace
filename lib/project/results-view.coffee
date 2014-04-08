@@ -26,11 +26,11 @@ class ResultsView extends ScrollView
       @find('.selected').view()?.confirm?()
       false
 
-    @on 'mousedown', '.match-result, .path', (e) =>
+    @on 'mousedown', '.match-result, .path', ({target, which, ctrlKey}) =>
       @find('.selected').removeClass('selected')
-      view = $(e.target).view()
+      view = $(target).view()
       view.addClass('selected')
-      view.confirm()
+      view.confirm() if which is 1 and not ctrlKey
 
     @subscribe @model, 'result-added', @addResult
     @subscribe @model, 'result-removed', @removeResult
