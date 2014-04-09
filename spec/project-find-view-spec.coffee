@@ -375,6 +375,40 @@ describe 'ProjectFindView', ->
           expect(atom.project.scan).not.toHaveBeenCalled()
           expect(projectFindView.model.clear).toHaveBeenCalled()
 
+      it "reruns the search when confirmed again after focusing the window", ->
+        projectFindView.findEditor.setText('thisdoesnotmatch')
+        projectFindView.trigger 'core:confirm'
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          spyOn(atom.project, 'scan')
+          projectFindView.trigger 'core:confirm'
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          expect(atom.project.scan).not.toHaveBeenCalled()
+          atom.project.scan.reset()
+          $(window).triggerHandler 'focus'
+          projectFindView.trigger 'core:confirm'
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          expect(atom.project.scan).toHaveBeenCalled()
+          atom.project.scan.reset()
+          projectFindView.trigger 'core:confirm'
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          expect(atom.project.scan).not.toHaveBeenCalled()
+
       describe "when results exist", ->
         beforeEach ->
           projectFindView.findEditor.setText('items')

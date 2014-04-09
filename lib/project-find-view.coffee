@@ -47,6 +47,7 @@ class ProjectFindView extends View
     @findHistory = new History(@findEditor, findHistory)
     @replaceHistory = new History(@replaceEditor, replaceHistory)
     @pathsHistory = new History(@pathsEditor, pathsHistory)
+    @onlyRunIfChanged = true
 
     @regexOptionButton.addClass('selected') if @model.useRegex
     @caseOptionButton.addClass('selected') if @model.caseSensitive
@@ -90,6 +91,8 @@ class ProjectFindView extends View
     @subscribe @model, 'cleared', => @clearMessages()
     @subscribe @model, 'replacement-state-cleared', (results) => @generateResultsMessage(results)
     @subscribe @model, 'finished-searching', (results) => @generateResultsMessage(results)
+
+    @subscribe $(window), 'focus', => @onlyRunIfChanged = false
 
     atom.workspaceView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
 
@@ -158,7 +161,9 @@ class ProjectFindView extends View
     @replaceHistory.store()
     @pathsHistory.store()
 
-    @search(onlyRunIfChanged: true)
+    searchPromise = @search({@onlyRunIfChanged})
+    @onlyRunIfChanged = true
+    searchPromise
 
   search: ({onlyRunIfActive, onlyRunIfChanged}={}) ->
     return Q() if onlyRunIfActive and not @model.active
