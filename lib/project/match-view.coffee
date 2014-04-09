@@ -14,7 +14,7 @@ class MatchView extends View
 
     @li class: 'search-result list-item', =>
       @span range.start.row + 1, class: 'line-number text-subtle'
-      @span class: 'preview', =>
+      @span class: 'preview', outlet: 'preview', =>
         @span prefix
         @span match.matchText, class: 'match highlight-info', outlet: 'matchText'
         @span match.matchText, class: 'replacement highlight-success', outlet: 'replacementText'
@@ -23,6 +23,9 @@ class MatchView extends View
   initialize: (@model, {@filePath, @match}) ->
     @render()
     @subscribe @model, 'replacement-pattern-changed', @render
+
+    if fontFamily = atom.config.get('editor.fontFamily')
+      @preview.css('font-family', fontFamily)
 
   render: =>
     if @model.replacementPattern and @model.regex and not @model.replacedPathCount?
