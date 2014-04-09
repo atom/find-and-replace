@@ -223,15 +223,23 @@ describe 'FindView', ->
         editor.setText("\t\n\\t")
         editor.setCursorBufferPosition([0,0])
 
-      it "finds the escape char", ->
-        findView.findEditor.setText('\\t')
-        findView.findEditor.trigger 'core:confirm'
-        expect(editor.getSelectedBufferRange()).toEqual [[0, 0], [0, 1]]
+      describe "when regex seach is enabled", ->
+        it "finds a backslash", ->
+          findView.findEditor.trigger 'find-and-replace:toggle-regex-option'
+          findView.findEditor.setText('\\\\')
+          findView.findEditor.trigger 'core:confirm'
+          expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 1]]
 
-      it "doesn't insert a escaped char if there are multiple backslashs in front of the char", ->
-        findView.findEditor.setText('\\\\t')
-        findView.findEditor.trigger 'core:confirm'
-        expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 2]]
+      describe "when regex seach is disabled", ->
+        it "finds the escape char", ->
+          findView.findEditor.setText('\\t')
+          findView.findEditor.trigger 'core:confirm'
+          expect(editor.getSelectedBufferRange()).toEqual [[0, 0], [0, 1]]
+
+        it "doesn't insert a escaped char if there are multiple backslashs in front of the char", ->
+          findView.findEditor.setText('\\\\t')
+          findView.findEditor.trigger 'core:confirm'
+          expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 2]]
 
     describe "when focusEditorAfterSearch is set", ->
       beforeEach ->

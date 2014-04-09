@@ -8,6 +8,6 @@ module.exports =
       else if char == 'r'
         '\r'
       else if char == '\\'
-        '\\'
+        '\\\\'
       else
         match
