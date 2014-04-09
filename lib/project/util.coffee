@@ -20,4 +20,4 @@ module.exports =
     if matchCount
       "#{_.pluralize(matchCount, 'result')} found in #{_.pluralize(pathCount, 'file')} for <span class=\"highlight-info\">#{@sanitizePattern(pattern)}</span>"
     else
-      "No #{if replacedPathCount? then 'more' else ''} results found for '#{pattern}'"
+      "No #{if replacedPathCount? then 'more' else ''} results found for '#{@sanitizePattern(pattern)}'"
