@@ -154,31 +154,47 @@ describe 'ProjectFindView', ->
         atom.project.setPath(projectPath)
         atom.workspaceView.trigger 'project-find:show'
 
-      it "finds the escape char", ->
-        projectFindView.findEditor.setText('\\t')
-        projectFindView.trigger 'core:confirm'
+      describe "when regex seach is enabled", ->
+        it "finds a backslash", ->
+          projectFindView.trigger 'project-find:toggle-regex-option'
+          projectFindView.findEditor.setText('\\\\')
+          projectFindView.trigger 'core:confirm'
 
-        waitsForPromise ->
-          searchPromise
+          waitsForPromise ->
+            searchPromise
 
-        runs ->
-          resultsPaneView = getExistingResultsPane()
-          resultsView = resultsPaneView.resultsView
-          expect(resultsView).toBeVisible()
-          expect(resultsView.find("li > ul > li")).toHaveLength(2)
+          runs ->
+            resultsPaneView = getExistingResultsPane()
+            resultsView = resultsPaneView.resultsView
+            expect(resultsView).toBeVisible()
+            expect(resultsView.find("li > ul > li")).toHaveLength(3)
 
-      it "doesn't insert a escaped char if there are multiple backslashs in front of the char", ->
-        projectFindView.findEditor.setText('\\\\t')
-        projectFindView.trigger 'core:confirm'
+      describe "when regex seach is disabled", ->
+        it "finds the escape char", ->
+          projectFindView.findEditor.setText('\\t')
+          projectFindView.trigger 'core:confirm'
 
-        waitsForPromise ->
-          searchPromise
+          waitsForPromise ->
+            searchPromise
 
-        runs ->
-          resultsPaneView = getExistingResultsPane()
-          resultsView = resultsPaneView.resultsView
-          expect(resultsView).toBeVisible()
-          expect(resultsView.find("li > ul > li")).toHaveLength(1)
+          runs ->
+            resultsPaneView = getExistingResultsPane()
+            resultsView = resultsPaneView.resultsView
+            expect(resultsView).toBeVisible()
+            expect(resultsView.find("li > ul > li")).toHaveLength(2)
+
+        it "doesn't insert a escaped char if there are multiple backslashs in front of the char", ->
+          projectFindView.findEditor.setText('\\\\t')
+          projectFindView.trigger 'core:confirm'
+
+          waitsForPromise ->
+            searchPromise
+
+          runs ->
+            resultsPaneView = getExistingResultsPane()
+            resultsView = resultsPaneView.resultsView
+            expect(resultsView).toBeVisible()
+            expect(resultsView.find("li > ul > li")).toHaveLength(1)
 
     describe "when core:cancel is triggered", ->
       beforeEach ->
