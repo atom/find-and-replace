@@ -14,12 +14,15 @@
   'cmd-ctrl-g': 'find-and-replace:select-all'
   'cmd-d': 'find-and-replace:select-next'
   'cmd-e': 'find-and-replace:use-selection-as-find-pattern'
+  'cmd-i': 'incremental-find:forward'
+  'cmd-I': 'incremental-find:reverse'
 
 '.platform-win32 .editor, .platform-linux .editor':
   'ctrl-g': 'find-and-replace:find-next'
   'ctrl-G': 'find-and-replace:find-previous'
-
   'ctrl-e': 'find-and-replace:use-selection-as-find-pattern'
+  'ctrl-i': 'incremental-find:forward'
+  'ctrl-I': 'incremental-find:reverse'
 
 '.platform-darwin .find-and-replace':
   'cmd-enter': 'find-and-replace:replace-all'

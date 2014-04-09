@@ -15,7 +15,9 @@
     "find-and-replace:replace-next",
     "find-and-replace:replace-all",
     "find-and-replace:select-next",
-    "find-and-replace:select-all"
+    "find-and-replace:select-all",
+    "incremental-find:forward",
+    "incremental-find:reverse"
   ],
   "repository": "https://github.com/atom/find-and-replace",
   "engines": {

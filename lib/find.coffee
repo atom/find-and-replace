@@ -39,6 +39,16 @@ module.exports =
       @projectFindView?.detach()
       @findView.showFind()
 
+    atom.workspaceView.command 'incremental-find:forward', =>
+      @createFindView()
+      @projectFindView?.detach()
+      @findView.showFind(incremental=1)
+
+    atom.workspaceView.command 'incremental-find:reverse', =>
+      @createFindView()
+      @projectFindView?.detach()
+      @findView.showFind(incremental=-1)
+
     atom.workspaceView.command 'find-and-replace:show-replace', =>
       @createFindView()
       @projectFindView?.detach()
