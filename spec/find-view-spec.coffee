@@ -1,5 +1,5 @@
 _ = require 'underscore-plus'
-{$, WorkspaceView} = require 'atom'
+{$, EditorView, WorkspaceView} = require 'atom'
 
 path = require 'path'
 
@@ -81,7 +81,7 @@ describe 'FindView', ->
         editorView.trigger 'find-and-replace:show'
         expect(findView.replaceEditor).toBeVisible()
 
-  describe "when core:cancel is triggered", ->
+  describe "core:cancel", ->
     beforeEach ->
       editorView.trigger 'find-and-replace:show'
       waitsForPromise ->
@@ -92,15 +92,39 @@ describe 'FindView', ->
         findView.findEditor.trigger 'core:confirm'
         findView.focus()
 
-    it "detaches from the root view", ->
-      $(document.activeElement).trigger 'core:cancel'
-      expect(atom.workspaceView.find('.find-and-replace')).not.toExist()
+    describe "when core:cancel is triggered on the find view", ->
+      it "detaches from the workspace view", ->
+        $(document.activeElement).trigger 'core:cancel'
+        expect(atom.workspaceView.find('.find-and-replace')).not.toExist()
 
-    it "removes highlighted matches", ->
-      findResultsView = editorView.find('.search-results')
+      it "removes highlighted matches", ->
+        findResultsView = editorView.find('.search-results')
 
-      $(document.activeElement).trigger 'core:cancel'
-      expect(findResultsView.parent()).not.toExist()
+        $(document.activeElement).trigger 'core:cancel'
+        expect(findResultsView.parent()).not.toExist()
+
+    describe "when core:cancel is triggered on an empty pane", ->
+      it "detaches from the workspace view", ->
+        atom.workspaceView.getActivePaneView().focus()
+        $(atom.workspaceView.getActivePaneView()).trigger 'core:cancel'
+        expect(atom.workspaceView.find('.find-and-replace')).not.toExist()
+
+    describe "when core:cancel is triggered on an editor", ->
+      it "detaches from the workspace view", ->
+        waitsForPromise ->
+          atom.workspace.open()
+
+        runs ->
+          $(atom.workspaceView.getActiveView().hiddenInput).trigger 'core:cancel'
+          expect(atom.workspaceView.find('.find-and-replace')).not.toExist()
+
+    describe "when core:cancel is triggered on a mini editor", ->
+      it "leaves the find view attached", ->
+        editorView = new EditorView(mini: true)
+        atom.workspaceView.appendToTop(editorView)
+        editorView.focus()
+        $(editorView.hiddenInput).trigger 'core:cancel'
+        expect(atom.workspaceView.find('.find-and-replace')).toExist()
 
   describe "serialization", ->
     it "serializes find and replace history", ->

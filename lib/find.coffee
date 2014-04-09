@@ -45,10 +45,10 @@ module.exports =
       @findView.showReplace()
 
     # in code editors
-    atom.workspaceView.on 'core:cancel core:close', (event) =>
-      target = $(event.target)
-      editor = target.parents('.editor:not(.mini)')
-      return unless editor.length
+    atom.workspaceView.on 'core:cancel core:close', ({target}) =>
+      if target isnt atom.workspaceView.getActivePaneView()?[0]
+        editor = $(target).parents('.editor:not(.mini)')
+        return unless editor.length
 
       @findView?.detach()
       @projectFindView?.detach()
