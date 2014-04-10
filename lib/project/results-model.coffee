@@ -174,7 +174,7 @@ class ResultsModel
     flags = 'g'
     flags += 'i' unless @caseSensitive
 
-    pattern = escapeHelper.unescapeEscapeSequence(pattern, {unescapeBackslash: !@useRegex})
+    pattern = escapeHelper.unescapeEscapeSequence(pattern, {ignoreEscapedBackslash: @useRegex})
 
     if @useRegex
       new RegExp(pattern, flags)
