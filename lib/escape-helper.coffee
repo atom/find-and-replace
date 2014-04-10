@@ -1,5 +1,5 @@
 module.exports =
-  unescapeEscapeSequence: (string) ->
+  unescapeEscapeSequence: (string,  {unescapeBackslash}={}) ->
     string.replace /\\(.)/gm, (match, char) ->
       if char == 't'
         '\t'
@@ -8,6 +8,9 @@ module.exports =
       else if char == 'r'
         '\r'
       else if char == '\\'
-        '\\\\'
+        if unescapeBackslash
+          '\\'
+        else
+          '\\\\'
       else
         match
