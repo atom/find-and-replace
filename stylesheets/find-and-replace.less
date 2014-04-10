@@ -185,5 +185,19 @@
       word-break: break-all;
       font-family: monospace;
     }
+
+    .selected {
+      .highlight-info {
+        box-shadow: inset 0 0 1px lighten(@background-color-info, 50%);
+      }
+
+      .highlight-error {
+        box-shadow: inset 0 0 1px lighten(@background-color-error, 25%);
+      }
+
+      .highlight-success {
+        box-shadow: inset 0 0 1px lighten(@background-color-success, 25%);
+      }
+    }
   }
 }
