@@ -15,7 +15,7 @@ class ResultView extends View
         @span class: iconClass + ' icon'
         @span class: 'path-name bright', filePath.replace(atom.project.getPath()+path.sep, '')
         @span outlet: 'description', class: 'path-match-number'
-      @ul outlet: 'matches', class: 'matches list-tree', =>
+      @ul outlet: 'matches', class: 'matches list-tree'
 
   initialize: (@model, @filePath, result) ->
     @renderResult(result)
