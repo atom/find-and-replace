@@ -236,6 +236,11 @@ describe 'FindView', ->
           findView.findEditor.trigger 'core:confirm'
           expect(editor.getSelectedBufferRange()).toEqual [[0, 0], [0, 1]]
 
+        it "finds a backslash", ->
+          findView.findEditor.setText('\\')
+          findView.findEditor.trigger 'core:confirm'
+          expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 1]]
+
         it "doesn't insert a escaped char if there are multiple backslashs in front of the char", ->
           findView.findEditor.setText('\\\\t')
           findView.findEditor.trigger 'core:confirm'

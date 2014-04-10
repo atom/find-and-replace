@@ -183,6 +183,19 @@ describe 'ProjectFindView', ->
             expect(resultsView).toBeVisible()
             expect(resultsView.find("li > ul > li")).toHaveLength(2)
 
+        it "finds a backslash", ->
+          projectFindView.findEditor.setText('\\')
+          projectFindView.trigger 'core:confirm'
+
+          waitsForPromise ->
+            searchPromise
+
+          runs ->
+            resultsPaneView = getExistingResultsPane()
+            resultsView = resultsPaneView.resultsView
+            expect(resultsView).toBeVisible()
+            expect(resultsView.find("li > ul > li")).toHaveLength(3)
+
         it "doesn't insert a escaped char if there are multiple backslashs in front of the char", ->
           projectFindView.findEditor.setText('\\\\t')
           projectFindView.trigger 'core:confirm'
