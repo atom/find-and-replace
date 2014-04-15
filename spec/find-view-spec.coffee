@@ -406,7 +406,7 @@ describe 'FindView', ->
           atom.workspace.registerOpener(anotherOpener)
 
         afterEach ->
-          atom.project.unregisterOpener(anotherOpener)
+          atom.workspace.unregisterOpener(anotherOpener)
 
         it "updates the result view", ->
           atom.workspaceView.openSync "another"
