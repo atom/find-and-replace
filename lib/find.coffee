@@ -13,7 +13,7 @@ module.exports =
     openProjectFindResultsInRightPane: false
 
   activate: ({@viewState, @projectViewState, @resultsModelState}={}) ->
-    atom.project.registerOpener (filePath) =>
+    atom.workspace.registerOpener (filePath) =>
       new ResultsPaneView() if filePath is ResultsPaneView.URI
 
     atom.workspaceView.command 'project-find:show', =>

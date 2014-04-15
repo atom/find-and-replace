@@ -403,7 +403,7 @@ describe 'FindView', ->
 
         beforeEach ->
           anotherOpener = (pathToOpen, options) -> $('another')
-          atom.project.registerOpener(anotherOpener)
+          atom.workspace.registerOpener(anotherOpener)
 
         afterEach ->
           atom.project.unregisterOpener(anotherOpener)
