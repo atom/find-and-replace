@@ -368,7 +368,7 @@ describe 'FindView', ->
       describe "when a new edit session is activated", ->
         it "reruns the search on the new edit session", ->
           atom.workspaceView.openSync('sample.coffee')
-          editor = atom.workspaceView.getActivePaneItem()
+          editor = atom.workspace.getActivePaneItem()
           expect(findView.resultCounter.text()).toEqual('7 found')
           expect(editor.getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
 

@@ -236,7 +236,7 @@ class ProjectFindView extends View
     @optionsLabel.text(label.join(', '))
 
   setSelectionAsFindPattern: =>
-    editor = atom.workspaceView.getActivePaneItem()
+    editor = atom.workspace.getActivePaneItem()
     if editor?.getSelectedText?
       pattern = editor.getSelectedText()
       @findEditor.setText(pattern)

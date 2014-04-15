@@ -191,7 +191,7 @@ describe 'ResultsView', ->
         openHandler.callCount == 1
 
       runs ->
-        expect(atom.workspaceView.getActivePaneItem().getPath()).toContain('sample.')
+        expect(atom.workspace.getActivePaneItem().getPath()).toContain('sample.')
 
         # open something in sample.js
         resultsView.focus()
@@ -204,7 +204,7 @@ describe 'ResultsView', ->
 
       runs ->
         activePane = atom.workspaceView.getActivePane()
-        expect(atom.workspaceView.getActivePaneItem().getPath()).toContain('sample.')
+        expect(atom.workspace.getActivePaneItem().getPath()).toContain('sample.')
 
     it "arrows through the list without selecting paths", ->
       atom.workspaceView.openSync('sample.js')

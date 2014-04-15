@@ -20,7 +20,7 @@ class FindModel
   activePaneItemChanged: ->
     @editSession?.getBuffer().off(".find")
     @editSession = null
-    paneItem = atom.workspaceView.getActivePaneItem()
+    paneItem = atom.workspace.getActivePaneItem()
     @destroyAllMarkers()
 
     if paneItem?.getBuffer?()?
