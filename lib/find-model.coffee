@@ -101,9 +101,9 @@ class FindModel
   createMarker: (range) ->
     markerAttributes =
       class: @constructor.markerClass
-      invalidation: 'inside'
+      invalidate: 'inside'
       replicate: false
-      persist: false
+      persistent: false
       isCurrent: false
     @editSession.markBufferRange(range, markerAttributes)
 
