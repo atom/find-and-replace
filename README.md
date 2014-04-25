@@ -1,4 +1,4 @@
-# Find and Replace package
+# Find and Replace package [![Build Status](https://travis-ci.org/atom/find-and-replace.svg?branch=master)](https://travis-ci.org/atom/find-and-replace)
 
 Find and replace in the current buffer or across the entire project in Atom.
 
