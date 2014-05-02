@@ -42,6 +42,9 @@ class ResultsPaneView extends ScrollView
   getTitle: ->
     "Project Find Results"
 
+  getIconName: ->
+    "search"
+
   getUri: ->
     @constructor.URI
 
