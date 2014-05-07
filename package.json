@@ -6,6 +6,7 @@
   "license": "MIT",
   "activationEvents": [
     "project-find:show",
+    "project-find:toggle",
     "project-find:show-in-current-directory",
     "find-and-replace:show",
     "find-and-replace:toggle",

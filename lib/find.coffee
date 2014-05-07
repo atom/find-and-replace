@@ -21,6 +21,15 @@ module.exports =
       @findView?.detach()
       @projectFindView.attach()
 
+    atom.workspaceView.command 'project-find:toggle', =>
+      @createProjectFindView()
+      @findView?.detach()
+
+      if @projectFindView.hasParent()
+        @projectFindView.detach()
+      else
+        @projectFindView.attach()
+
     atom.workspaceView.command 'project-find:show-in-current-directory', (e) =>
       @createProjectFindView()
       @findView?.detach()
