@@ -71,7 +71,7 @@ describe 'FindView', ->
         expect(findView.findEditor.getText()).toBe('')
 
   describe "when find-and-replace:toggle is triggered", ->
-    fit "toggles the visibility of the FindView", ->
+    it "toggles the visibility of the FindView", ->
       atom.workspaceView.trigger 'find-and-replace:toggle'
 
       waitsForPromise ->

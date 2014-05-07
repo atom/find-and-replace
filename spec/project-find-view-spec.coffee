@@ -80,7 +80,7 @@ describe 'ProjectFindView', ->
         expect(projectFindView.findEditor.getEditor().getSelectedText()).toBe "items"
 
   describe "when project-find:toggle is triggered", ->
-    fit "toggles the visibility of the ProjectFindView", ->
+    it "toggles the visibility of the ProjectFindView", ->
       atom.workspaceView.trigger 'project-find:toggle'
 
       waitsForPromise ->
