@@ -79,6 +79,18 @@ describe 'ProjectFindView', ->
         expect(projectFindView.findEditor).toHaveFocus()
         expect(projectFindView.findEditor.getEditor().getSelectedText()).toBe "items"
 
+  describe "when project-find:toggle is triggered", ->
+    it "toggles the visibility of the ProjectFindView", ->
+      atom.workspaceView.trigger 'project-find:toggle'
+
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        expect(atom.workspaceView.find('.project-find')).toExist()
+        atom.workspaceView.trigger 'project-find:toggle'
+        expect(atom.workspaceView.find('.project-find')).not.toExist()
+
   describe "when project-find:show-in-current-directory is triggered", ->
     [nested, tree] = []
 

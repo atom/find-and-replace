@@ -70,6 +70,18 @@ describe 'FindView', ->
         expect(atom.workspaceView.find('.find-and-replace')).toExist()
         expect(findView.findEditor.getText()).toBe('')
 
+  describe "when find-and-replace:toggle is triggered", ->
+    it "toggles the visibility of the FindView", ->
+      atom.workspaceView.trigger 'find-and-replace:toggle'
+
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        expect(atom.workspaceView.find('.find-and-replace')).toExist()
+        atom.workspaceView.trigger 'find-and-replace:toggle'
+        expect(atom.workspaceView.find('.find-and-replace')).not.toExist()
+
   describe "when FindView's replace editor is visible", ->
     it "keeps the replace editor visible when find-and-replace:show is triggered", ->
       editorView.trigger 'find-and-replace:show-replace'

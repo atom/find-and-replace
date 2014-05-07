@@ -21,6 +21,15 @@ module.exports =
       @findView?.detach()
       @projectFindView.attach()
 
+    atom.workspaceView.command 'project-find:toggle', =>
+      @createProjectFindView()
+      @findView?.detach()
+
+      if @projectFindView.hasParent()
+        @projectFindView.detach()
+      else
+        @projectFindView.attach()
+
     atom.workspaceView.command 'project-find:show-in-current-directory', (e) =>
       @createProjectFindView()
       @findView?.detach()
@@ -33,6 +42,15 @@ module.exports =
       @createFindView()
       @projectFindView?.detach()
       @findView.showFind()
+
+    atom.workspaceView.command 'find-and-replace:toggle', =>
+      @createFindView()
+      @projectFindView?.detach()
+
+      if @findView.hasParent()
+        @findView.detach()
+      else
+        @findView.showFind()
 
     atom.workspaceView.command 'find-and-replace:show', =>
       @createFindView()
