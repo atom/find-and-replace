@@ -24,8 +24,7 @@
 '.platform-linux .editor':
   'f3': 'find-and-replace:find-next'
   'shift-f3': 'find-and-replace:find-previous'
-
-  'ctrl-e': 'find-and-replace:use-selection-as-find-pattern'
+  'ctrl-f3': 'find-and-replace:use-selection-as-find-pattern'
 
 '.platform-darwin .find-and-replace':
   'cmd-enter': 'find-and-replace:replace-all'
