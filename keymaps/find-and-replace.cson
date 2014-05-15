@@ -18,7 +18,7 @@
 '.platform-win32 .editor':
   'ctrl-g': 'find-and-replace:find-next'
   'ctrl-G': 'find-and-replace:find-previous'
-
+  'ctrl-d': 'find-and-replace:select-next'
   'ctrl-e': 'find-and-replace:use-selection-as-find-pattern'
 
 '.platform-linux .editor':
