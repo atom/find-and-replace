@@ -185,7 +185,10 @@ class FindView extends View
       atom.beep()
     else
       selectFunction()
-      atom.workspaceView.focus() if focusEditorAfter
+      if focusEditorAfter
+        atom.workspaceView.focus()
+      else
+        @findEditor.focus()
 
   replaceNext: =>
     @replace('findNext', 'firstMarkerIndexAfterCursor')
