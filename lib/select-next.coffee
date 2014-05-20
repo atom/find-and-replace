@@ -79,7 +79,8 @@ class SelectNext
         @isNonWordCharacterToTheLeft(selection)
       nonWordCharacterToTheRight = _.isEqual(selectionRange.end, lineRange.end) or
         @isNonWordCharacterToTheRight(selection)
+      containsOnlyWordCharacters = not @isNonWordCharacter(selection.getText())
 
-      nonWordCharacterToTheLeft and nonWordCharacterToTheRight
+      nonWordCharacterToTheLeft and nonWordCharacterToTheRight and containsOnlyWordCharacters
     else
       false
