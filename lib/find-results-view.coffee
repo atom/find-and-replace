@@ -23,7 +23,7 @@ class FindResultsView extends View
 
   getEditor: ->
     activeView = atom.workspaceView.getActiveView()
-    if activeView instanceof EditorView then activeView else null
+    if activeView?.hasClass('editor') then activeView else null
 
   markersUpdated: (markers) ->
     editor = @getEditor()
