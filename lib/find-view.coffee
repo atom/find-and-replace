@@ -15,8 +15,6 @@ class FindView extends View
           @span 'Finding with Options: '
           @span outlet: 'optionsLabel', class: 'options'
 
-      @ul outlet: 'errorMessages', class: 'error-messages block'
-
       @div class: 'find-container block', =>
         @div class: 'editor-container', =>
           @subview 'findEditor', new EditorView(mini: true, placeholderText: 'Find in current buffer')
