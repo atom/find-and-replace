@@ -280,18 +280,49 @@ describe 'FindView', ->
 
       expect(findView.descriptionLabel.text()).toEqual "No results found for 'notinthefilebro'"
 
-    it "properly handles the info message when there are no results", ->
-      findView.findEditor.setText 'item'
-      findView.findEditor.trigger 'core:confirm'
-      expect(findView.descriptionLabel.text()).toEqual "6 results found for 'item'"
+    describe "updating the descriptionLabel", ->
+      it "properly updates the info message", ->
+        findView.findEditor.setText 'item'
+        findView.findEditor.trigger 'core:confirm'
+        expect(findView.descriptionLabel.text()).toEqual "6 results found for 'item'"
 
-      findView.findEditor.setText 'notinthefilenope'
-      findView.findEditor.trigger 'core:confirm'
-      expect(findView.descriptionLabel.text()).toEqual "No results found for 'notinthefilenope'"
+        findView.findEditor.setText 'notinthefilenope'
+        findView.findEditor.trigger 'core:confirm'
+        expect(findView.descriptionLabel.text()).toEqual "No results found for 'notinthefilenope'"
 
-      findView.findEditor.setText 'item'
-      findView.findEditor.trigger 'core:confirm'
-      expect(findView.descriptionLabel.text()).toEqual "6 results found for 'item'"
+        findView.findEditor.setText 'item'
+        findView.findEditor.trigger 'core:confirm'
+        expect(findView.descriptionLabel.text()).toEqual "6 results found for 'item'"
+
+        findView.findEditor.setText ''
+        findView.findEditor.trigger 'core:confirm'
+        expect(findView.descriptionLabel.text()).toEqual "Find in Current Buffer"
+
+      describe "when there is a find-error", ->
+        beforeEach ->
+          editor.setCursorBufferPosition([2,0])
+          findView.findEditor.trigger 'find-and-replace:toggle-regex-option'
+
+        it "displays the error", ->
+          findView.findEditor.setText 'i[t'
+          findView.findEditor.trigger 'core:confirm'
+          expect(findView.descriptionLabel).toHaveClass 'text-error'
+          expect(findView.descriptionLabel.text()).toContain 'Invalid regular expression'
+
+        it "will be reset when there is no longer an error", ->
+          findView.findEditor.setText 'i[t'
+          findView.findEditor.trigger 'core:confirm'
+          expect(findView.descriptionLabel).toHaveClass 'text-error'
+
+          findView.findEditor.setText ''
+          findView.findEditor.trigger 'core:confirm'
+          expect(findView.descriptionLabel).not.toHaveClass 'text-error'
+          expect(findView.descriptionLabel.text()).toEqual "Find in Current Buffer"
+
+          findView.findEditor.setText 'item'
+          findView.findEditor.trigger 'core:confirm'
+          expect(findView.descriptionLabel).not.toHaveClass 'text-error'
+          expect(findView.descriptionLabel.text()).toContain "6 results"
 
     it "selects the first match following the cursor", ->
       expect(findView.resultCounter.text()).toEqual('2 of 6')
@@ -512,7 +543,7 @@ describe 'FindView', ->
           findView.findEditor.trigger 'find-and-replace:toggle-regex-option'
           findView.findEditor.setText 'i[t'
           findView.findEditor.trigger 'core:confirm'
-          expect(findView.errorMessages.children()).toHaveLength 1
+          expect(findView.descriptionLabel).toHaveClass 'text-error'
 
     describe "when case sensitivity is toggled", ->
       beforeEach ->
@@ -566,7 +597,7 @@ describe 'FindView', ->
 
         findView.findEditor.setText ''
         advance()
-        expect(findView.descriptionLabel.text()).toContain "No results"
+        expect(findView.descriptionLabel.text()).toContain "Find in Current Buffer"
         expect(findView).toHaveFocus()
 
         findView.findEditor.setText 'sort'
@@ -815,7 +846,10 @@ describe 'FindView', ->
         it "does not add live searches to the history", ->
           expect(findView.descriptionLabel.text()).toContain "1 result"
 
-          findView.findEditor.setText 'FIXME: necessary first search for some reason'
+          # I really do not understand why these are necessary...
+          findView.findEditor.setText 'FIXME: necessary first search for some reason??'
+          advance()
+          findView.findEditor.setText 'FIXME: necessary second search for some reason??'
           advance()
 
           findView.findEditor.setText 'nope'
