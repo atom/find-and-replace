@@ -2,7 +2,7 @@
   "name": "find-and-replace",
   "main": "./lib/find",
   "description": "Find and replace within buffers and across the project.",
-  "version": "0.108.0",
+  "version": "0.109.0",
   "license": "MIT",
   "activationEvents": [
     "project-find:show",
