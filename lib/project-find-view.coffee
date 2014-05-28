@@ -171,7 +171,7 @@ class ProjectFindView extends View
       try
         @model.search(@findEditor.getText(), @getPaths(), @replaceEditor.getText(), {onlyRunIfChanged})
       catch e
-        @setInfoMessage(null, e.message)
+        @setErrorMessage(e.message)
 
   replaceAll: ->
     @clearMessages()
@@ -216,11 +216,11 @@ class ProjectFindView extends View
     @setInfoMessage('Find in Project')
     @replacmentInfoBlock.hide()
 
-  setInfoMessage: (infoMessage, errorMessage) ->
-    if errorMessage
-      @descriptionLabel.html(errorMessage).addClass('text-error')
-    else
-      @descriptionLabel.html(infoMessage).removeClass('text-error')
+  setInfoMessage: (infoMessage) ->
+    @descriptionLabel.html(infoMessage).removeClass('text-error')
+
+  setErrorMessage: (errorMessage) ->
+    @descriptionLabel.html(errorMessage).addClass('text-error')
 
   updateOptionsLabel: ->
     label = []

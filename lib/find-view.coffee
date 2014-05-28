@@ -55,7 +55,7 @@ class FindView extends View
     else if showReplace
       @showReplace()
 
-    @clearDescription()
+    @clearMessage()
     @updateOptionsLabel()
 
   afterAttach: ->
@@ -222,16 +222,16 @@ class FindView extends View
     if @findModel.pattern
       results = @markers.length
       resultsStr = if results then _.pluralize(results, 'result') else 'No results'
-      @updateDescription("#{resultsStr} found for '#{@findModel.pattern}'")
+      @setInfoMessage("#{resultsStr} found for '#{@findModel.pattern}'")
     else
-      @clearDescription()
+      @clearMessage()
 
     @findResultsView.attach() if @isVisible()
     if @findModel.pattern isnt @findEditor.getText()
       @findEditor.setText(@findModel.pattern)
 
   findError: (error) =>
-    @updateDescription(null, error.message)
+    @setErrorMessage(error.message)
 
   updateModel: (options) ->
     @findModel.update(options)
@@ -250,14 +250,14 @@ class FindView extends View
 
     @resultCounter.text text
 
-  updateDescription: (infoMessage, errorMessage) ->
-    if errorMessage
-      @descriptionLabel.text(errorMessage).addClass('text-error')
-    else
-      @descriptionLabel.text(infoMessage).removeClass('text-error')
+  setInfoMessage: (infoMessage) ->
+    @descriptionLabel.text(infoMessage).removeClass('text-error')
 
-  clearDescription: ->
-    @updateDescription('Find in Current Buffer')
+  setErrorMessage: (errorMessage) ->
+    @descriptionLabel.text(errorMessage).addClass('text-error')
+
+  clearMessage: ->
+    @setInfoMessage('Find in Current Buffer')
 
   selectFirstMarkerAfterCursor: =>
     markerIndex = @firstMarkerIndexAfterCursor()
