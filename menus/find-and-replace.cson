@@ -5,8 +5,10 @@
     { 'label': 'Replace in Buffer', 'command': 'find-and-replace:show-replace'}
     { 'label': 'Select Next', 'command': 'find-and-replace:select-next'}
     { 'label': 'Select All', 'command': 'find-and-replace:select-all'}
+    { 'label': 'Toggle Find in Buffer', 'command': 'find-and-replace:toggle'}
     { 'type': 'separator' }
     { 'label': 'Find in Project', 'command': 'project-find:show'}
+    { 'label': 'Toggle Find in Project', 'command': 'project-find:toggle'}
     { 'type': 'separator' }
     { 'label': 'Find Next', 'command': 'find-and-replace:find-next'}
     { 'label': 'Find Previous', 'command': 'find-and-replace:find-previous'}
