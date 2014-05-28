@@ -313,7 +313,7 @@ describe 'FindView', ->
 
         findView.findEditor.setText ''
         findView.findEditor.trigger 'core:confirm'
-        expect(findView.descriptionLabel.text()).toEqual "Find in Current Buffer"
+        expect(findView.descriptionLabel.text()).toContain "Find in Current Buffer"
 
       describe "when there is a find-error", ->
         beforeEach ->
@@ -334,7 +334,7 @@ describe 'FindView', ->
           findView.findEditor.setText ''
           findView.findEditor.trigger 'core:confirm'
           expect(findView.descriptionLabel).not.toHaveClass 'text-error'
-          expect(findView.descriptionLabel.text()).toEqual "Find in Current Buffer"
+          expect(findView.descriptionLabel.text()).toContain "Find in Current Buffer"
 
           findView.findEditor.setText 'item'
           findView.findEditor.trigger 'core:confirm'

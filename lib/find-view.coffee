@@ -260,7 +260,7 @@ class FindView extends View
     @descriptionLabel.text(errorMessage).addClass('text-error')
 
   clearMessage: ->
-    @setInfoMessage('Find in Current Buffer')
+    @descriptionLabel.html('Find in Current Buffer <span class="subtle-info-message">Close this panel with the <span class="highlight">esc</span> key</span>').removeClass('text-error')
 
   selectFirstMarkerAfterCursor: =>
     markerIndex = @firstMarkerIndexAfterCursor()
