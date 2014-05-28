@@ -43,14 +43,13 @@ class FindModel
   replace: (markers, replacementPattern) ->
     return unless markers?.length > 0
 
-    replacementPattern = escapeHelper.unescapeEscapeSequence(replacementPattern)
-
     @replacing = true
     @editSession.transact =>
       for marker in markers
         bufferRange = marker.getBufferRange()
         replacementText = null
         if @useRegex
+          replacementPattern = escapeHelper.unescapeEscapeSequence(replacementPattern)
           textToReplace = @editSession.getTextInBufferRange(bufferRange)
           replacementText = textToReplace.replace(@getRegex(), replacementPattern)
         @editSession.setTextInBufferRange(bufferRange, replacementText ? replacementPattern)
@@ -120,9 +119,7 @@ class FindModel
     flags = 'g'
     flags += 'i' unless @caseSensitive
 
-    pattern = escapeHelper.unescapeEscapeSequence(@pattern, {ignoreEscapedBackslash: @useRegex})
-
     if @useRegex
-      new RegExp(pattern, flags)
+      new RegExp(@pattern, flags)
     else
-      new RegExp(_.escapeRegExp(pattern), flags)
+      new RegExp(_.escapeRegExp(@pattern), flags)

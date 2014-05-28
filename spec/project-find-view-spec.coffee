@@ -167,9 +167,9 @@ describe 'ProjectFindView', ->
         atom.workspaceView.trigger 'project-find:show'
 
       describe "when regex seach is enabled", ->
-        it "finds a backslash", ->
+        it "finds a literal tab character", ->
           projectFindView.trigger 'project-find:toggle-regex-option'
-          projectFindView.findEditor.setText('\\\\')
+          projectFindView.findEditor.setText('\\t')
           projectFindView.trigger 'core:confirm'
 
           waitsForPromise ->
@@ -179,7 +179,7 @@ describe 'ProjectFindView', ->
             resultsPaneView = getExistingResultsPane()
             resultsView = resultsPaneView.resultsView
             expect(resultsView).toBeVisible()
-            expect(resultsView.find("li > ul > li")).toHaveLength(3)
+            expect(resultsView.find("li > ul > li")).toHaveLength(2)
 
       describe "when regex seach is disabled", ->
         it "finds the escape char", ->
@@ -193,7 +193,7 @@ describe 'ProjectFindView', ->
             resultsPaneView = getExistingResultsPane()
             resultsView = resultsPaneView.resultsView
             expect(resultsView).toBeVisible()
-            expect(resultsView.find("li > ul > li")).toHaveLength(2)
+            expect(resultsView.find("li > ul > li")).toHaveLength(1)
 
         it "finds a backslash", ->
           projectFindView.findEditor.setText('\\')
@@ -674,29 +674,47 @@ describe 'ProjectFindView', ->
         atom.project.setPath(projectPath)
         atom.workspaceView.trigger 'project-find:show'
 
-      it "finds the escape char", ->
-        projectFindView.findEditor.setText('a')
-        projectFindView.replaceEditor.setText('\\t')
-        projectFindView.trigger 'project-find:replace-all'
+      describe "when the regex option is chosen", ->
+        beforeEach ->
+          projectFindView.trigger 'project-find:toggle-regex-option'
 
-        waitsForPromise ->
-          replacePromise
+        it "finds the escape char", ->
+          projectFindView.findEditor.setText('a')
+          projectFindView.replaceEditor.setText('\\t')
+          projectFindView.trigger 'project-find:replace-all'
 
-        runs ->
-          fileContent = fs.readFileSync(filePath, 'utf8')
-          expect(fileContent).toBe("\t\nb\n\t")
+          waitsForPromise ->
+            replacePromise
 
-      it "doesn't insert a escaped char if there are multiple backslashs in front of the char", ->
-        projectFindView.findEditor.setText('a')
-        projectFindView.replaceEditor.setText('\\\\t')
-        projectFindView.trigger 'project-find:replace-all'
+          runs ->
+            fileContent = fs.readFileSync(filePath, 'utf8')
+            expect(fileContent).toBe("\t\nb\n\t")
 
-        waitsForPromise ->
-          replacePromise
+        it "doesn't insert a escaped char if there are multiple backslashs in front of the char", ->
+          projectFindView.findEditor.setText('a')
+          projectFindView.replaceEditor.setText('\\\\t')
+          projectFindView.trigger 'project-find:replace-all'
 
-        runs ->
-          fileContent = fs.readFileSync(filePath, 'utf8')
-          expect(fileContent).toBe("\\t\nb\n\\t")
+          waitsForPromise ->
+            replacePromise
+
+          runs ->
+            fileContent = fs.readFileSync(filePath, 'utf8')
+            expect(fileContent).toBe("\\t\nb\n\\t")
+
+
+      describe "when regex option is not set", ->
+        it "finds the escape char", ->
+          projectFindView.findEditor.setText('a')
+          projectFindView.replaceEditor.setText('\\t')
+          projectFindView.trigger 'project-find:replace-all'
+
+          waitsForPromise ->
+            replacePromise
+
+          runs ->
+            fileContent = fs.readFileSync(filePath, 'utf8')
+            expect(fileContent).toBe("\\t\nb\n\\t")
 
     describe "when the replace button is pressed", ->
       it "runs the search, and replaces all the matches", ->

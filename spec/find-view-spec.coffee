@@ -232,31 +232,48 @@ describe 'FindView', ->
 
     describe "when the find string contains an escaped char", ->
       beforeEach ->
-        editor.setText("\t\n\\t")
+        editor.setText("\t\n\\t\\\\")
         editor.setCursorBufferPosition([0,0])
 
       describe "when regex seach is enabled", ->
-        it "finds a backslash", ->
+        beforeEach ->
           findView.findEditor.trigger 'find-and-replace:toggle-regex-option'
+
+        it "finds a backslash", ->
           findView.findEditor.setText('\\\\')
           findView.findEditor.trigger 'core:confirm'
           expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 1]]
 
-      describe "when regex seach is disabled", ->
-        it "finds the escape char", ->
+        it "finds a newline", ->
+          findView.findEditor.setText('\\n')
+          findView.findEditor.trigger 'core:confirm'
+          expect(editor.getSelectedBufferRange()).toEqual [[0, 1], [1, 0]]
+
+        it "finds a tab character", ->
           findView.findEditor.setText('\\t')
           findView.findEditor.trigger 'core:confirm'
           expect(editor.getSelectedBufferRange()).toEqual [[0, 0], [0, 1]]
+
+      describe "when regex seach is disabled", ->
+        it "finds the literal backslash t", ->
+          findView.findEditor.setText('\\t')
+          findView.findEditor.trigger 'core:confirm'
+          expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 2]]
 
         it "finds a backslash", ->
           findView.findEditor.setText('\\')
           findView.findEditor.trigger 'core:confirm'
           expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 1]]
 
-        it "doesn't insert a escaped char if there are multiple backslashs in front of the char", ->
+        it "finds two backslashes", ->
+          findView.findEditor.setText('\\\\')
+          findView.findEditor.trigger 'core:confirm'
+          expect(editor.getSelectedBufferRange()).toEqual [[1, 2], [1, 4]]
+
+        it "doesn't find when escaped", ->
           findView.findEditor.setText('\\\\t')
           findView.findEditor.trigger 'core:confirm'
-          expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 2]]
+          expect(editor.getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
 
     describe "when focusEditorAfterSearch is set", ->
       beforeEach ->
@@ -639,23 +656,33 @@ describe 'FindView', ->
         findView.replaceEditor.setText('cats')
 
     describe "when the replacement string contains an escaped char", ->
-      it "inserts tabs and newlines", ->
-        findView.replaceEditor.setText('\\t\\n')
-        findView.replaceEditor.trigger 'core:confirm'
-        expect(editor.getText()).toMatch(/\t\n/)
+      describe "when the regex option is chosen", ->
+        beforeEach ->
+          findView.findEditor.trigger 'find-and-replace:toggle-regex-option'
 
-      it "inserts carriage returns", ->
-        textWithCarriageReturns = editor.getText().replace(/\n/g, "\r")
-        editor.setText(textWithCarriageReturns)
+        it "inserts tabs and newlines", ->
+          findView.replaceEditor.setText('\\t\\n')
+          findView.replaceEditor.trigger 'core:confirm'
+          expect(editor.getText()).toMatch(/\t\n/)
 
-        findView.replaceEditor.setText('\\t\\r')
-        findView.replaceEditor.trigger 'core:confirm'
-        expect(editor.getText()).toMatch(/\t\r/)
+        it "doesn't insert a escaped char if there are multiple backslashs in front of the char", ->
+          findView.replaceEditor.setText('\\\\t\\\t')
+          findView.replaceEditor.trigger 'core:confirm'
+          expect(editor.getText()).toMatch(/\\t\\\t/)
 
-      it "doesn't insert a escaped char if there are multiple backslashs in front of the char", ->
-        findView.replaceEditor.setText('\\\\t\\\t')
-        findView.replaceEditor.trigger 'core:confirm'
-        expect(editor.getText()).toMatch(/\\t\\\t/)
+      describe "when in normal mode", ->
+        it "inserts backslach n and t", ->
+          findView.replaceEditor.setText('\\t\\n')
+          findView.replaceEditor.trigger 'core:confirm'
+          expect(editor.getText()).toMatch(/\\t\\n/)
+
+        it "inserts carriage returns", ->
+          textWithCarriageReturns = editor.getText().replace(/\n/g, "\r")
+          editor.setText(textWithCarriageReturns)
+
+          findView.replaceEditor.setText('\\t\\r')
+          findView.replaceEditor.trigger 'core:confirm'
+          expect(editor.getText()).toMatch(/\\t\\r/)
 
     describe "replace next", ->
       describe "when core:confirm is triggered", ->
