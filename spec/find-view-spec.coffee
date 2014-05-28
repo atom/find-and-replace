@@ -846,10 +846,8 @@ describe 'FindView', ->
         it "does not add live searches to the history", ->
           expect(findView.descriptionLabel.text()).toContain "1 result"
 
-          # I really do not understand why these are necessary...
-          findView.findEditor.setText 'FIXME: necessary first search for some reason??'
-          advance()
-          findView.findEditor.setText 'FIXME: necessary second search for some reason??'
+          # I really do not understand why this are necessary...
+          findView.findEditor.setText 'FIXME: necessary search for some reason??'
           advance()
 
           findView.findEditor.setText 'nope'

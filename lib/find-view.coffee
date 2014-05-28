@@ -234,7 +234,6 @@ class FindView extends View
     @updateDescription(null, error.message)
 
   updateModel: (options) ->
-    @clearDescription()
     @findModel.update(options)
 
   updateResultCounter: ->
