@@ -17,8 +17,6 @@ class ProjectFindView extends View
           @span 'Finding with Options: '
           @span outlet: 'optionsLabel', class: 'options'
 
-      @ul outlet: 'errorMessages', class: 'error-messages block'
-
       @div outlet: 'replacmentInfoBlock', class: 'block', =>
         @progress outlet: 'replacementProgress', class: 'inline-block'
         @span outlet: 'replacmentInfo', class: 'inline-block', 'Replaced 2 files of 10 files'
@@ -168,15 +166,15 @@ class ProjectFindView extends View
   search: ({onlyRunIfActive, onlyRunIfChanged}={}) ->
     return Q() if onlyRunIfActive and not @model.active
 
-    @errorMessages.empty()
+    @clearMessages()
     @showResultPane().then =>
       try
         @model.search(@findEditor.getText(), @getPaths(), @replaceEditor.getText(), {onlyRunIfChanged})
       catch e
-        @addErrorMessage(e.message)
+        @setErrorMessage(e.message)
 
   replaceAll: ->
-    @errorMessages.empty()
+    @clearMessages()
     @showResultPane().then =>
       pattern = @findEditor.getText()
       replacementPattern = @replaceEditor.getText()
@@ -215,16 +213,14 @@ class ProjectFindView extends View
     @setInfoMessage(message)
 
   clearMessages: ->
-    @descriptionLabel.text('Find in Project')
+    @setInfoMessage('Find in Project')
     @replacmentInfoBlock.hide()
-    @errorMessages.hide().empty()
 
-  addErrorMessage: (message) ->
-    @errorMessages.append($$$ -> @li message)
-    @errorMessages.show()
+  setInfoMessage: (infoMessage) ->
+    @descriptionLabel.html(infoMessage).removeClass('text-error')
 
-  setInfoMessage: (message) ->
-    @descriptionLabel.html(message)
+  setErrorMessage: (errorMessage) ->
+    @descriptionLabel.html(errorMessage).addClass('text-error')
 
   updateOptionsLabel: ->
     label = []

@@ -92,7 +92,7 @@ class FindModel
       @emit 'updated', _.clone(@markers)
     catch e
       @destroyAllMarkers()
-      throw e
+      @emit 'find-error', e
 
   findMarker: (range) ->
     attributes = { class: @constructor.markerClass, startPosition: range.start, endPosition: range.end }

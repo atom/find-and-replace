@@ -311,6 +311,39 @@ describe 'ProjectFindView', ->
           expect(projectFindView.caseOptionButton).toHaveClass('selected')
           expect(projectFindView.regexOptionButton).toHaveClass('selected')
 
+    describe "description label", ->
+      beforeEach ->
+        editorView.trigger 'project-find:show'
+        projectFindView.trigger 'project-find:toggle-regex-option'
+        spyOn(atom.project, 'scan').andCallFake -> Q()
+
+      it "shows an error when the pattern is invalid and clears when no error", ->
+        projectFindView.findEditor.setText('[')
+        projectFindView.trigger 'core:confirm'
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          expect(projectFindView.descriptionLabel).toHaveClass('text-error')
+          expect(projectFindView.descriptionLabel.text()).toContain('Invalid regular expression')
+
+          projectFindView.findEditor.setText('')
+          projectFindView.trigger 'core:confirm'
+
+          expect(projectFindView.descriptionLabel).not.toHaveClass('text-error')
+          expect(projectFindView.descriptionLabel.text()).toContain('Find in Project')
+
+          projectFindView.findEditor.setText('items')
+          projectFindView.trigger 'core:confirm'
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          expect(projectFindView.descriptionLabel).not.toHaveClass('text-error')
+          expect(projectFindView.descriptionLabel.text()).toContain('items')
+
     describe "regex", ->
       beforeEach ->
         editorView.trigger 'project-find:show'
@@ -335,7 +368,7 @@ describe 'ProjectFindView', ->
           searchPromise
 
         runs ->
-          expect(projectFindView.errorMessages).toBeVisible()
+          expect(projectFindView.descriptionLabel).toHaveClass('text-error')
 
       describe "when search has not been run yet", ->
         it "toggles regex option via an event but does not run the search", ->

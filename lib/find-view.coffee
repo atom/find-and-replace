@@ -15,8 +15,6 @@ class FindView extends View
           @span 'Finding with Options: '
           @span outlet: 'optionsLabel', class: 'options'
 
-      @ul outlet: 'errorMessages', class: 'error-messages block'
-
       @div class: 'find-container block', =>
         @div class: 'editor-container', =>
           @subview 'findEditor', new EditorView(mini: true, placeholderText: 'Find in current buffer')
@@ -57,7 +55,7 @@ class FindView extends View
     else if showReplace
       @showReplace()
 
-    @clearMessages()
+    @clearMessage()
     @updateOptionsLabel()
 
   afterAttach: ->
@@ -111,6 +109,7 @@ class FindView extends View
     @selectionOptionButton.on 'click', @toggleSelectionOption
 
     @subscribe @findModel, 'updated', @markersUpdated
+    @subscribe @findModel, 'find-error', @findError
 
     atom.workspaceView.on 'selection:changed', @setCurrentMarkerFromSelection
 
@@ -216,19 +215,26 @@ class FindView extends View
     @findModel.replace(@markers, @replaceEditor.getText())
 
   markersUpdated: (@markers) =>
+    @findError = null
     @setCurrentMarkerFromSelection()
     @updateOptionButtons()
-    @updateDescription()
+
+    if @findModel.pattern
+      results = @markers.length
+      resultsStr = if results then _.pluralize(results, 'result') else 'No results'
+      @setInfoMessage("#{resultsStr} found for '#{@findModel.pattern}'")
+    else
+      @clearMessage()
+
     @findResultsView.attach() if @isVisible()
     if @findModel.pattern isnt @findEditor.getText()
       @findEditor.setText(@findModel.pattern)
 
+  findError: (error) =>
+    @setErrorMessage(error.message)
+
   updateModel: (options) ->
-    @clearMessages()
-    try
-      @findModel.update(options)
-    catch e
-      @addErrorMessage(e.message)
+    @findModel.update(options)
 
   updateResultCounter: ->
     if @currentResultMarker
@@ -244,10 +250,14 @@ class FindView extends View
 
     @resultCounter.text text
 
-  updateDescription: ->
-    results = @markers.length
-    resultsStr = if results then _.pluralize(results, 'result') else 'No results'
-    @descriptionLabel.text("#{resultsStr} found for '#{@findModel.pattern}'")
+  setInfoMessage: (infoMessage) ->
+    @descriptionLabel.text(infoMessage).removeClass('text-error')
+
+  setErrorMessage: (errorMessage) ->
+    @descriptionLabel.text(errorMessage).addClass('text-error')
+
+  clearMessage: ->
+    @setInfoMessage('Find in Current Buffer')
 
   selectFirstMarkerAfterCursor: =>
     markerIndex = @firstMarkerIndexAfterCursor()
@@ -313,16 +323,6 @@ class FindView extends View
   setSelectionAsFindPattern: =>
     pattern = @findModel.getEditSession().getSelectedText()
     @updateModel {pattern}
-
-  clearMessages: ->
-    @errorMessages.hide().empty()
-
-  addErrorMessage: (message) ->
-    @errorMessages.append($$$ -> @li message)
-    @errorMessages.show()
-
-  hasErrors: ->
-    !!@errorMessages.children().length
 
   updateOptionsLabel: ->
     label = []
