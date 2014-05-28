@@ -24,6 +24,7 @@
 '.platform-linux .editor':
   'f3': 'find-and-replace:find-next'
   'shift-f3': 'find-and-replace:find-previous'
+  'ctrl-d': 'find-and-replace:select-next'
 
   'ctrl-e': 'find-and-replace:use-selection-as-find-pattern'
 
