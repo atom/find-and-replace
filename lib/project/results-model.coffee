@@ -85,7 +85,7 @@ class ResultsModel
     regex = @getRegex(pattern)
 
     @updateReplacementPattern(replacementPattern)
-    replacementPattern = escapeHelper.unescapeEscapeSequence(replacementPattern)
+    replacementPattern = escapeHelper.unescapeEscapeSequence(replacementPattern) if @useRegex
 
     @active = false # not active until the search after finish
     @replacedPathCount = 0
@@ -173,8 +173,6 @@ class ResultsModel
   getRegex: (pattern) ->
     flags = 'g'
     flags += 'i' unless @caseSensitive
-
-    pattern = escapeHelper.unescapeEscapeSequence(pattern, {ignoreEscapedBackslash: @useRegex})
 
     if @useRegex
       new RegExp(pattern, flags)
