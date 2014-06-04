@@ -114,7 +114,13 @@ class ProjectFindView extends View
 
   attach: ->
     atom.workspaceView.prependToBottom(this) unless @hasParent()
+
+    previousQuery = @findEditor.getText()
+
     @setSelectionAsFindPattern()
+
+    if not @findEditor.getText()
+      @findEditor.setText(previousQuery)
 
     @findEditor.focus()
     @findEditor.getEditor().selectAll()
@@ -233,5 +239,5 @@ class ProjectFindView extends View
   setSelectionAsFindPattern: =>
     editor = atom.workspace.getActivePaneItem()
     if editor?.getSelectedText?
-      pattern = editor.getSelectedText() or @findEditor.getText()
+      pattern = editor.getSelectedText()
       @findEditor.setText(pattern)
