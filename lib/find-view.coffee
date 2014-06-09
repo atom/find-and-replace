@@ -94,6 +94,8 @@ class FindView extends View
     @handleReplaceEvents()
 
     @findEditor.on 'core:confirm', => @confirm()
+    @findEditor.on 'find-and-replace:show-previous', => @showPrevious()
+
     @replaceEditor.on 'core:confirm', => @replaceNext()
 
     @on 'find-and-replace:focus-next', @toggleFocus
@@ -164,6 +166,9 @@ class FindView extends View
 
   confirm: ->
     @findNext(atom.config.get('find-and-replace.focusEditorAfterSearch'))
+
+  showPrevious: ->
+    @findPrevious(atom.config.get('find-and-replace.focusEditorAfterSearch'))
 
   liveSearch: ->
     pattern = @findEditor.getText()
