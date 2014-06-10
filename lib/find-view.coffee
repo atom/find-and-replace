@@ -6,7 +6,6 @@ History = require './history'
 
 module.exports =
 class FindView extends View
-
   @content: ->
     @div tabIndex: -1, class: 'find-and-replace tool-panel panel-bottom', =>
       @div class: 'block', =>
@@ -113,7 +112,12 @@ class FindView extends View
     @subscribe @findModel, 'updated', @markersUpdated
     @subscribe @findModel, 'find-error', @findError
 
+    # FIXME: remove when the old editor is out.
     atom.workspaceView.on 'selection:changed', @setCurrentMarkerFromSelection
+
+    # For the react editor
+    atom.workspace.eachEditor (editor) =>
+      @subscribe editor, 'selection-added selection-screen-range-changed', @setCurrentMarkerFromSelection
 
   handleFindEvents: ->
     @findEditor.getEditor().on 'contents-modified', => @liveSearch()
@@ -131,8 +135,10 @@ class FindView extends View
     atom.workspaceView.command 'find-and-replace:replace-next', @replaceNext
     atom.workspaceView.command 'find-and-replace:replace-all', @replaceAll
 
+  isAttached: -> @hasParent()
+
   showFind: =>
-    @attach() unless @hasParent()
+    @attach() unless @isAttached()
 
     selectedText = atom.workspace.getActiveEditor()?.getSelectedText?()
     if selectedText and selectedText.indexOf('\n') < 0
@@ -313,7 +319,7 @@ class FindView extends View
 
   setCurrentMarkerFromSelection: =>
     currentResultMarker = null
-    if @markers? and @markers.length and editSession = @findModel.getEditSession()
+    if @markers? and @markers.length and @isAttached() and editSession = @findModel.getEditSession()
       selectedBufferRange = editSession.getSelectedBufferRange()
       currentResultMarker = @findModel.findMarker(selectedBufferRange)
 
@@ -331,7 +337,6 @@ class FindView extends View
       # is the event I want, so emitting myself.
       @currentResultMarker.setAttributes(isCurrent: true)
       @currentResultMarker.emit('attributes-changed', {isCurrent: true})
-
 
     @updateResultCounter()
 

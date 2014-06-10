@@ -623,6 +623,18 @@ describe 'FindView', ->
         nextIndex = _.indexOf(findResultsView.children(), findResultsView.find('.current-result')[0])
         expect(nextIndex).toBe initialIndex
 
+      it "adds a class to the current match indicating it is the current match", ->
+        originalResult = findResultsView.find('.current-result')[0]
+        expect(originalResult).toBeDefined
+
+        editor.setSelectedBufferRange([[5, 16], [5, 20]])
+        expect(findResultsView.find('.current-result')[0]).not.toBeDefined()
+
+        editor.setSelectedBufferRange([[5, 16], [5, 21]])
+        newResult = findResultsView.find('.current-result')[0]
+        expect(newResult).toBeDefined()
+        expect(newResult).not.toBe originalResult
+
     describe "when user types in the find editor", ->
       advance = ->
         advanceClock(findView.findEditor.getEditor().getBuffer().stoppedChangingDelay + 1)
