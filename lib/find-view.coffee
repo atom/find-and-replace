@@ -181,7 +181,6 @@ class FindView extends View
     @findAndSelectResult(@selectFirstMarkerBeforeCursor, options)
 
   findAndSelectResult: (selectFunction, {focusEditorAfter, fieldToFocus}) =>
-
     pattern = @findEditor.getText()
     @updateModel { pattern }
     @findHistory.store()
@@ -310,24 +309,29 @@ class FindView extends View
 
     if marker = @markers[markerIndex]
       @findModel.getEditSession().setSelectedBufferRange(marker.getBufferRange(), autoscroll: true)
+      @setCurrentResultMarker(marker)
 
   setCurrentMarkerFromSelection: =>
+    currentResultMarker = null
+    if @markers? and @markers.length and editSession = @findModel.getEditSession()
+      selectedBufferRange = editSession.getSelectedBufferRange()
+      currentResultMarker = @findModel.findMarker(selectedBufferRange)
+
+    @setCurrentResultMarker(currentResultMarker)
+
+  setCurrentResultMarker: (marker) =>
     if @currentResultMarker
       # HACK/TODO: telepath does not emit an event when attributes change. This
       # is the event I want, so emitting myself.
       @currentResultMarker.setAttributes(isCurrent: false)
       @currentResultMarker.emit('attributes-changed', {isCurrent: false})
 
-    @currentResultMarker = null
-    if @markers? and @markers.length and editSession = @findModel.getEditSession()
-      selectedBufferRange = editSession.getSelectedBufferRange()
-      @currentResultMarker = @findModel.findMarker(selectedBufferRange)
+    if @currentResultMarker = marker
+      # HACK/TODO: telepath does not emit an event when attributes change. This
+      # is the event I want, so emitting myself.
+      @currentResultMarker.setAttributes(isCurrent: true)
+      @currentResultMarker.emit('attributes-changed', {isCurrent: true})
 
-      if @currentResultMarker
-        # HACK/TODO: telepath does not emit an event when attributes change. This
-        # is the event I want, so emitting myself.
-        @currentResultMarker.setAttributes(isCurrent: true)
-        @currentResultMarker.emit('attributes-changed', {isCurrent: true})
 
     @updateResultCounter()
 

@@ -608,6 +608,21 @@ describe 'FindView', ->
 
         expect(findResultsView.children()).toHaveLength 0
 
+      it "adds a class to the current match indicating it is the current match", ->
+        expect(findResultsView.parent()[0]).toBe editorView.underlayer[0]
+        expect(findResultsView.children()).toHaveLength 6
+        expect(findResultsView.find('.current-result')).toHaveLength 1
+
+        initialIndex = _.indexOf(findResultsView.children(), findResultsView.find('.current-result')[0])
+
+        findView.findEditor.trigger 'core:confirm'
+        nextIndex = _.indexOf(findResultsView.children(), findResultsView.find('.current-result')[0])
+        expect(nextIndex).toBe initialIndex + 1
+
+        findView.findEditor.trigger 'find-and-replace:find-previous'
+        nextIndex = _.indexOf(findResultsView.children(), findResultsView.find('.current-result')[0])
+        expect(nextIndex).toBe initialIndex
+
     describe "when user types in the find editor", ->
       advance = ->
         advanceClock(findView.findEditor.getEditor().getBuffer().stoppedChangingDelay + 1)
