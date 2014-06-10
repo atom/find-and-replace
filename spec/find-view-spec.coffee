@@ -701,6 +701,11 @@ describe 'FindView', ->
           expect(editor.lineForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
           expect(editor.getSelectedBufferRange()).toEqual [[2, 33], [2, 38]]
 
+        it "replaceEditor maintains focus after core:confirm is run", ->
+          findView.replaceEditor.focus()
+          findView.replaceEditor.trigger 'core:confirm'
+          expect(findView.replaceEditor).toHaveFocus()
+
         it "replaces the _current_ match and selects the next match", ->
           findView.findEditor.trigger 'core:confirm'
           editor.setSelectedBufferRange([[2, 8], [2, 13]])

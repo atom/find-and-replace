@@ -117,10 +117,10 @@ class FindView extends View
 
   handleFindEvents: ->
     @findEditor.getEditor().on 'contents-modified', => @liveSearch()
-    @nextButton.on 'click', => @findNext(true)
-    @previousButton.on 'click', => @findPrevious(true)
-    atom.workspaceView.command 'find-and-replace:find-next', => @findNext(true)
-    atom.workspaceView.command 'find-and-replace:find-previous', => @findPrevious(true)
+    @nextButton.on 'click', => @findNext(focusEditorAfter: true)
+    @previousButton.on 'click', => @findPrevious(focusEditorAfter: true)
+    atom.workspaceView.command 'find-and-replace:find-next', => @findNext(focusEditorAfter: true)
+    atom.workspaceView.command 'find-and-replace:find-previous', => @findPrevious(focusEditorAfter: true)
     atom.workspaceView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
 
   handleReplaceEvents: ->
@@ -165,22 +165,23 @@ class FindView extends View
       @findEditor.focus()
 
   confirm: ->
-    @findNext(atom.config.get('find-and-replace.focusEditorAfterSearch'))
+    @findNext(focusEditorAfter: atom.config.get('find-and-replace.focusEditorAfterSearch'))
 
   showPrevious: ->
-    @findPrevious(atom.config.get('find-and-replace.focusEditorAfterSearch'))
+    @findPrevious(focusEditorAfter: atom.config.get('find-and-replace.focusEditorAfterSearch'))
 
   liveSearch: ->
     pattern = @findEditor.getText()
     @updateModel { pattern }
 
-  findNext: (focusEditorAfter=false) =>
-    @findAndSelectResult(@selectFirstMarkerAfterCursor, focusEditorAfter)
+  findNext: (options={focusEditorAfter: false}) =>
+    @findAndSelectResult(@selectFirstMarkerAfterCursor, options)
 
-  findPrevious: (focusEditorAfter=false) =>
-    @findAndSelectResult(@selectFirstMarkerBeforeCursor, focusEditorAfter)
+  findPrevious: (options={focusEditorAfter: false}) =>
+    @findAndSelectResult(@selectFirstMarkerBeforeCursor, options)
 
-  findAndSelectResult: (selectFunction, focusEditorAfter) =>
+  findAndSelectResult: (selectFunction, {focusEditorAfter, fieldToFocus}) =>
+
     pattern = @findEditor.getText()
     @updateModel { pattern }
     @findHistory.store()
@@ -189,7 +190,9 @@ class FindView extends View
       atom.beep()
     else
       selectFunction()
-      if focusEditorAfter
+      if fieldToFocus
+        fieldToFocus.focus()
+      else if focusEditorAfter
         atom.workspaceView.focus()
       else
         @findEditor.focus()
@@ -214,7 +217,7 @@ class FindView extends View
         currentMarker = @markers[markerIndex]
 
       @findModel.replace([currentMarker], @replaceEditor.getText())
-      @[nextOrPreviousFn](false)
+      @[nextOrPreviousFn](fieldToFocus: @replaceEditor)
 
   replaceAll: =>
     @updateModel {pattern: @findEditor.getText()}
