@@ -1,4 +1,5 @@
 {$} = require 'atom'
+{Subscriber} = require 'emissary'
 
 SelectNext = require './select-next'
 FindModel = require './find-model'
@@ -16,12 +17,14 @@ module.exports =
     atom.workspace.registerOpener (filePath) =>
       new ResultsPaneView() if filePath is ResultsPaneView.URI
 
-    atom.workspaceView.command 'project-find:show', =>
+    @subscriber = new Subscriber()
+
+    @subscriber.subscribeToCommand atom.workspaceView, 'project-find:show', =>
       @createProjectFindView()
       @findView?.detach()
       @projectFindView.attach()
 
-    atom.workspaceView.command 'project-find:toggle', =>
+    @subscriber.subscribeToCommand atom.workspaceView, 'project-find:toggle', =>
       @createProjectFindView()
       @findView?.detach()
 
@@ -30,20 +33,20 @@ module.exports =
       else
         @projectFindView.attach()
 
-    atom.workspaceView.command 'project-find:show-in-current-directory', (e) =>
+    @subscriber.subscribeToCommand atom.workspaceView, 'project-find:show-in-current-directory', (e) =>
       @createProjectFindView()
       @findView?.detach()
       @projectFindView.attach()
       @projectFindView.findInCurrentlySelectedDirectory($(e.target))
 
-    atom.workspaceView.command 'find-and-replace:use-selection-as-find-pattern', =>
+    @subscriber.subscribeToCommand atom.workspaceView, 'find-and-replace:use-selection-as-find-pattern', =>
       return if @projectFindView?.isOnDom() or @findView?.isOnDom()
 
       @createFindView()
       @projectFindView?.detach()
       @findView.showFind()
 
-    atom.workspaceView.command 'find-and-replace:toggle', =>
+    @subscriber.subscribeToCommand atom.workspaceView, 'find-and-replace:toggle', =>
       @createFindView()
       @projectFindView?.detach()
 
@@ -52,18 +55,18 @@ module.exports =
       else
         @findView.showFind()
 
-    atom.workspaceView.command 'find-and-replace:show', =>
+    @subscriber.subscribeToCommand atom.workspaceView, 'find-and-replace:show', =>
       @createFindView()
       @projectFindView?.detach()
       @findView.showFind()
 
-    atom.workspaceView.command 'find-and-replace:show-replace', =>
+    @subscriber.subscribeToCommand atom.workspaceView, 'find-and-replace:show-replace', =>
       @createFindView()
       @projectFindView?.detach()
       @findView.showReplace()
 
     # in code editors
-    atom.workspaceView.on 'core:cancel core:close', ({target}) =>
+    @subscriber.subscribeToCommand atom.workspaceView, 'core:cancel core:close', ({target}) =>
       if target isnt atom.workspaceView.getActivePaneView()?[0]
         editor = $(target).parents('.editor:not(.mini)')
         return unless editor.length
@@ -108,12 +111,8 @@ module.exports =
     ResultsPaneView.model = null
     @resultsModel = null
 
-    atom.workspaceView.off 'project-find:show'
-    atom.workspaceView.off 'core:cancel core:close'
-    atom.workspaceView.off 'find-and-replace:show-replace'
-    atom.workspaceView.off 'find-and-replace:show'
-    atom.workspaceView.off 'find-and-replace:use-selection-as-find-pattern'
-    atom.workspaceView.off 'project-find:show-in-current-directory'
+    @subscriber?.unsubscribe()
+    @subscriber = null
 
   serialize: ->
     viewState: @findView?.serialize() ? @viewState
