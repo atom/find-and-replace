@@ -63,14 +63,23 @@ describe 'ProjectFindView', ->
         expect(atom.workspaceView.find('.project-find')).toExist()
         expect(projectFindView.findEditor.getText()).toBe('items')
 
-        projectFindView.findEditor.setText('')
-
         editor.setSelectedBufferRange([[2, 14], [2, 20]])
         atom.workspaceView.trigger 'project-find:show'
         expect(atom.workspaceView.find('.project-find')).toExist()
         expect(projectFindView.findEditor.getText()).toBe('length')
 
-    describe "when thethe ProjectFindView is already attached", ->
+      it "populates the findEditor with the previous selection when there is no selection", ->
+        editor.setSelectedBufferRange([[2, 14], [2, 20]])
+        atom.workspaceView.trigger 'project-find:show'
+        expect(atom.workspaceView.find('.project-find')).toExist()
+        expect(projectFindView.findEditor.getText()).toBe('length')
+
+        editor.setSelectedBufferRange([[2, 30], [2, 30]])
+        atom.workspaceView.trigger 'project-find:show'
+        expect(atom.workspaceView.find('.project-find')).toExist()
+        expect(projectFindView.findEditor.getText()).toBe('length')
+
+    describe "when the ProjectFindView is already attached", ->
       beforeEach ->
         projectFindView.findEditor.getEditor().setSelectedBufferRange([[0, 0], [0, 0]])
 
@@ -618,8 +627,20 @@ describe 'ProjectFindView', ->
       it "places the selected text into the find editor", ->
         editorView.getEditor().setSelectedBufferRange([[1,6],[1,10]])
         atom.workspaceView.trigger 'find-and-replace:use-selection-as-find-pattern'
-
         expect(projectFindView.findEditor.getText()).toBe 'sort'
+
+        editorView.getEditor().setSelectedBufferRange([[1,13],[1,21]])
+        atom.workspaceView.trigger 'find-and-replace:use-selection-as-find-pattern'
+        expect(projectFindView.findEditor.getText()).toBe 'function'
+
+      it "places the previously selected text into the find editor if no selection", ->
+        editorView.getEditor().setSelectedBufferRange([[1,13],[1,21]])
+        atom.workspaceView.trigger 'find-and-replace:use-selection-as-find-pattern'
+        expect(projectFindView.findEditor.getText()).toBe 'function'
+
+        editorView.getEditor().setSelectedBufferRange([[1,30],[1,30]])
+        atom.workspaceView.trigger 'find-and-replace:use-selection-as-find-pattern'
+        expect(projectFindView.findEditor.getText()).toBe ''
 
   describe "replacing", ->
     [testDir, sampleJs, sampleCoffee, replacePromise] = []
