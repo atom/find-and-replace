@@ -23,6 +23,11 @@ class FindResultsView extends View
         @markersUpdated()
 
   attach: ->
+    # It must be detached from a destroyed pane before destruction otherwise
+    # this view will be removed and @unsubscribe() will be called.
+    pane = @getPane()
+    @paneDestroySubscription = @subscribe pane, 'pane:before-item-destroyed', => @detach() if pane?
+
     editor = @getEditor()
     if editor? and editor.underlayer?
       editor.underlayer.append(this)
@@ -32,6 +37,7 @@ class FindResultsView extends View
         editor.underlayer.append(this)
 
   detach: ->
+    @paneDestroySubscription?.off()
     super
 
   beforeRemove: ->
@@ -40,6 +46,9 @@ class FindResultsView extends View
   getEditor: ->
     activeView = atom.workspaceView.getActiveView()
     if activeView?.hasClass('editor') then activeView else null
+
+  getPane: ->
+    atom.workspaceView.getActivePane()
 
   markersUpdated: =>
     editor = @getEditor()

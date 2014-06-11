@@ -504,6 +504,18 @@ describe 'FindView', ->
           editorView.getPane().splitRight(atom.project.openSync('sample.coffee'))
           expect(findResultsView.children()).toHaveLength 7
 
+        it "will still highlight results after the split pane has been destroyed", ->
+          findResultsView = editorView.find('.search-results')
+          expect(findResultsView.children()).toHaveLength 6
+
+          newEditorView = editorView.getPane().splitRight(atom.project.openSync('sample.coffee'))
+          expect(findResultsView.children()).toHaveLength 7
+
+          newEditorView.focus()
+          newEditorView.trigger('core:close')
+          editorView.focus()
+          expect(findResultsView.children()).toHaveLength 6
+
     describe "when the buffer contents change", ->
       it "re-runs the search", ->
         findResultsView = editorView.find('.search-results')
