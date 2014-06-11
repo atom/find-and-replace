@@ -112,6 +112,9 @@ class FindView extends View
     @subscribe @findModel, 'updated', @markersUpdated
     @subscribe @findModel, 'find-error', @findError
 
+    atom.workspaceView.on 'pane-container:active-pane-item-changed', =>
+      @findResultsView.attach() if @isAttached()
+
     # FIXME: remove when the old editor is out.
     atom.workspaceView.on 'selection:changed', @setCurrentMarkerFromSelection
 
@@ -157,7 +160,7 @@ class FindView extends View
     atom.workspaceView.prependToBottom(this)
 
   detach: =>
-    return unless @hasParent()
+    return unless @isAttached()
 
     @hideAllTooltips()
     @findResultsView.detach()
@@ -242,7 +245,6 @@ class FindView extends View
     else
       @clearMessage()
 
-    @findResultsView.attach() if @isVisible()
     if @findModel.pattern isnt @findEditor.getText()
       @findEditor.setText(@findModel.pattern)
 
