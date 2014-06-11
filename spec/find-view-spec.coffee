@@ -504,6 +504,18 @@ describe 'FindView', ->
           editorView.getPane().splitRight(atom.project.openSync('sample.coffee'))
           expect(findResultsView.children()).toHaveLength 7
 
+        it "will still highlight results after the split pane has been destroyed", ->
+          findResultsView = editorView.find('.search-results')
+          expect(findResultsView.children()).toHaveLength 6
+
+          newEditorView = editorView.getPane().splitRight(atom.project.openSync('sample.coffee'))
+          expect(findResultsView.children()).toHaveLength 7
+
+          newEditorView.focus()
+          newEditorView.trigger('core:close')
+          editorView.focus()
+          expect(findResultsView.children()).toHaveLength 6
+
     describe "when the buffer contents change", ->
       it "re-runs the search", ->
         findResultsView = editorView.find('.search-results')
@@ -608,6 +620,33 @@ describe 'FindView', ->
 
         expect(findResultsView.children()).toHaveLength 0
 
+      it "adds a class to the current match indicating it is the current match", ->
+        expect(findResultsView.parent()[0]).toBe editorView.underlayer[0]
+        expect(findResultsView.children()).toHaveLength 6
+        expect(findResultsView.find('.current-result')).toHaveLength 1
+
+        initialIndex = _.indexOf(findResultsView.children(), findResultsView.find('.current-result')[0])
+
+        findView.findEditor.trigger 'core:confirm'
+        nextIndex = _.indexOf(findResultsView.children(), findResultsView.find('.current-result')[0])
+        expect(nextIndex).toBe initialIndex + 1
+
+        findView.findEditor.trigger 'find-and-replace:find-previous'
+        nextIndex = _.indexOf(findResultsView.children(), findResultsView.find('.current-result')[0])
+        expect(nextIndex).toBe initialIndex
+
+      it "adds a class to the current match indicating it is the current match", ->
+        originalResult = findResultsView.find('.current-result')[0]
+        expect(originalResult).toBeDefined
+
+        editor.setSelectedBufferRange([[5, 16], [5, 20]])
+        expect(findResultsView.find('.current-result')[0]).not.toBeDefined()
+
+        editor.setSelectedBufferRange([[5, 16], [5, 21]])
+        newResult = findResultsView.find('.current-result')[0]
+        expect(newResult).toBeDefined()
+        expect(newResult).not.toBe originalResult
+
     describe "when user types in the find editor", ->
       advance = ->
         advanceClock(findView.findEditor.getEditor().getBuffer().stoppedChangingDelay + 1)
@@ -700,6 +739,11 @@ describe 'FindView', ->
           expect(findView.resultCounter.text()).toEqual('2 of 5')
           expect(editor.lineForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
           expect(editor.getSelectedBufferRange()).toEqual [[2, 33], [2, 38]]
+
+        it "replaceEditor maintains focus after core:confirm is run", ->
+          findView.replaceEditor.focus()
+          findView.replaceEditor.trigger 'core:confirm'
+          expect(findView.replaceEditor).toHaveFocus()
 
         it "replaces the _current_ match and selects the next match", ->
           findView.findEditor.trigger 'core:confirm'

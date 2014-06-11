@@ -6,7 +6,6 @@ History = require './history'
 
 module.exports =
 class FindView extends View
-
   @content: ->
     @div tabIndex: -1, class: 'find-and-replace tool-panel panel-bottom', =>
       @div class: 'block', =>
@@ -113,14 +112,22 @@ class FindView extends View
     @subscribe @findModel, 'updated', @markersUpdated
     @subscribe @findModel, 'find-error', @findError
 
+    atom.workspaceView.on 'pane-container:active-pane-item-changed', =>
+      @findResultsView.attach() if @isAttached()
+
+    # FIXME: remove when the old editor is out.
     atom.workspaceView.on 'selection:changed', @setCurrentMarkerFromSelection
+
+    # For the react editor
+    atom.workspace.eachEditor (editor) =>
+      @subscribe editor, 'selection-added selection-screen-range-changed', @setCurrentMarkerFromSelection
 
   handleFindEvents: ->
     @findEditor.getEditor().on 'contents-modified', => @liveSearch()
-    @nextButton.on 'click', => @findNext(true)
-    @previousButton.on 'click', => @findPrevious(true)
-    atom.workspaceView.command 'find-and-replace:find-next', => @findNext(true)
-    atom.workspaceView.command 'find-and-replace:find-previous', => @findPrevious(true)
+    @nextButton.on 'click', => @findNext(focusEditorAfter: true)
+    @previousButton.on 'click', => @findPrevious(focusEditorAfter: true)
+    atom.workspaceView.command 'find-and-replace:find-next', => @findNext(focusEditorAfter: true)
+    atom.workspaceView.command 'find-and-replace:find-previous', => @findPrevious(focusEditorAfter: true)
     atom.workspaceView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
 
   handleReplaceEvents: ->
@@ -131,8 +138,10 @@ class FindView extends View
     atom.workspaceView.command 'find-and-replace:replace-next', @replaceNext
     atom.workspaceView.command 'find-and-replace:replace-all', @replaceAll
 
+  isAttached: -> @hasParent()
+
   showFind: =>
-    @attach() unless @hasParent()
+    @attach() unless @isAttached()
 
     selectedText = atom.workspace.getActiveEditor()?.getSelectedText?()
     if selectedText and selectedText.indexOf('\n') < 0
@@ -151,7 +160,7 @@ class FindView extends View
     atom.workspaceView.prependToBottom(this)
 
   detach: =>
-    return unless @hasParent()
+    return unless @isAttached()
 
     @hideAllTooltips()
     @findResultsView.detach()
@@ -165,22 +174,22 @@ class FindView extends View
       @findEditor.focus()
 
   confirm: ->
-    @findNext(atom.config.get('find-and-replace.focusEditorAfterSearch'))
+    @findNext(focusEditorAfter: atom.config.get('find-and-replace.focusEditorAfterSearch'))
 
   showPrevious: ->
-    @findPrevious(atom.config.get('find-and-replace.focusEditorAfterSearch'))
+    @findPrevious(focusEditorAfter: atom.config.get('find-and-replace.focusEditorAfterSearch'))
 
   liveSearch: ->
     pattern = @findEditor.getText()
     @updateModel { pattern }
 
-  findNext: (focusEditorAfter=false) =>
-    @findAndSelectResult(@selectFirstMarkerAfterCursor, focusEditorAfter)
+  findNext: (options={focusEditorAfter: false}) =>
+    @findAndSelectResult(@selectFirstMarkerAfterCursor, options)
 
-  findPrevious: (focusEditorAfter=false) =>
-    @findAndSelectResult(@selectFirstMarkerBeforeCursor, focusEditorAfter)
+  findPrevious: (options={focusEditorAfter: false}) =>
+    @findAndSelectResult(@selectFirstMarkerBeforeCursor, options)
 
-  findAndSelectResult: (selectFunction, focusEditorAfter) =>
+  findAndSelectResult: (selectFunction, {focusEditorAfter, fieldToFocus}) =>
     pattern = @findEditor.getText()
     @updateModel { pattern }
     @findHistory.store()
@@ -189,7 +198,9 @@ class FindView extends View
       atom.beep()
     else
       selectFunction()
-      if focusEditorAfter
+      if fieldToFocus
+        fieldToFocus.focus()
+      else if focusEditorAfter
         atom.workspaceView.focus()
       else
         @findEditor.focus()
@@ -214,7 +225,7 @@ class FindView extends View
         currentMarker = @markers[markerIndex]
 
       @findModel.replace([currentMarker], @replaceEditor.getText())
-      @[nextOrPreviousFn](false)
+      @[nextOrPreviousFn](fieldToFocus: @replaceEditor)
 
   replaceAll: =>
     @updateModel {pattern: @findEditor.getText()}
@@ -234,7 +245,6 @@ class FindView extends View
     else
       @clearMessage()
 
-    @findResultsView.attach() if @isVisible()
     if @findModel.pattern isnt @findEditor.getText()
       @findEditor.setText(@findModel.pattern)
 
@@ -307,24 +317,28 @@ class FindView extends View
 
     if marker = @markers[markerIndex]
       @findModel.getEditSession().setSelectedBufferRange(marker.getBufferRange(), autoscroll: true)
+      @setCurrentResultMarker(marker)
 
   setCurrentMarkerFromSelection: =>
+    currentResultMarker = null
+    if @markers? and @markers.length and @isAttached() and editSession = @findModel.getEditSession()
+      selectedBufferRange = editSession.getSelectedBufferRange()
+      currentResultMarker = @findModel.findMarker(selectedBufferRange)
+
+    @setCurrentResultMarker(currentResultMarker)
+
+  setCurrentResultMarker: (marker) =>
     if @currentResultMarker
       # HACK/TODO: telepath does not emit an event when attributes change. This
       # is the event I want, so emitting myself.
       @currentResultMarker.setAttributes(isCurrent: false)
       @currentResultMarker.emit('attributes-changed', {isCurrent: false})
 
-    @currentResultMarker = null
-    if @markers? and @markers.length and editSession = @findModel.getEditSession()
-      selectedBufferRange = editSession.getSelectedBufferRange()
-      @currentResultMarker = @findModel.findMarker(selectedBufferRange)
-
-      if @currentResultMarker
-        # HACK/TODO: telepath does not emit an event when attributes change. This
-        # is the event I want, so emitting myself.
-        @currentResultMarker.setAttributes(isCurrent: true)
-        @currentResultMarker.emit('attributes-changed', {isCurrent: true})
+    if @currentResultMarker = marker
+      # HACK/TODO: telepath does not emit an event when attributes change. This
+      # is the event I want, so emitting myself.
+      @currentResultMarker.setAttributes(isCurrent: true)
+      @currentResultMarker.emit('attributes-changed', {isCurrent: true})
 
     @updateResultCounter()
 

@@ -2,6 +2,8 @@ _ = require 'underscore-plus'
 {EditorView, View} = require 'atom'
 MarkerView = require './marker-view'
 
+# TODO: remove this when marker views are in core. Hopefully soon.
+
 module.exports =
 class FindResultsView extends View
 
@@ -10,12 +12,32 @@ class FindResultsView extends View
 
   initialize: (@findModel) ->
     @markerViews = {}
-    @subscribe @findModel, 'updated', (args...) => @markersUpdated(args...)
+    debouncedUpdate = _.debounce(@markersUpdated, 20)
+    @subscribe @findModel, 'updated', =>
+      if @getEditor()?.hasClass('react')
+        # HACK: there are some issues with some of the react editor's components
+        # being not available. We shouldnt be doing this rendering anyway.
+        # Marker views are coming.
+        debouncedUpdate()
+      else
+        @markersUpdated()
 
   attach: ->
-    @getEditor()?.underlayer.append(this)
+    # It must be detached from a destroyed pane before destruction otherwise
+    # this view will be removed and @unsubscribe() will be called.
+    pane = @getPane()
+    @paneDestroySubscription = @subscribe pane, 'pane:before-item-destroyed', => @detach() if pane?
+
+    editor = @getEditor()
+    if editor? and editor.underlayer?
+      editor.underlayer.append(this)
+    else if editor?
+      subscription = @subscribe editor, 'editor:attached', =>
+        subscription.off()
+        editor.underlayer.append(this)
 
   detach: ->
+    @paneDestroySubscription?.off()
     super
 
   beforeRemove: ->
@@ -25,8 +47,12 @@ class FindResultsView extends View
     activeView = atom.workspaceView.getActiveView()
     if activeView?.hasClass('editor') then activeView else null
 
-  markersUpdated: (markers) ->
+  getPane: ->
+    atom.workspaceView.getActivePane()
+
+  markersUpdated: =>
     editor = @getEditor()
+    markers = @findModel.markers
 
     if not editor?
       @destroyAllViews()
