@@ -12,15 +12,7 @@ class FindResultsView extends View
 
   initialize: (@findModel) ->
     @markerViews = {}
-    debouncedUpdate = _.debounce(@markersUpdated, 20)
-    @subscribe @findModel, 'updated', =>
-      if @getEditor()?.hasClass('react')
-        # HACK: there are some issues with some of the react editor's components
-        # being not available. We shouldnt be doing this rendering anyway.
-        # Marker views are coming.
-        debouncedUpdate()
-      else
-        @markersUpdated()
+    @subscribe @findModel, 'updated', @markersUpdated
 
   attach: ->
     # It must be detached from a destroyed pane before destruction otherwise
@@ -29,12 +21,7 @@ class FindResultsView extends View
     @paneDestroySubscription = @subscribe pane, 'pane:before-item-destroyed', => @detach() if pane?
 
     editor = @getEditor()
-    if editor? and editor.underlayer?
-      editor.underlayer.append(this)
-    else if editor?
-      subscription = @subscribe editor, 'editor:attached', =>
-        subscription.off()
-        editor.underlayer.append(this)
+    editor?.underlayer.append(this)
 
   detach: ->
     @paneDestroySubscription?.off()
