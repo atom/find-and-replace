@@ -113,7 +113,7 @@ class FindView extends View
     @subscribe @findModel, 'find-error', @findError
 
     atom.workspaceView.on 'pane-container:active-pane-item-changed', =>
-      @findResultsView.attach() if @isAttached()
+      @findResultsView.attach() if @isAttached() and not @isActiveEditorReact()
 
     # FIXME: remove when the old editor is out.
     atom.workspaceView.on 'selection:changed', @setCurrentMarkerFromSelection
@@ -140,6 +140,9 @@ class FindView extends View
 
   isAttached: -> @hasParent()
 
+  isActiveEditorReact: ->
+    atom.workspaceView.getActiveView()?.hasClass('react')
+
   showFind: =>
     @attach() unless @isAttached()
 
@@ -156,7 +159,7 @@ class FindView extends View
     @replaceEditor.getEditor().selectAll()
 
   attach: =>
-    @findResultsView.attach()
+    @findResultsView.attach() unless @isActiveEditorReact()
     atom.workspaceView.prependToBottom(this)
 
   detach: =>
@@ -255,8 +258,7 @@ class FindView extends View
     @findModel.update(options)
 
   updateResultCounter: ->
-    if @currentResultMarker
-      index = @markers.indexOf(@currentResultMarker)
+    if @currentResultMarker and (index = @markers.indexOf(@currentResultMarker)) > -1
       text = "#{ index + 1} of #{@markers.length}"
     else
       if not @markers? or @markers.length == 0
@@ -328,17 +330,34 @@ class FindView extends View
     @setCurrentResultMarker(currentResultMarker)
 
   setCurrentResultMarker: (marker) =>
-    if @currentResultMarker
+    editor = @findModel.getEditSession()
+
+    if @currentResultMarker and not @currentResultMarker.isDestroyed()
+      # FIXME: remove this when the old editor is out
       # HACK/TODO: telepath does not emit an event when attributes change. This
       # is the event I want, so emitting myself.
       @currentResultMarker.setAttributes(isCurrent: false)
       @currentResultMarker.emit('attributes-changed', {isCurrent: false})
 
-    if @currentResultMarker = marker
+      # for react editor
+      if editor?.addDecorationForMarker?
+        editor.removeDecorationForMarker(@currentResultMarker, type: 'highlight', class: 'current-result')
+        editor.addDecorationForMarker(@currentResultMarker, type: 'highlight', class: @constructor.markerClass)
+
+    @currentResultMarker = null
+
+    if marker and not marker.isDestroyed()
+      @currentResultMarker = marker
+
+      # FIXME: remove when old editor goes away
       # HACK/TODO: telepath does not emit an event when attributes change. This
       # is the event I want, so emitting myself.
       @currentResultMarker.setAttributes(isCurrent: true)
       @currentResultMarker.emit('attributes-changed', {isCurrent: true})
+
+      if editor?.addDecorationForMarker?
+        editor.removeDecorationForMarker(marker, type: 'highlight', class: @constructor.markerClass)
+        editor.addDecorationForMarker(marker, type: 'highlight', class: 'current-result')
 
     @updateResultCounter()
 

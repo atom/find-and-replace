@@ -1,4 +1,5 @@
 @import "ui-variables";
+@import "syntax-variables";
 
 .option-button() {
   font-size: 14px;
@@ -11,13 +12,11 @@
   z-index: -1;
 }
 
-.editor .search-results .marker .region {
+.editor .search-results .marker .region,
+.editor .find-result .region,
+.editor .current-result .region {
   border-radius: 2px;
-
-  box-sizing: content-box;
-
-  padding: 0 0px;
-  margin: -1px 0 0 0;
+  border: 1px solid;
 }
 
 // Both project and buffer FNR styles

@@ -104,7 +104,9 @@ class FindModel
       replicate: false
       persistent: false
       isCurrent: false
-    @editSession.markBufferRange(range, markerAttributes)
+    marker = @editSession.markBufferRange(range, markerAttributes)
+    @editSession.addDecorationForMarker(marker, type: 'highlight', class: @constructor.markerClass) if @editSession.addDecorationForMarker?
+    marker
 
   destroyAllMarkers: ->
     @valid = false
