@@ -6,11 +6,13 @@
   font-family: courier, monospace;
 }
 
+// FIXME: remove when old editor is out
 .editor .marker .region {
   position: absolute;
   pointer-events: none;
   z-index: -1;
 }
+
 
 .editor .search-results .marker .region,
 .editor .find-result .region,
@@ -19,6 +21,17 @@
   border: 1px solid;
 }
 
+.editor .find-result,
+.editor .current-result {
+  display: none;
+}
+
+.workspace.find-visible {
+  .editor .find-result,
+  .editor .current-result {
+    display: block;
+  }
+}
 // Both project and buffer FNR styles
 .find-and-replace,
 .project-find {

@@ -160,7 +160,9 @@ class FindView extends View
 
   attach: =>
     @findResultsView.attach() unless @isActiveEditorReact()
+
     atom.workspaceView.prependToBottom(this)
+    atom.workspaceView.addClass('find-visible')
 
   detach: =>
     return unless @isAttached()
@@ -168,6 +170,7 @@ class FindView extends View
     @hideAllTooltips()
     @findResultsView.detach()
     atom.workspaceView.focus()
+    atom.workspaceView.removeClass('find-visible')
     super()
 
   toggleFocus: =>
