@@ -32,7 +32,7 @@ class FindResultsView extends View
 
   getEditor: ->
     activeView = atom.workspaceView.getActiveView()
-    if activeView?.hasClass('editor') then activeView else null
+    if activeView?.hasClass('editor') and not activeView?.hasClass('react') then activeView else null
 
   getPane: ->
     atom.workspaceView.getActivePane()
