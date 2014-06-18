@@ -442,30 +442,28 @@ describe 'FindView', ->
           expect(editor.getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
 
         it "initially highlights the found text in the new edit session", ->
-          findResultsView = editorView.find('.search-results')
+          expect(editorView.find('.highlight.find-result')).toHaveLength 6
 
           atom.workspaceView.openSync('sample.coffee')
-          expect(findResultsView.children()).toHaveLength 7
+
+          waits 1
+          runs ->
+            # old editor has no more results
+            expect(editorView.find('.highlight.find-result')).toHaveLength 0
+
+            # new one has 7 results
+            expect(atom.workspaceView.getActiveView().find('.highlight.find-result')).toHaveLength 7
 
         it "highlights the found text in the new edit session when find next is triggered", ->
-          findResultsView = editorView.find('.search-results')
           atom.workspaceView.openSync('sample.coffee')
-          editorView = atom.workspaceView.getActiveView()
 
           findView.findEditor.trigger 'find-and-replace:find-next'
-          expect(findResultsView.children()).toHaveLength 7
-          expect(findResultsView.parent()[0]).toBe editorView.underlayer[0]
+          expect(atom.workspaceView.getActiveView().find('.highlight.find-result')).toHaveLength 7
 
       describe "when all active pane items are closed", ->
         it "updates the result count", ->
           editorView.trigger 'core:close'
           expect(findView.resultCounter.text()).toEqual('no results')
-
-        it "removes all highlights", ->
-          findResultsView = editorView.find('.search-results')
-
-          editorView.trigger 'core:close'
-          expect(findResultsView.children()).toHaveLength 0
 
       describe "when the active pane item is not an edit session", ->
         [anotherOpener] = []
@@ -488,6 +486,9 @@ describe 'FindView', ->
           expect(findResultsView.children()).toHaveLength 0
 
       describe "when a new edit session is activated on a different pane", ->
+        it "initially highlights all the sample.js results", ->
+          expect(editorView.find('.find-result')).toHaveLength 6
+
         it "reruns the search on the new editSession", ->
           newEditorView = editorView.getPane().splitRight(atom.project.openSync('sample.coffee')).activeView
           expect(findView.resultCounter.text()).toEqual('7 found')
@@ -498,23 +499,27 @@ describe 'FindView', ->
           expect(newEditorView.getEditor().getSelectedBufferRange()).toEqual [[1, 9], [1, 14]]
 
         it "highlights the found text in the new edit session (and removes the highlights from the other)", ->
-          findResultsView = editorView.find('.search-results')
+          newEditorView = editorView.getPane().splitRight(atom.project.openSync('sample.coffee'))
 
-          expect(findResultsView.children()).toHaveLength 6
-          editorView.getPane().splitRight(atom.project.openSync('sample.coffee'))
-          expect(findResultsView.children()).toHaveLength 7
+          waits 1
+          runs ->
+            # old editor has no more results
+            expect(editorView.find('.find-result')).toHaveLength 0
+
+            # new one has 7 results
+            expect(newEditorView.find('.find-result')).toHaveLength 7
 
         it "will still highlight results after the split pane has been destroyed", ->
-          findResultsView = editorView.find('.search-results')
-          expect(findResultsView.children()).toHaveLength 6
-
           newEditorView = editorView.getPane().splitRight(atom.project.openSync('sample.coffee'))
-          expect(findResultsView.children()).toHaveLength 7
+          expect(newEditorView.find('.find-result')).toHaveLength 7
 
           newEditorView.focus()
           newEditorView.trigger('core:close')
           editorView.focus()
-          expect(findResultsView.children()).toHaveLength 6
+
+          waits 1
+          runs ->
+            expect(editorView.find('.find-result')).toHaveLength 6
 
     describe "when the buffer contents change", ->
       it "re-runs the search", ->
@@ -523,12 +528,10 @@ describe 'FindView', ->
         editor.insertText("")
 
         window.advanceClock(1000)
-        expect(findResultsView.children()).toHaveLength 5
         expect(findView.resultCounter.text()).toEqual('5 found')
 
         editor.insertText("s")
         window.advanceClock(1000)
-        expect(findResultsView.children()).toHaveLength 6
         expect(findView.resultCounter.text()).toEqual('6 found')
 
       it "does not beep if no matches were found", ->
@@ -607,45 +610,65 @@ describe 'FindView', ->
         expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 5]]
 
     describe "highlighting search results", ->
-      [findResultsView] = []
-      beforeEach ->
-        findResultsView = editorView.find('.search-results')
+      resultPosition = (result) ->
+        {top: result.children()[0].style.top, left: result.children()[0].style.left}
 
       it "only highlights matches", ->
-        expect(findResultsView.parent()[0]).toBe editorView.underlayer[0]
-        expect(findResultsView.children()).toHaveLength 6
+        expect(editorView.find('.find-result')).toHaveLength 6
 
         findView.findEditor.setText 'notinthefilebro'
         findView.findEditor.trigger 'core:confirm'
 
-        expect(findResultsView.children()).toHaveLength 0
+        waits 1
+        runs ->
+          expect(editorView.find('.find-result')).toHaveLength 0
 
       it "adds a class to the current match indicating it is the current match", ->
-        expect(findResultsView.parent()[0]).toBe editorView.underlayer[0]
-        expect(findResultsView.children()).toHaveLength 6
-        expect(findResultsView.find('.current-result')).toHaveLength 1
+        position = (result) ->
+          {top: result.children()[0].style.top, left: result.children()[0].style.left}
 
-        initialIndex = _.indexOf(findResultsView.children(), findResultsView.find('.current-result')[0])
+        firstResult = editorView.find('.current-result')
+        firstPosition = resultPosition(firstResult)
+        expect(editorView.find('.find-result')).toHaveLength 6
+        expect(firstResult).toHaveLength 1
 
         findView.findEditor.trigger 'core:confirm'
-        nextIndex = _.indexOf(findResultsView.children(), findResultsView.find('.current-result')[0])
-        expect(nextIndex).toBe initialIndex + 1
+        findView.findEditor.trigger 'core:confirm'
+        waits 1
+        runs ->
+          nextResult = editorView.find('.current-result')
+          nextPosition = resultPosition(nextResult)
+          expect(nextResult).toHaveLength 1
+          expect(nextPosition).not.toEqual firstPosition
 
-        findView.findEditor.trigger 'find-and-replace:find-previous'
-        nextIndex = _.indexOf(findResultsView.children(), findResultsView.find('.current-result')[0])
-        expect(nextIndex).toBe initialIndex
+          findView.findEditor.trigger 'find-and-replace:find-previous'
+          findView.findEditor.trigger 'find-and-replace:find-previous'
 
-      it "adds a class to the current match indicating it is the current match", ->
-        originalResult = findResultsView.find('.current-result')[0]
-        expect(originalResult).toBeDefined
+        waits 1
+        runs ->
+          originalResult = editorView.find('.current-result')
+          originalPosition = resultPosition(originalResult)
+          expect(originalResult).toHaveLength 1
+          expect(originalPosition).toEqual firstPosition
+
+      it "adds a class to the result when the current selection equals the result's range", ->
+        originalResult = editorView.find('.current-result')
+        originalPosition = resultPosition(originalResult)
+        expect(originalResult).toHaveLength 1
 
         editor.setSelectedBufferRange([[5, 16], [5, 20]])
-        expect(findResultsView.find('.current-result')[0]).not.toBeDefined()
 
-        editor.setSelectedBufferRange([[5, 16], [5, 21]])
-        newResult = findResultsView.find('.current-result')[0]
-        expect(newResult).toBeDefined()
-        expect(newResult).not.toBe originalResult
+        waits 1
+        runs ->
+          expect(editorView.find('.current-result')).toHaveLength 0
+          editor.setSelectedBufferRange([[5, 16], [5, 21]])
+
+        waits 1
+        runs ->
+          newResult = editorView.find('.current-result')
+          newPosition = resultPosition(newResult)
+          expect(newResult).toHaveLength 1
+          expect(newPosition).not.toBe originalPosition
 
     describe "when user types in the find editor", ->
       advance = ->
