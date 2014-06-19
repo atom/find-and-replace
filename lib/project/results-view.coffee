@@ -13,6 +13,10 @@ class ResultsView extends ScrollView
     @pixelOverdraw = 100
     @lastRenderedResultIndex = 0
 
+    # turn off default scrolling behavior from ScrollView
+    @off 'core:move-up'
+    @off 'core:move-down'
+
     @on 'core:move-down', =>
       @selectNextResult()
 
