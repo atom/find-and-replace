@@ -3,17 +3,21 @@ path = require 'path'
 SelectNext = require '../lib/select-next'
 
 describe "SelectNext", ->
-  [editorView, editor] = []
+  [editorView, editor, promise] = []
 
   beforeEach ->
     atom.workspaceView = new WorkspaceView()
     atom.project.setPath(path.join(__dirname, 'fixtures'))
-    atom.workspaceView.openSync('sample.js')
-    atom.workspaceView.attachToDom()
-    editorView = atom.workspaceView.getActiveView()
-    editor = editorView.getEditor()
-    promise = atom.packages.activatePackage("find-and-replace")
-    editorView.trigger 'find-and-replace:show'
+
+    waitsForPromise ->
+      atom.workspace.open('sample.js')
+
+    runs ->
+      atom.workspaceView.attachToDom()
+      editorView = atom.workspaceView.getActiveView()
+      editor = editorView.getEditor()
+      promise = atom.packages.activatePackage("find-and-replace")
+      editorView.trigger 'find-and-replace:show'
 
     waitsForPromise ->
       promise

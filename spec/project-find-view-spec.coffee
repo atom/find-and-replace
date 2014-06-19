@@ -55,7 +55,9 @@ describe 'ProjectFindView', ->
 
       beforeEach ->
         projectFindView.findEditor.setText('')
-        editor = atom.workspaceView.openSync('sample.js')
+
+        waitsForPromise ->
+          atom.workspace.open('sample.js').then (o) -> editor = o
 
       it "populates the findEditor with selection when there is a selection", ->
         editor.setSelectedBufferRange([[2, 8], [2, 13]])
@@ -161,9 +163,12 @@ describe 'ProjectFindView', ->
 
   describe "finding", ->
     beforeEach ->
-      atom.workspaceView.openSync('sample.js')
-      editorView = atom.workspaceView.getActiveView()
-      atom.workspaceView.trigger 'project-find:show'
+      waitsForPromise ->
+        atom.workspace.open('sample.js')
+
+      runs ->
+        editorView = atom.workspaceView.getActiveView()
+        atom.workspaceView.trigger 'project-find:show'
 
       waitsForPromise ->
         activationPromise
@@ -245,7 +250,7 @@ describe 'ProjectFindView', ->
         editorView.trigger 'project-find:show'
 
       it "splits when option is true", ->
-        initialPane = atom.workspaceView.getActivePane()
+        initialPane = atom.workspaceView.getActivePaneView()
         atom.config.set('find-and-replace.openProjectFindResultsInRightPane', true)
         projectFindView.findEditor.setText('items')
         projectFindView.trigger 'core:confirm'
@@ -254,11 +259,11 @@ describe 'ProjectFindView', ->
           searchPromise
 
         runs ->
-          pane1 = atom.workspaceView.getActivePane()
+          pane1 = atom.workspaceView.getActivePaneView()
           expect(pane1[0]).not.toBe initialPane[0]
 
       it "does not split when option is false", ->
-        initialPane = atom.workspaceView.getActivePane()
+        initialPane = atom.workspaceView.getActivePaneView()
         projectFindView.findEditor.setText('items')
         projectFindView.trigger 'core:confirm'
 
@@ -266,7 +271,7 @@ describe 'ProjectFindView', ->
           searchPromise
 
         runs ->
-          pane1 = atom.workspaceView.getActivePane()
+          pane1 = atom.workspaceView.getActivePaneView()
           expect(pane1[0]).toBe initialPane[0]
 
       it "can be duplicated", ->
@@ -279,10 +284,10 @@ describe 'ProjectFindView', ->
 
         runs ->
           resultsPaneView1 = getExistingResultsPane()
-          pane1 = atom.workspaceView.getActivePane()
+          pane1 = atom.workspaceView.getActivePaneView()
           pane1.splitRight(pane1.copyActiveItem())
 
-          pane2 = atom.workspaceView.getActivePane()
+          pane2 = atom.workspaceView.getActivePaneView()
           resultsPaneView2 = pane2.itemForUri(ResultsPaneView.URI)
 
           expect(pane1[0]).not.toBe pane2[0]
@@ -668,7 +673,7 @@ describe 'ProjectFindView', ->
       # have to close the project before attempting to delete. Unfortunately,
       # Pathwatcher's close function is also not synchronous. Once
       # atom/node-pathwatcher#4 is implemented this should be alot cleaner.
-      activePane = atom.workspaceView.getActivePane()
+      activePane = atom.workspaceView.getActivePaneView()
       for item in (activePane?.getItems() or [])
         spyOn(item, 'shouldPromptToSave').andReturn(false) if item.shouldPromptToSave?
         activePane.destroyItem(item)

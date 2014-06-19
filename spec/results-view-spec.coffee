@@ -169,11 +169,16 @@ describe 'ResultsView', ->
           expect(resultsView.find('.selected')).toExist()
 
     it "arrows through the list without selecting paths", ->
-      atom.workspaceView.openSync('sample.js')
-      projectFindView.findEditor.setText('items')
-      projectFindView.trigger 'core:confirm'
-      openHandler = jasmine.createSpy("open handler")
-      atom.workspaceView.model.on 'uri-opened', openHandler
+      openHandler = null
+
+      waitsForPromise ->
+        atom.workspace.open('sample.js')
+
+      runs ->
+        projectFindView.findEditor.setText('items')
+        projectFindView.trigger 'core:confirm'
+        openHandler = jasmine.createSpy("open handler")
+        atom.workspaceView.model.on 'uri-opened', openHandler
 
       waitsForPromise ->
         searchPromise
@@ -203,13 +208,16 @@ describe 'ResultsView', ->
         openHandler.callCount == 1
 
       runs ->
-        activePane = atom.workspaceView.getActivePane()
+        activePane = atom.workspaceView.getActivePaneView()
         expect(atom.workspace.getActivePaneItem().getPath()).toContain('sample.')
 
     it "arrows through the list without selecting paths", ->
-      atom.workspaceView.openSync('sample.js')
-      projectFindView.findEditor.setText('items')
-      projectFindView.trigger 'core:confirm'
+      waitsForPromise ->
+        atom.workspace.open('sample.js')
+
+      runs ->
+        projectFindView.findEditor.setText('items')
+        projectFindView.trigger 'core:confirm'
 
       waitsForPromise ->
         searchPromise

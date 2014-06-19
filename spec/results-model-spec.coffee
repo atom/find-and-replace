@@ -13,13 +13,17 @@ describe 'ResultsModel', ->
   beforeEach ->
     atom.workspaceView = new WorkspaceView()
     atom.project.setPath(path.join(__dirname, 'fixtures'))
-    atom.workspaceView.openSync('sample.js')
-    atom.workspaceView.attachToDom()
 
-    editor = atom.workspaceView.getActiveView()
-    editSession = editor.editor
+    waitsForPromise ->
+      atom.workspace.open('sample.js')
 
-    resultsModel = new ResultsModel()
+    runs ->
+      atom.workspaceView.attachToDom()
+
+      editor = atom.workspaceView.getActiveView()
+      editSession = editor.editor
+
+      resultsModel = new ResultsModel()
 
   describe "searching for a pattern", ->
     beforeEach ->

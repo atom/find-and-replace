@@ -35,7 +35,7 @@ class FindResultsView extends View
     if activeView?.hasClass('editor') and not activeView?.hasClass('react') then activeView else null
 
   getPane: ->
-    atom.workspaceView.getActivePane()
+    atom.workspaceView.getActivePaneView()
 
   markersUpdated: =>
     editor = @getEditor()

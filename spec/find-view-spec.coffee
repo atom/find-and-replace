@@ -10,14 +10,18 @@ describe 'FindView', ->
     spyOn(atom, 'beep')
     atom.workspaceView = new WorkspaceView()
     atom.project.setPath(path.join(__dirname, 'fixtures'))
-    atom.workspaceView.openSync('sample.js')
-    atom.workspaceView.attachToDom()
-    editorView = atom.workspaceView.getActiveView()
-    editor = editorView.getEditor()
 
-    activationPromise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
-      mainModule.createFindView()
-      {findView} = mainModule
+    waitsForPromise ->
+      atom.workspace.open('sample.js')
+
+    runs ->
+      atom.workspaceView.attachToDom()
+      editorView = atom.workspaceView.getActiveView()
+      editor = editorView.getEditor()
+
+      activationPromise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
+        mainModule.createFindView()
+        {findView} = mainModule
 
   describe "when find-and-replace:show is triggered", ->
     it "attaches FindView to the root view", ->
@@ -436,15 +440,19 @@ describe 'FindView', ->
     describe "when the active pane item changes", ->
       describe "when a new edit session is activated", ->
         it "reruns the search on the new edit session", ->
-          atom.workspaceView.openSync('sample.coffee')
-          editor = atom.workspace.getActivePaneItem()
-          expect(findView.resultCounter.text()).toEqual('7 found')
-          expect(editor.getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
+          waitsForPromise ->
+            atom.workspace.open('sample.coffee')
+
+          runs ->
+            editor = atom.workspace.getActivePaneItem()
+            expect(findView.resultCounter.text()).toEqual('7 found')
+            expect(editor.getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
 
         it "initially highlights the found text in the new edit session", ->
           expect(editorView.find('.highlight.find-result')).toHaveLength 6
 
-          atom.workspaceView.openSync('sample.coffee')
+          waitsForPromise ->
+            atom.workspace.open('sample.coffee')
 
           waits 1
           runs ->
@@ -455,10 +463,12 @@ describe 'FindView', ->
             expect(atom.workspaceView.getActiveView().find('.highlight.find-result')).toHaveLength 7
 
         it "highlights the found text in the new edit session when find next is triggered", ->
-          atom.workspaceView.openSync('sample.coffee')
+          waitsForPromise ->
+            atom.workspace.open('sample.coffee')
 
-          findView.findEditor.trigger 'find-and-replace:find-next'
-          expect(atom.workspaceView.getActiveView().find('.highlight.find-result')).toHaveLength 7
+          runs ->
+            findView.findEditor.trigger 'find-and-replace:find-next'
+            expect(atom.workspaceView.getActiveView().find('.highlight.find-result')).toHaveLength 7
 
       describe "when all active pane items are closed", ->
         it "updates the result count", ->
@@ -476,30 +486,48 @@ describe 'FindView', ->
           atom.workspace.unregisterOpener(anotherOpener)
 
         it "updates the result view", ->
-          atom.workspaceView.openSync "another"
-          expect(findView.resultCounter.text()).toEqual('no results')
+          waitsForPromise ->
+            atom.workspace.open "another"
+
+          runs ->
+            expect(findView.resultCounter.text()).toEqual('no results')
 
         it "removes all highlights", ->
           findResultsView = editorView.find('.search-results')
 
-          atom.workspaceView.openSync "another"
-          expect(findResultsView.children()).toHaveLength 0
+          waitsForPromise ->
+            atom.workspace.open "another"
+
+          runs ->
+            expect(findResultsView.children()).toHaveLength 0
 
       describe "when a new edit session is activated on a different pane", ->
         it "initially highlights all the sample.js results", ->
           expect(editorView.find('.find-result')).toHaveLength 6
 
         it "reruns the search on the new editSession", ->
-          newEditorView = editorView.getPane().splitRight(atom.project.openSync('sample.coffee')).activeView
-          expect(findView.resultCounter.text()).toEqual('7 found')
-          expect(newEditorView.getEditor().getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
+          newEditor = null
 
-          findView.findEditor.trigger 'find-and-replace:find-next'
-          expect(findView.resultCounter.text()).toEqual('1 of 7')
-          expect(newEditorView.getEditor().getSelectedBufferRange()).toEqual [[1, 9], [1, 14]]
+          waitsForPromise ->
+            atom.project.open('sample.coffee').then (o) -> newEditor = o
+
+          runs ->
+            newEditorView = editorView.getPane().splitRight(newEditor).activeView
+            expect(findView.resultCounter.text()).toEqual('7 found')
+            expect(newEditorView.getEditor().getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
+
+            findView.findEditor.trigger 'find-and-replace:find-next'
+            expect(findView.resultCounter.text()).toEqual('1 of 7')
+            expect(newEditorView.getEditor().getSelectedBufferRange()).toEqual [[1, 9], [1, 14]]
 
         it "highlights the found text in the new edit session (and removes the highlights from the other)", ->
-          newEditorView = editorView.getPane().splitRight(atom.project.openSync('sample.coffee'))
+          [newEditor, newEditorView] = []
+
+          waitsForPromise ->
+            atom.project.open('sample.coffee').then (o) -> newEditor = o
+
+          runs ->
+            newEditorView = editorView.getPane().splitRight(newEditor)
 
           waits 1
           runs ->
@@ -510,12 +538,18 @@ describe 'FindView', ->
             expect(newEditorView.find('.find-result')).toHaveLength 7
 
         it "will still highlight results after the split pane has been destroyed", ->
-          newEditorView = editorView.getPane().splitRight(atom.project.openSync('sample.coffee'))
-          expect(newEditorView.find('.find-result')).toHaveLength 7
+          [newEditor, newEditorView] = []
 
-          newEditorView.focus()
-          newEditorView.trigger('core:close')
-          editorView.focus()
+          waitsForPromise ->
+            atom.project.open('sample.coffee').then (o) -> newEditor = o
+
+          runs ->
+            newEditorView = editorView.getPane().splitRight(newEditor)
+            expect(newEditorView.find('.find-result')).toHaveLength 7
+
+            newEditorView.focus()
+            newEditorView.trigger('core:close')
+            editorView.focus()
 
           waits 1
           runs ->
