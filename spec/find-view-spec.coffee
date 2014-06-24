@@ -454,7 +454,6 @@ describe 'FindView', ->
           waitsForPromise ->
             atom.workspace.open('sample.coffee')
 
-          waits 1
           runs ->
             # old editor has no more results
             expect(editorView.find('.highlight.find-result')).toHaveLength 0
@@ -529,7 +528,6 @@ describe 'FindView', ->
           runs ->
             newEditorView = editorView.getPane().splitRight(newEditor)
 
-          waits 1
           runs ->
             # old editor has no more results
             expect(editorView.find('.find-result')).toHaveLength 0
@@ -551,7 +549,6 @@ describe 'FindView', ->
             newEditorView.trigger('core:close')
             editorView.focus()
 
-          waits 1
           runs ->
             expect(editorView.find('.find-result')).toHaveLength 6
 
@@ -653,7 +650,6 @@ describe 'FindView', ->
         findView.findEditor.setText 'notinthefilebro'
         findView.findEditor.trigger 'core:confirm'
 
-        waits 1
         runs ->
           expect(editorView.find('.find-result')).toHaveLength 0
 
@@ -668,22 +664,19 @@ describe 'FindView', ->
 
         findView.findEditor.trigger 'core:confirm'
         findView.findEditor.trigger 'core:confirm'
-        waits 1
-        runs ->
-          nextResult = editorView.find('.current-result')
-          nextPosition = resultPosition(nextResult)
-          expect(nextResult).toHaveLength 1
-          expect(nextPosition).not.toEqual firstPosition
 
-          findView.findEditor.trigger 'find-and-replace:find-previous'
-          findView.findEditor.trigger 'find-and-replace:find-previous'
+        nextResult = editorView.find('.current-result')
+        nextPosition = resultPosition(nextResult)
+        expect(nextResult).toHaveLength 1
+        expect(nextPosition).not.toEqual firstPosition
 
-        waits 1
-        runs ->
-          originalResult = editorView.find('.current-result')
-          originalPosition = resultPosition(originalResult)
-          expect(originalResult).toHaveLength 1
-          expect(originalPosition).toEqual firstPosition
+        findView.findEditor.trigger 'find-and-replace:find-previous'
+        findView.findEditor.trigger 'find-and-replace:find-previous'
+
+        originalResult = editorView.find('.current-result')
+        originalPosition = resultPosition(originalResult)
+        expect(originalResult).toHaveLength 1
+        expect(originalPosition).toEqual firstPosition
 
       it "adds a class to the result when the current selection equals the result's range", ->
         originalResult = editorView.find('.current-result')
@@ -692,17 +685,13 @@ describe 'FindView', ->
 
         editor.setSelectedBufferRange([[5, 16], [5, 20]])
 
-        waits 1
-        runs ->
-          expect(editorView.find('.current-result')).toHaveLength 0
-          editor.setSelectedBufferRange([[5, 16], [5, 21]])
+        expect(editorView.find('.current-result')).toHaveLength 0
+        editor.setSelectedBufferRange([[5, 16], [5, 21]])
 
-        waits 1
-        runs ->
-          newResult = editorView.find('.current-result')
-          newPosition = resultPosition(newResult)
-          expect(newResult).toHaveLength 1
-          expect(newPosition).not.toBe originalPosition
+        newResult = editorView.find('.current-result')
+        newPosition = resultPosition(newResult)
+        expect(newResult).toHaveLength 1
+        expect(newPosition).not.toBe originalPosition
 
     describe "when user types in the find editor", ->
       advance = ->
