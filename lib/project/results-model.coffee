@@ -17,6 +17,7 @@ class ResultsModel
   constructor: (state={}) ->
     @useRegex = state.useRegex ? false
     @caseSensitive = state.caseSensitive ? false
+    @followSymbolicLink = state.followSymbolicLink ? false
 
     atom.workspace.eachEditor (editSession) =>
       editSession.on 'contents-modified', => @onContentsModified(editSession)
@@ -24,7 +25,7 @@ class ResultsModel
     @clear()
 
   serialize: ->
-    {@useRegex, @caseSensitive}
+    {@useRegex, @caseSensitive, @followSymbolicLink}
 
   clear: ->
     @clearSearchState()
@@ -70,7 +71,7 @@ class ResultsModel
     onPathsSearched = (numberOfPathsSearched) =>
       @emit('paths-searched', numberOfPathsSearched)
 
-    @inProgressSearchPromise = atom.project.scan @regex, {paths: searchPaths, onPathsSearched}, (result) =>
+    @inProgressSearchPromise = atom.project.scan @regex, {paths: searchPaths, onPathsSearched, follow:@followSymbolicLink}, (result) =>
       @setResult(result.filePath, Result.create(result))
 
     @emit('search', @inProgressSearchPromise)
@@ -116,6 +117,9 @@ class ResultsModel
 
   toggleCaseSensitive: ->
     @caseSensitive = not @caseSensitive
+
+  toggleFollowSymbolicLink: ->
+    @followSymbolicLink = not @followSymbolicLink
 
   getResultsSummary: ->
     pattern = @pattern or ''
