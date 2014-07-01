@@ -647,6 +647,41 @@ describe 'ProjectFindView', ->
         atom.workspaceView.trigger 'find-and-replace:use-selection-as-find-pattern'
         expect(projectFindView.findEditor.getText()).toBe ''
 
+    describe "when there is an error searching", ->
+      it "displays the errors in the results pane", ->
+        [callback, deferred, called, resultsPaneView, errorList] = []
+        projectFindView.findEditor.setText('items')
+        spyOn(atom.project, 'scan').andCallFake (regex, options, fn) ->
+          callback = fn
+          deferred = Q.defer()
+          called = true
+          deferred.promise
+
+        projectFindView.trigger 'core:confirm'
+
+        waitsFor -> called
+
+        runs ->
+          resultsPaneView = getExistingResultsPane()
+          errorList = resultsPaneView.errorList
+          expect(errorList.find("li")).toHaveLength 0
+
+          callback(null, {path: '/some/path.js', code: 'ENOENT', message: 'Nope'})
+          expect(errorList).toBeVisible()
+          expect(errorList.find("li")).toHaveLength 1
+
+          callback(null, {path: '/some/path.js', code: 'ENOENT', message: 'Broken'})
+          deferred.resolve()
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          expect(errorList).toBeVisible()
+          expect(errorList.find("li")).toHaveLength 2
+          expect(errorList.find("li:eq(0)").text()).toBe 'Nope'
+          expect(errorList.find("li:eq(1)").text()).toBe 'Broken'
+
   describe "replacing", ->
     [testDir, sampleJs, sampleCoffee, replacePromise] = []
 
@@ -885,3 +920,40 @@ describe 'ProjectFindView', ->
             sampleCoffeeContent = fs.readFileSync(sampleCoffee, 'utf8')
             expect(sampleCoffeeContent.match(/items/g)).toBeFalsy()
             expect(sampleCoffeeContent.match(/sunshine/g)).toHaveLength 7
+
+    describe "when there is an error replacing", ->
+      it "displays the errors in the results pane", ->
+        [callback, deferred, called, resultsPaneView, errorList] = []
+        projectFindView.findEditor.setText('items')
+        projectFindView.replaceEditor.setText('sunshine')
+
+        spyOn(atom.project, 'replace').andCallFake (regex, replacement, paths, fn) ->
+          callback = fn
+          deferred = Q.defer()
+          called = true
+          deferred.promise
+
+        projectFindView.trigger 'project-find:replace-all'
+
+        waitsFor -> called
+
+        runs ->
+          resultsPaneView = getExistingResultsPane()
+          errorList = resultsPaneView.errorList
+          expect(errorList.find("li")).toHaveLength 0
+
+          callback(null, {path: '/some/path.js', code: 'ENOENT', message: 'Nope'})
+          expect(errorList).toBeVisible()
+          expect(errorList.find("li")).toHaveLength 1
+
+          callback(null, {path: '/some/path.js', code: 'ENOENT', message: 'Broken'})
+          deferred.resolve()
+
+        waitsForPromise ->
+          replacePromise
+
+        runs ->
+          expect(errorList).toBeVisible()
+          expect(errorList.find("li")).toHaveLength 2
+          expect(errorList.find("li:eq(0)").text()).toBe 'Nope'
+          expect(errorList.find("li:eq(1)").text()).toBe 'Broken'

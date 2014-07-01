@@ -39,6 +39,7 @@ class ResultsModel
     @paths = []
     @active = false
     @pattern = ''
+    @searchErrors = null
 
     if @inProgressSearchPromise?
       @inProgressSearchPromise.cancel()
@@ -50,6 +51,7 @@ class ResultsModel
     @replacementPattern = null
     @replacedPathCount = null
     @replacementCount = null
+    @replacementErrors = null
     @emit('replacement-state-cleared', @getResultsSummary())
 
   search: (pattern, searchPaths, replacementPattern, {onlyRunIfChanged, keepReplacementState}={}) ->
@@ -70,8 +72,13 @@ class ResultsModel
     onPathsSearched = (numberOfPathsSearched) =>
       @emit('paths-searched', numberOfPathsSearched)
 
-    @inProgressSearchPromise = atom.project.scan @regex, {paths: searchPaths, onPathsSearched}, (result) =>
-      @setResult(result.filePath, Result.create(result))
+    @inProgressSearchPromise = atom.project.scan @regex, {paths: searchPaths, onPathsSearched}, (result, error) =>
+      if result
+        @setResult(result.filePath, Result.create(result))
+      else
+        @searchErrors ?= []
+        @searchErrors.push(error)
+        @emit('path-error', error)
 
     @emit('search', @inProgressSearchPromise)
     @inProgressSearchPromise.then (message) =>
@@ -91,11 +98,16 @@ class ResultsModel
     @replacedPathCount = 0
     @replacementCount = 0
 
-    promise = atom.project.replace regex, replacementPattern, replacementPaths, (result) =>
-      if result and result.replacements
-        @replacedPathCount++
-        @replacementCount += result.replacements
-      @emit('path-replaced', result)
+    promise = atom.project.replace regex, replacementPattern, replacementPaths, (result, error) =>
+      if result
+        if result.replacements
+          @replacedPathCount++
+          @replacementCount += result.replacements
+        @emit('path-replaced', result)
+      else
+        @replacementErrors ?= []
+        @replacementErrors.push(error)
+        @emit('path-error', error)
 
     @emit('replace', promise)
     promise.then =>
@@ -123,9 +135,11 @@ class ResultsModel
       pattern
       @pathCount
       @matchCount
+      @searchErrors
       @replacementPattern
       @replacedPathCount
       @replacementCount
+      @replacementErrors
     }
 
   getPathCount: ->

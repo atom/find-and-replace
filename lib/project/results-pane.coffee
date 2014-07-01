@@ -1,3 +1,4 @@
+_ = require 'underscore-plus'
 {ScrollView} = require 'atom'
 ResultsView = require './results-view'
 Util = require './util'
@@ -15,6 +16,8 @@ class ResultsPaneView extends ScrollView
           @div outlet: 'searchedCountBlock', class: 'inline-block', =>
             @span outlet: 'searchedCount', class: 'searched-count'
             @span ' paths searched'
+
+      @ul outlet: 'errorList', class: 'error-list list-group padded'
 
       @subview 'resultsView', new ResultsView(@model)
       @ul class: 'centered background-message no-results-overlay', =>
@@ -57,6 +60,22 @@ class ResultsPaneView extends ScrollView
     @subscribe @model, 'replacement-state-cleared', @onReplacementStateCleared
     @subscribe @model, 'finished-searching', @onFinishedSearching
     @subscribe @model, 'paths-searched', @onPathsSearched
+    @subscribe @model, 'path-error', (error) => @appendError(error.message)
+
+  setErrors: (messages) ->
+    if messages? and messages.length
+      @errorList.html('')
+      @appendError(message) for message in messages
+    else
+      @clearErrors()
+    return
+
+  appendError: (message) ->
+    @errorList.append("<li class=\"text-error\">#{Util.escapeHtml(message)}</li>")
+    @errorList.show()
+
+  clearErrors: ->
+    @errorList.html('').hide()
 
   onSearch: (deferred) =>
     @loadingMessage.show()
@@ -87,9 +106,17 @@ class ResultsPaneView extends ScrollView
     @hideOrShowNoResults(results)
     @previewCount.html(Util.getSearchResultsMessage(results))
 
+    if results.searchErrors? or results.replacementErrors?
+      errors = _.pluck(results.replacementErrors, 'message')
+      errors = errors.concat _.pluck(results.searchErrors, 'message')
+      @setErrors(errors)
+    else
+      @clearErrors()
+
   onReplacementStateCleared: (results) =>
     @hideOrShowNoResults(results)
     @previewCount.html(Util.getSearchResultsMessage(results))
+    @clearErrors()
 
   onCleared: =>
     @addClass('no-results')
