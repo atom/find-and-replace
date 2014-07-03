@@ -13,12 +13,17 @@
   z-index: -1;
 }
 
-
 .editor .search-results .marker .region,
-.editor .find-result .region,
+.editor .find-result .region {
+  background-color: transparent;
+  border-radius: @component-border-radius;
+  border: 1px solid @syntax-result-marker-color;
+}
+
+.editor .search-results .marker.current-result .region,
 .editor .current-result .region {
-  border-radius: 2px;
-  border: 1px solid;
+  border-radius: @component-border-radius;
+  border: 1px solid @syntax-result-marker-color-selected;
 }
 
 .editor .find-result,
