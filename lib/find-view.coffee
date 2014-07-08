@@ -226,7 +226,7 @@ class FindView extends View
     if @markers.length == 0
       atom.beep()
     else
-      unless currentMarker = @currentResultMarker
+      unless currentMarker = @findModel.currentResultMarker
         markerIndex = @[nextIndexFn]()
         currentMarker = @markers[markerIndex]
 
@@ -261,7 +261,7 @@ class FindView extends View
     @findModel.update(options)
 
   updateResultCounter: ->
-    if @currentResultMarker and (index = @markers.indexOf(@currentResultMarker)) > -1
+    if @findModel.currentResultMarker and (index = @markers.indexOf(@findModel.currentResultMarker)) > -1
       text = "#{ index + 1} of #{@markers.length}"
     else
       if not @markers? or @markers.length == 0
@@ -335,32 +335,21 @@ class FindView extends View
   setCurrentResultMarker: (marker) =>
     editor = @findModel.getEditSession()
 
-    if @currentResultMarker and not @currentResultMarker.isDestroyed()
+    if @findModel.currentResultMarker and not @findModel.currentResultMarker.isDestroyed()
       # FIXME: remove this when the old editor is out
       # HACK/TODO: telepath does not emit an event when attributes change. This
       # is the event I want, so emitting myself.
-      @currentResultMarker.setAttributes(isCurrent: false)
-      @currentResultMarker.emit('attributes-changed', {isCurrent: false})
+      @findModel.currentResultMarker.setAttributes(isCurrent: false)
+      @findModel.currentResultMarker.emit('attributes-changed', {isCurrent: false})
 
-      # for react editor
-      if editor?.addDecorationForMarker?
-        editor.removeDecorationForMarker(@currentResultMarker, type: 'highlight', class: 'current-result')
-        editor.addDecorationForMarker(@currentResultMarker, type: 'highlight', class: @constructor.markerClass)
-
-    @currentResultMarker = null
+    @findModel.setCurrentResultMarker(marker)
 
     if marker and not marker.isDestroyed()
-      @currentResultMarker = marker
-
       # FIXME: remove when old editor goes away
       # HACK/TODO: telepath does not emit an event when attributes change. This
       # is the event I want, so emitting myself.
-      @currentResultMarker.setAttributes(isCurrent: true)
-      @currentResultMarker.emit('attributes-changed', {isCurrent: true})
-
-      if editor?.addDecorationForMarker?
-        editor.removeDecorationForMarker(marker, type: 'highlight', class: @constructor.markerClass)
-        editor.addDecorationForMarker(marker, type: 'highlight', class: 'current-result')
+      @findModel.currentResultMarker.setAttributes(isCurrent: true)
+      @findModel.currentResultMarker.emit('attributes-changed', {isCurrent: true})
 
     @updateResultCounter()
 

@@ -438,6 +438,9 @@ describe 'FindView', ->
       expect(findResultsView.parent()).not.toExist()
 
     describe "when the active pane item changes", ->
+      beforeEach ->
+        editor.setSelectedBufferRange([[0, 0], [0, 0]])
+
       describe "when a new edit session is activated", ->
         it "reruns the search on the new edit session", ->
           waitsForPromise ->
@@ -467,7 +470,8 @@ describe 'FindView', ->
 
           runs ->
             findView.findEditor.trigger 'find-and-replace:find-next'
-            expect(atom.workspaceView.getActiveView().find('.highlight.find-result')).toHaveLength 7
+            expect(atom.workspaceView.getActiveView().find('.highlight.find-result')).toHaveLength 6
+            expect(atom.workspaceView.getActiveView().find('.highlight.current-result')).toHaveLength 1
 
       describe "when all active pane items are closed", ->
         it "updates the result count", ->
@@ -645,7 +649,7 @@ describe 'FindView', ->
         {top: result.children()[0].style.top, left: result.children()[0].style.left}
 
       it "only highlights matches", ->
-        expect(editorView.find('.find-result')).toHaveLength 6
+        expect(editorView.find('.find-result')).toHaveLength 5
 
         findView.findEditor.setText 'notinthefilebro'
         findView.findEditor.trigger 'core:confirm'
@@ -659,8 +663,8 @@ describe 'FindView', ->
 
         firstResult = editorView.find('.current-result')
         firstPosition = resultPosition(firstResult)
-        expect(editorView.find('.find-result')).toHaveLength 6
         expect(firstResult).toHaveLength 1
+        expect(editorView.find('.find-result')).toHaveLength 5
 
         findView.findEditor.trigger 'core:confirm'
         findView.findEditor.trigger 'core:confirm'

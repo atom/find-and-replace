@@ -93,6 +93,15 @@ class FindModel
       @destroyAllMarkers()
       @emit 'find-error', e
 
+  setCurrentResultMarker: (marker) ->
+    if @currentResultMarker?
+      @decorationsByMarkerId[@currentResultMarker.id]?.update(type: 'highlight', class: @constructor.markerClass)
+
+    @currentResultMarker = null
+    if marker and not marker.isDestroyed()
+      @decorationsByMarkerId[marker.id]?.update(type: 'highlight', class: 'current-result')
+      @currentResultMarker = marker
+
   findMarker: (range) ->
     attributes = { class: @constructor.markerClass, startPosition: range.start, endPosition: range.end }
     _.find @editSession.findMarkers(attributes), (marker) -> marker.isValid()
@@ -105,13 +114,17 @@ class FindModel
       persistent: false
       isCurrent: false
     marker = @editSession.markBufferRange(range, markerAttributes)
-    @editSession.addDecorationForMarker(marker, type: 'highlight', class: @constructor.markerClass) if @editSession.addDecorationForMarker?
+    if @editSession.decorateMarker?
+      decoration = @editSession.decorateMarker(marker, type: 'highlight', class: @constructor.markerClass)
+      @decorationsByMarkerId[marker.id] = decoration
     marker
 
   destroyAllMarkers: ->
     @valid = false
     marker.destroy() for marker in @markers ? []
     @markers = []
+    @decorationsByMarkerId = {}
+    @currentResultMarker = null
     @emit 'updated', _.clone(@markers)
 
   getEditSession: ->
