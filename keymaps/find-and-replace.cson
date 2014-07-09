@@ -18,6 +18,7 @@
 '.platform-win32 .editor, .platform-linux .editor':
   'f3': 'find-and-replace:find-next'
   'shift-f3': 'find-and-replace:find-previous'
+  'alt-f3': 'find-and-replace:select-all'
   'ctrl-d': 'find-and-replace:select-next'
   'ctrl-e': 'find-and-replace:use-selection-as-find-pattern'
 
