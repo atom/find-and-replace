@@ -130,18 +130,14 @@ class ResultsView extends ScrollView
       @scrollTo(prevView)
 
   collapseResult: ->
-    try
-      selectedView = @find('.selected').view()
-      selectedView.closest('.path').view().expand(false)
-    catch err
-      return
+    parent = @find('.selected').closest('.path').view()
+    if parent instanceof ResultView
+      parent.expand(false)
       
   expandResult: ->
-    try
-      selectedView = @find('.selected').view()
+    selectedView = @find('.selected').view()
+    if selectedView instanceof ResultView
       selectedView.expand(true)
-    catch err
-      return
       
   getPathCount: ->
     @model.getPathCount()
