@@ -48,7 +48,12 @@ class ResultView extends View
       
       if @hasClass('selected')
         @removeClass('selected')
-        @find('.search-result:first').addClass('selected')
+        firstResult = @find('.search-result:first').view()
+        firstResult.addClass('selected')
+        
+        # scroll to the proper place
+        resultView = firstResult.closest('.results-view').view()
+        resultView.scrollTo(firstResult)
         
     else
       @addClass('collapsed')
@@ -57,6 +62,9 @@ class ResultView extends View
       if selected?
         selected.removeClass('selected')
         @addClass('selected')
+        
+        resultView = @closest('.results-view').view()
+        resultView.scrollTo(@)
       
       selectedItem = @find('.selected').view()
         
