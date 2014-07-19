@@ -63,8 +63,4 @@ class ResultView extends View
     @isExpanded = expanded
 
   confirm: ->
-    # unselect child element and select parent
-    @find('.selected').removeClass('selected')
-    @addClass('selected')
-
     @expand(not @isExpanded)
