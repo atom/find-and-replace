@@ -100,7 +100,7 @@ class ResultsView extends ScrollView
         nextParent = selectedView.closest('.path').next()
         nextView = if (not nextParent.hasClass('collapsed')) then nextParent.find('.search-result:first').view() else nextParent.view()
       else if nextView.isExpanded
-          nextView = nextView.find('.search-result:first').view()
+        nextView = nextView.find('.search-result:first').view()
 
     # only select the next view if we found something
     if nextView?
