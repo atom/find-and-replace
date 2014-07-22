@@ -283,7 +283,7 @@ describe 'ResultsView', ->
 
       runs ->
         resultsView = getResultsView()
-        
+
         # collapsed case
         resultsView.find('.selected').removeClass('selected')
         resultsView.find('.path:eq(0) .search-result:last').addClass('selected')
@@ -294,18 +294,18 @@ describe 'ResultsView', ->
         selectedItem = resultsView.find('.selected')
         expect(selectedItem).toHaveClass('path')
         expect(selectedItem[0]).toBe resultsView.find('.path:eq(1)')[0]
-        
+
         # expanded case
         resultsView.find('.selected').removeClass('selected')
         resultsView.find('.path:eq(0) .search-result:last').addClass('selected')
         resultsView.find('.path:eq(1)').view().expand(true)
-        
+
         resultsView.trigger 'core:move-down'
-        
+
         selectedItem = resultsView.find('.selected')
         expect(selectedItem).toHaveClass('search-result')
         expect(selectedItem[0]).toBe resultsView.find('.path:eq(1) .search-result:first')[0]
-          
+
 
     it "collapsed vs expanded transition previous", ->
       projectFindView.findEditor.setText('items')
@@ -316,7 +316,7 @@ describe 'ResultsView', ->
 
       runs ->
         resultsView = getResultsView()
-        
+
         # collapsed case
         resultsView.find('.selected').removeClass('selected')
         resultsView.find('.path:eq(1) .search-result:first').addClass('selected')
@@ -327,14 +327,14 @@ describe 'ResultsView', ->
         selectedItem = resultsView.find('.selected')
         expect(selectedItem).toHaveClass('path')
         expect(selectedItem[0]).toBe resultsView.find('.path:eq(0)')[0]
-        
+
         # expanded case
         resultsView.find('.selected').removeClass('selected')
         resultsView.find('.path:eq(1) .search-result:first').addClass('selected')
         resultsView.find('.path:eq(0)').view().expand(true)
-        
+
         resultsView.trigger 'core:move-up'
-        
+
         selectedItem = resultsView.find('.selected')
         expect(selectedItem).toHaveClass('search-result')
         expect(selectedItem[0]).toBe resultsView.find('.path:eq(0) .search-result:last')[0]
@@ -342,43 +342,43 @@ describe 'ResultsView', ->
     it "collapse current list", ->
       projectFindView.findEditor.setText('items')
       projectFindView.trigger 'core:confirm'
-      
+
       waitsForPromise ->
         searchPromise
-      
+
       runs ->
         resultsView = getResultsView()
-        
+
         # select item in first list
         resultsView.find('.selected').removeClass('selected')
         resultsView.find('.path:eq(0) .search-result:first').addClass('selected')
-        
+
         resultsView.trigger 'core:move-left'
-        
+
         selectedItem = resultsView.find('.selected')
         expect(selectedItem).toHaveClass('collapsed')
         expect(selectedItem[0]).toBe resultsView.find('.path:eq(0)')[0]
-        
+
     it "expand current list", ->
       projectFindView.findEditor.setText('items')
       projectFindView.trigger 'core:confirm'
-      
+
       waitsForPromise ->
         searchPromise
-      
+
       runs ->
         resultsView = getResultsView()
-        
+
         # select item in first list
         resultsView.find('.selected').removeClass('selected')
         resultsView.find('.path:eq(0)').addClass('selected').addClass('collapsed')
-        
+
         resultsView.trigger 'core:move-right'
-        
+
         selectedItem = resultsView.find('.selected')
         expect(selectedItem).toHaveClass('search-result')
         expect(selectedItem[0]).toBe resultsView.find('.path:eq(0) .search-result:first')[0]
-        
+
 
   describe "when the results view is empty", ->
     it "ignores core:confirm events", ->

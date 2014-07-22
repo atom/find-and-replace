@@ -45,29 +45,29 @@ class ResultView extends View
     # expand or collapse the list
     if expanded
       @removeClass('collapsed')
-      
+
       if @hasClass('selected')
         @removeClass('selected')
         firstResult = @find('.search-result:first').view()
         firstResult.addClass('selected')
-        
+
         # scroll to the proper place
         resultView = firstResult.closest('.results-view').view()
         resultView.scrollTo(firstResult)
-        
+
     else
       @addClass('collapsed')
-      
+
       selected = @find('.selected').view()
       if selected?
         selected.removeClass('selected')
         @addClass('selected')
-        
+
         resultView = @closest('.results-view').view()
-        resultView.scrollTo(@)
-      
+        resultView.scrollTo(this)
+
       selectedItem = @find('.selected').view()
-        
+
     @isExpanded = expanded
 
   confirm: ->

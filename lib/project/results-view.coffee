@@ -27,7 +27,7 @@ class ResultsView extends ScrollView
 
     @on 'core:move-left', =>
       @collapseResult()
-     
+
     @on 'core:move-right', =>
       @expandResult()
 
@@ -90,15 +90,15 @@ class ResultsView extends ScrollView
   selectNextResult: ->
     selectedView = @find('.selected').view()
     return @selectFirstResult() unless selectedView
-    
+
     if selectedView.isExpanded
       nextView = selectedView.find('.search-result:first').view()
     else
       nextView = selectedView.next().view()
-      
+
       unless nextView?
         nextParent = selectedView.closest('.path').next()
-        nextView = if (not nextParent.hasClass('collapsed')) then nextParent.find('.search-result:first').view() else nextParent.view()    
+        nextView = if (not nextParent.hasClass('collapsed')) then nextParent.find('.search-result:first').view() else nextParent.view()
       else if nextView.isExpanded
           nextView = nextView.find('.search-result:first').view()
 
@@ -116,10 +116,10 @@ class ResultsView extends ScrollView
       prevView = selectedView.find('.search-result:last').view()
     else
       prevView = selectedView.prev().view()
-      
+
       unless prevView?
         prevParent = selectedView.closest('.path').prev()
-        prevView = if (not prevParent.hasClass('collapsed')) then prevParent.find('.search-result:last').view() else prevParent.view()    
+        prevView = if (not prevParent.hasClass('collapsed')) then prevParent.find('.search-result:last').view() else prevParent.view()
       else if prevView.isExpanded
           prevView = prevView.find('.search-result:last').view()
 
@@ -133,12 +133,12 @@ class ResultsView extends ScrollView
     parent = @find('.selected').closest('.path').view()
     if parent instanceof ResultView
       parent.expand(false)
-      
+
   expandResult: ->
     selectedView = @find('.selected').view()
     if selectedView instanceof ResultView
       selectedView.expand(true)
-      
+
   getPathCount: ->
     @model.getPathCount()
 
