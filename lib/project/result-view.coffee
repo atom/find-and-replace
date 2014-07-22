@@ -18,6 +18,7 @@ class ResultView extends View
       @ul outlet: 'matches', class: 'matches list-tree'
 
   initialize: (@model, @filePath, result) ->
+    @isExpanded = true
     @renderResult(result)
 
   renderResult: (result) ->
@@ -40,5 +41,34 @@ class ResultView extends View
 
     @matches.children().eq(selectedIndex).addClass('selected') if selectedIndex > -1
 
+  expand: (expanded) ->
+    # expand or collapse the list
+    if expanded
+      @removeClass('collapsed')
+
+      if @hasClass('selected')
+        @removeClass('selected')
+        firstResult = @find('.search-result:first').view()
+        firstResult.addClass('selected')
+
+        # scroll to the proper place
+        resultView = firstResult.closest('.results-view').view()
+        resultView.scrollTo(firstResult)
+
+    else
+      @addClass('collapsed')
+
+      selected = @find('.selected').view()
+      if selected?
+        selected.removeClass('selected')
+        @addClass('selected')
+
+        resultView = @closest('.results-view').view()
+        resultView.scrollTo(this)
+
+      selectedItem = @find('.selected').view()
+
+    @isExpanded = expanded
+
   confirm: ->
-    atom.workspaceView.open(@filePath, split: 'left')
+    @expand(not @isExpanded)

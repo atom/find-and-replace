@@ -141,34 +141,9 @@ describe 'ResultsView', ->
         expect(resultsView.find("li").length).toBe resultsView.getPathCount() + resultsView.getMatchCount()
 
   describe "arrowing through the list", ->
-    describe "when nothing is selected", ->
-      beforeEach ->
-        projectFindView.findEditor.setText('items')
-        projectFindView.trigger 'core:confirm'
+    resultsView = null
 
-      it "doesnt error when the user arrows down", ->
-        waitsForPromise ->
-          searchPromise
-
-        runs ->
-          resultsView = getResultsView()
-          resultsView.find('.selected').removeClass('selected')
-          expect(resultsView.find('.selected')).not.toExist()
-          resultsView.trigger 'core:move-down'
-          expect(resultsView.find('.selected')).toExist()
-
-      it "doesnt error when the user arrows up", ->
-        waitsForPromise ->
-          searchPromise
-
-        runs ->
-          resultsView = getResultsView()
-          resultsView.find('.selected').removeClass('selected')
-          expect(resultsView.find('.selected')).not.toExist()
-          resultsView.trigger 'core:move-up'
-          expect(resultsView.find('.selected')).toExist()
-
-    it "arrows through the list without selecting paths", ->
+    it "opens the correct file containing the result when 'core:confirm' is called", ->
       openHandler = null
 
       waitsForPromise ->
@@ -211,7 +186,7 @@ describe 'ResultsView', ->
         activePane = atom.workspaceView.getActivePaneView()
         expect(atom.workspace.getActivePaneItem().getPath()).toContain('sample.')
 
-    it "arrows through the list without selecting paths", ->
+    it "arrows through the entire list without selecting paths and overshooting the boundaries", ->
       waitsForPromise ->
         atom.workspace.open('sample.js')
 
@@ -274,46 +249,70 @@ describe 'ResultsView', ->
 
           lastSelectedItem = selectedItem[0]
 
-    it "moves to the proper next search-result when a path is selected", ->
-      projectFindView.findEditor.setText('items')
-      projectFindView.trigger 'core:confirm'
+    describe "when there are a list of items", ->
+      beforeEach ->
+        projectFindView.findEditor.setText('items')
+        projectFindView.trigger 'core:confirm'
+        waitsForPromise -> searchPromise
+        runs -> resultsView = getResultsView()
 
-      waitsForPromise ->
-        searchPromise
-
-      runs ->
-        resultsView = getResultsView()
+      it "collapses the selected results view", ->
+        # select item in first list
         resultsView.find('.selected').removeClass('selected')
-        resultsView.find('.path:eq(0)').addClass('selected')
+        resultsView.find('.path:eq(0) .search-result:first').addClass('selected')
 
-        resultsView.trigger 'core:move-up'
+        resultsView.trigger 'core:move-left'
+
         selectedItem = resultsView.find('.selected')
-        expect(selectedItem).toHaveClass('path') # it's the same path
+        expect(selectedItem).toHaveClass('collapsed')
+        expect(selectedItem[0]).toBe resultsView.find('.path:eq(0)')[0]
 
-        resultsView.trigger 'core:move-down'
+      it "expands the selected results view", ->
+        # select item in first list
+        resultsView.find('.selected').removeClass('selected')
+        resultsView.find('.path:eq(0)').addClass('selected').addClass('collapsed')
+
+        resultsView.trigger 'core:move-right'
 
         selectedItem = resultsView.find('.selected')
         expect(selectedItem).toHaveClass('search-result')
         expect(selectedItem[0]).toBe resultsView.find('.path:eq(0) .search-result:first')[0]
 
-    it "moves to the proper previous search-result when a path is selected", ->
-      projectFindView.findEditor.setText('items')
-      projectFindView.trigger 'core:confirm'
+      describe "when nothing is selected", ->
+        it "doesnt error when the user arrows down", ->
+          resultsView.find('.selected').removeClass('selected')
+          expect(resultsView.find('.selected')).not.toExist()
+          resultsView.trigger 'core:move-down'
+          expect(resultsView.find('.selected')).toExist()
 
-      waitsForPromise ->
-        searchPromise
+        it "doesnt error when the user arrows up", ->
+          resultsView.find('.selected').removeClass('selected')
+          expect(resultsView.find('.selected')).not.toExist()
+          resultsView.trigger 'core:move-up'
+          expect(resultsView.find('.selected')).toExist()
 
-      runs ->
-        resultsView = getResultsView()
-        resultsView.find('.selected').removeClass('selected')
-        resultsView.find('.path:eq(1)').addClass('selected')
+      describe "when there are collapsed results", ->
+        it "moves to the correct next result when a path is selected", ->
+          resultsView.find('.selected').removeClass('selected')
+          resultsView.find('.path:eq(0) .search-result:last').addClass('selected')
+          resultsView.find('.path:eq(1)').view().expand(false)
 
-        resultsView.trigger 'core:move-up'
+          resultsView.trigger 'core:move-down'
 
-        selectedItem = resultsView.find('.selected')
-        expect(selectedItem).toHaveClass('search-result')
-        expect(selectedItem[0]).toBe resultsView.find('.path:eq(0) .search-result:last')[0]
+          selectedItem = resultsView.find('.selected')
+          expect(selectedItem).toHaveClass('path')
+          expect(selectedItem[0]).toBe resultsView.find('.path:eq(1)')[0]
 
+        it "moves to the correct previous result when a path is selected", ->
+          resultsView.find('.selected').removeClass('selected')
+          resultsView.find('.path:eq(1) .search-result:first').addClass('selected')
+          resultsView.find('.path:eq(0)').view().expand(false)
+
+          resultsView.trigger 'core:move-up'
+
+          selectedItem = resultsView.find('.selected')
+          expect(selectedItem).toHaveClass('path')
+          expect(selectedItem[0]).toBe resultsView.find('.path:eq(0)')[0]
 
   describe "when the results view is empty", ->
     it "ignores core:confirm events", ->
