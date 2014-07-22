@@ -116,12 +116,11 @@ class ResultsView extends ScrollView
       prevView = selectedView.find('.search-result:last').view()
     else
       prevView = selectedView.prev().view()
-
       unless prevView?
         prevParent = selectedView.closest('.path').prev()
         prevView = if (not prevParent.hasClass('collapsed')) then prevParent.find('.search-result:last').view() else prevParent.view()
       else if prevView.isExpanded
-          prevView = prevView.find('.search-result:last').view()
+        prevView = prevView.find('.search-result:last').view()
 
     # only select the prev view if we found something
     if prevView?
@@ -131,13 +130,11 @@ class ResultsView extends ScrollView
 
   collapseResult: ->
     parent = @find('.selected').closest('.path').view()
-    if parent instanceof ResultView
-      parent.expand(false)
+    parent.expand(false) if parent instanceof ResultView
 
   expandResult: ->
     selectedView = @find('.selected').view()
-    if selectedView instanceof ResultView
-      selectedView.expand(true)
+    selectedView.expand(true) if selectedView instanceof ResultView
 
   getPathCount: ->
     @model.getPathCount()
