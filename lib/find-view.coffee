@@ -275,10 +275,10 @@ class FindView extends View
     @selectMarkerAtIndex(markerIndex)
 
   firstMarkerIndexAfterCursor: ->
-    editSession = @findModel.getEditSession()
-    return -1 unless editSession
+    editor = @findModel.getEditor()
+    return -1 unless editor
 
-    selection = editSession.getSelection()
+    selection = editor.getSelection()
     {start, end} = selection.getBufferRange()
     start = end if selection.isReversed()
 
@@ -292,10 +292,10 @@ class FindView extends View
     @selectMarkerAtIndex(markerIndex)
 
   firstMarkerIndexBeforeCursor: ->
-    editSession = @findModel.getEditSession()
-    return -1 unless editSession
+    editor = @findModel.getEditor()
+    return -1 unless editor
 
-    selection = @findModel.getEditSession().getSelection()
+    selection = @findModel.getEditor().getSelection()
     {start, end} = selection.getBufferRange()
     start = end if selection.isReversed()
 
@@ -309,13 +309,13 @@ class FindView extends View
     return unless @markers?.length > 0
 
     if marker = @markers[markerIndex]
-      @findModel.getEditSession().setSelectedBufferRange(marker.getBufferRange(), autoscroll: true, flash: true)
+      @findModel.getEditor().setSelectedBufferRange(marker.getBufferRange(), autoscroll: true, flash: true)
       @setCurrentResultMarker(marker)
 
   setCurrentMarkerFromSelection: =>
     currentResultMarker = null
-    if @markers? and @markers.length and @isAttached() and editSession = @findModel.getEditSession()
-      selectedBufferRange = editSession.getSelectedBufferRange()
+    if @markers? and @markers.length and @isAttached() and editor = @findModel.getEditor()
+      selectedBufferRange = editor.getSelectedBufferRange()
       currentResultMarker = @findModel.findMarker(selectedBufferRange)
 
     @setCurrentResultMarker(currentResultMarker)
@@ -325,7 +325,7 @@ class FindView extends View
     @updateResultCounter()
 
   setSelectionAsFindPattern: =>
-    pattern = @findModel.getEditSession().getSelectedText()
+    pattern = @findModel.getEditor().getSelectedText()
     @updateModel {pattern}
 
   updateOptionsLabel: ->

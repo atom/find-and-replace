@@ -18,8 +18,8 @@ class ResultsModel
     @useRegex = state.useRegex ? false
     @caseSensitive = state.caseSensitive ? false
 
-    atom.workspace.eachEditor (editSession) =>
-      editSession.on 'contents-modified', => @onContentsModified(editSession)
+    atom.workspace.eachEditor (editor) =>
+      editor.on 'contents-modified', => @onContentsModified(editor)
 
     @clear()
 
@@ -193,14 +193,14 @@ class ResultsModel
     else
       new RegExp(_.escapeRegExp(pattern), flags)
 
-  onContentsModified: (editSession) =>
+  onContentsModified: (editor) =>
     return unless @active
-    return unless editSession.getPath()
+    return unless editor.getPath()
 
     matches = []
-    editSession.scan @regex, (match) ->
+    editor.scan @regex, (match) ->
       matches.push(match)
 
     result = Result.create({matches})
-    @setResult(editSession.getPath(), result)
+    @setResult(editor.getPath(), result)
     @emit('finished-searching', @getResultsSummary())

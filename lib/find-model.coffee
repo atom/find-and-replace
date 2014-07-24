@@ -18,14 +18,14 @@ class FindModel
     atom.workspaceView.on 'pane-container:active-pane-item-changed', => @activePaneItemChanged()
 
   activePaneItemChanged: ->
-    @editSession?.getBuffer().off(".find")
-    @editSession = null
+    @editor?.getBuffer().off(".find")
+    @editor = null
     paneItem = atom.workspace.getActivePaneItem()
     @destroyAllMarkers()
 
     if paneItem?.getBuffer?()?
-      @editSession = paneItem
-      @editSession.getBuffer().on "contents-modified.find", (args) =>
+      @editor = paneItem
+      @editor.getBuffer().on "contents-modified.find", (args) =>
         @updateMarkers() unless @replacing
       @updateMarkers()
 
@@ -44,15 +44,15 @@ class FindModel
     return unless markers?.length > 0
 
     @replacing = true
-    @editSession.transact =>
+    @editor.transact =>
       for marker in markers
         bufferRange = marker.getBufferRange()
         replacementText = null
         if @useRegex
           replacementPattern = escapeHelper.unescapeEscapeSequence(replacementPattern)
-          textToReplace = @editSession.getTextInBufferRange(bufferRange)
+          textToReplace = @editor.getTextInBufferRange(bufferRange)
           replacementText = textToReplace.replace(@getRegex(), replacementPattern)
-        @editSession.setTextInBufferRange(bufferRange, replacementText ? replacementPattern)
+        @editor.setTextInBufferRange(bufferRange, replacementText ? replacementPattern)
 
         marker.destroy()
         @markers.splice(@markers.indexOf(marker), 1)
@@ -61,13 +61,13 @@ class FindModel
     @emit 'updated', _.clone(@markers)
 
   updateMarkers: ->
-    if not @editSession? or not @pattern
+    if not @editor? or not @pattern
       @destroyAllMarkers()
       return
 
     @valid = true
     if @inCurrentSelection
-      bufferRange = @editSession.getSelectedBufferRange()
+      bufferRange = @editor.getSelectedBufferRange()
     else
       bufferRange = [[0,0],[Infinity,Infinity]]
 
@@ -77,7 +77,7 @@ class FindModel
     markersToRemoveById[marker.id] = marker for marker in @markers
 
     try
-      @editSession.scanInBufferRange @getRegex(), bufferRange, ({range}) =>
+      @editor.scanInBufferRange @getRegex(), bufferRange, ({range}) =>
         if marker = @findMarker(range)
           delete markersToRemoveById[marker.id]
         else
@@ -104,7 +104,7 @@ class FindModel
 
   findMarker: (range) ->
     attributes = { class: @constructor.markerClass, startPosition: range.start, endPosition: range.end }
-    _.find @editSession.findMarkers(attributes), (marker) -> marker.isValid()
+    _.find @editor.findMarkers(attributes), (marker) -> marker.isValid()
 
   createMarker: (range) ->
     markerAttributes =
@@ -113,9 +113,9 @@ class FindModel
       replicate: false
       persistent: false
       isCurrent: false
-    marker = @editSession.markBufferRange(range, markerAttributes)
-    if @editSession.decorateMarker?
-      decoration = @editSession.decorateMarker(marker, type: 'highlight', class: @constructor.markerClass)
+    marker = @editor.markBufferRange(range, markerAttributes)
+    if @editor.decorateMarker?
+      decoration = @editor.decorateMarker(marker, type: 'highlight', class: @constructor.markerClass)
       @decorationsByMarkerId[marker.id] = decoration
     marker
 
@@ -127,8 +127,8 @@ class FindModel
     @currentResultMarker = null
     @emit 'updated', _.clone(@markers)
 
-  getEditSession: ->
-    @editSession
+  getEditor: ->
+    @editor
 
   getRegex: ->
     flags = 'g'

@@ -508,7 +508,7 @@ describe 'FindView', ->
         it "initially highlights all the sample.js results", ->
           expect(editorView.find('.find-result')).toHaveLength 6
 
-        it "reruns the search on the new editSession", ->
+        it "reruns the search on the new editor", ->
           newEditor = null
 
           waitsForPromise ->
