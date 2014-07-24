@@ -1,7 +1,6 @@
 _ = require 'underscore-plus'
 {$$$, EditorView, View} = require 'atom'
 FindModel = require './find-model'
-FindResultsView = require './find-results-view'
 History = require './history'
 
 module.exports =
@@ -45,7 +44,6 @@ class FindView extends View
     @findModel = new FindModel(modelState)
     @findHistory = new History(@findEditor, findHistory)
     @replaceHistory = new History(@replaceEditor, replaceHistory)
-    @findResultsView = new FindResultsView(@findModel)
     @handleEvents()
     @updateOptionButtons()
 
@@ -112,13 +110,6 @@ class FindView extends View
     @subscribe @findModel, 'updated', @markersUpdated
     @subscribe @findModel, 'find-error', @findError
 
-    atom.workspaceView.on 'pane-container:active-pane-item-changed', =>
-      @findResultsView.attach() if @isAttached() and not @isActiveEditorReact()
-
-    # FIXME: remove when the old editor is out.
-    atom.workspaceView.on 'selection:changed', @setCurrentMarkerFromSelection
-
-    # For the react editor
     atom.workspace.eachEditor (editor) =>
       @subscribe editor, 'selection-added selection-screen-range-changed', @setCurrentMarkerFromSelection
 
@@ -159,8 +150,6 @@ class FindView extends View
     @replaceEditor.getEditor().selectAll()
 
   attach: =>
-    @findResultsView.attach() unless @isActiveEditorReact()
-
     atom.workspaceView.prependToBottom(this)
     atom.workspaceView.addClass('find-visible')
 
@@ -168,7 +157,6 @@ class FindView extends View
     return unless @isAttached()
 
     @hideAllTooltips()
-    @findResultsView.detach()
     atom.workspaceView.focus()
     atom.workspaceView.removeClass('find-visible')
     super()
@@ -333,24 +321,7 @@ class FindView extends View
     @setCurrentResultMarker(currentResultMarker)
 
   setCurrentResultMarker: (marker) =>
-    editor = @findModel.getEditSession()
-
-    if @findModel.currentResultMarker and not @findModel.currentResultMarker.isDestroyed()
-      # FIXME: remove this when the old editor is out
-      # HACK/TODO: telepath does not emit an event when attributes change. This
-      # is the event I want, so emitting myself.
-      @findModel.currentResultMarker.setAttributes(isCurrent: false)
-      @findModel.currentResultMarker.emit('attributes-changed', {isCurrent: false})
-
     @findModel.setCurrentResultMarker(marker)
-
-    if marker and not marker.isDestroyed()
-      # FIXME: remove when old editor goes away
-      # HACK/TODO: telepath does not emit an event when attributes change. This
-      # is the event I want, so emitting myself.
-      @findModel.currentResultMarker.setAttributes(isCurrent: true)
-      @findModel.currentResultMarker.emit('attributes-changed', {isCurrent: true})
-
     @updateResultCounter()
 
   setSelectionAsFindPattern: =>
