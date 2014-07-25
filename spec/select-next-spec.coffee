@@ -25,6 +25,9 @@ describe "SelectNext", ->
         editorView.trigger 'find-and-replace:select-next'
         expect(editor.getSelectedBufferRanges()).toEqual [[[1, 2], [1, 5]]]
 
+      it "marks all the occurrences", ->
+        expect(findResultsView.parent()[0]).toBe editorView.underlayer[0]
+
     describe "when a word is selected", ->
       it "selects the next occurrence of the selected word skipping any non-word matches", ->
         editor.setText """
