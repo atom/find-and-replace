@@ -136,6 +136,10 @@ class FindModel
     flags += 'i' unless @caseSensitive
 
     if @useRegex
-      new RegExp(@pattern, flags)
+      expression = @pattern
     else
-      new RegExp(_.escapeRegExp(@pattern), flags)
+      expression = _.escapeRegExp(@pattern)
+
+    expression = "\\b#{expression}\\b" if @wholeWord
+
+    new RegExp(expression, flags)
