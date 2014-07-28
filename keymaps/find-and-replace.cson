@@ -28,6 +28,7 @@
   'cmd-alt-/': 'find-and-replace:toggle-regex-option'
   'cmd-alt-c': 'find-and-replace:toggle-case-option'
   'cmd-alt-s': 'find-and-replace:toggle-selection-option'
+  'cmd-alt-w': 'find-and-replace:toggle-whole-word-option'
 
 '.platform-win32 .find-and-replace, .platform-linux .find-and-replace':
   'shift-enter': 'find-and-replace:show-previous'
@@ -35,6 +36,7 @@
   'ctrl-alt-/': 'find-and-replace:toggle-regex-option'
   'ctrl-alt-c': 'find-and-replace:toggle-case-option'
   'ctrl-alt-s': 'find-and-replace:toggle-selection-option'
+  'ctrl-alt-w': 'find-and-replace:toggle-whole-word-option'
 
 '.platform-darwin .project-find':
   'cmd-alt-/': 'project-find:toggle-regex-option'
