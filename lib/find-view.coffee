@@ -370,6 +370,7 @@ class FindView extends View
     else
       label.push('Case Insensitive')
     label.push('Within Current Selection') if @findModel.inCurrentSelection
+    label.push('Whole Word') if @findModel.wholeWord
     @optionsLabel.text(label.join(', '))
 
   toggleRegexOption: =>
