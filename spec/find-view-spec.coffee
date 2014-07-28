@@ -196,14 +196,17 @@ describe 'FindView', ->
         expect(findView.caseOptionButton).not.toHaveClass 'selected'
         expect(findView.regexOptionButton).not.toHaveClass 'selected'
         expect(findView.selectionOptionButton).not.toHaveClass 'selected'
+        expect(findView.wholeWordOptionButton).not.toHaveClass 'selected'
 
         findView.caseOptionButton.click()
         findView.regexOptionButton.click()
         findView.selectionOptionButton.click()
+        findView.wholeWordOptionButton.click()
 
         expect(findView.caseOptionButton).toHaveClass 'selected'
         expect(findView.regexOptionButton).toHaveClass 'selected'
         expect(findView.selectionOptionButton).toHaveClass 'selected'
+        expect(findView.wholeWordOptionButton).toHaveClass 'selected'
 
         atom.packages.deactivatePackage("find-and-replace")
 
@@ -220,6 +223,7 @@ describe 'FindView', ->
         expect(findView.caseOptionButton).toHaveClass 'selected'
         expect(findView.regexOptionButton).toHaveClass 'selected'
         expect(findView.selectionOptionButton).toHaveClass 'selected'
+        expect(findView.wholeWordOptionButton).toHaveClass 'selected'
 
   describe "finding", ->
     beforeEach ->

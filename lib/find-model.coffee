@@ -12,6 +12,7 @@ class FindModel
     @useRegex = state.useRegex ? false
     @inCurrentSelection = state.inCurrentSelection ? false
     @caseSensitive = state.caseSensitive ? false
+    @wholeWord = state.wholeWord ? false
     @valid = false
 
     @activePaneItemChanged()
@@ -30,10 +31,10 @@ class FindModel
       @updateMarkers()
 
   serialize: ->
-    {@useRegex, @inCurrentSelection, @caseSensitive}
+    {@useRegex, @inCurrentSelection, @caseSensitive, @wholeWord}
 
   update: (newParams={}) ->
-    currentParams = {@pattern, @useRegex, @inCurrentSelection, @caseSensitive}
+    currentParams = {@pattern, @useRegex, @inCurrentSelection, @caseSensitive, @wholeWord}
     _.defaults(newParams, currentParams)
 
     unless @valid and _.isEqual(newParams, currentParams)

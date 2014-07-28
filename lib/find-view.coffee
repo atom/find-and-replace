@@ -29,6 +29,7 @@ class FindView extends View
           @button outlet: 'regexOptionButton', class: 'btn', '.*'
           @button outlet: 'caseOptionButton', class: 'btn', 'Aa'
           @button outlet: 'selectionOptionButton', class: 'btn option-selection', '"'
+          @button outlet: 'wholeWordOptionButton', class: 'btn', 'W'
 
       @div class: 'replace-container block', =>
         @div class: 'editor-container', =>
@@ -62,6 +63,7 @@ class FindView extends View
       @regexOptionButton.setTooltip("Use Regex", command: 'find-and-replace:toggle-regex-option', commandElement: @findEditor)
       @caseOptionButton.setTooltip("Match Case", command: 'find-and-replace:toggle-case-option', commandElement: @findEditor)
       @selectionOptionButton.setTooltip("Only In Selection", command: 'find-and-replace:toggle-selection-option', commandElement: @findEditor)
+      @wholeWordOptionButton.setTooltip("Whole Word", command: 'find-and-replace:toggle-whole-word-option', commandElement: @findEditor)
 
       @previousButton.setTooltip("Find Previous", command: 'find-and-replace:find-previous', commandElement: @findEditor)
       @nextButton.setTooltip("Find Next", command: 'find-and-replace:find-next', commandElement: @findEditor)
@@ -75,6 +77,7 @@ class FindView extends View
     @regexOptionButton.hideTooltip()
     @caseOptionButton.hideTooltip()
     @selectionOptionButton.hideTooltip()
+    @wholeWordOptionButton.hideTooltip()
 
     @previousButton.hideTooltip()
     @nextButton.hideTooltip()
@@ -104,10 +107,12 @@ class FindView extends View
     @command 'find-and-replace:toggle-regex-option', @toggleRegexOption
     @command 'find-and-replace:toggle-case-option', @toggleCaseOption
     @command 'find-and-replace:toggle-selection-option', @toggleSelectionOption
+    @command 'find-and-replace:toggle-whole-word-option', @toggleWholeWordOption
 
     @regexOptionButton.on 'click', @toggleRegexOption
     @caseOptionButton.on 'click', @toggleCaseOption
     @selectionOptionButton.on 'click', @toggleSelectionOption
+    @wholeWordOptionButton.on 'click', @toggleWholeWordOption
 
     @subscribe @findModel, 'updated', @markersUpdated
     @subscribe @findModel, 'find-error', @findError
@@ -382,6 +387,11 @@ class FindView extends View
     @selectFirstMarkerAfterCursor()
     @updateOptionsLabel()
 
+  toggleWholeWordOption: =>
+    @updateModel {pattern: @findEditor.getText(), wholeWord: !@findModel.wholeWord}
+    @selectFirstMarkerAfterCursor()
+    @updateOptionsLabel()
+
   setOptionButtonState: (optionButton, selected) ->
     if selected
       optionButton.addClass 'selected'
@@ -392,3 +402,4 @@ class FindView extends View
     @setOptionButtonState(@regexOptionButton, @findModel.useRegex)
     @setOptionButtonState(@caseOptionButton, @findModel.caseSensitive)
     @setOptionButtonState(@selectionOptionButton, @findModel.inCurrentSelection)
+    @setOptionButtonState(@wholeWordOptionButton, @findModel.wholeWord)
