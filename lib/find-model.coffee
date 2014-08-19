@@ -9,9 +9,9 @@ class FindModel
 
   constructor: (state={}) ->
     @pattern = ''
-    @useRegex = state.useRegex ? false
-    @inCurrentSelection = state.inCurrentSelection ? false
-    @caseSensitive = state.caseSensitive ? false
+    @useRegex = state.useRegex ? atom.config.get('find-and-replace.useRegex') ? false
+    @inCurrentSelection = state.inCurrentSelection ? atom.config.get('find-and-replace.inCurrentSelection') ? false
+    @caseSensitive = state.caseSensitive ? atom.config.get('find-and-replace.caseSensitive') ? false
     @valid = false
 
     @activePaneItemChanged()

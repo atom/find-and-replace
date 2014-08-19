@@ -15,8 +15,8 @@ class ResultsModel
   Emitter.includeInto(this)
 
   constructor: (state={}) ->
-    @useRegex = state.useRegex ? false
-    @caseSensitive = state.caseSensitive ? false
+    @useRegex = state.useRegex ? atom.config.get('find-and-replace.useRegex') ? false
+    @caseSensitive = state.caseSensitive ? atom.config.get('find-and-replace.caseSensitive') ? false
 
     atom.workspace.eachEditor (editSession) =>
       editSession.on 'contents-modified', => @onContentsModified(editSession)

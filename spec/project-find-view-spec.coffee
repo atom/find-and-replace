@@ -35,7 +35,7 @@ describe 'ProjectFindView', ->
         searchPromise
 
   describe "when project-find:show is triggered", ->
-    beforeEach ->
+    it "attaches ProjectFindView to the root view", ->
       atom.workspaceView.trigger 'project-find:show'
 
       waitsForPromise ->
@@ -44,17 +44,22 @@ describe 'ProjectFindView', ->
       runs ->
         projectFindView.findEditor.setText('items')
 
-    it "attaches ProjectFindView to the root view", ->
-      expect(atom.workspaceView.find('.project-find')).toExist()
-      expect(projectFindView.find('.preview-block')).not.toBeVisible()
-      expect(projectFindView.find('.loading')).not.toBeVisible()
-      expect(projectFindView.findEditor.getEditor().getSelectedBufferRange()).toEqual [[0, 0], [0, 5]]
+        expect(atom.workspaceView.find('.project-find')).toExist()
+        expect(projectFindView.find('.preview-block')).not.toBeVisible()
+        expect(projectFindView.find('.loading')).not.toBeVisible()
+        expect(projectFindView.findEditor.getEditor().getSelectedBufferRange()).toEqual [[0, 0], [0, 5]]
 
     describe "with an open buffer", ->
       editor = null
 
       beforeEach ->
-        projectFindView.findEditor.setText('')
+        atom.workspaceView.trigger 'project-find:show'
+
+        waitsForPromise ->
+          activationPromise
+
+        runs ->
+          projectFindView.findEditor.setText('')
 
         waitsForPromise ->
           atom.workspace.open('sample.js').then (o) -> editor = o
@@ -83,12 +88,32 @@ describe 'ProjectFindView', ->
 
     describe "when the ProjectFindView is already attached", ->
       beforeEach ->
-        projectFindView.findEditor.getEditor().setSelectedBufferRange([[0, 0], [0, 0]])
+        atom.workspaceView.trigger 'project-find:show'
+
+        waitsForPromise ->
+          activationPromise
+
+        runs ->
+          projectFindView.findEditor.setText('items')
+          projectFindView.findEditor.getEditor().setSelectedBufferRange([[0, 0], [0, 0]])
 
       it "focuses the find editor and selects all the text", ->
         atom.workspaceView.trigger 'project-find:show'
         expect(projectFindView.findEditor).toHaveFocus()
         expect(projectFindView.findEditor.getEditor().getSelectedText()).toBe "items"
+
+    it "honors config settings for find options", ->
+      atom.config.set('find-and-replace.useRegex', true)
+      atom.config.set('find-and-replace.caseSensitive', true)
+
+      atom.workspaceView.trigger 'project-find:show'
+
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        expect(projectFindView.caseOptionButton).toHaveClass 'selected'
+        expect(projectFindView.regexOptionButton).toHaveClass 'selected'
 
   describe "when project-find:toggle is triggered", ->
     it "toggles the visibility of the ProjectFindView", ->
