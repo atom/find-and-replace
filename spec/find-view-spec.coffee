@@ -74,6 +74,21 @@ describe 'FindView', ->
         expect(atom.workspaceView.find('.find-and-replace')).toExist()
         expect(findView.findEditor.getText()).toBe('')
 
+    it "honors config settings for find options", ->
+      atom.config.set('find-and-replace.useRegex', true)
+      atom.config.set('find-and-replace.caseSensitive', true)
+      atom.config.set('find-and-replace.inCurrentSelection', true)
+
+      editorView.trigger 'find-and-replace:show'
+
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        expect(findView.caseOptionButton).toHaveClass 'selected'
+        expect(findView.regexOptionButton).toHaveClass 'selected'
+        expect(findView.selectionOptionButton).toHaveClass 'selected'
+
   describe "when find-and-replace:toggle is triggered", ->
     it "toggles the visibility of the FindView", ->
       atom.workspaceView.trigger 'find-and-replace:toggle'
