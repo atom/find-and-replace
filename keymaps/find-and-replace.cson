@@ -2,6 +2,7 @@
   'cmd-F': 'project-find:show'
   'cmd-f': 'find-and-replace:show'
   'cmd-alt-f': 'find-and-replace:show-replace'
+  'ctrl-alt-p': 'find-and-replace:find-space-profile'
 
 '.platform-win32, .platform-linux':
   'ctrl-F': 'project-find:show'

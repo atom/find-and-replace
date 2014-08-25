@@ -83,7 +83,7 @@ class FindModel
         else
           marker = @createMarker(range)
 
-        updatedMarkers.push marker
+        updatedMarkers.push marker if marker?
 
       marker.destroy() for id, marker of markersToRemoveById
 
@@ -114,9 +114,9 @@ class FindModel
       persistent: false
       isCurrent: false
     marker = @editSession.markBufferRange(range, markerAttributes)
-    if @editSession.decorateMarker?
-      decoration = @editSession.decorateMarker(marker, type: 'highlight', class: @constructor.markerClass)
-      @decorationsByMarkerId[marker.id] = decoration
+    # if @editSession.decorateMarker?
+    #   decoration = @editSession.decorateMarker(marker, type: 'highlight', class: @constructor.markerClass)
+    #   @decorationsByMarkerId[marker.id] = decoration
     marker
 
   destroyAllMarkers: ->

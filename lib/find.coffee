@@ -19,6 +19,17 @@ module.exports =
 
     @subscriber = new Subscriber()
 
+    @subscriber.subscribeToCommand atom.workspaceView, 'find-and-replace:find-space-profile', =>
+      @findView.findEditor.setText ''
+      @findView.updateModel pattern: ''
+
+      console.profile('find spaces')
+      console.time('find spaces')
+      @findView.findEditor.setText ' '
+      @findView.updateModel pattern: ' '
+      console.timeEnd('find spaces')
+      console.profileEnd('find spaces')
+
     @subscriber.subscribeToCommand atom.workspaceView, 'project-find:show', =>
       @createProjectFindView()
       @findView?.detach()
