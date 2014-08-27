@@ -40,8 +40,7 @@ class FindView extends View
         @div class: 'btn-group btn-group-replace-all', =>
           @button outlet: 'replaceAllButton', class: 'btn btn-all', 'Replace All'
 
-  initialize: ({showFind, showReplace, findHistory, replaceHistory, modelState}={}) ->
-    @findModel = new FindModel(modelState)
+  initialize: (@findModel, {showFind, showReplace, findHistory, replaceHistory}={}) ->
     @findHistory = new History(@findEditor, findHistory)
     @replaceHistory = new History(@replaceEditor, replaceHistory)
     @handleEvents()
@@ -84,7 +83,6 @@ class FindView extends View
   serialize: ->
     findHistory: @findHistory.serialize()
     replaceHistory: @replaceHistory.serialize()
-    modelState: @findModel.serialize()
 
   handleEvents: ->
     @handleFindEvents()

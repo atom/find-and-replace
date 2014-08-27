@@ -13,7 +13,7 @@ module.exports =
     focusEditorAfterSearch: false
     openProjectFindResultsInRightPane: false
 
-  activate: ({@viewState, @projectViewState, @resultsModelState}={}) ->
+  activate: ({@viewState, @projectViewState, @resultsModelState, @modelState}={}) ->
     atom.workspace.registerOpener (filePath) =>
       new ResultsPaneView() if filePath is ResultsPaneView.URI
 
@@ -99,11 +99,14 @@ module.exports =
     ResultsPaneView.model = @resultsModel
 
   createFindView: ->
-    @findView ?= new FindView(@viewState)
+    @findModel ?= new FindModel(@modelState)
+    @findView ?= new FindView(@findModel, @viewState)
 
   deactivate: ->
     @findView?.remove()
     @findView = null
+
+    @findModel = null
 
     @projectFindView?.remove()
     @projectFindView = null
@@ -116,5 +119,6 @@ module.exports =
 
   serialize: ->
     viewState: @findView?.serialize() ? @viewState
+    modelState: @findModel?.serialize() ? @modelState
     projectViewState: @projectFindView?.serialize() ? @projectViewState
     resultsModelState: @resultsModel?.serialize() ? @resultsModelState
