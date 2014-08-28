@@ -231,3 +231,113 @@ describe "SelectNext", ->
           [[0, 0], [0, 1]]
           [[1, 0], [1, 1]]
         ]
+
+  describe "find-and-replace:select-undo", ->
+    describe "when there is no selection", ->
+      beforeEach ->
+        editor.clearSelections()
+
+      it "does nothing", ->
+        editor.setText """
+          for
+          information
+          format
+          another for
+          fork
+          a 3rd for is here
+        """
+
+        editorView.trigger 'find-and-replace:select-undo'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[0, 0], [0, 0]]
+        ]
+
+    describe "when a word is selected", ->
+      it "unselects current word", ->
+        editor.setText """
+          for
+          information
+          format
+          another for
+          fork
+          a 3rd for is here
+        """
+
+        editor.setSelectedBufferRange([[3, 8], [3, 11]])
+
+        editorView.trigger 'find-and-replace:select-undo'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[3, 11], [3, 11]]
+        ]
+
+    describe "when two words are selected", ->
+      it "unselects words in order", ->
+        editor.setText """
+          for
+          information
+          format
+          another for
+          fork
+          a 3rd for is here
+        """
+
+        editor.setSelectedBufferRange([[3, 8], [3, 11]])
+
+        editorView.trigger 'find-and-replace:select-next'
+        editorView.trigger 'find-and-replace:select-undo'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[3, 8], [3, 11]]
+        ]
+
+        editorView.trigger 'find-and-replace:select-undo'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[3, 11], [3, 11]]
+        ]
+
+    describe "when three words are selected", ->
+      it "unselects words in order", ->
+        editor.setText """
+          for
+          information
+          format
+          another for
+          fork
+          a 3rd for is here
+        """
+
+        editor.setSelectedBufferRange([[0, 0], [0, 3]])
+
+        editorView.trigger 'find-and-replace:select-next'
+        editorView.trigger 'find-and-replace:select-next'
+        editorView.trigger 'find-and-replace:select-undo'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[0, 0], [0, 3]]
+          [[3, 8], [3, 11]]
+        ]
+
+        editorView.trigger 'find-and-replace:select-undo'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[0, 0], [0, 3]]
+        ]
+
+    describe "when starting at the bottom word", ->
+      it "unselects words in order", ->
+        editor.setText """
+          for
+          information
+          format
+          another for
+          fork
+          a 3rd for is here
+        """
+
+        editor.setSelectedBufferRange([[5, 6], [5, 9]])
+        editorView.trigger 'find-and-replace:select-next'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[0, 0], [0, 3]]
+          [[5, 6], [5, 9]]
+        ]
+        editorView.trigger 'find-and-replace:select-undo'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[5, 6], [5, 9]]
+        ]

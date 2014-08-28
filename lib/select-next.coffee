@@ -22,6 +22,8 @@ class SelectNext
     @selectAllOccurrences()
 
   undoLastSelection: ->
+    @updateSavedSelections()
+
     return if @selectionRanges.length < 1
 
     if @selectionRanges.length > 1
@@ -72,12 +74,12 @@ class SelectNext
         result.range = result.range.translate([0, prefix.length], [0, 0])
       callback(result)
 
-  updateSavedSelections: (selection) ->
+  updateSavedSelections: (selection=null) ->
     @selectionRanges = [] if @editor.getSelections().length < 3
 
     if @selectionRanges.length == 0
       @selectionRanges.push s.getBufferRange() for s in @editor.getSelections()
-    else
+    else if selection
       @selectionRanges.push selection.getBufferRange()
 
   isNonWordCharacter: (character) ->
