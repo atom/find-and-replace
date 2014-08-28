@@ -1,7 +1,7 @@
 _ = require 'underscore-plus'
 {$$$, EditorView, View} = require 'atom'
 FindModel = require './find-model'
-History = require './history'
+{History} = require './history'
 
 module.exports =
 class FindView extends View
@@ -79,10 +79,6 @@ class FindView extends View
     @replacePreviousButton.hideTooltip()
     @replaceNextButton.hideTooltip()
     @replaceAllButton.hideTooltip()
-
-  serialize: ->
-    findHistory: @findHistory.serialize()
-    replaceHistory: @replaceHistory.serialize()
 
   handleEvents: ->
     @handleFindEvents()

@@ -1,7 +1,10 @@
 {$} = require 'atom'
 {Subscriber} = require 'emissary'
 
+_ = require 'underscore-plus'
+
 SelectNext = require './select-next'
+{HistoryData} = require './history'
 FindModel = require './find-model'
 FindView = require './find-view'
 ProjectFindView = require './project-find-view'
@@ -13,11 +16,15 @@ module.exports =
     focusEditorAfterSearch: false
     openProjectFindResultsInRightPane: false
 
-  activate: ({@viewState, @projectViewState, @resultsModelState, @modelState}={}) ->
+  activate: ({@viewState, @projectViewState, @resultsModelState, @modelState, findHistory, replaceHistory, pathsHistory}={}) ->
     atom.workspace.registerOpener (filePath) =>
       new ResultsPaneView() if filePath is ResultsPaneView.URI
 
     @subscriber = new Subscriber()
+    @findModel = new FindModel(@modelState)
+    @findHistory = new HistoryData(findHistory)
+    @replaceHistory = new HistoryData(replaceHistory)
+    @pathsHistory = new HistoryData(pathsHistory)
 
     @subscriber.subscribeToCommand atom.workspaceView, 'project-find:show', =>
       @createViews()
@@ -120,3 +127,6 @@ module.exports =
     modelState: @findModel?.serialize() ? @modelState
     projectViewState: @projectFindView?.serialize() ? @projectViewState
     resultsModelState: @resultsModel?.serialize() ? @resultsModelState
+    findHistory: @findHistory.serialize()
+    replaceHistory: @replaceHistory.serialize()
+    pathsHistory: @replaceHistory.serialize()

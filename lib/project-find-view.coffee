@@ -2,7 +2,7 @@ Q = require 'q'
 _ = require 'underscore-plus'
 {$, $$$, EditorView, View} = require 'atom'
 
-History = require './history'
+{History} = require './history'
 Util = require './project/util'
 ResultsModel = require './project/results-model'
 ResultsPaneView = require './project/results-pane'
@@ -40,7 +40,7 @@ class ProjectFindView extends View
         @div class: 'editor-container', =>
           @subview 'pathsEditor', new EditorView(mini: true, placeholderText: 'File/directory pattern. eg. `src` to search in the "src" directory or `*.js` to search all javascript files.')
 
-  initialize: (@model, {modelState, findHistory, replaceHistory, pathsHistory}={}) ->
+  initialize: (@findInBufferModel, @model, {findHistory, replaceHistory, pathsHistory}={}) ->
     @handleEvents()
     @findHistory = new History(@findEditor, findHistory)
     @replaceHistory = new History(@replaceEditor, replaceHistory)
@@ -64,12 +64,6 @@ class ProjectFindView extends View
     @regexOptionButton.hideTooltip()
     @caseOptionButton.hideTooltip()
     @replaceAllButton.hideTooltip()
-
-  serialize: ->
-    findHistory: @findHistory.serialize()
-    replaceHistory: @replaceHistory.serialize()
-    pathsHistory: @pathsHistory.serialize()
-    modelState: @model.serialize()
 
   handleEvents: ->
     @on 'core:confirm', => @confirm()
