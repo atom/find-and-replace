@@ -46,6 +46,7 @@ class SelectNext
     else
       @selectNextOccurrence()
       @selectionRanges.shift()
+      return if @selectionRanges.length < 1
       @editor.setSelectedBufferRanges @selectionRanges
 
   selectWord: ->
