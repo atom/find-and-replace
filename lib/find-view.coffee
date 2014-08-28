@@ -296,7 +296,9 @@ class FindView extends View
     return unless @markers?.length > 0
 
     if marker = @markers[markerIndex]
-      @findModel.getEditor().setSelectedBufferRange(marker.getBufferRange(), autoscroll: true, flash: true)
+      editor = @findModel.getEditor()
+      editor.setSelectedBufferRange(marker.getBufferRange(), flash: true)
+      editor.scrollToCursorPosition(center: true)
 
   setSelectionAsFindPattern: =>
     pattern = @findModel.getEditor().getSelectedText()
