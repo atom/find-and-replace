@@ -341,3 +341,23 @@ describe "SelectNext", ->
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[5, 6], [5, 9]]
         ]
+
+      it "doesn't stack previously selected", ->
+        editor.setText """
+          for
+          information
+          format
+          another for
+          fork
+          a 3rd for is here
+        """
+
+        editor.setSelectedBufferRange([[5, 6], [5, 9]])
+        editorView.trigger 'find-and-replace:select-next'
+        editorView.trigger 'find-and-replace:select-next'
+        editorView.trigger 'find-and-replace:select-next'
+        editorView.trigger 'find-and-replace:select-undo'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[0, 0], [0, 3]]
+          [[5, 6], [5, 9]]
+        ]
