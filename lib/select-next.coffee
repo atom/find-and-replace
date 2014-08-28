@@ -55,7 +55,7 @@ class SelectNext
 
   addSelection: (range) ->
     selection = @editor.addSelectionForBufferRange(range)
-    @selectionRanges.push selection.getBufferRange()
+    @updateSavedSelections selection
     selection.once 'destroyed', => @wordSelected = null
 
   scanForNextOccurrence: (range, callback) ->
@@ -71,6 +71,14 @@ class SelectNext
       if prefix = result.match[1]
         result.range = result.range.translate([0, prefix.length], [0, 0])
       callback(result)
+
+  updateSavedSelections: (selection) ->
+    @selectionRanges = [] if @editor.getSelections().length < 3
+
+    if @selectionRanges.length == 0
+      @selectionRanges.push s.getBufferRange() for s in @editor.getSelections()
+    else
+      @selectionRanges.push selection.getBufferRange()
 
   isNonWordCharacter: (character) ->
     nonWordCharacters = atom.config.get('editor.nonWordCharacters')
