@@ -34,6 +34,20 @@ class SelectNext
 
     @editor.scrollToCursorPosition()
 
+  skipCurrentSelection: ->
+    @updateSavedSelections()
+
+    return if @selectionRanges.length < 1
+
+    if @selectionRanges.length > 1
+      lastSelection = @selectionRanges.pop()
+      @editor.setSelectedBufferRanges @selectionRanges
+      @selectNextOccurrence(start: lastSelection.end)
+    else
+      @selectNextOccurrence()
+      @selectionRanges.shift()
+      @editor.setSelectedBufferRanges @selectionRanges
+
   selectWord: ->
     @editor.selectWord()
     @wordSelected = @isWordSelected(@editor.getSelection())
@@ -43,8 +57,9 @@ class SelectNext
     @scanForNextOccurrence range, ({range, stop}) =>
       @addSelection(range)
 
-  selectNextOccurrence: ->
-    range = @findNextOccurrence([@editor.getSelection().getBufferRange().end, @editor.getEofBufferPosition()])
+  selectNextOccurrence: (options={}) ->
+    startingRange = options.start ? @editor.getSelection().getBufferRange().end
+    range = @findNextOccurrence([startingRange, @editor.getEofBufferPosition()])
     range ?= @findNextOccurrence([[0,0], @editor.getSelection(0).getBufferRange().start])
     @addSelection(range) if range?
 

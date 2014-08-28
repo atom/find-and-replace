@@ -88,6 +88,8 @@ module.exports =
         selectNext.findAndSelectAll()
       editorView.command 'find-and-replace:select-undo', ->
         selectNext.undoLastSelection()
+      editorView.command 'find-and-replace:select-skip', ->
+        selectNext.skipCurrentSelection()
 
   createViews: ->
     history = {@findHistory, @replaceHistory, @pathsHistory}
