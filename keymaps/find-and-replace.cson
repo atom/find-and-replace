@@ -21,6 +21,7 @@
   'alt-f3': 'find-and-replace:select-all'
   'ctrl-d': 'find-and-replace:select-next'
   'ctrl-e': 'find-and-replace:use-selection-as-find-pattern'
+  'ctrl-u': 'find-and-replace:select-undo'
 
 '.platform-darwin .find-and-replace':
   'shift-enter': 'find-and-replace:show-previous'

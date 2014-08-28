@@ -6,7 +6,10 @@ _ = require 'underscore-plus'
 # The word under the cursor will be selected if the selection is empty.
 module.exports =
 class SelectNext
+  selectionRanges: null
+
   constructor: (@editor) ->
+    @selectionRanges = []
 
   findAndSelectNext: ->
     if @editor.getSelection().isEmpty()
@@ -17,6 +20,19 @@ class SelectNext
   findAndSelectAll: ->
     @selectWord() if @editor.getSelection().isEmpty()
     @selectAllOccurrences()
+
+  undoLastSelection: ->
+    @updateSavedSelections()
+
+    return if @selectionRanges.length < 1
+
+    if @selectionRanges.length > 1
+      @selectionRanges.pop()
+      @editor.setSelectedBufferRanges @selectionRanges
+    else
+      @editor.clearSelections()
+
+    @editor.scrollToCursorPosition()
 
   selectWord: ->
     @editor.selectWord()
@@ -41,6 +57,7 @@ class SelectNext
 
   addSelection: (range) ->
     selection = @editor.addSelectionForBufferRange(range)
+    @updateSavedSelections selection
     selection.once 'destroyed', => @wordSelected = null
 
   scanForNextOccurrence: (range, callback) ->
@@ -56,6 +73,15 @@ class SelectNext
       if prefix = result.match[1]
         result.range = result.range.translate([0, prefix.length], [0, 0])
       callback(result)
+
+  updateSavedSelections: (selection=null) ->
+    @selectionRanges = [] if @editor.getSelections().length < 3
+    if @selectionRanges.length == 0
+      @selectionRanges.push s.getBufferRange() for s in @editor.getSelections()
+    else if selection
+      selectionRange = selection.getBufferRange()
+      return unless @selectionRanges.indexOf(selectionRange) == -1
+      @selectionRanges.push selectionRange
 
   isNonWordCharacter: (character) ->
     nonWordCharacters = atom.config.get('editor.nonWordCharacters')
