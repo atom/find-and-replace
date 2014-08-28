@@ -6,7 +6,10 @@ _ = require 'underscore-plus'
 # The word under the cursor will be selected if the selection is empty.
 module.exports =
 class SelectNext
+  selectionRanges: null
+
   constructor: (@editor) ->
+    @selectionRanges = []
 
   findAndSelectNext: ->
     if @editor.getSelection().isEmpty()
@@ -17,6 +20,17 @@ class SelectNext
   findAndSelectAll: ->
     @selectWord() if @editor.getSelection().isEmpty()
     @selectAllOccurrences()
+
+  undoLastSelection: ->
+    return if @selectionRanges.length < 1
+
+    if @selectionRanges.length > 1
+      @selectionRanges.pop()
+      @editor.setSelectedBufferRanges @selectionRanges
+    else
+      @editor.clearSelections()
+
+    @editor.scrollToCursorPosition()
 
   selectWord: ->
     @editor.selectWord()
@@ -41,6 +55,7 @@ class SelectNext
 
   addSelection: (range) ->
     selection = @editor.addSelectionForBufferRange(range)
+    @selectionRanges.push selection.getBufferRange()
     selection.once 'destroyed', => @wordSelected = null
 
   scanForNextOccurrence: (range, callback) ->
