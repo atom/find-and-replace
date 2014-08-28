@@ -103,9 +103,7 @@ class FindView extends View
 
     @subscribe @findModel, 'updated', @markersUpdated
     @subscribe @findModel, 'find-error', @findError
-
-    atom.workspace.eachEditor (editor) =>
-      @subscribe editor, 'selection-added selection-screen-range-changed', @setCurrentMarkerFromSelection
+    @subscribe @findModel, 'current-result-changed', @updateResultCounter
 
   handleFindEvents: ->
     @findEditor.getEditor().on 'contents-modified', => @liveSearch()
@@ -223,8 +221,8 @@ class FindView extends View
 
   markersUpdated: (@markers) =>
     @findError = null
-    @setCurrentMarkerFromSelection()
     @updateOptionButtons()
+    @updateResultCounter()
 
     if @findModel.pattern
       results = @markers.length
@@ -242,7 +240,7 @@ class FindView extends View
   updateModel: (options) ->
     @findModel.update(options)
 
-  updateResultCounter: ->
+  updateResultCounter: =>
     if @findModel.currentResultMarker and (index = @markers.indexOf(@findModel.currentResultMarker)) > -1
       text = "#{ index + 1} of #{@markers.length}"
     else
@@ -304,19 +302,6 @@ class FindView extends View
 
     if marker = @markers[markerIndex]
       @findModel.getEditor().setSelectedBufferRange(marker.getBufferRange(), autoscroll: true, flash: true)
-      @setCurrentResultMarker(marker)
-
-  setCurrentMarkerFromSelection: =>
-    currentResultMarker = null
-    if @markers? and @markers.length and @isAttached() and editor = @findModel.getEditor()
-      selectedBufferRange = editor.getSelectedBufferRange()
-      currentResultMarker = @findModel.findMarker(selectedBufferRange)
-
-    @setCurrentResultMarker(currentResultMarker)
-
-  setCurrentResultMarker: (marker) =>
-    @findModel.setCurrentResultMarker(marker)
-    @updateResultCounter()
 
   setSelectionAsFindPattern: =>
     pattern = @findModel.getEditor().getSelectedText()
