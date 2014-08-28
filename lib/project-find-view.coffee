@@ -2,7 +2,7 @@ Q = require 'q'
 _ = require 'underscore-plus'
 {$, $$$, EditorView, View} = require 'atom'
 
-{History} = require './history'
+{HistoryCycler} = require './history'
 Util = require './project/util'
 ResultsModel = require './project/results-model'
 ResultsPaneView = require './project/results-pane'
@@ -40,11 +40,11 @@ class ProjectFindView extends View
         @div class: 'editor-container', =>
           @subview 'pathsEditor', new EditorView(mini: true, placeholderText: 'File/directory pattern. eg. `src` to search in the "src" directory or `*.js` to search all javascript files.')
 
-  initialize: (@findInBufferModel, @model, {findHistory, replaceHistory, pathsHistory}={}) ->
+  initialize: (@findInBufferModel, @model, {findHistory, replaceHistory, pathsHistory}) ->
     @handleEvents()
-    @findHistory = new History(@findEditor, findHistory)
-    @replaceHistory = new History(@replaceEditor, replaceHistory)
-    @pathsHistory = new History(@pathsEditor, pathsHistory)
+    @findHistory = new HistoryCycler(@findEditor, findHistory)
+    @replaceHistory = new HistoryCycler(@replaceEditor, replaceHistory)
+    @pathsHistory = new HistoryCycler(@pathsEditor, pathsHistory)
     @onlyRunIfChanged = true
 
     @regexOptionButton.addClass('selected') if @model.useRegex

@@ -1,10 +1,8 @@
 {$} = require 'atom'
 {Subscriber} = require 'emissary'
 
-_ = require 'underscore-plus'
-
 SelectNext = require './select-next'
-{HistoryData} = require './history'
+{History} = require './history'
 FindModel = require './find-model'
 FindView = require './find-view'
 ProjectFindView = require './project-find-view'
@@ -22,9 +20,10 @@ module.exports =
 
     @subscriber = new Subscriber()
     @findModel = new FindModel(@modelState)
-    @findHistory = new HistoryData(findHistory)
-    @replaceHistory = new HistoryData(replaceHistory)
-    @pathsHistory = new HistoryData(pathsHistory)
+    @resultsModel = new ResultsModel(@resultsModelState)
+    @findHistory = new History(findHistory)
+    @replaceHistory = new History(replaceHistory)
+    @pathsHistory = new History(pathsHistory)
 
     @subscriber.subscribeToCommand atom.workspaceView, 'project-find:show', =>
       @createViews()
@@ -89,10 +88,10 @@ module.exports =
         selectNext.findAndSelectAll()
 
   createViews: ->
-    @findView ?= new FindView(@findModel, _.extend({}, @viewState, {@findHistory, @replaceHistory}))
+    history = {@findHistory, @replaceHistory, @pathsHistory}
 
-    @resultsModel ?= new ResultsModel(@resultsModelState)
-    @projectFindView ?= new ProjectFindView(@findModel, @resultsModel, _.extend({}, @projectViewState, {@findHistory, @replaceHistory, @pathsHistory}))
+    @findView ?= new FindView(@findModel, history)
+    @projectFindView ?= new ProjectFindView(@findModel, @resultsModel, history)
 
     # HACK: Soooo, we need to get the model to the pane view whenever it is
     # created. Creation could come from the opener below, or, more problematic,

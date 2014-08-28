@@ -13,7 +13,6 @@ class FindModel
     @inCurrentSelection = state.inCurrentSelection ? atom.config.get('find-and-replace.inCurrentSelection') ? false
     @caseSensitive = state.caseSensitive ? atom.config.get('find-and-replace.caseSensitive') ? false
     @valid = false
-
     @subscriptions = {}
 
     @activePaneItemChanged()

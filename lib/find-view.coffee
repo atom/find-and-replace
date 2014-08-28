@@ -1,7 +1,7 @@
 _ = require 'underscore-plus'
 {$$$, EditorView, View} = require 'atom'
 FindModel = require './find-model'
-{History} = require './history'
+{HistoryCycler} = require './history'
 
 module.exports =
 class FindView extends View
@@ -40,16 +40,11 @@ class FindView extends View
         @div class: 'btn-group btn-group-replace-all', =>
           @button outlet: 'replaceAllButton', class: 'btn btn-all', 'Replace All'
 
-  initialize: (@findModel, {showFind, showReplace, findHistory, replaceHistory}={}) ->
-    @findHistory = new History(@findEditor, findHistory)
-    @replaceHistory = new History(@replaceEditor, replaceHistory)
+  initialize: (@findModel, {findHistory, replaceHistory}) ->
+    @findHistory = new HistoryCycler(@findEditor, findHistory)
+    @replaceHistory = new HistoryCycler(@replaceEditor, replaceHistory)
     @handleEvents()
     @updateOptionButtons()
-
-    if showFind
-      @showFind()
-    else if showReplace
-      @showReplace()
 
     @clearMessage()
     @updateOptionsLabel()
