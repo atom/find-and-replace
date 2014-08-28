@@ -1,7 +1,7 @@
 _ = require 'underscore-plus'
 {$$$, EditorView, View} = require 'atom'
 FindModel = require './find-model'
-History = require './history'
+{HistoryCycler} = require './history'
 
 module.exports =
 class FindView extends View
@@ -40,17 +40,11 @@ class FindView extends View
         @div class: 'btn-group btn-group-replace-all', =>
           @button outlet: 'replaceAllButton', class: 'btn btn-all', 'Replace All'
 
-  initialize: ({showFind, showReplace, findHistory, replaceHistory, modelState}={}) ->
-    @findModel = new FindModel(modelState)
-    @findHistory = new History(@findEditor, findHistory)
-    @replaceHistory = new History(@replaceEditor, replaceHistory)
+  initialize: (@findModel, {findHistory, replaceHistory}) ->
+    @findHistory = new HistoryCycler(@findEditor, findHistory)
+    @replaceHistory = new HistoryCycler(@replaceEditor, replaceHistory)
     @handleEvents()
     @updateOptionButtons()
-
-    if showFind
-      @showFind()
-    else if showReplace
-      @showReplace()
 
     @clearMessage()
     @updateOptionsLabel()
@@ -81,11 +75,6 @@ class FindView extends View
     @replaceNextButton.hideTooltip()
     @replaceAllButton.hideTooltip()
 
-  serialize: ->
-    findHistory: @findHistory.serialize()
-    replaceHistory: @replaceHistory.serialize()
-    modelState: @findModel.serialize()
-
   handleEvents: ->
     @handleFindEvents()
     @handleReplaceEvents()
@@ -109,9 +98,7 @@ class FindView extends View
 
     @subscribe @findModel, 'updated', @markersUpdated
     @subscribe @findModel, 'find-error', @findError
-
-    atom.workspace.eachEditor (editor) =>
-      @subscribe editor, 'selection-added selection-screen-range-changed', @setCurrentMarkerFromSelection
+    @subscribe @findModel, 'current-result-changed', @updateResultCounter
 
   handleFindEvents: ->
     @findEditor.getEditor().on 'contents-modified', => @liveSearch()
@@ -229,8 +216,8 @@ class FindView extends View
 
   markersUpdated: (@markers) =>
     @findError = null
-    @setCurrentMarkerFromSelection()
     @updateOptionButtons()
+    @updateResultCounter()
 
     if @findModel.pattern
       results = @markers.length
@@ -248,7 +235,7 @@ class FindView extends View
   updateModel: (options) ->
     @findModel.update(options)
 
-  updateResultCounter: ->
+  updateResultCounter: =>
     if @findModel.currentResultMarker and (index = @markers.indexOf(@findModel.currentResultMarker)) > -1
       text = "#{ index + 1} of #{@markers.length}"
     else
@@ -310,19 +297,6 @@ class FindView extends View
 
     if marker = @markers[markerIndex]
       @findModel.getEditor().setSelectedBufferRange(marker.getBufferRange(), autoscroll: true, flash: true)
-      @setCurrentResultMarker(marker)
-
-  setCurrentMarkerFromSelection: =>
-    currentResultMarker = null
-    if @markers? and @markers.length and @isAttached() and editor = @findModel.getEditor()
-      selectedBufferRange = editor.getSelectedBufferRange()
-      currentResultMarker = @findModel.findMarker(selectedBufferRange)
-
-    @setCurrentResultMarker(currentResultMarker)
-
-  setCurrentResultMarker: (marker) =>
-    @findModel.setCurrentResultMarker(marker)
-    @updateResultCounter()
 
   setSelectionAsFindPattern: =>
     pattern = @findModel.getEditor().getSelectedText()

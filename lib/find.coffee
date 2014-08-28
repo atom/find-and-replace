@@ -2,6 +2,7 @@
 {Subscriber} = require 'emissary'
 
 SelectNext = require './select-next'
+{History} = require './history'
 FindModel = require './find-model'
 FindView = require './find-view'
 ProjectFindView = require './project-find-view'
@@ -13,19 +14,24 @@ module.exports =
     focusEditorAfterSearch: false
     openProjectFindResultsInRightPane: false
 
-  activate: ({@viewState, @projectViewState, @resultsModelState}={}) ->
+  activate: ({@viewState, @projectViewState, @resultsModelState, @modelState, findHistory, replaceHistory, pathsHistory}={}) ->
     atom.workspace.registerOpener (filePath) =>
       new ResultsPaneView() if filePath is ResultsPaneView.URI
 
     @subscriber = new Subscriber()
+    @findModel = new FindModel(@modelState)
+    @resultsModel = new ResultsModel(@resultsModelState)
+    @findHistory = new History(findHistory)
+    @replaceHistory = new History(replaceHistory)
+    @pathsHistory = new History(pathsHistory)
 
     @subscriber.subscribeToCommand atom.workspaceView, 'project-find:show', =>
-      @createProjectFindView()
+      @createViews()
       @findView?.detach()
       @projectFindView.attach()
 
     @subscriber.subscribeToCommand atom.workspaceView, 'project-find:toggle', =>
-      @createProjectFindView()
+      @createViews()
       @findView?.detach()
 
       if @projectFindView.hasParent()
@@ -34,7 +40,7 @@ module.exports =
         @projectFindView.attach()
 
     @subscriber.subscribeToCommand atom.workspaceView, 'project-find:show-in-current-directory', (e) =>
-      @createProjectFindView()
+      @createViews()
       @findView?.detach()
       @projectFindView.attach()
       @projectFindView.findInCurrentlySelectedDirectory($(e.target))
@@ -42,12 +48,12 @@ module.exports =
     @subscriber.subscribeToCommand atom.workspaceView, 'find-and-replace:use-selection-as-find-pattern', =>
       return if @projectFindView?.isOnDom() or @findView?.isOnDom()
 
-      @createFindView()
+      @createViews()
       @projectFindView?.detach()
       @findView.showFind()
 
     @subscriber.subscribeToCommand atom.workspaceView, 'find-and-replace:toggle', =>
-      @createFindView()
+      @createViews()
       @projectFindView?.detach()
 
       if @findView.hasParent()
@@ -56,12 +62,12 @@ module.exports =
         @findView.showFind()
 
     @subscriber.subscribeToCommand atom.workspaceView, 'find-and-replace:show', =>
-      @createFindView()
+      @createViews()
       @projectFindView?.detach()
       @findView.showFind()
 
     @subscriber.subscribeToCommand atom.workspaceView, 'find-and-replace:show-replace', =>
-      @createFindView()
+      @createViews()
       @projectFindView?.detach()
       @findView.showReplace()
 
@@ -81,9 +87,11 @@ module.exports =
       editorView.command 'find-and-replace:select-all', ->
         selectNext.findAndSelectAll()
 
-  createProjectFindView: ->
-    @resultsModel ?= new ResultsModel(@resultsModelState)
-    @projectFindView ?= new ProjectFindView(@resultsModel, @projectViewState)
+  createViews: ->
+    history = {@findHistory, @replaceHistory, @pathsHistory}
+
+    @findView ?= new FindView(@findModel, history)
+    @projectFindView ?= new ProjectFindView(@findModel, @resultsModel, history)
 
     # HACK: Soooo, we need to get the model to the pane view whenever it is
     # created. Creation could come from the opener below, or, more problematic,
@@ -98,12 +106,11 @@ module.exports =
     # See https://github.com/atom/find-and-replace/issues/63
     ResultsPaneView.model = @resultsModel
 
-  createFindView: ->
-    @findView ?= new FindView(@viewState)
-
   deactivate: ->
     @findView?.remove()
     @findView = null
+
+    @findModel = null
 
     @projectFindView?.remove()
     @projectFindView = null
@@ -116,5 +123,9 @@ module.exports =
 
   serialize: ->
     viewState: @findView?.serialize() ? @viewState
+    modelState: @findModel?.serialize() ? @modelState
     projectViewState: @projectFindView?.serialize() ? @projectViewState
     resultsModelState: @resultsModel?.serialize() ? @resultsModelState
+    findHistory: @findHistory.serialize()
+    replaceHistory: @replaceHistory.serialize()
+    pathsHistory: @replaceHistory.serialize()

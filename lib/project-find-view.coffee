@@ -2,7 +2,7 @@ Q = require 'q'
 _ = require 'underscore-plus'
 {$, $$$, EditorView, View} = require 'atom'
 
-History = require './history'
+{HistoryCycler} = require './history'
 Util = require './project/util'
 ResultsModel = require './project/results-model'
 ResultsPaneView = require './project/results-pane'
@@ -40,11 +40,11 @@ class ProjectFindView extends View
         @div class: 'editor-container', =>
           @subview 'pathsEditor', new EditorView(mini: true, placeholderText: 'File/directory pattern. eg. `src` to search in the "src" directory or `*.js` to search all javascript files.')
 
-  initialize: (@model, {modelState, findHistory, replaceHistory, pathsHistory}={}) ->
+  initialize: (@findInBufferModel, @model, {findHistory, replaceHistory, pathsHistory}) ->
     @handleEvents()
-    @findHistory = new History(@findEditor, findHistory)
-    @replaceHistory = new History(@replaceEditor, replaceHistory)
-    @pathsHistory = new History(@pathsEditor, pathsHistory)
+    @findHistory = new HistoryCycler(@findEditor, findHistory)
+    @replaceHistory = new HistoryCycler(@replaceEditor, replaceHistory)
+    @pathsHistory = new HistoryCycler(@pathsEditor, pathsHistory)
     @onlyRunIfChanged = true
 
     @regexOptionButton.addClass('selected') if @model.useRegex
@@ -64,12 +64,6 @@ class ProjectFindView extends View
     @regexOptionButton.hideTooltip()
     @caseOptionButton.hideTooltip()
     @replaceAllButton.hideTooltip()
-
-  serialize: ->
-    findHistory: @findHistory.serialize()
-    replaceHistory: @replaceHistory.serialize()
-    pathsHistory: @pathsHistory.serialize()
-    modelState: @model.serialize()
 
   handleEvents: ->
     @on 'core:confirm', => @confirm()
@@ -115,6 +109,8 @@ class ProjectFindView extends View
   attach: ->
     atom.workspaceView.prependToBottom(this) unless @hasParent()
 
+    atom.workspaceView.addClass('find-visible')
+
     selectedText = atom.workspace.getActiveEditor()?.getSelectedText?()
     if selectedText and selectedText.indexOf('\n') < 0
       @findEditor.setText(selectedText)
@@ -124,6 +120,8 @@ class ProjectFindView extends View
 
   detach: ->
     return unless @hasParent()
+
+    atom.workspaceView.removeClass('find-visible')
 
     @hideAllTooltips()
     atom.workspaceView.focus()
@@ -168,10 +166,13 @@ class ProjectFindView extends View
   search: ({onlyRunIfActive, onlyRunIfChanged}={}) ->
     return Q() if onlyRunIfActive and not @model.active
 
+    pattern = @findEditor.getText()
+    @findInBufferModel.update {pattern}
+
     @clearMessages()
     @showResultPane().then =>
       try
-        @model.search(@findEditor.getText(), @getPaths(), @replaceEditor.getText(), {onlyRunIfChanged})
+        @model.search(pattern, @getPaths(), @replaceEditor.getText(), {onlyRunIfChanged})
       catch e
         @setErrorMessage(e.message)
 

@@ -27,7 +27,7 @@ describe 'ProjectFindView', ->
 
     atom.config.set('find-and-replace.openProjectFindResultsInRightPane', false)
     activationPromise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
-      mainModule.createProjectFindView()
+      mainModule.createViews()
       {projectFindView} = mainModule
       spy = spyOn(projectFindView, 'confirm').andCallFake ->
         searchPromise = spy.originalValue.call(projectFindView)
@@ -338,7 +338,7 @@ describe 'ProjectFindView', ->
         atom.packages.deactivatePackage("find-and-replace")
 
         activationPromise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
-          mainModule.createProjectFindView()
+          mainModule.createViews()
           {projectFindView} = mainModule
 
         editorView.trigger 'project-find:show'
@@ -706,6 +706,55 @@ describe 'ProjectFindView', ->
           expect(errorList.find("li")).toHaveLength 2
           expect(errorList.find("li:eq(0)").text()).toBe 'Nope'
           expect(errorList.find("li:eq(1)").text()).toBe 'Broken'
+
+    describe "buffer search sharing of the find pattern", ->
+      it 'highlights the search results in the selected file', ->
+        # Process here is to
+        # * open samplejs
+        # * run a search that has sample js results
+        # * that should place the pattern in the buffer find and replace
+        # * focus sample.js by clicking on a sample.js result
+        # * when the file has been activated, it's results for the project search should be highlighted
+
+        waitsForPromise ->
+          atom.workspace.open('sample.js')
+
+        runs ->
+          editorView = atom.workspaceView.getActiveView()
+          expect(editorView.find('.highlight.find-result')).toHaveLength 0
+
+        runs ->
+          projectFindView.findEditor.setText('items')
+          projectFindView.trigger 'core:confirm'
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          resultsPaneView = getExistingResultsPane()
+          resultsView = resultsPaneView.resultsView
+          resultsView.scrollToBottom() # To load ALL the results
+
+          expect(resultsView).toBeVisible()
+          expect(resultsView.find("li > ul > li")).toHaveLength(13)
+
+          resultsView.selectFirstResult()
+          _.times 10, -> resultsView.trigger 'core:move-down'
+          resultsView.trigger 'core:confirm'
+
+        waits 0 # not sure why this is async
+
+        runs ->
+          # sample.js has 6 results
+          expect(editorView.find('.highlight.find-result')).toHaveLength 5
+          expect(editorView.find('.highlight.current-result')).toHaveLength 1
+          expect(atom.workspaceView).toHaveClass 'find-visible'
+
+          initialSelectedRange = editorView.getEditor().getSelectedBufferRange()
+
+          # now we can find next
+          editorView.trigger 'find-and-replace:find-next'
+          expect(editorView.getEditor().getSelectedBufferRange()).not.toEqual initialSelectedRange
 
   describe "replacing", ->
     [testDir, sampleJs, sampleCoffee, replacePromise] = []

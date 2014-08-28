@@ -13,20 +13,27 @@ class FindModel
     @inCurrentSelection = state.inCurrentSelection ? atom.config.get('find-and-replace.inCurrentSelection') ? false
     @caseSensitive = state.caseSensitive ? atom.config.get('find-and-replace.caseSensitive') ? false
     @valid = false
+    @subscriptions = {}
 
     @activePaneItemChanged()
     atom.workspaceView.on 'pane-container:active-pane-item-changed', => @activePaneItemChanged()
 
   activePaneItemChanged: ->
-    @editor?.getBuffer().off(".find")
     @editor = null
-    paneItem = atom.workspace.getActivePaneItem()
+    @subscriptions.contentsModified?.off()
+    @subscriptions.contentsModified = null
+    @subscriptions.selectionChanged?.off()
+    @subscriptions.selectionChanged = null
     @destroyAllMarkers()
 
+    paneItem = atom.workspace.getActivePaneItem()
     if paneItem?.getBuffer?()?
       @editor = paneItem
-      @editor.getBuffer().on "contents-modified.find", (args) =>
+      @subscriptions.contentsModified = @editor.getBuffer().on "contents-modified", (args) =>
         @updateMarkers() unless @replacing
+      @subscriptions.selectionChanged = @editor.on 'selection-added selection-screen-range-changed', =>
+        @setCurrentMarkerFromSelection()
+
       @updateMarkers()
 
   serialize: ->
@@ -89,11 +96,16 @@ class FindModel
 
       @markers = updatedMarkers
       @emit 'updated', _.clone(@markers)
+      @setCurrentMarkerFromSelection()
     catch e
       @destroyAllMarkers()
       @emit 'find-error', e
 
-  setCurrentResultMarker: (marker) ->
+  setCurrentMarkerFromSelection: ->
+    marker = null
+    marker = @findMarker(@editor.getSelectedBufferRange()) if @editor?
+    return if marker is @currentResultMarker
+
     if @currentResultMarker?
       @decorationsByMarkerId[@currentResultMarker.id]?.update(type: 'highlight', class: @constructor.markerClass)
 
@@ -102,9 +114,12 @@ class FindModel
       @decorationsByMarkerId[marker.id]?.update(type: 'highlight', class: 'current-result')
       @currentResultMarker = marker
 
+    @emit 'current-result-changed', @currentResultMarker
+
   findMarker: (range) ->
-    attributes = { class: @constructor.markerClass, startPosition: range.start, endPosition: range.end }
-    _.find @editor.findMarkers(attributes), (marker) -> marker.isValid()
+    if @markers? and @markers.length
+      attributes = { class: @constructor.markerClass, startPosition: range.start, endPosition: range.end }
+      _.find @editor.findMarkers(attributes), (marker) -> marker.isValid()
 
   createMarker: (range) ->
     markerAttributes =
@@ -126,6 +141,7 @@ class FindModel
     @decorationsByMarkerId = {}
     @currentResultMarker = null
     @emit 'updated', _.clone(@markers)
+    @setCurrentMarkerFromSelection()
 
   getEditor: ->
     @editor

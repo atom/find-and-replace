@@ -20,7 +20,7 @@ describe 'FindView', ->
       editor = editorView.getEditor()
 
       activationPromise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
-        mainModule.createFindView()
+        mainModule.createViews()
         {findView} = mainModule
 
   describe "when find-and-replace:show is triggered", ->
@@ -180,7 +180,7 @@ describe 'FindView', ->
         atom.packages.deactivatePackage("find-and-replace")
 
         activationPromise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
-          mainModule.createFindView()
+          mainModule.createViews()
           {findView} = mainModule
 
         editorView.trigger 'find-and-replace:show'
@@ -223,7 +223,7 @@ describe 'FindView', ->
         atom.packages.deactivatePackage("find-and-replace")
 
         activationPromise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
-          mainModule.createFindView()
+          mainModule.createViews()
           {findView} = mainModule
 
         editorView.trigger 'find-and-replace:show'
