@@ -109,6 +109,8 @@ class ProjectFindView extends View
   attach: ->
     atom.workspaceView.prependToBottom(this) unless @hasParent()
 
+    atom.workspaceView.addClass('find-visible')
+
     selectedText = atom.workspace.getActiveEditor()?.getSelectedText?()
     if selectedText and selectedText.indexOf('\n') < 0
       @findEditor.setText(selectedText)
@@ -118,6 +120,8 @@ class ProjectFindView extends View
 
   detach: ->
     return unless @hasParent()
+
+    atom.workspaceView.removeClass('find-visible')
 
     @hideAllTooltips()
     atom.workspaceView.focus()
