@@ -76,11 +76,12 @@ class SelectNext
 
   updateSavedSelections: (selection=null) ->
     @selectionRanges = [] if @editor.getSelections().length < 3
-
     if @selectionRanges.length == 0
       @selectionRanges.push s.getBufferRange() for s in @editor.getSelections()
     else if selection
-      @selectionRanges.push selection.getBufferRange()
+      selectionRange = selection.getBufferRange()
+      return unless @selectionRanges.indexOf(selectionRange) == -1
+      @selectionRanges.push selectionRange
 
   isNonWordCharacter: (character) ->
     nonWordCharacters = atom.config.get('editor.nonWordCharacters')
