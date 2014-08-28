@@ -25,7 +25,7 @@ describe 'ResultsView', ->
     atom.project.setPath(path.join(__dirname, 'fixtures'))
     atom.workspaceView.attachToDom()
     promise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
-      mainModule.createProjectFindView()
+      mainModule.createViews()
       {projectFindView} = mainModule
       spy = spyOn(projectFindView, 'confirm').andCallFake ->
         searchPromise = spy.originalValue.call(projectFindView)
