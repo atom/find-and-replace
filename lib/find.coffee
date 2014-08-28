@@ -20,12 +20,12 @@ module.exports =
     @subscriber = new Subscriber()
 
     @subscriber.subscribeToCommand atom.workspaceView, 'project-find:show', =>
-      @createProjectFindView()
+      @createViews()
       @findView?.detach()
       @projectFindView.attach()
 
     @subscriber.subscribeToCommand atom.workspaceView, 'project-find:toggle', =>
-      @createProjectFindView()
+      @createViews()
       @findView?.detach()
 
       if @projectFindView.hasParent()
@@ -34,7 +34,7 @@ module.exports =
         @projectFindView.attach()
 
     @subscriber.subscribeToCommand atom.workspaceView, 'project-find:show-in-current-directory', (e) =>
-      @createProjectFindView()
+      @createViews()
       @findView?.detach()
       @projectFindView.attach()
       @projectFindView.findInCurrentlySelectedDirectory($(e.target))
@@ -42,12 +42,12 @@ module.exports =
     @subscriber.subscribeToCommand atom.workspaceView, 'find-and-replace:use-selection-as-find-pattern', =>
       return if @projectFindView?.isOnDom() or @findView?.isOnDom()
 
-      @createFindView()
+      @createViews()
       @projectFindView?.detach()
       @findView.showFind()
 
     @subscriber.subscribeToCommand atom.workspaceView, 'find-and-replace:toggle', =>
-      @createFindView()
+      @createViews()
       @projectFindView?.detach()
 
       if @findView.hasParent()
@@ -56,12 +56,12 @@ module.exports =
         @findView.showFind()
 
     @subscriber.subscribeToCommand atom.workspaceView, 'find-and-replace:show', =>
-      @createFindView()
+      @createViews()
       @projectFindView?.detach()
       @findView.showFind()
 
     @subscriber.subscribeToCommand atom.workspaceView, 'find-and-replace:show-replace', =>
-      @createFindView()
+      @createViews()
       @projectFindView?.detach()
       @findView.showReplace()
 
@@ -81,9 +81,11 @@ module.exports =
       editorView.command 'find-and-replace:select-all', ->
         selectNext.findAndSelectAll()
 
-  createProjectFindView: ->
+  createViews: ->
+    @findView ?= new FindView(@findModel, _.extend({}, @viewState, {@findHistory, @replaceHistory}))
+
     @resultsModel ?= new ResultsModel(@resultsModelState)
-    @projectFindView ?= new ProjectFindView(@resultsModel, @projectViewState)
+    @projectFindView ?= new ProjectFindView(@findModel, @resultsModel, _.extend({}, @projectViewState, {@findHistory, @replaceHistory, @pathsHistory}))
 
     # HACK: Soooo, we need to get the model to the pane view whenever it is
     # created. Creation could come from the opener below, or, more problematic,
@@ -97,10 +99,6 @@ module.exports =
     #
     # See https://github.com/atom/find-and-replace/issues/63
     ResultsPaneView.model = @resultsModel
-
-  createFindView: ->
-    @findModel ?= new FindModel(@modelState)
-    @findView ?= new FindView(@findModel, @viewState)
 
   deactivate: ->
     @findView?.remove()
