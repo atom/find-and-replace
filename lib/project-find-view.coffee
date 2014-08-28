@@ -166,10 +166,13 @@ class ProjectFindView extends View
   search: ({onlyRunIfActive, onlyRunIfChanged}={}) ->
     return Q() if onlyRunIfActive and not @model.active
 
+    pattern = @findEditor.getText()
+    @findInBufferModel.update {pattern}
+
     @clearMessages()
     @showResultPane().then =>
       try
-        @model.search(@findEditor.getText(), @getPaths(), @replaceEditor.getText(), {onlyRunIfChanged})
+        @model.search(pattern, @getPaths(), @replaceEditor.getText(), {onlyRunIfChanged})
       catch e
         @setErrorMessage(e.message)
 
