@@ -361,3 +361,85 @@ describe "SelectNext", ->
           [[0, 0], [0, 3]]
           [[5, 6], [5, 9]]
         ]
+
+  describe "find-and-replace:select-skip", ->
+    describe "when there is no selection", ->
+      beforeEach ->
+        editor.clearSelections()
+
+      it "does nothing", ->
+        editor.setText """
+          for
+          information
+          format
+          another for
+          fork
+          a 3rd for is here
+        """
+
+        editorView.trigger 'find-and-replace:select-skip'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[0, 0], [0, 0]]
+        ]
+
+    describe "when a word is selected", ->
+      it "unselects current word and selects next match", ->
+        editor.setText """
+          for
+          information
+          format
+          another for
+          fork
+          a 3rd for is here
+        """
+
+        editor.setSelectedBufferRange([[3, 8], [3, 11]])
+
+        editorView.trigger 'find-and-replace:select-skip'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[5, 6], [5, 9]]
+        ]
+
+    describe "when two words are selected", ->
+      it "unselects second word and selects next match", ->
+        editor.setText """
+          for
+          information
+          format
+          another for
+          fork
+          a 3rd for is here
+        """
+
+        editor.setSelectedBufferRange([[0, 0], [0, 3]])
+
+        editorView.trigger 'find-and-replace:select-next'
+        editorView.trigger 'find-and-replace:select-skip'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[0, 0], [0, 3]]
+          [[5, 6], [5, 9]]
+        ]
+
+        editorView.trigger 'find-and-replace:select-skip'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[0, 0], [0, 3]]
+        ]
+
+    describe "when starting at the bottom word", ->
+      it "unselects second word and selects next match", ->
+        editor.setText """
+          for
+          information
+          format
+          another for
+          fork
+          a 3rd for is here
+        """
+
+        editor.setSelectedBufferRange([[5, 6], [5, 9]])
+        editorView.trigger 'find-and-replace:select-next'
+        editorView.trigger 'find-and-replace:select-skip'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[3, 8], [3, 11]]
+          [[5, 6], [5, 9]]
+        ]
