@@ -234,9 +234,6 @@ describe "SelectNext", ->
 
   describe "find-and-replace:select-undo", ->
     describe "when there is no selection", ->
-      beforeEach ->
-        editor.clearSelections()
-
       it "does nothing", ->
         editor.setText """
           for
@@ -364,9 +361,6 @@ describe "SelectNext", ->
 
   describe "find-and-replace:select-skip", ->
     describe "when there is no selection", ->
-      beforeEach ->
-        editor.clearSelections()
-
       it "does nothing", ->
         editor.setText """
           for
