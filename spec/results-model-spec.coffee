@@ -66,7 +66,7 @@ describe 'ResultsModel', ->
 
         # updates when there are no matches
         editor.setText('no matches in here')
-        editor.buffer.emit('contents-modified')
+        advanceClock(editor.buffer.stoppedChangingDelay)
 
         expect(resultAddedSpy.callCount).toBe 2
         expect(resultRemovedSpy.callCount).toBe 1
@@ -82,7 +82,7 @@ describe 'ResultsModel', ->
         spyOn(editor, 'scan').andCallThrough()
 
         editor.setText('no matches in here')
-        editor.buffer.emit('contents-modified')
+        advanceClock(editor.buffer.stoppedChangingDelay)
 
         expect(editor.scan).not.toHaveBeenCalled()
 
@@ -108,7 +108,7 @@ describe 'ResultsModel', ->
         editor = atom.workspaceView.getActiveView().editor
         editor.setText('items\nitems')
         spyOn(editor, 'scan').andCallThrough()
-        editor.buffer.emit('contents-modified')
+        advanceClock(editor.buffer.stoppedChangingDelay)
         expect(editor.scan).not.toHaveBeenCalled()
 
   describe "cancelling a search", ->
