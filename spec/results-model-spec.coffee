@@ -52,7 +52,7 @@ describe 'ResultsModel', ->
 
         # updates when we change the buffer
         editor.setText('there are some items in here')
-        editor.buffer.emit('contents-modified')
+        advanceClock(editor.buffer.stoppedChangingDelay)
 
         expect(resultAddedSpy.callCount).toBe 2
 
