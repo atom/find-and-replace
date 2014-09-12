@@ -132,22 +132,21 @@ describe 'ProjectFindView', ->
 
     class DirElement extends View
       @content: (path) ->
-        @div class: 'directory', =>
+        @div class: 'directory', 'data-path': path, =>
           @div class: 'nested-thing', =>
             @span outlet: 'name', class: 'name', path
             @ul outlet: 'files', class: 'files'
       initialize: (@path) ->
-      getPath: -> @path
       createFiles: (names) ->
         for name in names
-          @files.append(new FileElement(path.join(@path, name)))
+          @files.append(new FileElement(path.join(@path, name), name))
 
     class FileElement extends View
-      @content: (path) ->
-        @li class: 'file', =>
-          @span outlet: 'name', class: 'name', path
-      initialize: (@path) ->
-      getPath: -> @path
+      @content: (path, name) ->
+        @li class: 'file', 'data-path': path, =>
+          @span outlet: 'name', class: 'name', name
+      initialize: (path) ->
+        fs.writeFileSync(path, '')
 
     beforeEach ->
       p = atom.project.getPath()
@@ -155,7 +154,7 @@ describe 'ProjectFindView', ->
       tree.createFiles(['one.js', 'two.js'])
 
       nested = new DirElement(path.join(p, 'nested'))
-      nested.createFiles([path.join('nested', 'another.js')])
+      nested.createFiles(['another.js'])
 
       tree.files.append(nested)
       atom.workspaceView.append(tree)
