@@ -149,6 +149,7 @@ describe 'ProjectFindView', ->
         fs.writeFileSync(path, '')
 
     beforeEach ->
+      atom.project.setPath(temp.mkdirSync("atom"))
       p = atom.project.getPath()
       tree = new DirElement(p)
       tree.createFiles(['one.js', 'two.js'])
