@@ -39,11 +39,11 @@ module.exports =
       else
         @projectFindView.attach()
 
-    @subscriber.subscribeToCommand atom.workspaceView, 'project-find:show-in-current-directory', (e) =>
+    @subscriber.subscribeToCommand atom.workspaceView, 'project-find:show-in-current-directory', ({target}) =>
       @createViews()
       @findView?.detach()
       @projectFindView.attach()
-      @projectFindView.findInCurrentlySelectedDirectory($(e.target))
+      @projectFindView.findInCurrentlySelectedDirectory(target)
 
     @subscriber.subscribeToCommand atom.workspaceView, 'find-and-replace:use-selection-as-find-pattern', =>
       return if @projectFindView?.isOnDom() or @findView?.isOnDom()

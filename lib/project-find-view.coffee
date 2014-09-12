@@ -1,3 +1,4 @@
+fs = require 'fs-plus'
 Q = require 'q'
 _ = require 'underscore-plus'
 {$, $$$, EditorView, View} = require 'atom'
@@ -189,17 +190,22 @@ class ProjectFindView extends View
   getPaths: ->
     path.trim() for path in @pathsEditor.getText().trim().split(',') when path
 
-  findFileParent: (node) ->
-    parent = node.parent()
-    return parent if parent.is('.file') or parent.is('.directory')
-    @findFileParent(parent)
+  directoryPathForElement: (element) ->
+    elementPath = null
+    while element?
+      elementPath = element.getAttribute('data-path')
+      break if elementPath
+      element = element.parentElement
 
-  findInCurrentlySelectedDirectory: (selectedNode) ->
-    selected = @findFileParent(selectedNode)
-    selected = selected.parents('.directory:eq(0)') if selected.is('.file')
-    absPath = selected.view().getPath()
-    relPath = atom.project.relativize(absPath)
-    @pathsEditor.setText(relPath)
+    if fs.isFileSync(elementPath)
+      require('path').dirname(elementPath)
+    else
+      elementPath
+
+  findInCurrentlySelectedDirectory: (selectedElement) ->
+    if absPath = @directoryPathForElement(selectedElement)
+      relPath = atom.project.relativize(absPath)
+      @pathsEditor.setText(relPath)
 
   showResultPane: ->
     options = null
