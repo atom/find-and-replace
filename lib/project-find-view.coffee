@@ -193,7 +193,7 @@ class ProjectFindView extends View
   directoryPathForElement: (element) ->
     elementPath = null
     while element?
-      elementPath = element.getAttribute('data-path')
+      elementPath = element.dataset.path
       break if elementPath
       element = element.parentElement
 
