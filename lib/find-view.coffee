@@ -81,6 +81,7 @@ class FindView extends View
 
     @findEditor.on 'core:confirm', => @confirm()
     @findEditor.on 'find-and-replace:show-previous', => @showPrevious()
+    @findEditor.on 'find-and-replace:find-all', => @findAll()
 
     @replaceEditor.on 'core:confirm', => @replaceNext()
 
@@ -162,6 +163,9 @@ class FindView extends View
   liveSearch: ->
     pattern = @findEditor.getText()
     @updateModel { pattern }
+
+  findAll: (options={focusEditorAfter: true}) =>
+    @findAndSelectResult(@selectAllMarkers, options)
 
   findNext: (options={focusEditorAfter: false}) =>
     @findAndSelectResult(@selectFirstMarkerAfterCursor, options)
@@ -290,6 +294,16 @@ class FindView extends View
       return index if markerEndPosition.isLessThan(start)
 
     @markers.length - 1
+
+  selectAllMarkers: =>
+    return unless @markers?.length > 0
+    ranges = for marker in @markers
+      marker.getBufferRange()
+    scrollMarker = @markers[@firstMarkerIndexAfterCursor()]
+    console.log(scrollMarker)
+    editor = @findModel.getEditor()
+    editor.setSelectedBufferRanges(ranges, flash: true)
+    editor.scrollToBufferPosition(scrollMarker.getStartBufferPosition(), center: true)
 
   selectMarkerAtIndex: (markerIndex) ->
     return unless @markers?.length > 0
