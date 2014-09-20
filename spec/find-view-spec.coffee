@@ -426,6 +426,19 @@ describe 'FindView', ->
       expect(findView.resultCounter.text()).toEqual('2 of 5')
       expect(editor.getSelectedBufferRange()).toEqual [[1, 6], [1, 10]]
 
+
+    it "selects the all matches when the 'find-and-replace:find-all' event is triggered and correctly focuses the editor", ->
+      expect(findView).toHaveFocus()
+      findView.findEditor.trigger('find-and-replace:find-all')
+      expect(editor.getSelectedBufferRanges()).toEqual [[[1, 27], [1, 22]],[[2, 8], [2, 13]], [[2, 34], [2, 39]], [[3, 16], [3, 21]],[[4,10], [4, 15]],[[5, 16], [5, 21]]]
+      expect(editorView).toHaveFocus()
+
+    it "will re-run search if 'find-and-replace:find-all' is triggered after changing the findEditor's text", ->
+      findView.findEditor.setText 'sort'
+      findView.findEditor.trigger('find-and-replace:find-all')
+
+      expect(editor.getSelectedBufferRanges()).toEqual [[[0, 9], [0, 13]], [[1, 6], [1, 10]],[[8, 11], [8, 15]], [[8, 43], [8, 47]], [[11, 9], [11, 13]]]
+
     it "replaces results counter with number of results found when user moves the cursor", ->
       editor.moveCursorDown()
       expect(findView.resultCounter.text()).toBe '6 found'
