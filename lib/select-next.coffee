@@ -6,30 +6,62 @@ _ = require 'underscore-plus'
 # The word under the cursor will be selected if the selection is empty.
 module.exports =
 class SelectNext
+  selectionRanges: null
+
   constructor: (@editor) ->
+    @selectionRanges = []
 
   findAndSelectNext: ->
-    if @editor.getSelection().isEmpty()
+    if @editor.getLastSelection().isEmpty()
       @selectWord()
     else
       @selectNextOccurrence()
 
   findAndSelectAll: ->
-    @selectWord() if @editor.getSelection().isEmpty()
+    @selectWord() if @editor.getLastSelection().isEmpty()
     @selectAllOccurrences()
+
+  undoLastSelection: ->
+    @updateSavedSelections()
+
+    return if @selectionRanges.length < 1
+
+    if @selectionRanges.length > 1
+      @selectionRanges.pop()
+      @editor.setSelectedBufferRanges @selectionRanges
+    else
+      @editor.clearSelections()
+
+    @editor.scrollToCursorPosition()
+
+  skipCurrentSelection: ->
+    @updateSavedSelections()
+
+    return if @selectionRanges.length < 1
+
+    if @selectionRanges.length > 1
+      lastSelection = @selectionRanges.pop()
+      @editor.setSelectedBufferRanges @selectionRanges
+      @selectNextOccurrence(start: lastSelection.end)
+    else
+      @selectNextOccurrence()
+      @selectionRanges.shift()
+      return if @selectionRanges.length < 1
+      @editor.setSelectedBufferRanges @selectionRanges
 
   selectWord: ->
     @editor.selectWord()
-    @wordSelected = @isWordSelected(@editor.getSelection())
+    @wordSelected = @isWordSelected(@editor.getLastSelection())
 
   selectAllOccurrences: ->
     range = [[0, 0], @editor.getEofBufferPosition()]
     @scanForNextOccurrence range, ({range, stop}) =>
       @addSelection(range)
 
-  selectNextOccurrence: ->
-    range = @findNextOccurrence([@editor.getSelection().getBufferRange().end, @editor.getEofBufferPosition()])
-    range ?= @findNextOccurrence([[0,0], @editor.getSelection(0).getBufferRange().start])
+  selectNextOccurrence: (options={}) ->
+    startingRange = options.start ? @editor.getSelectedBufferRange().end
+    range = @findNextOccurrence([startingRange, @editor.getEofBufferPosition()])
+    range ?= @findNextOccurrence([[0,0], @editor.getSelections()[0].getBufferRange().start])
     @addSelection(range) if range?
 
   findNextOccurrence: (scanRange) ->
@@ -41,10 +73,13 @@ class SelectNext
 
   addSelection: (range) ->
     selection = @editor.addSelectionForBufferRange(range)
-    selection.once 'destroyed', => @wordSelected = null
+    @updateSavedSelections selection
+    disposable = selection.onDidDestroy =>
+      @wordSelected = null
+      disposable.dispose()
 
   scanForNextOccurrence: (range, callback) ->
-    selection = @editor.getSelection()
+    selection = @editor.getLastSelection()
     text = _.escapeRegExp(selection.getText())
 
     @wordSelected ?= @isWordSelected(selection)
@@ -54,8 +89,18 @@ class SelectNext
 
     @editor.scanInBufferRange new RegExp(text, 'g'), range, (result) ->
       if prefix = result.match[1]
-        result.range = result.range.translate([0, prefix.length], [0, 0])
+        result.range = result.range.add([0, prefix.length], [0, 0])
       callback(result)
+
+  updateSavedSelections: (selection=null) ->
+    selections = @editor.getSelections()
+    @selectionRanges = [] if selections.length < 3
+    if @selectionRanges.length == 0
+      @selectionRanges.push s.getBufferRange() for s in selections
+    else if selection
+      selectionRange = selection.getBufferRange()
+      return unless @selectionRanges.indexOf(selectionRange) == -1
+      @selectionRanges.push selectionRange
 
   isNonWordCharacter: (character) ->
     nonWordCharacters = atom.config.get('editor.nonWordCharacters')
