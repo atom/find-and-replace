@@ -12,13 +12,13 @@ class SelectNext
     @selectionRanges = []
 
   findAndSelectNext: ->
-    if @editor.getSelection().isEmpty()
+    if @editor.getLastSelection().isEmpty()
       @selectWord()
     else
       @selectNextOccurrence()
 
   findAndSelectAll: ->
-    @selectWord() if @editor.getSelection().isEmpty()
+    @selectWord() if @editor.getLastSelection().isEmpty()
     @selectAllOccurrences()
 
   undoLastSelection: ->
@@ -51,7 +51,7 @@ class SelectNext
 
   selectWord: ->
     @editor.selectWord()
-    @wordSelected = @isWordSelected(@editor.getSelection())
+    @wordSelected = @isWordSelected(@editor.getLastSelection())
 
   selectAllOccurrences: ->
     range = [[0, 0], @editor.getEofBufferPosition()]
@@ -59,9 +59,9 @@ class SelectNext
       @addSelection(range)
 
   selectNextOccurrence: (options={}) ->
-    startingRange = options.start ? @editor.getSelection().getBufferRange().end
+    startingRange = options.start ? @editor.getSelectedBufferRange().end
     range = @findNextOccurrence([startingRange, @editor.getEofBufferPosition()])
-    range ?= @findNextOccurrence([[0,0], @editor.getSelection(0).getBufferRange().start])
+    range ?= @findNextOccurrence([[0,0], @editor.getSelections()[0].getBufferRange().start])
     @addSelection(range) if range?
 
   findNextOccurrence: (scanRange) ->
@@ -74,10 +74,12 @@ class SelectNext
   addSelection: (range) ->
     selection = @editor.addSelectionForBufferRange(range)
     @updateSavedSelections selection
-    selection.once 'destroyed', => @wordSelected = null
+    disposable = selection.onDidDestroy =>
+      @wordSelected = null
+      disposable.dispose()
 
   scanForNextOccurrence: (range, callback) ->
-    selection = @editor.getSelection()
+    selection = @editor.getLastSelection()
     text = _.escapeRegExp(selection.getText())
 
     @wordSelected ?= @isWordSelected(selection)
@@ -87,13 +89,14 @@ class SelectNext
 
     @editor.scanInBufferRange new RegExp(text, 'g'), range, (result) ->
       if prefix = result.match[1]
-        result.range = result.range.translate([0, prefix.length], [0, 0])
+        result.range = result.range.add([0, prefix.length], [0, 0])
       callback(result)
 
   updateSavedSelections: (selection=null) ->
-    @selectionRanges = [] if @editor.getSelections().length < 3
+    selections = @editor.getSelections()
+    @selectionRanges = [] if selections.length < 3
     if @selectionRanges.length == 0
-      @selectionRanges.push s.getBufferRange() for s in @editor.getSelections()
+      @selectionRanges.push s.getBufferRange() for s in selections
     else if selection
       selectionRange = selection.getBufferRange()
       return unless @selectionRanges.indexOf(selectionRange) == -1
