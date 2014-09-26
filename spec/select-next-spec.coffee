@@ -335,8 +335,8 @@ describe "SelectNext", ->
         editor.setSelectedBufferRange([[5, 6], [5, 9]])
         editorView.trigger 'find-and-replace:select-next'
         expect(editor.getSelectedBufferRanges()).toEqual [
-          [[0, 0], [0, 3]]
           [[5, 6], [5, 9]]
+          [[0, 0], [0, 3]]
         ]
         editorView.trigger 'find-and-replace:select-undo'
         expect(editor.getSelectedBufferRanges()).toEqual [
@@ -359,8 +359,8 @@ describe "SelectNext", ->
         editorView.trigger 'find-and-replace:select-next'
         editorView.trigger 'find-and-replace:select-undo'
         expect(editor.getSelectedBufferRanges()).toEqual [
-          [[0, 0], [0, 3]]
           [[5, 6], [5, 9]]
+          [[0, 0], [0, 3]]
         ]
 
   describe "find-and-replace:select-skip", ->
@@ -438,6 +438,6 @@ describe "SelectNext", ->
         editorView.trigger 'find-and-replace:select-next'
         editorView.trigger 'find-and-replace:select-skip'
         expect(editor.getSelectedBufferRanges()).toEqual [
-          [[3, 8], [3, 11]]
           [[5, 6], [5, 9]]
+          [[3, 8], [3, 11]]
         ]
