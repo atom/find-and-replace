@@ -101,7 +101,7 @@ class FindView extends View
     @subscribe @findModel, 'current-result-changed', @updateResultCounter
 
   handleFindEvents: ->
-    @findEditor.getEditor().on 'contents-modified', => @liveSearch()
+    @findEditor.getModel().onDidStopChanging => @liveSearch()
     @nextButton.on 'click', => @findNext(focusEditorAfter: true)
     @previousButton.on 'click', => @findPrevious(focusEditorAfter: true)
     atom.workspaceView.command 'find-and-replace:find-next', => @findNext(focusEditorAfter: true)
@@ -264,7 +264,7 @@ class FindView extends View
     editor = @findModel.getEditor()
     return -1 unless editor
 
-    selection = editor.getSelection()
+    selection = editor.getLastSelection()
     {start, end} = selection.getBufferRange()
     start = end if selection.isReversed()
 
@@ -281,7 +281,7 @@ class FindView extends View
     editor = @findModel.getEditor()
     return -1 unless editor
 
-    selection = @findModel.getEditor().getSelection()
+    selection = @findModel.getEditor().getLastSelection()
     {start, end} = selection.getBufferRange()
     start = end if selection.isReversed()
 

@@ -16,7 +16,7 @@ class FindModel
     @subscriptions = {}
 
     @activePaneItemChanged()
-    atom.workspaceView.on 'pane-container:active-pane-item-changed', => @activePaneItemChanged()
+    atom.workspace.onDidChangeActivePaneItem => @activePaneItemChanged()
 
   activePaneItemChanged: ->
     @editor = null
@@ -29,7 +29,7 @@ class FindModel
     paneItem = atom.workspace.getActivePaneItem()
     if paneItem?.getBuffer?()?
       @editor = paneItem
-      @subscriptions.contentsModified = @editor.getBuffer().on "contents-modified", (args) =>
+      @subscriptions.contentsModified = @editor.getBuffer().onDidStopChanging (args) =>
         @updateMarkers() unless @replacing
       @subscriptions.selectionChanged = @editor.on 'selection-added selection-screen-range-changed', =>
         @setCurrentMarkerFromSelection()

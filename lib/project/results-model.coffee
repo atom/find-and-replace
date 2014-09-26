@@ -18,8 +18,8 @@ class ResultsModel
     @useRegex = state.useRegex ? atom.config.get('find-and-replace.useRegex') ? false
     @caseSensitive = state.caseSensitive ? atom.config.get('find-and-replace.caseSensitive') ? false
 
-    atom.workspace.eachEditor (editor) =>
-      editor.on 'contents-modified', => @onContentsModified(editor)
+    atom.workspace.observeTextEditors (editor) =>
+      editor.onDidStopChanging => @onContentsModified(editor)
 
     @clear()
 

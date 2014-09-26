@@ -92,8 +92,8 @@ class ProjectFindView extends View
     @handleEventsForReplace()
 
   handleEventsForReplace: ->
-    @replaceEditor.getEditor().getBuffer().on 'changed', => @model.clearReplacementState()
-    @replaceEditor.getEditor().on 'contents-modified', => @model.updateReplacementPattern(@replaceEditor.getText())
+    @replaceEditor.getModel().getBuffer().onDidChange => @model.clearReplacementState()
+    @replaceEditor.getModel().onDidStopChanging => @model.updateReplacementPattern(@replaceEditor.getText())
     @replacementsMade = 0
     @subscribe @model, 'replace', (promise) =>
       @replacementsMade = 0

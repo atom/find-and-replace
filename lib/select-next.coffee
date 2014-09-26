@@ -50,7 +50,7 @@ class SelectNext
       @editor.setSelectedBufferRanges @selectionRanges
 
   selectWord: ->
-    @editor.selectWord()
+    @editor.selectWordsContainingCursors()
     @wordSelected = @isWordSelected(@editor.getLastSelection())
 
   selectAllOccurrences: ->
@@ -89,7 +89,7 @@ class SelectNext
 
     @editor.scanInBufferRange new RegExp(text, 'g'), range, (result) ->
       if prefix = result.match[1]
-        result.range = result.range.add([0, prefix.length], [0, 0])
+        result.range = result.range.translate([0, prefix.length], [0, 0])
       callback(result)
 
   updateSavedSelections: (selection=null) ->
