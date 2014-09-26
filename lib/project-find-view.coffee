@@ -1,7 +1,7 @@
 fs = require 'fs-plus'
 Q = require 'q'
 _ = require 'underscore-plus'
-{$, $$$, EditorView, View} = require 'atom'
+{$, $$$, TextEditorView, View} = require 'atom'
 
 {HistoryCycler} = require './history'
 Util = require './project/util'
@@ -24,7 +24,7 @@ class ProjectFindView extends View
 
       @div class: 'find-container block', =>
         @div class: 'editor-container', =>
-          @subview 'findEditor', new EditorView(mini: true, placeholderText: 'Find in project')
+          @subview 'findEditor', new TextEditorView(mini: true, placeholderText: 'Find in project')
 
         @div class: 'btn-group btn-toggle btn-group-options', =>
           @button outlet: 'regexOptionButton', class: 'btn option-regex', '.*'
@@ -32,14 +32,14 @@ class ProjectFindView extends View
 
       @div class: 'replace-container block', =>
         @div class: 'editor-container', =>
-          @subview 'replaceEditor', new EditorView(mini: true, placeholderText: 'Replace in project')
+          @subview 'replaceEditor', new TextEditorView(mini: true, placeholderText: 'Replace in project')
 
         @div class: 'btn-group btn-group-replace-all', =>
           @button outlet: 'replaceAllButton', class: 'btn', 'Replace All'
 
       @div class: 'paths-container block', =>
         @div class: 'editor-container', =>
-          @subview 'pathsEditor', new EditorView(mini: true, placeholderText: 'File/directory pattern. eg. `src` to search in the "src" directory or `*.js` to search all javascript files.')
+          @subview 'pathsEditor', new TextEditorView(mini: true, placeholderText: 'File/directory pattern. eg. `src` to search in the "src" directory or `*.js` to search all javascript files.')
 
   initialize: (@findInBufferModel, @model, {findHistory, replaceHistory, pathsHistory}) ->
     @handleEvents()

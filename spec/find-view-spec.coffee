@@ -1,5 +1,5 @@
 _ = require 'underscore-plus'
-{$, EditorView, WorkspaceView} = require 'atom'
+{$, TextEditorView, WorkspaceView} = require 'atom'
 
 path = require 'path'
 
@@ -151,7 +151,7 @@ describe 'FindView', ->
 
     describe "when core:cancel is triggered on a mini editor", ->
       it "leaves the find view attached", ->
-        editorView = new EditorView(mini: true)
+        editorView = new TextEditorView(mini: true)
         atom.workspaceView.appendToTop(editorView)
         editorView.focus()
         $(editorView.hiddenInput).trigger 'core:cancel'
