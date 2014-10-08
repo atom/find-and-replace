@@ -10,9 +10,13 @@ ResultsModel = require './project/results-model'
 ResultsPaneView = require './project/results-pane'
 
 module.exports =
-  configDefaults:
-    focusEditorAfterSearch: false
-    openProjectFindResultsInRightPane: false
+  config:
+    focusEditorAfterSearch:
+      type: 'boolean'
+      default: false
+    openProjectFindResultsInRightPane:
+      type: 'boolean'
+      default: false
 
   activate: ({@viewState, @projectViewState, @resultsModelState, @modelState, findHistory, replaceHistory, pathsHistory}={}) ->
     atom.workspace.registerOpener (filePath) =>
