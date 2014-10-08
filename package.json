@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "emissary": "1.x",
+    "event-kit": "^0.7",
     "fs-plus": "2.x",
     "q": "^1.0.1",
     "temp": "0.6.0",

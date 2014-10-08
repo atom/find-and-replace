@@ -1,5 +1,6 @@
 _ = require 'underscore-plus'
 {Emitter} = require 'emissary'
+{CompositeDisposable} = require 'event-kit'
 escapeHelper = require './escape-helper'
 
 module.exports =
@@ -13,26 +14,21 @@ class FindModel
     @inCurrentSelection = state.inCurrentSelection ? atom.config.get('find-and-replace.inCurrentSelection') ? false
     @caseSensitive = state.caseSensitive ? atom.config.get('find-and-replace.caseSensitive') ? false
     @valid = false
-    @subscriptions = {}
 
-    @activePaneItemChanged()
-    atom.workspace.onDidChangeActivePaneItem => @activePaneItemChanged()
+    atom.workspace.observeActivePaneItem @activePaneItemChanged
 
-  activePaneItemChanged: ->
+  activePaneItemChanged: (paneItem) =>
     @editor = null
-    @subscriptions.contentsModified?.off()
-    @subscriptions.contentsModified = null
-    @subscriptions.selectionChanged?.off()
-    @subscriptions.selectionChanged = null
+    @subscriptions?.dispose()
+    @subscriptions = new CompositeDisposable
     @destroyAllMarkers()
 
-    paneItem = atom.workspace.getActivePaneItem()
     if paneItem?.getBuffer?()?
       @editor = paneItem
-      @subscriptions.contentsModified = @editor.getBuffer().onDidStopChanging (args) =>
+      @subscriptions.add @editor.getBuffer().onDidStopChanging =>
         @updateMarkers() unless @replacing
-      @subscriptions.selectionChanged = @editor.on 'selection-added selection-screen-range-changed', =>
-        @setCurrentMarkerFromSelection()
+      @subscriptions.add @editor.onDidAddSelection @setCurrentMarkerFromSelection
+      @subscriptions.add @editor.onDidChangeSelectionRange @setCurrentMarkerFromSelection
 
       @updateMarkers()
 
@@ -101,7 +97,7 @@ class FindModel
       @destroyAllMarkers()
       @emit 'find-error', e
 
-  setCurrentMarkerFromSelection: ->
+  setCurrentMarkerFromSelection: =>
     marker = null
     marker = @findMarker(@editor.getSelectedBufferRange()) if @editor?
     return if marker is @currentResultMarker
