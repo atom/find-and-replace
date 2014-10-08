@@ -103,11 +103,11 @@ class FindModel
     return if marker is @currentResultMarker
 
     if @currentResultMarker?
-      @decorationsByMarkerId[@currentResultMarker.id]?.update(type: 'highlight', class: @constructor.markerClass)
+      @decorationsByMarkerId[@currentResultMarker.id]?.setProperties(type: 'highlight', class: @constructor.markerClass)
 
     @currentResultMarker = null
     if marker and not marker.isDestroyed()
-      @decorationsByMarkerId[marker.id]?.update(type: 'highlight', class: 'current-result')
+      @decorationsByMarkerId[marker.id]?.setProperties(type: 'highlight', class: 'current-result')
       @currentResultMarker = marker
 
     @emit 'current-result-changed', @currentResultMarker
