@@ -84,16 +84,24 @@ module.exports =
       @findView?.detach()
       @projectFindView?.detach()
 
-    atom.workspaceView.eachEditorView (editorView) ->
-      selectNext = new SelectNext(editorView.editor)
-      editorView.command 'find-and-replace:select-next', ->
-        selectNext.findAndSelectNext()
-      editorView.command 'find-and-replace:select-all', ->
-        selectNext.findAndSelectAll()
-      editorView.command 'find-and-replace:select-undo', ->
-        selectNext.undoLastSelection()
-      editorView.command 'find-and-replace:select-skip', ->
-        selectNext.skipCurrentSelection()
+    selectNextObjectForEditorElement = (editorElement) =>
+      @selectNextObjects ?= new WeakMap()
+      editor = $(editorElement).view().getModel()
+      selectNext = @selectNextObjects.get(editor)
+      unless selectNext?
+        selectNext = new SelectNext(editor)
+        @selectNextObjects.set(editor, selectNext)
+      selectNext
+
+    atom.commands.add '.editor:not(.mini)',
+      'find-and-replace:select-next': (event) ->
+        selectNextObjectForEditorElement(this).findAndSelectNext()
+      'find-and-replace:select-all': (event) ->
+        selectNextObjectForEditorElement(this).findAndSelectAll()
+      'find-and-replace:select-undo': (event) ->
+        selectNextObjectForEditorElement(this).undoLastSelection()
+      'find-and-replace:select-skip': (event) ->
+        selectNextObjectForEditorElement(this).skipCurrentSelection()
 
   createViews: ->
     history = {@findHistory, @replaceHistory, @pathsHistory}
