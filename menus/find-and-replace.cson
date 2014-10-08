@@ -19,5 +19,6 @@
 ]
 
 'context-menu':
-  '.tree-view > li.directory':
-    'Search in Directory': 'project-find:show-in-current-directory'
+  '.tree-view > li.directory': [
+    { 'label': 'Search in Directory', 'command': 'project-find:show-in-current-directory' }
+  ]
