@@ -9,7 +9,7 @@ describe 'FindView', ->
   beforeEach ->
     spyOn(atom, 'beep')
     atom.workspaceView = new WorkspaceView()
-    atom.project.setPath(path.join(__dirname, 'fixtures'))
+    atom.project.setPaths([path.join(__dirname, 'fixtures')])
 
     waitsForPromise ->
       atom.workspace.open('sample.js')
