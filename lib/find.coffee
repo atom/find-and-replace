@@ -19,7 +19,7 @@ module.exports =
       default: false
 
   activate: ({@viewState, @projectViewState, @resultsModelState, @modelState, findHistory, replaceHistory, pathsHistory}={}) ->
-    atom.workspace.registerOpener (filePath) =>
+    atom.workspace.addOpener (filePath) =>
       new ResultsPaneView() if filePath is ResultsPaneView.URI
 
     @subscriber = new Subscriber()
