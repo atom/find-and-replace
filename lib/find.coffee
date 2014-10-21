@@ -78,7 +78,12 @@ module.exports =
     # in code editors
     @subscriber.subscribeToCommand atom.workspaceView, 'core:cancel core:close', ({target}) =>
       if target isnt atom.workspaceView.getActivePaneView()?[0]
-        editor = $(target).parents('.editor:not(.mini)')
+        $target = $(target)
+        if $target.is('atom-text-editor')
+          editor = $target
+        else
+          editor = $target.parents('.editor:not(.mini)')
+
         return unless editor.length
 
       @findView?.detach()

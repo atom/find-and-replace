@@ -146,7 +146,7 @@ describe 'FindView', ->
           atom.workspace.open()
 
         runs ->
-          $(atom.workspaceView.getActiveView().hiddenInput).trigger 'core:cancel'
+          atom.workspaceView.getActiveView().trigger 'core:cancel'
           expect(atom.workspaceView.find('.find-and-replace')).not.toExist()
 
     describe "when core:cancel is triggered on a mini editor", ->
@@ -545,7 +545,7 @@ describe 'FindView', ->
             atom.project.open('sample.coffee').then (o) -> newEditor = o
 
           runs ->
-            newEditorView = editorView.getPane().splitRight(newEditor)
+            newEditorView = editorView.getPane().splitRight(newEditor).activeView
 
           runs ->
             # old editor has no more results
@@ -561,7 +561,7 @@ describe 'FindView', ->
             atom.project.open('sample.coffee').then (o) -> newEditor = o
 
           runs ->
-            newEditorView = editorView.getPane().splitRight(newEditor)
+            newEditorView = editorView.getPane().splitRight(newEditor).activeView
             expect(newEditorView.find('.find-result')).toHaveLength 7
 
             newEditorView.focus()
