@@ -8,7 +8,7 @@ class ResultsPaneView extends ScrollView
   @URI: "atom://find-and-replace/project-results"
 
   @content: ->
-    @div class: 'preview-pane pane-item', =>
+    @div class: 'preview-pane pane-item', tabindex: -1, =>
       @div class: 'panel-heading', =>
         @span outlet: 'previewCount', class: 'preview-count inline-block'
         @div outlet: 'loadingMessage', class: 'inline-block', =>
@@ -33,6 +33,8 @@ class ResultsPaneView extends ScrollView
     @handleEvents()
     @onFinishedSearching(@model.getResultsSummary())
 
+    @on 'focus', @focused
+
   beforeRemove: ->
     @model.setActive(false)
 
@@ -51,7 +53,7 @@ class ResultsPaneView extends ScrollView
   getUri: ->
     @constructor.URI
 
-  focus: ->
+  focused: =>
     @resultsView.focus()
 
   handleEvents: ->
