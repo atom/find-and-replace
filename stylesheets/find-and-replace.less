@@ -6,29 +6,36 @@
   font-family: courier, monospace;
 }
 
-.editor .find-result .region {
-  background-color: transparent;
-  border-radius: @component-border-radius;
-  border: 1px solid @syntax-result-marker-color;
-}
+// result markers
+.editor, atom-text-editor::shadow {
+  .find-result .region {
+    background-color: transparent;
+    border-radius: @component-border-radius;
+    border: 1px solid @syntax-result-marker-color;
+    box-sizing: border-box;
+  }
 
-.editor .search-results .marker.current-result .region,
-.editor .current-result .region {
-  border-radius: @component-border-radius;
-  border: 1px solid @syntax-result-marker-color-selected;
-}
+  .current-result .region {
+    border-radius: @component-border-radius;
+    border: 1px solid @syntax-result-marker-color-selected;
+    box-sizing: border-box;
+  }
 
-.editor .find-result,
-.editor .current-result {
-  display: none;
+  .find-result,
+  .current-result {
+    display: none;
+  }
 }
 
 .workspace.find-visible {
-  .editor .find-result,
-  .editor .current-result {
-    display: block;
+  .editor, atom-text-editor::shadow {
+    .find-result,
+    .current-result {
+      display: block;
+    }
   }
 }
+
 // Both project and buffer FNR styles
 .find-and-replace,
 .project-find {
