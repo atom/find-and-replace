@@ -41,7 +41,7 @@ class ResultsPaneView extends ScrollView
   copy: ->
     new ResultsPaneView()
 
-  getPane: ->
+  getPaneView: ->
     @parents('.pane').view()
 
   getTitle: ->

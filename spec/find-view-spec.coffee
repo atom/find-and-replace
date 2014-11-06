@@ -534,7 +534,7 @@ describe 'FindView', ->
             atom.project.open('sample.coffee').then (o) -> newEditor = o
 
           runs ->
-            newEditorView = editorView.getPane().splitRight(newEditor).activeView
+            newEditorView = editorView.getPaneView().splitRight(newEditor).activeView
             expect(findView.resultCounter.text()).toEqual('7 found')
             expect(newEditorView.getEditor().getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
 
@@ -549,7 +549,7 @@ describe 'FindView', ->
             atom.project.open('sample.coffee').then (o) -> newEditor = o
 
           runs ->
-            newEditorView = editorView.getPane().splitRight(newEditor).activeView
+            newEditorView = editorView.getPaneView().splitRight(newEditor).activeView
 
           runs ->
             # old editor has no more results
@@ -565,7 +565,7 @@ describe 'FindView', ->
             atom.project.open('sample.coffee').then (o) -> newEditor = o
 
           runs ->
-            newEditorView = editorView.getPane().splitRight(newEditor).activeView
+            newEditorView = editorView.getPaneView().splitRight(newEditor).activeView
             expect(newEditorView.find('.find-result')).toHaveLength 7
 
             newEditorView.focus()
