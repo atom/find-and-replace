@@ -26,7 +26,7 @@ describe 'ProjectFindView', ->
   beforeEach ->
     atom.workspaceView = new WorkspaceView()
     workspaceElement = atom.views.getView(atom.workspace)
-    atom.project.setPath(path.join(__dirname, 'fixtures'))
+    atom.project.setPaths([path.join(__dirname, 'fixtures')])
     atom.workspaceView.attachToDom()
 
     atom.config.set('find-and-replace.openProjectFindResultsInRightPane', false)
@@ -153,8 +153,8 @@ describe 'ProjectFindView', ->
         fs.writeFileSync(path, '')
 
     beforeEach ->
-      atom.project.setPath(temp.mkdirSync("atom"))
-      p = atom.project.getPath()
+      atom.project.setPaths([temp.mkdirSync("atom")])
+      p = atom.project.getPaths()[0]
       tree = new DirElement(p)
       tree.createFiles(['one.js', 'two.js'])
 
@@ -206,7 +206,7 @@ describe 'ProjectFindView', ->
       beforeEach ->
         projectPath = temp.mkdirSync("atom")
         fs.writeFileSync(path.join(projectPath, "tabs.txt"), "\t\n\\\t\n\\\\t")
-        atom.project.setPath(projectPath)
+        atom.project.setPaths([projectPath])
         atom.workspaceView.trigger 'project-find:show'
 
       describe "when regex seach is enabled", ->
@@ -777,7 +777,7 @@ describe 'ProjectFindView', ->
         activationPromise
 
       runs ->
-        atom.project.setPath(testDir)
+        atom.project.setPaths([testDir])
         spy = spyOn(projectFindView, 'replaceAll').andCallFake ->
           replacePromise = spy.originalValue.call(projectFindView)
 
@@ -810,7 +810,7 @@ describe 'ProjectFindView', ->
         projectPath = temp.mkdirSync("atom")
         filePath = path.join(projectPath, "tabs.txt")
         fs.writeFileSync(filePath, "a\nb\na")
-        atom.project.setPath(projectPath)
+        atom.project.setPaths([projectPath])
         atom.workspaceView.trigger 'project-find:show'
 
       describe "when the regex option is chosen", ->

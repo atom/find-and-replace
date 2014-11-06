@@ -22,7 +22,7 @@ describe 'ResultsView', ->
   beforeEach ->
     atom.workspaceView = new WorkspaceView()
     atom.workspaceView.height(1000)
-    atom.project.setPath(path.join(__dirname, 'fixtures'))
+    atom.project.setPaths([path.join(__dirname, 'fixtures')])
     atom.workspaceView.attachToDom()
     promise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
       mainModule.createViews()
