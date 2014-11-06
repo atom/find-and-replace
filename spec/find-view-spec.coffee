@@ -431,11 +431,11 @@ describe 'FindView', ->
       expect(editor.getSelectedBufferRange()).toEqual [[1, 6], [1, 10]]
 
     it "replaces results counter with number of results found when user moves the cursor", ->
-      editor.moveCursorDown()
+      editor.moveDown()
       expect(findView.resultCounter.text()).toBe '6 found'
 
     it "replaces results counter x of y text when user selects a marked range", ->
-      editor.moveCursorDown()
+      editor.moveDown()
       editor.setSelectedBufferRange([[2, 34], [2, 39]])
       expect(findView.resultCounter.text()).toEqual('3 of 6')
 
