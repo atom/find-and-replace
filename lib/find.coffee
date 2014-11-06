@@ -140,13 +140,13 @@ module.exports =
     ResultsPaneView.model = @resultsModel
 
   deactivate: ->
-    @findPanel?.destory()
+    @findPanel?.destroy()
     @findPanel = null
     @findView = null
 
     @findModel = null
 
-    @projectFindPanel?.destory()
+    @projectFindPanel?.destroy()
     @projectFindPanel = null
     @projectFindView = null
 

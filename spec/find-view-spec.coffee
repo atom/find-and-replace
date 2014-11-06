@@ -4,11 +4,15 @@ _ = require 'underscore-plus'
 path = require 'path'
 
 describe 'FindView', ->
-  [editorView, editor, findView, activationPromise] = []
+  [editorView, editor, findView, activationPromise, workspaceElement] = []
+
+  getFindAtomPanel = ->
+    workspaceElement.querySelector('.find-and-replace').parentNode
 
   beforeEach ->
     spyOn(atom, 'beep')
     atom.workspaceView = new WorkspaceView()
+    workspaceElement = atom.views.getView(atom.workspace)
     atom.project.setPaths([path.join(__dirname, 'fixtures')])
 
     waitsForPromise ->
@@ -31,7 +35,7 @@ describe 'FindView', ->
         activationPromise
 
       runs ->
-        expect(atom.workspaceView.find('.find-and-replace')).toExist()
+        expect(workspaceElement.querySelector('.find-and-replace')).toBeDefined()
 
     it "populates the findEditor with selection when there is a selection", ->
       editor.setSelectedBufferRange([[2, 8], [2, 13]])
@@ -41,14 +45,14 @@ describe 'FindView', ->
         activationPromise
 
       runs ->
-        expect(atom.workspaceView.find('.find-and-replace')).toExist()
+        expect(getFindAtomPanel()).toBeVisible()
         expect(findView.findEditor.getText()).toBe('items')
 
         findView.findEditor.setText('')
 
         editor.setSelectedBufferRange([[2, 14], [2, 20]])
         editorView.trigger 'find-and-replace:show'
-        expect(atom.workspaceView.find('.find-and-replace')).toExist()
+        expect(getFindAtomPanel()).toBeVisible()
         expect(findView.findEditor.getText()).toBe('length')
 
     it "does not change the findEditor text when there is no selection", ->
@@ -71,7 +75,7 @@ describe 'FindView', ->
         activationPromise
 
       runs ->
-        expect(atom.workspaceView.find('.find-and-replace')).toExist()
+        expect(getFindAtomPanel()).toBeVisible()
         expect(findView.findEditor.getText()).toBe('')
 
     it "honors config settings for find options", ->
@@ -97,9 +101,9 @@ describe 'FindView', ->
         activationPromise
 
       runs ->
-        expect(atom.workspaceView.find('.find-and-replace')).toExist()
+        expect(getFindAtomPanel()).toBeVisible()
         atom.workspaceView.trigger 'find-and-replace:toggle'
-        expect(atom.workspaceView.find('.find-and-replace')).not.toExist()
+        expect(getFindAtomPanel()).not.toBeVisible()
 
   describe "when FindView's replace editor is visible", ->
     it "keeps the replace editor visible when find-and-replace:show is triggered", ->
@@ -126,7 +130,7 @@ describe 'FindView', ->
     describe "when core:cancel is triggered on the find view", ->
       it "detaches from the workspace view", ->
         $(document.activeElement).trigger 'core:cancel'
-        expect(atom.workspaceView.find('.find-and-replace')).not.toExist()
+        expect(getFindAtomPanel()).not.toBeVisible()
 
       it "removes highlighted matches", ->
         findResultsView = editorView.find('.search-results')
@@ -138,7 +142,7 @@ describe 'FindView', ->
       it "detaches from the workspace view", ->
         atom.workspaceView.getActivePaneView().focus()
         $(atom.workspaceView.getActivePaneView()).trigger 'core:cancel'
-        expect(atom.workspaceView.find('.find-and-replace')).not.toExist()
+        expect(getFindAtomPanel()).not.toBeVisible()
 
     describe "when core:cancel is triggered on an editor", ->
       it "detaches from the workspace view", ->
@@ -147,7 +151,7 @@ describe 'FindView', ->
 
         runs ->
           atom.workspaceView.getActiveView().trigger 'core:cancel'
-          expect(atom.workspaceView.find('.find-and-replace')).not.toExist()
+          expect(getFindAtomPanel()).not.toBeVisible()
 
     describe "when core:cancel is triggered on a mini editor", ->
       it "leaves the find view attached", ->
@@ -155,7 +159,7 @@ describe 'FindView', ->
         atom.workspaceView.appendToTop(editorView)
         editorView.focus()
         $(editorView.hiddenInput).trigger 'core:cancel'
-        expect(atom.workspaceView.find('.find-and-replace')).toExist()
+        expect(getFindAtomPanel()).toBeVisible()
 
   describe "serialization", ->
     it "serializes find and replace history", ->
@@ -494,14 +498,14 @@ describe 'FindView', ->
           expect(findView.resultCounter.text()).toEqual('no results')
 
       describe "when the active pane item is not an edit session", ->
-        [anotherOpener] = []
+        [anotherOpener, openerDisposable] = []
 
         beforeEach ->
-          anotherOpener = (pathToOpen, options) -> $('another')
-          atom.workspace.registerOpener(anotherOpener)
+          anotherOpener = (pathToOpen, options) -> document.createElement('div')
+          openerDisposable = atom.workspace.addOpener(anotherOpener)
 
         afterEach ->
-          atom.workspace.unregisterOpener(anotherOpener)
+          openerDisposable.dispose()
 
         it "updates the result view", ->
           waitsForPromise ->
