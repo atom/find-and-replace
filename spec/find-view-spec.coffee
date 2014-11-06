@@ -156,7 +156,7 @@ describe 'FindView', ->
     describe "when core:cancel is triggered on a mini editor", ->
       it "leaves the find view attached", ->
         editorView = new TextEditorView(mini: true)
-        atom.workspaceView.appendToTop(editorView)
+        atom.workspace.addTopPanel(item: editorView)
         editorView.focus()
         $(editorView.hiddenInput).trigger 'core:cancel'
         expect(getFindAtomPanel()).toBeVisible()

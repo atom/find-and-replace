@@ -153,7 +153,7 @@ describe 'ResultsView', ->
         projectFindView.findEditor.setText('items')
         projectFindView.trigger 'core:confirm'
         openHandler = jasmine.createSpy("open handler")
-        atom.workspaceView.model.on 'uri-opened', openHandler
+        atom.workspace.onDidOpen openHandler
 
       waitsForPromise ->
         searchPromise
