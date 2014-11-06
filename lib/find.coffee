@@ -33,6 +33,7 @@ module.exports =
       @createViews()
       @findPanel.hide()
       @projectFindPanel.show()
+      @projectFindView.focusFindElement()
 
     @subscriber.subscribeToCommand atom.workspaceView, 'project-find:toggle', =>
       @createViews()
@@ -47,7 +48,7 @@ module.exports =
       @createViews()
       @findPanel.hide()
       @projectFindPanel.show()
-      @projectFindPanel.findInCurrentlySelectedDirectory(target)
+      @projectFindView.findInCurrentlySelectedDirectory(target)
 
     @subscriber.subscribeToCommand atom.workspaceView, 'find-and-replace:use-selection-as-find-pattern', =>
       return if @projectFindPanel?.isVisible() or @findPanel?.isVisible()

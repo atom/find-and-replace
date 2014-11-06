@@ -60,14 +60,6 @@ class ProjectFindView extends View
 
   didShow: ->
     atom.workspaceView.addClass('find-visible')
-
-    selectedText = atom.workspace.getActiveEditor()?.getSelectedText?()
-    if selectedText and selectedText.indexOf('\n') < 0
-      @findEditor.setText(selectedText)
-
-    @findEditor.focus()
-    @findEditor.getEditor().selectAll()
-
     unless @tooltipsInitialized
       @regexOptionButton.setTooltip("Use Regex", command: 'project-find:toggle-regex-option', commandElement: @findEditor)
       @caseOptionButton.setTooltip("Match Case", command: 'project-find:toggle-case-option', commandElement: @findEditor)
@@ -147,6 +139,12 @@ class ProjectFindView extends View
     focusedIndex = elements.length - 1 if focusedIndex < 0
     elements[focusedIndex].focus()
     elements[focusedIndex].getEditor?().selectAll()
+
+  focusFindElement: ->
+    selectedText = atom.workspace.getActiveEditor()?.getSelectedText?()
+    @findEditor.setText(selectedText) if selectedText and selectedText.indexOf('\n') < 0
+    @findEditor.focus()
+    @findEditor.getEditor().selectAll()
 
   confirm: ->
     if @findEditor.getText().length == 0
