@@ -1,5 +1,6 @@
 _ = require 'underscore-plus'
 {ScrollView} = require 'atom'
+{Disposable} = require 'event-kit'
 ResultsView = require './results-view'
 Util = require './util'
 
@@ -41,11 +42,17 @@ class ResultsPaneView extends ScrollView
   copy: ->
     new ResultsPaneView()
 
-  getPane: ->
+  getPaneView: ->
     @parents('.pane').view()
 
   getTitle: ->
     "Project Find Results"
+
+  # NOP to remove deprecation. This kind of sucks
+  onDidChangeTitle: ->
+    new Disposable()
+  onDidChangeModified: ->
+    new Disposable()
 
   getIconName: ->
     "search"

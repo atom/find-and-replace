@@ -31,49 +31,54 @@ module.exports =
 
     @subscriber.subscribeToCommand atom.workspaceView, 'project-find:show', =>
       @createViews()
-      @findView?.detach()
-      @projectFindView.attach()
+      @findPanel.hide()
+      @projectFindPanel.show()
+      @projectFindView.focusFindElement()
 
     @subscriber.subscribeToCommand atom.workspaceView, 'project-find:toggle', =>
       @createViews()
-      @findView?.detach()
+      @findPanel.hide()
 
-      if @projectFindView.hasParent()
-        @projectFindView.detach()
+      if @projectFindPanel.isVisible()
+        @projectFindPanel.hide()
       else
-        @projectFindView.attach()
+        @projectFindPanel.show()
 
     @subscriber.subscribeToCommand atom.workspaceView, 'project-find:show-in-current-directory', ({target}) =>
       @createViews()
-      @findView?.detach()
-      @projectFindView.attach()
+      @findPanel.hide()
+      @projectFindPanel.show()
       @projectFindView.findInCurrentlySelectedDirectory(target)
 
     @subscriber.subscribeToCommand atom.workspaceView, 'find-and-replace:use-selection-as-find-pattern', =>
-      return if @projectFindView?.isOnDom() or @findView?.isOnDom()
+      return if @projectFindPanel?.isVisible() or @findPanel?.isVisible()
 
       @createViews()
-      @projectFindView?.detach()
-      @findView.showFind()
+      @projectFindPanel.hide()
+      @findPanel.show()
+      @findView.focusFindEditor()
 
     @subscriber.subscribeToCommand atom.workspaceView, 'find-and-replace:toggle', =>
       @createViews()
-      @projectFindView?.detach()
+      @projectFindPanel.hide()
 
-      if @findView.hasParent()
-        @findView.detach()
+      if @findPanel.isVisible()
+        @findPanel.hide()
       else
-        @findView.showFind()
+        @findPanel.show()
+        @findView.focusFindEditor()
 
     @subscriber.subscribeToCommand atom.workspaceView, 'find-and-replace:show', =>
       @createViews()
-      @projectFindView?.detach()
-      @findView.showFind()
+      @projectFindPanel.hide()
+      @findPanel.show()
+      @findView.focusFindEditor()
 
     @subscriber.subscribeToCommand atom.workspaceView, 'find-and-replace:show-replace', =>
       @createViews()
-      @projectFindView?.detach()
-      @findView.showReplace()
+      @projectFindPanel?.hide()
+      @findPanel.show()
+      @findView.focusReplaceEditor()
 
     # in code editors
     @subscriber.subscribeToCommand atom.workspaceView, 'core:cancel core:close', ({target}) =>
@@ -86,8 +91,8 @@ module.exports =
 
         return unless editor.length
 
-      @findView?.detach()
-      @projectFindView?.detach()
+      @findPanel?.hide()
+      @projectFindPanel?.hide()
 
     selectNextObjectForEditorElement = (editorElement) =>
       @selectNextObjects ?= new WeakMap()
@@ -109,10 +114,18 @@ module.exports =
         selectNextObjectForEditorElement(this).skipCurrentSelection()
 
   createViews: ->
+    return if @findView?
+
     history = {@findHistory, @replaceHistory, @pathsHistory}
 
-    @findView ?= new FindView(@findModel, history)
-    @projectFindView ?= new ProjectFindView(@findModel, @resultsModel, history)
+    @findView = new FindView(@findModel, history)
+    @projectFindView = new ProjectFindView(@findModel, @resultsModel, history)
+
+    @findPanel = atom.workspace.addBottomPanel(item: @findView, visible: false, className: 'tool-panel panel-bottom')
+    @projectFindPanel = atom.workspace.addBottomPanel(item: @projectFindView, visible: false, className: 'tool-panel panel-bottom')
+
+    @findView.setPanel(@findPanel)
+    @projectFindView.setPanel(@projectFindPanel)
 
     # HACK: Soooo, we need to get the model to the pane view whenever it is
     # created. Creation could come from the opener below, or, more problematic,
@@ -128,12 +141,14 @@ module.exports =
     ResultsPaneView.model = @resultsModel
 
   deactivate: ->
-    @findView?.remove()
+    @findPanel?.destroy()
+    @findPanel = null
     @findView = null
 
     @findModel = null
 
-    @projectFindView?.remove()
+    @projectFindPanel?.destroy()
+    @projectFindPanel = null
     @projectFindView = null
 
     ResultsPaneView.model = null

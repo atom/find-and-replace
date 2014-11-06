@@ -11,7 +11,7 @@ ResultsPaneView = require './project/results-pane'
 module.exports =
 class ProjectFindView extends View
   @content: ->
-    @div tabIndex: -1, class: 'project-find tool-panel panel-bottom padded', =>
+    @div tabIndex: -1, class: 'project-find padded', =>
       @div class: 'block', =>
         @span outlet: 'descriptionLabel', class: 'description'
         @span class: 'options-label pull-right', =>
@@ -54,12 +54,22 @@ class ProjectFindView extends View
     @clearMessages()
     @updateOptionsLabel()
 
-  afterAttach: ->
+  setPanel: (@panel) ->
+    @subscribe @panel.onDidChangeVisible (visible) =>
+      if visible then @didShow() else @didHide()
+
+  didShow: ->
+    atom.workspaceView.addClass('find-visible')
     unless @tooltipsInitialized
       @regexOptionButton.setTooltip("Use Regex", command: 'project-find:toggle-regex-option', commandElement: @findEditor)
       @caseOptionButton.setTooltip("Match Case", command: 'project-find:toggle-case-option', commandElement: @findEditor)
       @replaceAllButton.setTooltip("Replace All", command: 'project-find:replace-all', commandElement: @replaceEditor)
       @tooltipsInitialized = true
+
+  didHide: ->
+    @hideAllTooltips()
+    atom.workspaceView.focus()
+    atom.workspaceView.removeClass('find-visible')
 
   hideAllTooltips: ->
     @regexOptionButton.hideTooltip()
@@ -70,7 +80,7 @@ class ProjectFindView extends View
     @on 'core:confirm', => @confirm()
     @on 'find-and-replace:focus-next', => @focusNextElement(1)
     @on 'find-and-replace:focus-previous', => @focusNextElement(-1)
-    @on 'core:cancel core:close', => @detach()
+    @on 'core:cancel core:close', => @panel?.hide()
 
     @on 'project-find:toggle-regex-option', => @toggleRegexOption()
     @regexOptionButton.click => @toggleRegexOption()
@@ -107,27 +117,6 @@ class ProjectFindView extends View
 
     @subscribe @model, 'finished-replacing', (result) => @onFinishedReplacing(result)
 
-  attach: ->
-    atom.workspaceView.prependToBottom(this) unless @hasParent()
-
-    atom.workspaceView.addClass('find-visible')
-
-    selectedText = atom.workspace.getActiveEditor()?.getSelectedText?()
-    if selectedText and selectedText.indexOf('\n') < 0
-      @findEditor.setText(selectedText)
-
-    @findEditor.focus()
-    @findEditor.getEditor().selectAll()
-
-  detach: ->
-    return unless @hasParent()
-
-    atom.workspaceView.removeClass('find-visible')
-
-    @hideAllTooltips()
-    atom.workspaceView.focus()
-    super()
-
   toggleRegexOption: ->
     @model.toggleUseRegex()
     if @model.useRegex then @regexOptionButton.addClass('selected') else @regexOptionButton.removeClass('selected')
@@ -150,6 +139,12 @@ class ProjectFindView extends View
     focusedIndex = elements.length - 1 if focusedIndex < 0
     elements[focusedIndex].focus()
     elements[focusedIndex].getEditor?().selectAll()
+
+  focusFindElement: ->
+    selectedText = atom.workspace.getActiveEditor()?.getSelectedText?()
+    @findEditor.setText(selectedText) if selectedText and selectedText.indexOf('\n') < 0
+    @findEditor.focus()
+    @findEditor.getEditor().selectAll()
 
   confirm: ->
     if @findEditor.getText().length == 0

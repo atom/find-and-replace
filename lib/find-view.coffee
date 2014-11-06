@@ -6,7 +6,7 @@ FindModel = require './find-model'
 module.exports =
 class FindView extends View
   @content: ->
-    @div tabIndex: -1, class: 'find-and-replace tool-panel panel-bottom', =>
+    @div tabIndex: -1, class: 'find-and-replace', =>
       @div class: 'block', =>
         @span outlet: 'descriptionLabel', class: 'description', 'Find in Current Buffer'
         @span class: 'options-label pull-right', =>
@@ -40,6 +40,7 @@ class FindView extends View
         @div class: 'btn-group btn-group-replace-all', =>
           @button outlet: 'replaceAllButton', class: 'btn btn-all', 'Replace All'
 
+
   initialize: (@findModel, {findHistory, replaceHistory}) ->
     @findHistory = new HistoryCycler(@findEditor, findHistory)
     @replaceHistory = new HistoryCycler(@replaceEditor, replaceHistory)
@@ -49,7 +50,12 @@ class FindView extends View
     @clearMessage()
     @updateOptionsLabel()
 
-  afterAttach: ->
+  setPanel: (@panel) ->
+    @subscribe @panel.onDidChangeVisible (visible) =>
+      if visible then @didShow() else @didHide()
+
+  didShow: ->
+    atom.workspaceView.addClass('find-visible')
     unless @tooltipsInitialized
       @regexOptionButton.setTooltip("Use Regex", command: 'find-and-replace:toggle-regex-option', commandElement: @findEditor)
       @caseOptionButton.setTooltip("Match Case", command: 'find-and-replace:toggle-case-option', commandElement: @findEditor)
@@ -62,6 +68,11 @@ class FindView extends View
       @replaceNextButton.setTooltip("Replace Next", command: 'find-and-replace:replace-next', commandElement: @replaceEditor)
       @replaceAllButton.setTooltip("Replace All", command: 'find-and-replace:replace-all', commandElement: @replaceEditor)
       @tooltipsInitialized = true
+
+  didHide: ->
+    @hideAllTooltips()
+    atom.workspaceView.focus()
+    atom.workspaceView.removeClass('find-visible')
 
   hideAllTooltips: ->
     @regexOptionButton.hideTooltip()
@@ -86,7 +97,7 @@ class FindView extends View
 
     @on 'find-and-replace:focus-next', @toggleFocus
     @on 'find-and-replace:focus-previous', @toggleFocus
-    @on 'core:cancel core:close', @detach
+    @on 'core:cancel core:close', => @panel?.hide()
 
     @command 'find-and-replace:toggle-regex-option', @toggleRegexOption
     @command 'find-and-replace:toggle-case-option', @toggleCaseOption
@@ -116,36 +127,16 @@ class FindView extends View
     atom.workspaceView.command 'find-and-replace:replace-next', @replaceNext
     atom.workspaceView.command 'find-and-replace:replace-all', @replaceAll
 
-  isAttached: -> @hasParent()
-
-  isActiveEditorReact: ->
-    atom.workspaceView.getActiveView()?.hasClass('react')
-
-  showFind: =>
-    @attach() unless @isAttached()
-
+  focusFindEditor: =>
     selectedText = atom.workspace.getActiveEditor()?.getSelectedText?()
     if selectedText and selectedText.indexOf('\n') < 0
       @findEditor.setText(selectedText)
     @findEditor.focus()
     @findEditor.getEditor().selectAll()
 
-  showReplace: =>
-    @attach()
+  focusReplaceEditor: =>
     @replaceEditor.focus()
     @replaceEditor.getEditor().selectAll()
-
-  attach: =>
-    atom.workspaceView.prependToBottom(this)
-    atom.workspaceView.addClass('find-visible')
-
-  detach: =>
-    return unless @isAttached()
-
-    @hideAllTooltips()
-    atom.workspaceView.focus()
-    atom.workspaceView.removeClass('find-visible')
-    super()
 
   toggleFocus: =>
     if @findEditor.find(':focus').length > 0

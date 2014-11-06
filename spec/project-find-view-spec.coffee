@@ -13,7 +13,10 @@ ResultsPaneView = require '../lib/project/results-pane'
 waitsForPromise = (fn) -> window.waitsForPromise timeout: 30000, fn
 
 describe 'ProjectFindView', ->
-  [activationPromise, editorView, projectFindView, searchPromise, resultsPane] = []
+  [activationPromise, editorView, projectFindView, searchPromise, resultsPane, workspaceElement] = []
+
+  getAtomPanel = ->
+    workspaceElement.querySelector('.project-find').parentNode
 
   getExistingResultsPane = ->
     pane = atom.workspaceView.panes.paneForUri(ResultsPaneView.URI)
@@ -22,7 +25,8 @@ describe 'ProjectFindView', ->
 
   beforeEach ->
     atom.workspaceView = new WorkspaceView()
-    atom.project.setPath(path.join(__dirname, 'fixtures'))
+    workspaceElement = atom.views.getView(atom.workspace)
+    atom.project.setPaths([path.join(__dirname, 'fixtures')])
     atom.workspaceView.attachToDom()
 
     atom.config.set('find-and-replace.openProjectFindResultsInRightPane', false)
@@ -44,7 +48,7 @@ describe 'ProjectFindView', ->
       runs ->
         projectFindView.findEditor.setText('items')
 
-        expect(atom.workspaceView.find('.project-find')).toExist()
+        expect(getAtomPanel()).toBeVisible()
         expect(projectFindView.find('.preview-block')).not.toBeVisible()
         expect(projectFindView.find('.loading')).not.toBeVisible()
         expect(projectFindView.findEditor.getEditor().getSelectedBufferRange()).toEqual [[0, 0], [0, 5]]
@@ -67,23 +71,23 @@ describe 'ProjectFindView', ->
       it "populates the findEditor with selection when there is a selection", ->
         editor.setSelectedBufferRange([[2, 8], [2, 13]])
         atom.workspaceView.trigger 'project-find:show'
-        expect(atom.workspaceView.find('.project-find')).toExist()
+        expect(getAtomPanel()).toBeVisible()
         expect(projectFindView.findEditor.getText()).toBe('items')
 
         editor.setSelectedBufferRange([[2, 14], [2, 20]])
         atom.workspaceView.trigger 'project-find:show'
-        expect(atom.workspaceView.find('.project-find')).toExist()
+        expect(getAtomPanel()).toBeVisible()
         expect(projectFindView.findEditor.getText()).toBe('length')
 
       it "populates the findEditor with the previous selection when there is no selection", ->
         editor.setSelectedBufferRange([[2, 14], [2, 20]])
         atom.workspaceView.trigger 'project-find:show'
-        expect(atom.workspaceView.find('.project-find')).toExist()
+        expect(getAtomPanel()).toBeVisible()
         expect(projectFindView.findEditor.getText()).toBe('length')
 
         editor.setSelectedBufferRange([[2, 30], [2, 30]])
         atom.workspaceView.trigger 'project-find:show'
-        expect(atom.workspaceView.find('.project-find')).toExist()
+        expect(getAtomPanel()).toBeVisible()
         expect(projectFindView.findEditor.getText()).toBe('length')
 
     describe "when the ProjectFindView is already attached", ->
@@ -123,9 +127,9 @@ describe 'ProjectFindView', ->
         activationPromise
 
       runs ->
-        expect(atom.workspaceView.find('.project-find')).toExist()
+        expect(getAtomPanel()).toBeVisible()
         atom.workspaceView.trigger 'project-find:toggle'
-        expect(atom.workspaceView.find('.project-find')).not.toExist()
+        expect(getAtomPanel()).not.toBeVisible()
 
   describe "when project-find:show-in-current-directory is triggered", ->
     [nested, tree] = []
@@ -149,8 +153,8 @@ describe 'ProjectFindView', ->
         fs.writeFileSync(path, '')
 
     beforeEach ->
-      atom.project.setPath(temp.mkdirSync("atom"))
-      p = atom.project.getPath()
+      atom.project.setPaths([temp.mkdirSync("atom")])
+      p = atom.project.getPaths()[0]
       tree = new DirElement(p)
       tree.createFiles(['one.js', 'two.js'])
 
@@ -167,7 +171,7 @@ describe 'ProjectFindView', ->
         activationPromise
 
       runs ->
-        expect(atom.workspaceView.find('.project-find')).toExist()
+        expect(getAtomPanel()).toBeVisible()
         expect(projectFindView.pathsEditor.getText()).toBe('nested')
 
         tree.name.trigger 'project-find:show-in-current-directory'
@@ -180,7 +184,7 @@ describe 'ProjectFindView', ->
         activationPromise
 
       runs ->
-        expect(atom.workspaceView.find('.project-find')).toExist()
+        expect(getAtomPanel()).toBeVisible()
         expect(projectFindView.pathsEditor.getText()).toBe('nested')
 
         tree.files.find('> .file:eq(0)').view().name.trigger 'project-find:show-in-current-directory'
@@ -202,7 +206,7 @@ describe 'ProjectFindView', ->
       beforeEach ->
         projectPath = temp.mkdirSync("atom")
         fs.writeFileSync(path.join(projectPath, "tabs.txt"), "\t\n\\\t\n\\\\t")
-        atom.project.setPath(projectPath)
+        atom.project.setPaths([projectPath])
         atom.workspaceView.trigger 'project-find:show'
 
       describe "when regex seach is enabled", ->
@@ -267,7 +271,7 @@ describe 'ProjectFindView', ->
 
       it "detaches from the root view", ->
         $(document.activeElement).trigger 'core:cancel'
-        expect(atom.workspaceView.find('.project-find')).not.toExist()
+        expect(getAtomPanel()).not.toBeVisible()
 
     describe "splitting into a second pane", ->
       beforeEach ->
@@ -773,7 +777,7 @@ describe 'ProjectFindView', ->
         activationPromise
 
       runs ->
-        atom.project.setPath(testDir)
+        atom.project.setPaths([testDir])
         spy = spyOn(projectFindView, 'replaceAll').andCallFake ->
           replacePromise = spy.originalValue.call(projectFindView)
 
@@ -806,7 +810,7 @@ describe 'ProjectFindView', ->
         projectPath = temp.mkdirSync("atom")
         filePath = path.join(projectPath, "tabs.txt")
         fs.writeFileSync(filePath, "a\nb\na")
-        atom.project.setPath(projectPath)
+        atom.project.setPaths([projectPath])
         atom.workspaceView.trigger 'project-find:show'
 
       describe "when the regex option is chosen", ->

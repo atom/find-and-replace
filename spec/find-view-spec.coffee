@@ -4,11 +4,15 @@ _ = require 'underscore-plus'
 path = require 'path'
 
 describe 'FindView', ->
-  [editorView, editor, findView, activationPromise] = []
+  [editorView, editor, findView, activationPromise, workspaceElement] = []
+
+  getFindAtomPanel = ->
+    workspaceElement.querySelector('.find-and-replace').parentNode
 
   beforeEach ->
     spyOn(atom, 'beep')
     atom.workspaceView = new WorkspaceView()
+    workspaceElement = atom.views.getView(atom.workspace)
     atom.project.setPaths([path.join(__dirname, 'fixtures')])
 
     waitsForPromise ->
@@ -31,7 +35,7 @@ describe 'FindView', ->
         activationPromise
 
       runs ->
-        expect(atom.workspaceView.find('.find-and-replace')).toExist()
+        expect(workspaceElement.querySelector('.find-and-replace')).toBeDefined()
 
     it "populates the findEditor with selection when there is a selection", ->
       editor.setSelectedBufferRange([[2, 8], [2, 13]])
@@ -41,14 +45,14 @@ describe 'FindView', ->
         activationPromise
 
       runs ->
-        expect(atom.workspaceView.find('.find-and-replace')).toExist()
+        expect(getFindAtomPanel()).toBeVisible()
         expect(findView.findEditor.getText()).toBe('items')
 
         findView.findEditor.setText('')
 
         editor.setSelectedBufferRange([[2, 14], [2, 20]])
         editorView.trigger 'find-and-replace:show'
-        expect(atom.workspaceView.find('.find-and-replace')).toExist()
+        expect(getFindAtomPanel()).toBeVisible()
         expect(findView.findEditor.getText()).toBe('length')
 
     it "does not change the findEditor text when there is no selection", ->
@@ -71,7 +75,7 @@ describe 'FindView', ->
         activationPromise
 
       runs ->
-        expect(atom.workspaceView.find('.find-and-replace')).toExist()
+        expect(getFindAtomPanel()).toBeVisible()
         expect(findView.findEditor.getText()).toBe('')
 
     it "honors config settings for find options", ->
@@ -97,9 +101,9 @@ describe 'FindView', ->
         activationPromise
 
       runs ->
-        expect(atom.workspaceView.find('.find-and-replace')).toExist()
+        expect(getFindAtomPanel()).toBeVisible()
         atom.workspaceView.trigger 'find-and-replace:toggle'
-        expect(atom.workspaceView.find('.find-and-replace')).not.toExist()
+        expect(getFindAtomPanel()).not.toBeVisible()
 
   describe "when FindView's replace editor is visible", ->
     it "keeps the replace editor visible when find-and-replace:show is triggered", ->
@@ -126,7 +130,7 @@ describe 'FindView', ->
     describe "when core:cancel is triggered on the find view", ->
       it "detaches from the workspace view", ->
         $(document.activeElement).trigger 'core:cancel'
-        expect(atom.workspaceView.find('.find-and-replace')).not.toExist()
+        expect(getFindAtomPanel()).not.toBeVisible()
 
       it "removes highlighted matches", ->
         findResultsView = editorView.find('.search-results')
@@ -138,7 +142,7 @@ describe 'FindView', ->
       it "detaches from the workspace view", ->
         atom.workspaceView.getActivePaneView().focus()
         $(atom.workspaceView.getActivePaneView()).trigger 'core:cancel'
-        expect(atom.workspaceView.find('.find-and-replace')).not.toExist()
+        expect(getFindAtomPanel()).not.toBeVisible()
 
     describe "when core:cancel is triggered on an editor", ->
       it "detaches from the workspace view", ->
@@ -147,15 +151,15 @@ describe 'FindView', ->
 
         runs ->
           atom.workspaceView.getActiveView().trigger 'core:cancel'
-          expect(atom.workspaceView.find('.find-and-replace')).not.toExist()
+          expect(getFindAtomPanel()).not.toBeVisible()
 
     describe "when core:cancel is triggered on a mini editor", ->
       it "leaves the find view attached", ->
         editorView = new TextEditorView(mini: true)
-        atom.workspaceView.appendToTop(editorView)
+        atom.workspace.addTopPanel(item: editorView)
         editorView.focus()
         $(editorView.hiddenInput).trigger 'core:cancel'
-        expect(atom.workspaceView.find('.find-and-replace')).toExist()
+        expect(getFindAtomPanel()).toBeVisible()
 
   describe "serialization", ->
     it "serializes find and replace history", ->
@@ -427,11 +431,11 @@ describe 'FindView', ->
       expect(editor.getSelectedBufferRange()).toEqual [[1, 6], [1, 10]]
 
     it "replaces results counter with number of results found when user moves the cursor", ->
-      editor.moveCursorDown()
+      editor.moveDown()
       expect(findView.resultCounter.text()).toBe '6 found'
 
     it "replaces results counter x of y text when user selects a marked range", ->
-      editor.moveCursorDown()
+      editor.moveDown()
       editor.setSelectedBufferRange([[2, 34], [2, 39]])
       expect(findView.resultCounter.text()).toEqual('3 of 6')
 
@@ -494,14 +498,14 @@ describe 'FindView', ->
           expect(findView.resultCounter.text()).toEqual('no results')
 
       describe "when the active pane item is not an edit session", ->
-        [anotherOpener] = []
+        [anotherOpener, openerDisposable] = []
 
         beforeEach ->
-          anotherOpener = (pathToOpen, options) -> $('another')
-          atom.workspace.registerOpener(anotherOpener)
+          anotherOpener = (pathToOpen, options) -> document.createElement('div')
+          openerDisposable = atom.workspace.addOpener(anotherOpener)
 
         afterEach ->
-          atom.workspace.unregisterOpener(anotherOpener)
+          openerDisposable.dispose()
 
         it "updates the result view", ->
           waitsForPromise ->
@@ -530,7 +534,7 @@ describe 'FindView', ->
             atom.project.open('sample.coffee').then (o) -> newEditor = o
 
           runs ->
-            newEditorView = editorView.getPane().splitRight(newEditor).activeView
+            newEditorView = editorView.getPaneView().splitRight(newEditor).activeView
             expect(findView.resultCounter.text()).toEqual('7 found')
             expect(newEditorView.getEditor().getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
 
@@ -545,7 +549,7 @@ describe 'FindView', ->
             atom.project.open('sample.coffee').then (o) -> newEditor = o
 
           runs ->
-            newEditorView = editorView.getPane().splitRight(newEditor).activeView
+            newEditorView = editorView.getPaneView().splitRight(newEditor).activeView
 
           runs ->
             # old editor has no more results
@@ -561,7 +565,7 @@ describe 'FindView', ->
             atom.project.open('sample.coffee').then (o) -> newEditor = o
 
           runs ->
-            newEditorView = editorView.getPane().splitRight(newEditor).activeView
+            newEditorView = editorView.getPaneView().splitRight(newEditor).activeView
             expect(newEditorView.find('.find-result')).toHaveLength 7
 
             newEditorView.focus()
@@ -802,7 +806,7 @@ describe 'FindView', ->
         it "replaces the match after the cursor and selects the next match", ->
           findView.replaceEditor.trigger 'core:confirm'
           expect(findView.resultCounter.text()).toEqual('2 of 5')
-          expect(editor.lineForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
+          expect(editor.lineTextForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
           expect(editor.getSelectedBufferRange()).toEqual [[2, 33], [2, 38]]
 
         it "replaceEditor maintains focus after core:confirm is run", ->
@@ -817,26 +821,26 @@ describe 'FindView', ->
 
           findView.replaceEditor.trigger 'core:confirm'
           expect(findView.resultCounter.text()).toEqual('2 of 5')
-          expect(editor.lineForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
+          expect(editor.lineTextForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
           expect(editor.getSelectedBufferRange()).toEqual [[2, 33], [2, 38]]
 
           findView.replaceEditor.trigger 'core:confirm'
           expect(findView.resultCounter.text()).toEqual('2 of 4')
-          expect(editor.lineForBufferRow(2)).toBe "    if (cats.length <= 1) return cats;"
+          expect(editor.lineTextForBufferRow(2)).toBe "    if (cats.length <= 1) return cats;"
           expect(editor.getSelectedBufferRange()).toEqual [[3, 16], [3, 21]]
 
       describe "when the replace next button is pressed", ->
         it "replaces the match after the cursor and selects the next match", ->
           $('.find-and-replace .btn-next').click()
           expect(findView.resultCounter.text()).toEqual('2 of 5')
-          expect(editor.lineForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
+          expect(editor.lineTextForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
           expect(editor.getSelectedBufferRange()).toEqual [[2, 33], [2, 38]]
 
       describe "when the 'find-and-replace:replace-next' event is triggered", ->
         it "replaces the match after the cursor and selects the next match", ->
           editorView.trigger 'find-and-replace:replace-next'
           expect(findView.resultCounter.text()).toEqual('2 of 5')
-          expect(editor.lineForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
+          expect(editor.lineTextForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
           expect(editor.getSelectedBufferRange()).toEqual [[2, 33], [2, 38]]
 
     describe "replace previous", ->
@@ -845,7 +849,7 @@ describe 'FindView', ->
           findView.findEditor.trigger 'core:confirm'
           findView.replacePreviousButton.click()
           expect(findView.resultCounter.text()).toEqual('1 of 5')
-          expect(editor.lineForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
+          expect(editor.lineTextForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
           expect(editor.getSelectedBufferRange()).toEqual [[1, 22], [1, 27]]
 
       describe "when command is triggered", ->
@@ -853,7 +857,7 @@ describe 'FindView', ->
           findView.findEditor.trigger 'core:confirm'
           findView.trigger 'find-and-replace:replace-previous'
           expect(findView.resultCounter.text()).toEqual('1 of 5')
-          expect(editor.lineForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
+          expect(editor.lineTextForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
           expect(editor.getSelectedBufferRange()).toEqual [[1, 22], [1, 27]]
 
     describe "replace all", ->
