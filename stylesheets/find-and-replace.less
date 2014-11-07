@@ -7,7 +7,8 @@
 }
 
 // result markers
-.editor, atom-text-editor::shadow {
+atom-text-editor,
+atom-text-editor::shadow {
   .find-result .region {
     background-color: transparent;
     border-radius: @component-border-radius;
@@ -28,7 +29,8 @@
 }
 
 atom-workspace.find-visible {
-  .editor, atom-text-editor::shadow {
+  atom-text-editor,
+  atom-text-editor::shadow {
     .find-result,
     .current-result {
       display: block;
