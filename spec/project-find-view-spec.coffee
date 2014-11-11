@@ -136,9 +136,9 @@ describe 'ProjectFindView', ->
 
     class DirElement extends View
       @content: (path) ->
-        @div class: 'directory', 'data-path': path, =>
+        @div class: 'directory', =>
           @div class: 'nested-thing', =>
-            @span outlet: 'name', class: 'name', path
+            @span outlet: 'name', class: 'name', 'data-path': path, path
             @ul outlet: 'files', class: 'files'
       initialize: (@path) ->
       createFiles: (names) ->
@@ -177,7 +177,20 @@ describe 'ProjectFindView', ->
         tree.name.trigger 'project-find:show-in-current-directory'
         expect(projectFindView.pathsEditor.getText()).toBe('')
 
-    it "populates the pathsEditor when triggered with a file", ->
+    it "populates the pathsEditor when triggered on a directory's name", ->
+      nested.trigger 'project-find:show-in-current-directory'
+
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        expect(getAtomPanel()).toBeVisible()
+        expect(projectFindView.pathsEditor.getText()).toBe('nested')
+
+        tree.name.trigger 'project-find:show-in-current-directory'
+        expect(projectFindView.pathsEditor.getText()).toBe('')
+
+    it "populates the pathsEditor when triggered on a file", ->
       nested.files.find('> .file:eq(0)').view().name.trigger 'project-find:show-in-current-directory'
 
       waitsForPromise ->

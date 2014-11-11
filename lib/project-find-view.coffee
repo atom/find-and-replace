@@ -186,11 +186,14 @@ class ProjectFindView extends View
     path.trim() for path in @pathsEditor.getText().trim().split(',') when path
 
   directoryPathForElement: (element) ->
-    elementPath = null
-    while element?
-      elementPath = element.dataset.path
-      break if elementPath
-      element = element.parentElement
+    elementPath = element?.dataset.path ? element?.querySelector('[data-path]')?.dataset.path
+
+    # Traverse up the DOM if the element and its children don't have a path
+    unless elementPath
+      while element?
+        elementPath = element.dataset.path
+        break if elementPath
+        element = element.parentElement
 
     if fs.isFileSync(elementPath)
       require('path').dirname(elementPath)
