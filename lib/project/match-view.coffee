@@ -40,3 +40,6 @@ class MatchView extends View
   confirm: ->
     atom.workspaceView.open(@filePath, split: 'left').then (editor) =>
       editor.setSelectedBufferRange(@match.range, autoscroll: true)
+
+  copy: ->
+    atom.clipboard.write(@match.lineText)
