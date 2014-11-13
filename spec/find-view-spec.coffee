@@ -1019,3 +1019,15 @@ describe 'FindView', ->
 
           findView.findEditor.trigger 'core:move-up'
           expect(findView.findEditor.getText()).toEqual 'three'
+
+  describe "panel focus", ->
+    beforeEach ->
+      editorView.trigger 'find-and-replace:show'
+      waitsForPromise -> activationPromise
+
+    it "focuses the find editor when the panel gets focus", ->
+      findView.replaceEditor.focus()
+      expect(findView.replaceEditor).toHaveFocus()
+
+      findView.focus()
+      expect(findView.findEditor).toHaveFocus()

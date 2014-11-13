@@ -82,6 +82,7 @@ class ProjectFindView extends View
     @on 'find-and-replace:focus-next', => @focusNextElement(1)
     @on 'find-and-replace:focus-previous', => @focusNextElement(-1)
     @on 'core:cancel core:close', => @panel?.hide()
+    @on 'focus', (e) => @findEditor.focus()
 
     @on 'project-find:toggle-regex-option', => @toggleRegexOption()
     @regexOptionButton.click => @toggleRegexOption()

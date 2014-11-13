@@ -40,7 +40,6 @@ class FindView extends View
         @div class: 'btn-group btn-group-replace-all', =>
           @button outlet: 'replaceAllButton', class: 'btn btn-all', 'Replace All'
 
-
   initialize: (@findModel, {findHistory, replaceHistory}) ->
     @findHistory = new HistoryCycler(@findEditor, findHistory)
     @replaceHistory = new HistoryCycler(@replaceEditor, replaceHistory)
@@ -99,6 +98,7 @@ class FindView extends View
     @on 'find-and-replace:focus-next', @toggleFocus
     @on 'find-and-replace:focus-previous', @toggleFocus
     @on 'core:cancel core:close', => @panel?.hide()
+    @on 'focus', (e) => @findEditor.focus()
 
     @command 'find-and-replace:toggle-regex-option', @toggleRegexOption
     @command 'find-and-replace:toggle-case-option', @toggleCaseOption
