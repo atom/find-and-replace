@@ -59,3 +59,8 @@
   'ctrl-enter': 'find-and-replace:replace-all'
 '.platform-win32 .project-find .replace-container atom-text-editor':
   'ctrl-enter': 'project-find:replace-all'
+
+'.platform-linux .find-and-replace .replace-container atom-text-editor':
+  'ctrl-enter': 'find-and-replace:replace-all'
+'.platform-linux .project-find .replace-container atom-text-editor':
+  'ctrl-enter': 'project-find:replace-all'
