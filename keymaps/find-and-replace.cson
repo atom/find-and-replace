@@ -28,14 +28,12 @@
 
 '.platform-darwin .find-and-replace':
   'shift-enter': 'find-and-replace:show-previous'
-  'cmd-enter': 'find-and-replace:replace-all'
   'cmd-alt-/': 'find-and-replace:toggle-regex-option'
   'cmd-alt-c': 'find-and-replace:toggle-case-option'
   'cmd-alt-s': 'find-and-replace:toggle-selection-option'
 
 '.platform-win32 .find-and-replace, .platform-linux .find-and-replace':
   'shift-enter': 'find-and-replace:show-previous'
-  'ctrl-enter': 'find-and-replace:replace-all'
   'ctrl-alt-/': 'find-and-replace:toggle-regex-option'
   'ctrl-alt-c': 'find-and-replace:toggle-case-option'
   'ctrl-alt-s': 'find-and-replace:toggle-selection-option'
@@ -43,13 +41,21 @@
 '.platform-darwin .project-find':
   'cmd-alt-/': 'project-find:toggle-regex-option'
   'cmd-alt-c': 'project-find:toggle-case-option'
-  'cmd-enter': 'project-find:replace-all'
 
 '.platform-win32 .project-find, .platform-linux .project-find':
   'ctrl-alt-/': 'project-find:toggle-regex-option'
   'ctrl-alt-c': 'project-find:toggle-case-option'
-  'ctrl-enter': 'project-find:replace-all'
 
 '.find-and-replace, .project-find, .project-find .results-view':
   'tab': 'find-and-replace:focus-next'
   'shift-tab': 'find-and-replace:focus-previous'
+
+'.platform-darwin .find-and-replace .replace-container atom-text-editor':
+  'cmd-enter': 'find-and-replace:replace-all'
+'.platform-darwin .project-find .replace-container atom-text-editor':
+  'cmd-enter': 'project-find:replace-all'
+
+'.platform-win32 .find-and-replace .replace-container atom-text-editor':
+  'ctrl-enter': 'find-and-replace:replace-all'
+'.platform-win32 .project-find .replace-container atom-text-editor':
+  'ctrl-enter': 'project-find:replace-all'
