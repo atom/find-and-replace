@@ -493,6 +493,21 @@ describe 'ProjectFindView', ->
           expect(projectFindView.caseOptionButton).toHaveClass('selected')
           expect(atom.project.scan.mostRecentCall.args[0]).toEqual /ITEMS/g
 
+    describe "when project-find:confirm is triggered", ->
+      it "displays the results and no errors", ->
+        projectFindView.findEditor.setText('items')
+        projectFindView.trigger 'project-find:confirm'
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          resultsPaneView = getExistingResultsPane()
+          resultsView = resultsPaneView.resultsView
+          expect(resultsView).toBeVisible()
+          resultsView.scrollToBottom() # To load ALL the results
+          expect(resultsView.find("li > ul > li")).toHaveLength(13)
+
     describe "when core:confirm is triggered", ->
       beforeEach ->
         atom.workspaceView.trigger 'project-find:show'
@@ -1048,3 +1063,15 @@ describe 'ProjectFindView', ->
           expect(errorList.find("li")).toHaveLength 2
           expect(errorList.find("li:eq(0)").text()).toBe 'Nope'
           expect(errorList.find("li:eq(1)").text()).toBe 'Broken'
+
+  describe "panel focus", ->
+    beforeEach ->
+      atom.workspaceView.trigger 'project-find:show'
+      waitsForPromise -> activationPromise
+
+    it "focuses the find editor when the panel gets focus", ->
+      projectFindView.replaceEditor.focus()
+      expect(projectFindView.replaceEditor).toHaveFocus()
+
+      projectFindView.focus()
+      expect(projectFindView.findEditor).toHaveFocus()

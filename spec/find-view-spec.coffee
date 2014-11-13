@@ -253,6 +253,16 @@ describe 'FindView', ->
         findView.findEditor.setText 'items'
         findView.findEditor.trigger 'core:confirm'
 
+    describe "when find-and-replace:confirm is triggered", ->
+      it "runs a search", ->
+        findView.findEditor.setText 'notinthefile'
+        findView.findEditor.trigger 'find-and-replace:confirm'
+        expect(editorView.find('.find-result')).toHaveLength 0
+
+        findView.findEditor.setText 'items'
+        findView.findEditor.trigger 'find-and-replace:confirm'
+        expect(editorView.find('.find-result')).toHaveLength 5
+
     describe "when the find string contains an escaped char", ->
       beforeEach ->
         editor.setText("\t\n\\t\\\\")
@@ -835,6 +845,7 @@ describe 'FindView', ->
           expect(findView.resultCounter.text()).toEqual('2 of 5')
           expect(editor.lineTextForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
           expect(editor.getSelectedBufferRange()).toEqual [[2, 33], [2, 38]]
+          expect(editorView).toHaveFocus()
 
       describe "when the 'find-and-replace:replace-next' event is triggered", ->
         it "replaces the match after the cursor and selects the next match", ->
@@ -1008,3 +1019,15 @@ describe 'FindView', ->
 
           findView.findEditor.trigger 'core:move-up'
           expect(findView.findEditor.getText()).toEqual 'three'
+
+  describe "panel focus", ->
+    beforeEach ->
+      editorView.trigger 'find-and-replace:show'
+      waitsForPromise -> activationPromise
+
+    it "focuses the find editor when the panel gets focus", ->
+      findView.replaceEditor.focus()
+      expect(findView.replaceEditor).toHaveFocus()
+
+      findView.focus()
+      expect(findView.findEditor).toHaveFocus()

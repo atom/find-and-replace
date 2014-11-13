@@ -38,6 +38,10 @@ class ResultsView extends ScrollView
       @find('.selected').view()?.confirm?()
       false
 
+    @on 'core:copy', =>
+      @find('.selected').view()?.copy?()
+      false
+
     @on 'mousedown', '.match-result, .path', ({target, which, ctrlKey}) =>
       @find('.selected').removeClass('selected')
       view = $(target).view()

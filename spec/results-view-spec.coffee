@@ -325,3 +325,26 @@ describe 'ResultsView', ->
       runs ->
         resultsView = getResultsView()
         expect(-> resultsView.trigger('core:confirm')).not.toThrow()
+
+  describe "copying items with core:copy", ->
+    [resultsView, openHandler] = []
+
+    beforeEach ->
+      waitsForPromise ->
+        atom.workspace.open('sample.js')
+
+      runs ->
+        projectFindView.findEditor.setText('items')
+        projectFindView.trigger 'core:confirm'
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        resultsView = getResultsView()
+        resultsView.selectFirstResult()
+
+    it "copies the selected line onto the clipboard", ->
+      _.times 2, -> resultsView.trigger 'core:move-down'
+      resultsView.trigger 'core:copy'
+      expect(atom.clipboard.read()).toBe '    return items if items.length <= 1'

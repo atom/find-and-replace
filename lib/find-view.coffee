@@ -40,7 +40,6 @@ class FindView extends View
         @div class: 'btn-group btn-group-replace-all', =>
           @button outlet: 'replaceAllButton', class: 'btn btn-all', 'Replace All'
 
-
   initialize: (@findModel, {findHistory, replaceHistory}) ->
     @findHistory = new HistoryCycler(@findEditor, findHistory)
     @replaceHistory = new HistoryCycler(@replaceEditor, replaceHistory)
@@ -91,6 +90,7 @@ class FindView extends View
     @handleReplaceEvents()
 
     @findEditor.on 'core:confirm', => @confirm()
+    @findEditor.on 'find-and-replace:confirm', => @confirm()
     @findEditor.on 'find-and-replace:show-previous', => @showPrevious()
 
     @replaceEditor.on 'core:confirm', => @replaceNext()
@@ -98,6 +98,7 @@ class FindView extends View
     @on 'find-and-replace:focus-next', @toggleFocus
     @on 'find-and-replace:focus-previous', @toggleFocus
     @on 'core:cancel core:close', => @panel?.hide()
+    @on 'focus', (e) => @findEditor.focus()
 
     @command 'find-and-replace:toggle-regex-option', @toggleRegexOption
     @command 'find-and-replace:toggle-case-option', @toggleCaseOption
@@ -110,6 +111,9 @@ class FindView extends View
     @subscribe @findModel, 'updated', @markersUpdated
     @subscribe @findModel, 'find-error', @findError
     @subscribe @findModel, 'current-result-changed', @updateResultCounter
+
+    @find('button').on 'click', =>
+      atom.workspaceView.focus()
 
   handleFindEvents: ->
     @findEditor.getModel().onDidStopChanging => @liveSearch()
