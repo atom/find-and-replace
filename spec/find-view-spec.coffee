@@ -845,6 +845,7 @@ describe 'FindView', ->
           expect(findView.resultCounter.text()).toEqual('2 of 5')
           expect(editor.lineTextForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
           expect(editor.getSelectedBufferRange()).toEqual [[2, 33], [2, 38]]
+          expect(editorView).toHaveFocus()
 
       describe "when the 'find-and-replace:replace-next' event is triggered", ->
         it "replaces the match after the cursor and selects the next match", ->

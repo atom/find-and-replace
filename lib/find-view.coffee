@@ -112,6 +112,9 @@ class FindView extends View
     @subscribe @findModel, 'find-error', @findError
     @subscribe @findModel, 'current-result-changed', @updateResultCounter
 
+    @find('button').on 'click', =>
+      atom.workspaceView.focus()
+
   handleFindEvents: ->
     @findEditor.getModel().onDidStopChanging => @liveSearch()
     @nextButton.on 'click', => @findNext(focusEditorAfter: true)
