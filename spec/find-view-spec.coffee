@@ -253,6 +253,16 @@ describe 'FindView', ->
         findView.findEditor.setText 'items'
         findView.findEditor.trigger 'core:confirm'
 
+    describe "when find-and-replace:confirm is triggered", ->
+      it "runs a search", ->
+        findView.findEditor.setText 'notinthefile'
+        findView.findEditor.trigger 'find-and-replace:confirm'
+        expect(editorView.find('.find-result')).toHaveLength 0
+
+        findView.findEditor.setText 'items'
+        findView.findEditor.trigger 'find-and-replace:confirm'
+        expect(editorView.find('.find-result')).toHaveLength 5
+
     describe "when the find string contains an escaped char", ->
       beforeEach ->
         editor.setText("\t\n\\t\\\\")

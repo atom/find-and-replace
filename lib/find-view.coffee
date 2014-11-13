@@ -91,6 +91,7 @@ class FindView extends View
     @handleReplaceEvents()
 
     @findEditor.on 'core:confirm', => @confirm()
+    @findEditor.on 'find-and-replace:confirm', => @confirm()
     @findEditor.on 'find-and-replace:show-previous', => @showPrevious()
 
     @replaceEditor.on 'core:confirm', => @replaceNext()

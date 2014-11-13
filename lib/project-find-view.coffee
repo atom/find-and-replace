@@ -78,6 +78,7 @@ class ProjectFindView extends View
 
   handleEvents: ->
     @on 'core:confirm', => @confirm()
+    @on 'project-find:confirm', => @confirm()
     @on 'find-and-replace:focus-next', => @focusNextElement(1)
     @on 'find-and-replace:focus-previous', => @focusNextElement(-1)
     @on 'core:cancel core:close', => @panel?.hide()
