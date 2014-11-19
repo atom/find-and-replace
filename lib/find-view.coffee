@@ -1,7 +1,10 @@
 _ = require 'underscore-plus'
-{$$$, TextEditorView, View} = require 'atom'
+{$$$, View} = require 'space-pen'
+{TextEditorView} = require 'atom-space-pen-views'
+{CompositeDisposable} = require 'atom'
 FindModel = require './find-model'
 {HistoryCycler} = require './history'
+
 
 module.exports =
 class FindView extends View
@@ -40,6 +43,7 @@ class FindView extends View
           @button outlet: 'replaceAllButton', class: 'btn btn-all', 'Replace All'
 
   initialize: (@findModel, {findHistory, replaceHistory}) ->
+    @subscriptions = new CompositeDisposable
     @findHistory = new HistoryCycler(@findEditor, findHistory)
     @replaceHistory = new HistoryCycler(@replaceEditor, replaceHistory)
     @handleEvents()
@@ -48,23 +52,25 @@ class FindView extends View
     @clearMessage()
     @updateOptionsLabel()
 
+  destroy: ->
+    @subscriptions.dispose()
+
   setPanel: (@panel) ->
-    @subscribe @panel.onDidChangeVisible (visible) =>
+    @subscriptions.add @panel.onDidChangeVisible (visible) =>
       if visible then @didShow() else @didHide()
 
   didShow: ->
     atom.workspaceView.addClass('find-visible')
-    unless @tooltipsInitialized
-      @regexOptionButton.setTooltip("Use Regex", command: 'find-and-replace:toggle-regex-option', commandElement: @findEditor)
-      @caseOptionButton.setTooltip("Match Case", command: 'find-and-replace:toggle-case-option', commandElement: @findEditor)
-      @selectionOptionButton.setTooltip("Only In Selection", command: 'find-and-replace:toggle-selection-option', commandElement: @findEditor)
-      @wholeWordOptionButton.setTooltip("Whole Word", command: 'find-and-replace:toggle-whole-word-option', commandElement: @findEditor)
-
-      @nextButton.setTooltip("Find Next", command: 'find-and-replace:find-next', commandElement: @findEditor)
-
-      @replaceNextButton.setTooltip("Replace Next", command: 'find-and-replace:replace-next', commandElement: @replaceEditor)
-      @replaceAllButton.setTooltip("Replace All", command: 'find-and-replace:replace-all', commandElement: @replaceEditor)
-      @tooltipsInitialized = true
+    # unless @tooltipsInitialized
+    #   @regexOptionButton.setTooltip("Use Regex", command: 'find-and-replace:toggle-regex-option', commandElement: @findEditor)
+    #   @caseOptionButton.setTooltip("Match Case", command: 'find-and-replace:toggle-case-option', commandElement: @findEditor)
+    #   @selectionOptionButton.setTooltip("Only In Selection", command: 'find-and-replace:toggle-selection-option', commandElement: @findEditor)
+    #
+    #   @nextButton.setTooltip("Find Next", command: 'find-and-replace:find-next', commandElement: @findEditor)
+    #
+    #   @replaceNextButton.setTooltip("Replace Next", command: 'find-and-replace:replace-next', commandElement: @replaceEditor)
+    #   @replaceAllButton.setTooltip("Replace All", command: 'find-and-replace:replace-all', commandElement: @replaceEditor)
+    #   @tooltipsInitialized = true
 
   didHide: ->
     @hideAllTooltips()
@@ -72,15 +78,14 @@ class FindView extends View
     atom.workspaceView.removeClass('find-visible')
 
   hideAllTooltips: ->
-    @regexOptionButton.hideTooltip()
-    @caseOptionButton.hideTooltip()
-    @selectionOptionButton.hideTooltip()
-    @wholeWordOptionButton.hideTooltip()
-
-    @nextButton.hideTooltip()
-
-    @replaceNextButton.hideTooltip()
-    @replaceAllButton.hideTooltip()
+  #   @regexOptionButton.hideTooltip()
+  #   @caseOptionButton.hideTooltip()
+  #   @selectionOptionButton.hideTooltip()
+  #
+  #   @nextButton.hideTooltip()
+  #
+  #   @replaceNextButton.hideTooltip()
+  #   @replaceAllButton.hideTooltip()
 
   handleEvents: ->
     @handleFindEvents()
@@ -108,9 +113,9 @@ class FindView extends View
     @selectionOptionButton.on 'click', @toggleSelectionOption
     @wholeWordOptionButton.on 'click', @toggleWholeWordOption
 
-    @subscribe @findModel, 'updated', @markersUpdated
-    @subscribe @findModel, 'find-error', @findError
-    @subscribe @findModel, 'current-result-changed', @updateResultCounter
+    @subscriptions.add @findModel.onDidUpdate @markersUpdated
+    @subscriptions.add @findModel.onDidError @findError
+    @subscriptions.add @findModel.onDidChangeCurrentResult @updateResultCounter
 
     @find('button').on 'click', =>
       atom.workspaceView.focus()
@@ -134,11 +139,11 @@ class FindView extends View
     if selectedText and selectedText.indexOf('\n') < 0
       @findEditor.setText(selectedText)
     @findEditor.focus()
-    @findEditor.getEditor().selectAll()
+    @findEditor.getModel().selectAll()
 
   focusReplaceEditor: =>
     @replaceEditor.focus()
-    @replaceEditor.getEditor().selectAll()
+    @replaceEditor.getModel().selectAll()
 
   toggleFocus: =>
     if @findEditor.find(':focus').length > 0

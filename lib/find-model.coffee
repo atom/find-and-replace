@@ -1,14 +1,14 @@
 _ = require 'underscore-plus'
-{Emitter} = require 'emissary'
+{Emitter} = require 'atom'
 {CompositeDisposable} = require 'event-kit'
 escapeHelper = require './escape-helper'
 
 module.exports =
 class FindModel
-  Emitter.includeInto(this)
   @markerClass: 'find-result'
 
   constructor: (state={}) ->
+    @emitter = new Emitter()
     @pattern = ''
     @useRegex = state.useRegex ? atom.config.get('find-and-replace.useRegex') ? false
     @inCurrentSelection = state.inCurrentSelection ? atom.config.get('find-and-replace.inCurrentSelection') ? false
@@ -17,6 +17,15 @@ class FindModel
     @valid = false
 
     atom.workspace.observeActivePaneItem @activePaneItemChanged
+
+  onDidUpdate: (callback) ->
+    @emitter.on 'did-update', callback
+
+  onDidError: (callback) ->
+    @emitter.on 'did-error', callback
+
+  onDidChangeCurrentResult: (callback) ->
+    @emitter.on 'did-change-current-result', callback
 
   activePaneItemChanged: (paneItem) =>
     @editor = null
@@ -62,7 +71,7 @@ class FindModel
         @markers.splice(@markers.indexOf(marker), 1)
     @replacing = false
 
-    @emit 'updated', _.clone(@markers)
+    @emitter.emit 'did-update', _.clone(@markers)
 
   updateMarkers: ->
     if not @editor? or not @pattern
@@ -92,11 +101,11 @@ class FindModel
       marker.destroy() for id, marker of markersToRemoveById
 
       @markers = updatedMarkers
-      @emit 'updated', _.clone(@markers)
+      @emitter.emit 'did-update', _.clone(@markers)
       @setCurrentMarkerFromSelection()
     catch e
       @destroyAllMarkers()
-      @emit 'find-error', e
+      @emitter.emit 'did-error', e
 
   setCurrentMarkerFromSelection: =>
     marker = null
@@ -111,7 +120,7 @@ class FindModel
       @decorationsByMarkerId[marker.id]?.setProperties(type: 'highlight', class: 'current-result')
       @currentResultMarker = marker
 
-    @emit 'current-result-changed', @currentResultMarker
+    @emitter.emit 'did-change-current-result', @currentResultMarker
 
   findMarker: (range) ->
     if @markers? and @markers.length
@@ -137,7 +146,7 @@ class FindModel
     @markers = []
     @decorationsByMarkerId = {}
     @currentResultMarker = null
-    @emit 'updated', _.clone(@markers)
+    @emitter.emit 'did-update', _.clone(@markers)
     @setCurrentMarkerFromSelection()
 
   getEditor: ->

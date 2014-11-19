@@ -143,12 +143,14 @@ module.exports =
   deactivate: ->
     @findPanel?.destroy()
     @findPanel = null
+    @findView?.destroy()
     @findView = null
 
     @findModel = null
 
     @projectFindPanel?.destroy()
     @projectFindPanel = null
+    @projectFindView?.destroy()
     @projectFindView = null
 
     ResultsPaneView.model = null

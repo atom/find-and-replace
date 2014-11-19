@@ -1,5 +1,6 @@
 _ = require 'underscore-plus'
-{$, TextEditorView, WorkspaceView} = require 'atom'
+{$} = require 'space-pen'
+{WorkspaceView} = require 'atom'
 
 path = require 'path'
 
@@ -21,7 +22,7 @@ describe 'FindView', ->
     runs ->
       atom.workspaceView.attachToDom()
       editorView = atom.workspaceView.getActiveView()
-      editor = editorView.getEditor()
+      editor = editorView.getModel()
 
       activationPromise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
         mainModule.createViews()
@@ -155,10 +156,11 @@ describe 'FindView', ->
 
     describe "when core:cancel is triggered on a mini editor", ->
       it "leaves the find view attached", ->
-        editorView = new TextEditorView(mini: true)
-        atom.workspace.addTopPanel(item: editorView)
-        editorView.focus()
-        $(editorView.hiddenInput).trigger 'core:cancel'
+        miniEditor = document.createElement('atom-text-editor')
+        miniEditor.setAttribute('mini', '')
+        atom.workspace.addTopPanel(item: miniEditor)
+        miniEditor.focus()
+        $(miniEditor).trigger 'core:cancel'
         expect(getFindAtomPanel()).toBeVisible()
 
   describe "serialization", ->
@@ -573,11 +575,11 @@ describe 'FindView', ->
           runs ->
             newEditorView = editorView.getPaneView().splitRight(newEditor).activeView
             expect(findView.resultCounter.text()).toEqual('7 found')
-            expect(newEditorView.getEditor().getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
+            expect(newEditorView.getModel().getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
 
             findView.findEditor.trigger 'find-and-replace:find-next'
             expect(findView.resultCounter.text()).toEqual('1 of 7')
-            expect(newEditorView.getEditor().getSelectedBufferRange()).toEqual [[1, 9], [1, 14]]
+            expect(newEditorView.getModel().getSelectedBufferRange()).toEqual [[1, 9], [1, 14]]
 
         it "highlights the found text in the new edit session (and removes the highlights from the other)", ->
           [newEditor, newEditorView] = []
@@ -780,7 +782,7 @@ describe 'FindView', ->
 
     describe "when user types in the find editor", ->
       advance = ->
-        advanceClock(findView.findEditor.getEditor().getBuffer().stoppedChangingDelay + 1)
+        advanceClock(findView.findEditor.getModel().getBuffer().stoppedChangingDelay + 1)
 
       beforeEach ->
         findView.findEditor.focus()
@@ -1041,7 +1043,7 @@ describe 'FindView', ->
 
       describe "when user types in the find editor", ->
         advance = ->
-          advanceClock(findView.findEditor.getEditor().getBuffer().stoppedChangingDelay + 1)
+          advanceClock(findView.findEditor.getModel().getBuffer().stoppedChangingDelay + 1)
 
         beforeEach ->
           findView.findEditor.focus()
