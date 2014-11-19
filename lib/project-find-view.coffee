@@ -1,7 +1,9 @@
 fs = require 'fs-plus'
 Q = require 'q'
 _ = require 'underscore-plus'
-{$, $$$, TextEditorView, View} = require 'atom'
+{Disposable, CompositeDisposable} = require 'atom'
+{$, $$$, View} = require 'space-pen'
+{TextEditorView} = require 'atom-space-pen-views'
 
 {HistoryCycler} = require './history'
 Util = require './project/util'
@@ -42,6 +44,7 @@ class ProjectFindView extends View
           @subview 'pathsEditor', new TextEditorView(mini: true, placeholderText: 'File/directory pattern. eg. `src` to search in the "src" directory or `*.js` to search all javascript files.')
 
   initialize: (@findInBufferModel, @model, {findHistory, replaceHistory, pathsHistory}) ->
+    @subscriptions = new CompositeDisposable
     @handleEvents()
     @findHistory = new HistoryCycler(@findEditor, findHistory)
     @replaceHistory = new HistoryCycler(@replaceEditor, replaceHistory)
@@ -54,8 +57,11 @@ class ProjectFindView extends View
     @clearMessages()
     @updateOptionsLabel()
 
+  destroy: ->
+    @subscriptions.dispose()
+
   setPanel: (@panel) ->
-    @subscribe @panel.onDidChangeVisible (visible) =>
+    @subscriptions.add @panel.onDidChangeVisible (visible) =>
       if visible then @didShow() else @didHide()
 
   didShow: ->
@@ -93,11 +99,14 @@ class ProjectFindView extends View
     @replaceAllButton.on 'click', => @replaceAll()
     @on 'project-find:replace-all', => @replaceAll()
 
-    @subscribe @model, 'cleared', => @clearMessages()
-    @subscribe @model, 'replacement-state-cleared', (results) => @generateResultsMessage(results)
-    @subscribe @model, 'finished-searching', (results) => @generateResultsMessage(results)
+    @subscriptions.add @model.onDidClear => @clearMessages()
+    @subscriptions.add @model.onDidClearReplacementState (results) => @generateResultsMessage(results)
+    @subscriptions.add @model.onDidFinishSearching (results) => @generateResultsMessage(results)
 
-    @subscribe $(window), 'focus', => @onlyRunIfChanged = false
+    focusCallback = => @onlyRunIfChanged = false
+    $(window).on 'focus', focusCallback
+    @subscriptions.add new Disposable ->
+      $(window).off 'focus', focusCallback
 
     atom.workspaceView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
 
@@ -107,17 +116,17 @@ class ProjectFindView extends View
     @replaceEditor.getModel().getBuffer().onDidChange => @model.clearReplacementState()
     @replaceEditor.getModel().onDidStopChanging => @model.updateReplacementPattern(@replaceEditor.getText())
     @replacementsMade = 0
-    @subscribe @model, 'replace', (promise) =>
+    @subscriptions.add @model.onDidStartReplacing (promise) =>
       @replacementsMade = 0
       @replacmentInfoBlock.show()
       @replacementProgress.removeAttr('value')
 
-    @subscribe @model, 'path-replaced', (result) =>
+    @subscriptions.add @model.onDidReplacePath (result) =>
       @replacementsMade++
       @replacementProgress[0].value = @replacementsMade / @model.getPathCount()
       @replacmentInfo.text("Replaced #{@replacementsMade} of #{_.pluralize(@model.getPathCount(), 'file')}")
 
-    @subscribe @model, 'finished-replacing', (result) => @onFinishedReplacing(result)
+    @subscriptions.add @model.onDidFinishReplacing (result) => @onFinishedReplacing(result)
 
   toggleRegexOption: ->
     @model.toggleUseRegex()
