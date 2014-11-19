@@ -140,9 +140,10 @@ describe 'FindView', ->
         expect(findResultsView.parent()).not.toExist()
 
     describe "when core:cancel is triggered on an empty pane", ->
-      it "detaches from the workspace view", ->
-        atom.workspaceView.getActivePaneView().focus()
-        $(atom.workspaceView.getActivePaneView()).trigger 'core:cancel'
+      it "hides the find panel", ->
+        paneElement = atom.views.getView(atom.workspace.getActivePane())
+        paneElement.focus()
+        atom.commands.dispatch(paneElement, 'core:cancel')
         expect(getFindAtomPanel()).not.toBeVisible()
 
     describe "when core:cancel is triggered on an editor", ->
