@@ -81,19 +81,12 @@ module.exports =
       @findPanel.show()
       @findView.focusReplaceEditor()
 
-    # in code editors
+    # Handling cancel in the workspace + code editors
     handleEditorCancel = ({target}) =>
-      if target isnt atom.workspaceView.getActivePaneView()?[0]
-        $target = $(target)
-        if $target.is('atom-text-editor')
-          editor = $target
-        else
-          editor = $target.parents('atom-text-editor:not([mini])')
-
-        return unless editor.length
-
-      @findPanel?.hide()
-      @projectFindPanel?.hide()
+      isMiniEditor = target.tagName is 'ATOM-TEXT-EDITOR' and target.hasAttribute('mini')
+      unless isMiniEditor
+        @findPanel?.hide()
+        @projectFindPanel?.hide()
 
     @subscriptions.add atom.commands.add 'atom-workspace',
       'core:cancel': handleEditorCancel
