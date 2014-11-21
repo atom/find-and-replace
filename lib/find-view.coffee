@@ -100,13 +100,15 @@ class FindView extends View
 
     @on 'find-and-replace:focus-next', @toggleFocus
     @on 'find-and-replace:focus-previous', @toggleFocus
-    @on 'core:cancel core:close', => @panel?.hide()
     @on 'focus', (e) => @findEditor.focus()
 
-    @command 'find-and-replace:toggle-regex-option', @toggleRegexOption
-    @command 'find-and-replace:toggle-case-option', @toggleCaseOption
-    @command 'find-and-replace:toggle-selection-option', @toggleSelectionOption
-    @command 'find-and-replace:toggle-whole-word-option', @toggleWholeWordOption
+    @subscriptions.add atom.commands.add this[0],
+      'core:close': => @panel?.hide()
+      'core:cancel': => @panel?.hide()
+      'find-and-replace:toggle-regex-option': @toggleRegexOption
+      'find-and-replace:toggle-case-option': @toggleCaseOption
+      'find-and-replace:toggle-selection-option': @toggleSelectionOption
+      'find-and-replace:toggle-whole-word-option': @toggleWholeWordOption
 
     @regexOptionButton.on 'click', @toggleRegexOption
     @caseOptionButton.on 'click', @toggleCaseOption
@@ -123,16 +125,18 @@ class FindView extends View
   handleFindEvents: ->
     @findEditor.getModel().onDidStopChanging => @liveSearch()
     @nextButton.on 'click', => @findNext(focusEditorAfter: true)
-    atom.workspaceView.command 'find-and-replace:find-next', => @findNext(focusEditorAfter: true)
-    atom.workspaceView.command 'find-and-replace:find-previous', => @findPrevious(focusEditorAfter: true)
-    atom.workspaceView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
+    @subscriptions.add atom.commands.add 'atom-workspace',
+      'find-and-replace:find-next': => @findNext(focusEditorAfter: true)
+      'find-and-replace:find-previous': => @findPrevious(focusEditorAfter: true)
+      'find-and-replace:use-selection-as-find-pattern': @setSelectionAsFindPattern
 
   handleReplaceEvents: ->
     @replaceNextButton.on 'click', @replaceNext
     @replaceAllButton.on 'click', @replaceAll
-    atom.workspaceView.command 'find-and-replace:replace-previous', @replacePrevious
-    atom.workspaceView.command 'find-and-replace:replace-next', @replaceNext
-    atom.workspaceView.command 'find-and-replace:replace-all', @replaceAll
+    @subscriptions.add atom.commands.add 'atom-workspace',
+      'find-and-replace:replace-previous': @replacePrevious
+      'find-and-replace:replace-next': @replaceNext
+      'find-and-replace:replace-all': @replaceAll
 
   focusFindEditor: =>
     selectedText = atom.workspace.getActiveEditor()?.getSelectedText?()
