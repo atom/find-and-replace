@@ -130,13 +130,12 @@ describe 'FindView', ->
 
     describe "when core:cancel is triggered on the find view", ->
       it "detaches from the workspace view", ->
-        $(document.activeElement).trigger 'core:cancel'
+        atom.commands.dispatch(document.activeElement, 'core:cancel')
         expect(getFindAtomPanel()).not.toBeVisible()
 
       it "removes highlighted matches", ->
         findResultsView = editorView.find('.search-results')
-
-        $(document.activeElement).trigger 'core:cancel'
+        atom.commands.dispatch(document.activeElement, 'core:cancel')
         expect(findResultsView.parent()).not.toExist()
 
     describe "when core:cancel is triggered on an empty pane", ->
@@ -161,7 +160,7 @@ describe 'FindView', ->
         miniEditor.setAttribute('mini', '')
         atom.workspace.addTopPanel(item: miniEditor)
         miniEditor.focus()
-        $(miniEditor).trigger 'core:cancel'
+        atom.commands.dispatch(miniEditor, 'core:cancel')
         expect(getFindAtomPanel()).toBeVisible()
 
   describe "serialization", ->
