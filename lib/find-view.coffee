@@ -105,34 +105,35 @@ class FindView extends View
     @handleFindEvents()
     @handleReplaceEvents()
 
-    @findEditor.on 'core:confirm', => @confirm()
-    @findEditor.on 'find-and-replace:confirm', => @confirm()
-    @findEditor.on 'find-and-replace:show-previous', => @showPrevious()
-    @findEditor.on 'find-and-replace:find-all', => @findAll()
+    @subscriptions.add atom.commands.add @findEditor[0],
+      'core:confirm': => @confirm()
+      'find-and-replace:confirm': => @confirm()
+      'find-and-replace:show-previous': => @showPrevious()
+      'find-and-replace:find-all': => @findAll()
 
-    @replaceEditor.on 'core:confirm', => @replaceNext()
-
-    @on 'find-and-replace:focus-next', @toggleFocus
-    @on 'find-and-replace:focus-previous', @toggleFocus
-    @on 'focus', (e) => @findEditor.focus()
+    @subscriptions.add atom.commands.add @replaceEditor[0],
+      'core:confirm': => @replaceNext()
 
     @subscriptions.add atom.commands.add this[0],
       'core:close': => @panel?.hide()
       'core:cancel': => @panel?.hide()
+      'find-and-replace:focus-next': @toggleFocus
+      'find-and-replace:focus-previous': @toggleFocus
       'find-and-replace:toggle-regex-option': @toggleRegexOption
       'find-and-replace:toggle-case-option': @toggleCaseOption
       'find-and-replace:toggle-selection-option': @toggleSelectionOption
       'find-and-replace:toggle-whole-word-option': @toggleWholeWordOption
+
+    @subscriptions.add @findModel.onDidUpdate @markersUpdated
+    @subscriptions.add @findModel.onDidError @findError
+    @subscriptions.add @findModel.onDidChangeCurrentResult @updateResultCounter
 
     @regexOptionButton.on 'click', @toggleRegexOption
     @caseOptionButton.on 'click', @toggleCaseOption
     @selectionOptionButton.on 'click', @toggleSelectionOption
     @wholeWordOptionButton.on 'click', @toggleWholeWordOption
 
-    @subscriptions.add @findModel.onDidUpdate @markersUpdated
-    @subscriptions.add @findModel.onDidError @findError
-    @subscriptions.add @findModel.onDidChangeCurrentResult @updateResultCounter
-
+    @on 'focus', (e) => @findEditor.focus()
     @find('button').on 'click', =>
       atom.workspaceView.focus()
 
