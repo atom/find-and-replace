@@ -53,7 +53,8 @@ class FindView extends View
     @updateOptionsLabel()
 
   destroy: ->
-    @subscriptions.dispose()
+    @subscriptions?.dispose()
+    @tooltipSubscriptions?.dispose()
 
   setPanel: (@panel) ->
     @subscriptions.add @panel.onDidChangeVisible (visible) =>
@@ -61,16 +62,35 @@ class FindView extends View
 
   didShow: ->
     atom.workspaceView.addClass('find-visible')
-    # unless @tooltipsInitialized
-    #   @regexOptionButton.setTooltip("Use Regex", command: 'find-and-replace:toggle-regex-option', commandElement: @findEditor)
-    #   @caseOptionButton.setTooltip("Match Case", command: 'find-and-replace:toggle-case-option', commandElement: @findEditor)
-    #   @selectionOptionButton.setTooltip("Only In Selection", command: 'find-and-replace:toggle-selection-option', commandElement: @findEditor)
-    #
-    #   @nextButton.setTooltip("Find Next", command: 'find-and-replace:find-next', commandElement: @findEditor)
-    #
-    #   @replaceNextButton.setTooltip("Replace Next", command: 'find-and-replace:replace-next', commandElement: @replaceEditor)
-    #   @replaceAllButton.setTooltip("Replace All", command: 'find-and-replace:replace-all', commandElement: @replaceEditor)
-    #   @tooltipsInitialized = true
+    return if @tooltipSubscriptions?
+
+    @tooltipSubscriptions = subs = new CompositeDisposable
+    subs.add atom.tooltips.add @regexOptionButton,
+      title: "Use Regex"
+      keyBindingCommand: 'find-and-replace:toggle-regex-option',
+      keyBindingTarget: @findEditor[0]
+    subs.add atom.tooltips.add @caseOptionButton,
+      title: "Match Case",
+      keyBindingCommand: 'find-and-replace:toggle-case-option',
+      keyBindingTarget: @findEditor[0]
+    subs.add atom.tooltips.add @selectionOptionButton,
+      title: "Only In Selection",
+      keyBindingCommand: 'find-and-replace:toggle-selection-option',
+      keyBindingTarget: @findEditor[0]
+
+    subs.add atom.tooltips.add @nextButton,
+      title: "Find Next",
+      keyBindingCommand: 'find-and-replace:find-next',
+      keyBindingTarget: @findEditor[0]
+
+    subs.add atom.tooltips.add @replaceNextButton,
+      title: "Replace Next",
+      keyBindingCommand: 'find-and-replace:replace-next',
+      keyBindingTarget: @replaceEditor[0]
+    subs.add atom.tooltips.add @replaceAllButton,
+      title: "Replace All",
+      keyBindingCommand: 'find-and-replace:replace-all',
+      keyBindingTarget: @replaceEditor[0]
 
   didHide: ->
     @hideAllTooltips()
@@ -78,14 +98,8 @@ class FindView extends View
     atom.workspaceView.removeClass('find-visible')
 
   hideAllTooltips: ->
-  #   @regexOptionButton.hideTooltip()
-  #   @caseOptionButton.hideTooltip()
-  #   @selectionOptionButton.hideTooltip()
-  #
-  #   @nextButton.hideTooltip()
-  #
-  #   @replaceNextButton.hideTooltip()
-  #   @replaceAllButton.hideTooltip()
+    @tooltipSubscriptions.dispose()
+    @tooltipSubscriptions = null
 
   handleEvents: ->
     @handleFindEvents()
