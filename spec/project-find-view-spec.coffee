@@ -772,8 +772,8 @@ describe 'ProjectFindView', ->
           expect(resultsView.find("li > ul > li")).toHaveLength(13)
 
           resultsView.selectFirstResult()
-          _.times 10, -> resultsView.trigger 'core:move-down'
-          resultsView.trigger 'core:confirm'
+          _.times 10, -> atom.commands.dispatch(resultsView[0], 'core:move-down')
+          atom.commands.dispatch(resultsView[0], 'core:confirm')
 
         waits 0 # not sure why this is async
 
