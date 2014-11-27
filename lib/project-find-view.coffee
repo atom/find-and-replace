@@ -94,25 +94,25 @@ class ProjectFindView extends View
     @tooltipSubscriptions = null
 
   handleEvents: ->
-    @on 'core:confirm', => @confirm()
-    @on 'project-find:confirm', => @confirm()
-    @on 'find-and-replace:focus-next', => @focusNextElement(1)
-    @on 'find-and-replace:focus-previous', => @focusNextElement(-1)
-    @on 'core:cancel core:close', => @panel?.hide()
-    @on 'focus', (e) => @findEditor.focus()
-
-    @on 'project-find:toggle-regex-option', => @toggleRegexOption()
-    @regexOptionButton.click => @toggleRegexOption()
-
-    @on 'project-find:toggle-case-option', => @toggleCaseOption()
-    @caseOptionButton.click => @toggleCaseOption()
-
-    @replaceAllButton.on 'click', => @replaceAll()
-    @on 'project-find:replace-all', => @replaceAll()
+    @subscriptions.add atom.commands.add this[0],
+      'find-and-replace:focus-next': => @focusNextElement(1)
+      'find-and-replace:focus-previous': => @focusNextElement(-1)
+      'core:confirm': => @confirm()
+      'core:close': => @panel?.hide()
+      'core:cancel': => @panel?.hide()
+      'project-find:confirm': => @confirm()
+      'project-find:toggle-regex-option': => @toggleRegexOption()
+      'project-find:toggle-case-option': => @toggleCaseOption()
+      'project-find:replace-all': => @replaceAll()
 
     @subscriptions.add @model.onDidClear => @clearMessages()
     @subscriptions.add @model.onDidClearReplacementState (results) => @generateResultsMessage(results)
     @subscriptions.add @model.onDidFinishSearching (results) => @generateResultsMessage(results)
+
+    @on 'focus', (e) => @findEditor.focus()
+    @regexOptionButton.click => @toggleRegexOption()
+    @caseOptionButton.click => @toggleCaseOption()
+    @replaceAllButton.on 'click', => @replaceAll()
 
     focusCallback = => @onlyRunIfChanged = false
     $(window).on 'focus', focusCallback

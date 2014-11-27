@@ -10,6 +10,7 @@ class ResultsView extends ScrollView
 
   initialize: (@model) ->
     super
+    @subscriptions = new CompositeDisposable
 
     @pixelOverdraw = 100
     @lastRenderedResultIndex = 0
@@ -20,28 +21,18 @@ class ResultsView extends ScrollView
     @off 'core:move-left'
     @off 'core:move-right'
 
-    @on 'core:move-down', =>
-      @selectNextResult()
-
-    @on 'core:move-up', =>
-      @selectPreviousResult()
-
-    @on 'core:move-left', =>
-      @collapseResult()
-
-    @on 'core:move-right', =>
-      @expandResult()
-
-    @on 'scroll resize', =>
-      @renderResults() if @shouldRenderMoreResults()
-
-    @on 'core:confirm', =>
-      @find('.selected').view()?.confirm?()
-      false
-
-    @on 'core:copy', =>
-      @find('.selected').view()?.copy?()
-      false
+    @subscriptions.add atom.commands.add this[0],
+      'core:move-down': => @selectNextResult()
+      'core:move-up': => @selectPreviousResult()
+      'core:move-left': => @collapseResult()
+      'core:move-right': => @expandResult()
+      'scroll resize': => @renderResults() if @shouldRenderMoreResults()
+      'core:confirm': =>
+        @find('.selected').view()?.confirm?()
+        false
+      'core:copy': =>
+        @find('.selected').view()?.copy?()
+        false
 
     @on 'mousedown', '.match-result, .path', ({target, which, ctrlKey}) =>
       @find('.selected').removeClass('selected')
@@ -49,13 +40,17 @@ class ResultsView extends ScrollView
       view.addClass('selected')
       view.confirm() if which is 1 and not ctrlKey
 
-    @subscribe @model, 'result-added', @addResult
-    @subscribe @model, 'result-removed', @removeResult
-    @subscribe @model, 'search-state-cleared', @clear
+    @subscriptions.add(@model.onDidAddResult @addResult)
+    @subscriptions.add(@model.onDidRemoveResult @removeResult)
+    @subscriptions.add(@model.onDidClearSearchState @clear)
+
     @renderResults()
 
-  beforeRemove: ->
+  destroy: ->
     @clear()
+    @subscriptions.dispose()
+
+  beforeRemove: -> @destroy()
 
   hasResults: ->
     @model.getResultCount() > 0
