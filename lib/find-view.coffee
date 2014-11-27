@@ -1,6 +1,5 @@
 _ = require 'underscore-plus'
-{$$$, View} = require 'space-pen'
-{TextEditorView} = require 'atom-space-pen-views'
+{$$$, View, TextEditorView} = require 'atom-space-pen-views'
 {CompositeDisposable} = require 'atom'
 FindModel = require './find-model'
 {HistoryCycler} = require './history'

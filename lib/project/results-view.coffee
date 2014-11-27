@@ -1,5 +1,6 @@
 _ = require 'underscore-plus'
-{$, ScrollView} = require 'atom'
+{CompositeDisposable} = require 'atom'
+{$, ScrollView} = require 'atom-space-pen-views'
 ResultView = require './result-view'
 
 module.exports =

@@ -1,5 +1,5 @@
 _ = require 'underscore-plus'
-{$} = require 'space-pen'
+{$} = require 'atom-space-pen-views'
 {WorkspaceView} = require 'atom'
 
 path = require 'path'
