@@ -160,13 +160,13 @@ class ProjectFindView extends View
     focusedIndex = 0 if focusedIndex >= elements.length
     focusedIndex = elements.length - 1 if focusedIndex < 0
     elements[focusedIndex].focus()
-    elements[focusedIndex].getEditor?().selectAll()
+    elements[focusedIndex].getModel?().selectAll()
 
   focusFindElement: ->
     selectedText = atom.workspace.getActiveEditor()?.getSelectedText?()
     @findEditor.setText(selectedText) if selectedText and selectedText.indexOf('\n') < 0
     @findEditor.focus()
-    @findEditor.getEditor().selectAll()
+    @findEditor.getModel().selectAll()
 
   confirm: ->
     if @findEditor.getText().length == 0
