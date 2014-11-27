@@ -57,19 +57,32 @@ class ProjectFindView extends View
     @updateOptionsLabel()
 
   destroy: ->
-    @subscriptions.dispose()
+    @subscriptions?.dispose()
+    @tooltipSubscriptions?.dispose()
 
   setPanel: (@panel) ->
     @subscriptions.add @panel.onDidChangeVisible (visible) =>
       if visible then @didShow() else @didHide()
 
   didShow: ->
-    atom.workspaceView.addClass('find-visible')
-    unless @tooltipsInitialized
-      @regexOptionButton.setTooltip("Use Regex", command: 'project-find:toggle-regex-option', commandElement: @findEditor)
-      @caseOptionButton.setTooltip("Match Case", command: 'project-find:toggle-case-option', commandElement: @findEditor)
-      @replaceAllButton.setTooltip("Replace All", command: 'project-find:replace-all', commandElement: @replaceEditor)
-      @tooltipsInitialized = true
+    atom.views.getView(atom.workspace).classList.add('find-visible')
+    return if @tooltipSubscriptions?
+
+    @tooltipSubscriptions = subs = new CompositeDisposable
+    subs.add atom.tooltips.add @regexOptionButton,
+      title: "Use Regex"
+      keyBindingCommand: 'project-find:toggle-regex-option',
+      keyBindingTarget: @findEditor[0]
+
+    subs.add atom.tooltips.add @caseOptionButton,
+      title: "Match Case",
+      keyBindingCommand: 'project-find:toggle-case-option',
+      keyBindingTarget: @findEditor[0]
+
+    subs.add atom.tooltips.add @replaceAllButton,
+      title: "Replace All",
+      keyBindingCommand: 'project-find:replace-all',
+      keyBindingTarget: @replaceEditor[0]
 
   didHide: ->
     @hideAllTooltips()
@@ -77,9 +90,8 @@ class ProjectFindView extends View
     atom.workspaceView.removeClass('find-visible')
 
   hideAllTooltips: ->
-    @regexOptionButton.hideTooltip()
-    @caseOptionButton.hideTooltip()
-    @replaceAllButton.hideTooltip()
+    @tooltipSubscriptions.dispose()
+    @tooltipSubscriptions = null
 
   handleEvents: ->
     @on 'core:confirm', => @confirm()
