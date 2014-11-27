@@ -60,7 +60,7 @@ class FindView extends View
       if visible then @didShow() else @didHide()
 
   didShow: ->
-    atom.workspaceView.addClass('find-visible')
+    atom.views.getView(atom.workspace).classList.add('find-visible')
     return if @tooltipSubscriptions?
 
     @tooltipSubscriptions = subs = new CompositeDisposable
