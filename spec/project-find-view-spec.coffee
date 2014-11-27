@@ -40,7 +40,7 @@ describe 'ProjectFindView', ->
 
   describe "when project-find:show is triggered", ->
     it "attaches ProjectFindView to the root view", ->
-      atom.workspaceView.trigger 'project-find:show'
+      atom.commands.dispatch(workspaceElement, 'project-find:show')
 
       waitsForPromise ->
         activationPromise
@@ -51,13 +51,13 @@ describe 'ProjectFindView', ->
         expect(getAtomPanel()).toBeVisible()
         expect(projectFindView.find('.preview-block')).not.toBeVisible()
         expect(projectFindView.find('.loading')).not.toBeVisible()
-        expect(projectFindView.findEditor.getEditor().getSelectedBufferRange()).toEqual [[0, 0], [0, 5]]
+        expect(projectFindView.findEditor.getModel().getSelectedBufferRange()).toEqual [[0, 0], [0, 5]]
 
     describe "with an open buffer", ->
       editor = null
 
       beforeEach ->
-        atom.workspaceView.trigger 'project-find:show'
+        atom.commands.dispatch(workspaceElement, 'project-find:show')
 
         waitsForPromise ->
           activationPromise
@@ -70,47 +70,47 @@ describe 'ProjectFindView', ->
 
       it "populates the findEditor with selection when there is a selection", ->
         editor.setSelectedBufferRange([[2, 8], [2, 13]])
-        atom.workspaceView.trigger 'project-find:show'
+        atom.commands.dispatch(workspaceElement, 'project-find:show')
         expect(getAtomPanel()).toBeVisible()
         expect(projectFindView.findEditor.getText()).toBe('items')
 
         editor.setSelectedBufferRange([[2, 14], [2, 20]])
-        atom.workspaceView.trigger 'project-find:show'
+        atom.commands.dispatch(workspaceElement, 'project-find:show')
         expect(getAtomPanel()).toBeVisible()
         expect(projectFindView.findEditor.getText()).toBe('length')
 
       it "populates the findEditor with the previous selection when there is no selection", ->
         editor.setSelectedBufferRange([[2, 14], [2, 20]])
-        atom.workspaceView.trigger 'project-find:show'
+        atom.commands.dispatch(workspaceElement, 'project-find:show')
         expect(getAtomPanel()).toBeVisible()
         expect(projectFindView.findEditor.getText()).toBe('length')
 
         editor.setSelectedBufferRange([[2, 30], [2, 30]])
-        atom.workspaceView.trigger 'project-find:show'
+        atom.commands.dispatch(workspaceElement, 'project-find:show')
         expect(getAtomPanel()).toBeVisible()
         expect(projectFindView.findEditor.getText()).toBe('length')
 
     describe "when the ProjectFindView is already attached", ->
       beforeEach ->
-        atom.workspaceView.trigger 'project-find:show'
+        atom.commands.dispatch(workspaceElement, 'project-find:show')
 
         waitsForPromise ->
           activationPromise
 
         runs ->
           projectFindView.findEditor.setText('items')
-          projectFindView.findEditor.getEditor().setSelectedBufferRange([[0, 0], [0, 0]])
+          projectFindView.findEditor.getModel().setSelectedBufferRange([[0, 0], [0, 0]])
 
       it "focuses the find editor and selects all the text", ->
-        atom.workspaceView.trigger 'project-find:show'
+        atom.commands.dispatch(workspaceElement, 'project-find:show')
         expect(projectFindView.findEditor).toHaveFocus()
-        expect(projectFindView.findEditor.getEditor().getSelectedText()).toBe "items"
+        expect(projectFindView.findEditor.getModel().getSelectedText()).toBe "items"
 
     it "honors config settings for find options", ->
       atom.config.set('find-and-replace.useRegex', true)
       atom.config.set('find-and-replace.caseSensitive', true)
 
-      atom.workspaceView.trigger 'project-find:show'
+      atom.commands.dispatch(workspaceElement, 'project-find:show')
 
       waitsForPromise ->
         activationPromise
@@ -121,14 +121,14 @@ describe 'ProjectFindView', ->
 
   describe "when project-find:toggle is triggered", ->
     it "toggles the visibility of the ProjectFindView", ->
-      atom.workspaceView.trigger 'project-find:toggle'
+      atom.commands.dispatch(workspaceElement, 'project-find:toggle')
 
       waitsForPromise ->
         activationPromise
 
       runs ->
         expect(getAtomPanel()).toBeVisible()
-        atom.workspaceView.trigger 'project-find:toggle'
+        atom.commands.dispatch(workspaceElement, 'project-find:toggle')
         expect(getAtomPanel()).not.toBeVisible()
 
   describe "when project-find:show-in-current-directory is triggered", ->
@@ -210,7 +210,7 @@ describe 'ProjectFindView', ->
 
       runs ->
         editorView = atom.workspaceView.getActiveView()
-        atom.workspaceView.trigger 'project-find:show'
+        atom.commands.dispatch(workspaceElement, 'project-find:show')
 
       waitsForPromise ->
         activationPromise
@@ -220,13 +220,13 @@ describe 'ProjectFindView', ->
         projectPath = temp.mkdirSync("atom")
         fs.writeFileSync(path.join(projectPath, "tabs.txt"), "\t\n\\\t\n\\\\t")
         atom.project.setPaths([projectPath])
-        atom.workspaceView.trigger 'project-find:show'
+        atom.commands.dispatch(workspaceElement, 'project-find:show')
 
       describe "when regex seach is enabled", ->
         it "finds a literal tab character", ->
-          projectFindView.trigger 'project-find:toggle-regex-option'
+          atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option')
           projectFindView.findEditor.setText('\\t')
-          projectFindView.trigger 'core:confirm'
+          atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
           waitsForPromise ->
             searchPromise
@@ -240,7 +240,7 @@ describe 'ProjectFindView', ->
       describe "when regex seach is disabled", ->
         it "finds the escape char", ->
           projectFindView.findEditor.setText('\\t')
-          projectFindView.trigger 'core:confirm'
+          atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
           waitsForPromise ->
             searchPromise
@@ -253,7 +253,7 @@ describe 'ProjectFindView', ->
 
         it "finds a backslash", ->
           projectFindView.findEditor.setText('\\')
-          projectFindView.trigger 'core:confirm'
+          atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
           waitsForPromise ->
             searchPromise
@@ -266,7 +266,7 @@ describe 'ProjectFindView', ->
 
         it "doesn't insert a escaped char if there are multiple backslashs in front of the char", ->
           projectFindView.findEditor.setText('\\\\t')
-          projectFindView.trigger 'core:confirm'
+          atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
           waitsForPromise ->
             searchPromise
@@ -279,7 +279,7 @@ describe 'ProjectFindView', ->
 
     describe "when core:cancel is triggered", ->
       beforeEach ->
-        atom.workspaceView.trigger 'project-find:show'
+        atom.commands.dispatch(workspaceElement, 'project-find:show')
         projectFindView.focus()
 
       it "detaches from the root view", ->
@@ -295,7 +295,7 @@ describe 'ProjectFindView', ->
         initialPane = atom.workspaceView.getActivePaneView()
         atom.config.set('find-and-replace.openProjectFindResultsInRightPane', true)
         projectFindView.findEditor.setText('items')
-        projectFindView.trigger 'core:confirm'
+        atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
         waitsForPromise ->
           searchPromise
@@ -307,7 +307,7 @@ describe 'ProjectFindView', ->
       it "does not split when option is false", ->
         initialPane = atom.workspaceView.getActivePaneView()
         projectFindView.findEditor.setText('items')
-        projectFindView.trigger 'core:confirm'
+        atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
         waitsForPromise ->
           searchPromise
@@ -319,7 +319,7 @@ describe 'ProjectFindView', ->
       it "can be duplicated", ->
         atom.config.set('find-and-replace.openProjectFindResultsInRightPane', true)
         projectFindView.findEditor.setText('items')
-        projectFindView.trigger 'core:confirm'
+        atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
         waitsForPromise ->
           searchPromise
@@ -370,12 +370,12 @@ describe 'ProjectFindView', ->
     describe "description label", ->
       beforeEach ->
         editorView.trigger 'project-find:show'
-        projectFindView.trigger 'project-find:toggle-regex-option'
+        atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option')
         spyOn(atom.project, 'scan').andCallFake -> Q()
 
       it "shows an error when the pattern is invalid and clears when no error", ->
         projectFindView.findEditor.setText('[')
-        projectFindView.trigger 'core:confirm'
+        atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
         waitsForPromise ->
           searchPromise
@@ -385,13 +385,13 @@ describe 'ProjectFindView', ->
           expect(projectFindView.descriptionLabel.text()).toContain('Invalid regular expression')
 
           projectFindView.findEditor.setText('')
-          projectFindView.trigger 'core:confirm'
+          atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
           expect(projectFindView.descriptionLabel).not.toHaveClass('text-error')
           expect(projectFindView.descriptionLabel.text()).toContain('Find in Project')
 
           projectFindView.findEditor.setText('items')
-          projectFindView.trigger 'core:confirm'
+          atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
         waitsForPromise ->
           searchPromise
@@ -407,7 +407,7 @@ describe 'ProjectFindView', ->
         spyOn(atom.project, 'scan').andCallFake -> Q()
 
       it "escapes regex patterns by default", ->
-        projectFindView.trigger 'core:confirm'
+        atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
         waitsForPromise ->
           searchPromise
@@ -416,9 +416,9 @@ describe 'ProjectFindView', ->
           expect(atom.project.scan.argsForCall[0][0]).toEqual /i\(\\w\)ems\+/gi
 
       it "shows an error when the regex pattern is invalid", ->
-        projectFindView.trigger 'project-find:toggle-regex-option'
+        atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option')
         projectFindView.findEditor.setText('[')
-        projectFindView.trigger 'core:confirm'
+        atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
         waitsForPromise ->
           searchPromise
@@ -429,18 +429,18 @@ describe 'ProjectFindView', ->
       describe "when search has not been run yet", ->
         it "toggles regex option via an event but does not run the search", ->
           expect(projectFindView.regexOptionButton).not.toHaveClass('selected')
-          projectFindView.trigger 'project-find:toggle-regex-option'
+          atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option')
           expect(projectFindView.regexOptionButton).toHaveClass('selected')
           expect(atom.project.scan).not.toHaveBeenCalled()
 
       describe "when search has been run", ->
         beforeEach ->
-          projectFindView.trigger 'core:confirm'
+          atom.commands.dispatch(projectFindView[0], 'core:confirm')
           waitsForPromise -> searchPromise
 
         it "toggles regex option via an event and finds files matching the pattern", ->
           expect(projectFindView.regexOptionButton).not.toHaveClass('selected')
-          projectFindView.trigger 'project-find:toggle-regex-option'
+          atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option')
 
           waitsForPromise ->
             searchPromise
@@ -465,7 +465,7 @@ describe 'ProjectFindView', ->
         editorView.trigger 'project-find:show'
         spyOn(atom.project, 'scan').andCallFake -> Q()
         projectFindView.findEditor.setText('ITEMS')
-        projectFindView.trigger 'core:confirm'
+        atom.commands.dispatch(projectFindView[0], 'core:confirm')
         waitsForPromise -> searchPromise
 
       it "runs a case insensitive search by default", ->
@@ -473,7 +473,7 @@ describe 'ProjectFindView', ->
 
       it "toggles case sensitive option via an event and finds files matching the pattern", ->
         expect(projectFindView.caseOptionButton).not.toHaveClass('selected')
-        projectFindView.trigger 'project-find:toggle-case-option'
+        atom.commands.dispatch(projectFindView[0], 'project-find:toggle-case-option')
 
         waitsForPromise ->
           searchPromise
@@ -496,7 +496,7 @@ describe 'ProjectFindView', ->
     describe "when project-find:confirm is triggered", ->
       it "displays the results and no errors", ->
         projectFindView.findEditor.setText('items')
-        projectFindView.trigger 'project-find:confirm'
+        atom.commands.dispatch(projectFindView[0], 'project-find:confirm')
 
         waitsForPromise ->
           searchPromise
@@ -510,26 +510,26 @@ describe 'ProjectFindView', ->
 
     describe "when core:confirm is triggered", ->
       beforeEach ->
-        atom.workspaceView.trigger 'project-find:show'
+        atom.commands.dispatch(workspaceElement, 'project-find:show')
 
       describe "when the there search field is empty", ->
         it "does not run the seach but clears the model", ->
           spyOn(atom.project, 'scan')
           spyOn(projectFindView.model, 'clear')
-          projectFindView.trigger 'core:confirm'
+          atom.commands.dispatch(projectFindView[0], 'core:confirm')
           expect(atom.project.scan).not.toHaveBeenCalled()
           expect(projectFindView.model.clear).toHaveBeenCalled()
 
       it "reruns the search when confirmed again after focusing the window", ->
         projectFindView.findEditor.setText('thisdoesnotmatch')
-        projectFindView.trigger 'core:confirm'
+        atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
         waitsForPromise ->
           searchPromise
 
         runs ->
           spyOn(atom.project, 'scan')
-          projectFindView.trigger 'core:confirm'
+          atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
         waitsForPromise ->
           searchPromise
@@ -538,7 +538,7 @@ describe 'ProjectFindView', ->
           expect(atom.project.scan).not.toHaveBeenCalled()
           atom.project.scan.reset()
           $(window).triggerHandler 'focus'
-          projectFindView.trigger 'core:confirm'
+          atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
         waitsForPromise ->
           searchPromise
@@ -546,7 +546,7 @@ describe 'ProjectFindView', ->
         runs ->
           expect(atom.project.scan).toHaveBeenCalled()
           atom.project.scan.reset()
-          projectFindView.trigger 'core:confirm'
+          atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
         waitsForPromise ->
           searchPromise
@@ -559,7 +559,7 @@ describe 'ProjectFindView', ->
           projectFindView.findEditor.setText('items')
 
         it "displays the results and no errors", ->
-          projectFindView.trigger 'core:confirm'
+          atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
           waitsForPromise ->
             searchPromise
@@ -576,7 +576,7 @@ describe 'ProjectFindView', ->
         it "only searches paths matching text in the path filter", ->
           spyOn(atom.project, 'scan').andCallFake -> Q()
           projectFindView.pathsEditor.setText('*.js')
-          projectFindView.trigger 'core:confirm'
+          atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
           waitsForPromise ->
             searchPromise
@@ -585,7 +585,7 @@ describe 'ProjectFindView', ->
             expect(atom.project.scan.argsForCall[0][1]['paths']).toEqual ['*.js']
 
         it "updates the results list when a buffer changes", ->
-          projectFindView.trigger 'core:confirm'
+          atom.commands.dispatch(projectFindView[0], 'core:confirm')
           buffer = atom.project.bufferForPathSync('sample.js')
 
           waitsForPromise ->
@@ -622,7 +622,7 @@ describe 'ProjectFindView', ->
           spyOn(atom.project, 'scan').andCallFake -> Q()
 
         it "displays no errors and no results", ->
-          projectFindView.trigger 'core:confirm'
+          atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
           waitsForPromise ->
             searchPromise
@@ -635,7 +635,7 @@ describe 'ProjectFindView', ->
 
     describe "history", ->
       beforeEach ->
-        atom.workspaceView.trigger 'project-find:show'
+        atom.commands.dispatch(workspaceElement, 'project-find:show')
         spyOn(atom.project, 'scan').andCallFake ->
           promise = Q()
           promise.cancel = ->
@@ -644,63 +644,63 @@ describe 'ProjectFindView', ->
         projectFindView.findEditor.setText('sort')
         projectFindView.replaceEditor.setText('bort')
         projectFindView.pathsEditor.setText('abc')
-        projectFindView.findEditor.trigger 'core:confirm'
+        atom.commands.dispatch(projectFindView.findEditor[0], 'core:confirm')
 
         projectFindView.findEditor.setText('items')
         projectFindView.replaceEditor.setText('eyetims')
         projectFindView.pathsEditor.setText('def')
-        projectFindView.findEditor.trigger 'core:confirm'
+        atom.commands.dispatch(projectFindView.findEditor[0], 'core:confirm')
 
       it "can navigate the entire history stack", ->
         expect(projectFindView.findEditor.getText()).toEqual 'items'
 
-        projectFindView.findEditor.trigger 'core:move-up'
+        atom.commands.dispatch(projectFindView.findEditor[0], 'core:move-up')
         expect(projectFindView.findEditor.getText()).toEqual 'sort'
 
-        projectFindView.findEditor.trigger 'core:move-down'
+        atom.commands.dispatch(projectFindView.findEditor[0], 'core:move-down')
         expect(projectFindView.findEditor.getText()).toEqual 'items'
 
-        projectFindView.findEditor.trigger 'core:move-down'
+        atom.commands.dispatch(projectFindView.findEditor[0], 'core:move-down')
         expect(projectFindView.findEditor.getText()).toEqual ''
 
         expect(projectFindView.pathsEditor.getText()).toEqual 'def'
 
-        projectFindView.pathsEditor.trigger 'core:move-up'
+        atom.commands.dispatch(projectFindView.pathsEditor[0], 'core:move-up')
         expect(projectFindView.pathsEditor.getText()).toEqual 'abc'
 
-        projectFindView.pathsEditor.trigger 'core:move-down'
+        atom.commands.dispatch(projectFindView.pathsEditor[0], 'core:move-down')
         expect(projectFindView.pathsEditor.getText()).toEqual 'def'
 
-        projectFindView.pathsEditor.trigger 'core:move-down'
+        atom.commands.dispatch(projectFindView.pathsEditor[0], 'core:move-down')
         expect(projectFindView.pathsEditor.getText()).toEqual ''
 
         expect(projectFindView.replaceEditor.getText()).toEqual 'eyetims'
 
-        projectFindView.replaceEditor.trigger 'core:move-up'
+        atom.commands.dispatch(projectFindView.replaceEditor[0], 'core:move-up')
         expect(projectFindView.replaceEditor.getText()).toEqual 'bort'
 
-        projectFindView.replaceEditor.trigger 'core:move-down'
+        atom.commands.dispatch(projectFindView.replaceEditor[0], 'core:move-down')
         expect(projectFindView.replaceEditor.getText()).toEqual 'eyetims'
 
-        projectFindView.replaceEditor.trigger 'core:move-down'
+        atom.commands.dispatch(projectFindView.replaceEditor[0], 'core:move-down')
         expect(projectFindView.replaceEditor.getText()).toEqual ''
 
     describe "when find-and-replace:set-find-pattern is triggered", ->
       it "places the selected text into the find editor", ->
-        editorView.getEditor().setSelectedBufferRange([[1,6],[1,10]])
+        editorView.getModel().setSelectedBufferRange([[1,6],[1,10]])
         atom.workspaceView.trigger 'find-and-replace:use-selection-as-find-pattern'
         expect(projectFindView.findEditor.getText()).toBe 'sort'
 
-        editorView.getEditor().setSelectedBufferRange([[1,13],[1,21]])
+        editorView.getModel().setSelectedBufferRange([[1,13],[1,21]])
         atom.workspaceView.trigger 'find-and-replace:use-selection-as-find-pattern'
         expect(projectFindView.findEditor.getText()).toBe 'function'
 
       it "places the previously selected text into the find editor if no selection", ->
-        editorView.getEditor().setSelectedBufferRange([[1,13],[1,21]])
+        editorView.getModel().setSelectedBufferRange([[1,13],[1,21]])
         atom.workspaceView.trigger 'find-and-replace:use-selection-as-find-pattern'
         expect(projectFindView.findEditor.getText()).toBe 'function'
 
-        editorView.getEditor().setSelectedBufferRange([[1,30],[1,30]])
+        editorView.getModel().setSelectedBufferRange([[1,30],[1,30]])
         atom.workspaceView.trigger 'find-and-replace:use-selection-as-find-pattern'
         expect(projectFindView.findEditor.getText()).toBe ''
 
@@ -714,7 +714,7 @@ describe 'ProjectFindView', ->
           called = true
           deferred.promise
 
-        projectFindView.trigger 'core:confirm'
+        atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
         waitsFor -> called
 
@@ -757,7 +757,7 @@ describe 'ProjectFindView', ->
 
         runs ->
           projectFindView.findEditor.setText('items')
-          projectFindView.trigger 'core:confirm'
+          atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
         waitsForPromise ->
           searchPromise
@@ -782,11 +782,11 @@ describe 'ProjectFindView', ->
           expect(editorView.find('.highlight.current-result')).toHaveLength 1
           expect(atom.workspaceView).toHaveClass 'find-visible'
 
-          initialSelectedRange = editorView.getEditor().getSelectedBufferRange()
+          initialSelectedRange = editorView.getModel().getSelectedBufferRange()
 
           # now we can find next
           editorView.trigger 'find-and-replace:find-next'
-          expect(editorView.getEditor().getSelectedBufferRange()).not.toEqual initialSelectedRange
+          expect(editorView.getModel().getSelectedBufferRange()).not.toEqual initialSelectedRange
 
   describe "replacing", ->
     [testDir, sampleJs, sampleCoffee, replacePromise] = []
@@ -799,7 +799,7 @@ describe 'ProjectFindView', ->
 
       fs.writeFileSync(sampleCoffee, fs.readFileSync(require.resolve('./fixtures/sample.coffee')))
       fs.writeFileSync(sampleJs, fs.readFileSync(require.resolve('./fixtures/sample.js')))
-      atom.workspaceView.trigger 'project-find:show'
+      atom.commands.dispatch(workspaceElement, 'project-find:show')
 
       waitsForPromise ->
         activationPromise
@@ -839,16 +839,16 @@ describe 'ProjectFindView', ->
         filePath = path.join(projectPath, "tabs.txt")
         fs.writeFileSync(filePath, "a\nb\na")
         atom.project.setPaths([projectPath])
-        atom.workspaceView.trigger 'project-find:show'
+        atom.commands.dispatch(workspaceElement, 'project-find:show')
 
       describe "when the regex option is chosen", ->
         beforeEach ->
-          projectFindView.trigger 'project-find:toggle-regex-option'
+          atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option')
 
         it "finds the escape char", ->
           projectFindView.findEditor.setText('a')
           projectFindView.replaceEditor.setText('\\t')
-          projectFindView.trigger 'project-find:replace-all'
+          atom.commands.dispatch(projectFindView[0], 'project-find:replace-all')
 
           waitsForPromise ->
             replacePromise
@@ -860,7 +860,7 @@ describe 'ProjectFindView', ->
         it "doesn't insert a escaped char if there are multiple backslashs in front of the char", ->
           projectFindView.findEditor.setText('a')
           projectFindView.replaceEditor.setText('\\\\t')
-          projectFindView.trigger 'project-find:replace-all'
+          atom.commands.dispatch(projectFindView[0], 'project-find:replace-all')
 
           waitsForPromise ->
             replacePromise
@@ -874,7 +874,7 @@ describe 'ProjectFindView', ->
         it "finds the escape char", ->
           projectFindView.findEditor.setText('a')
           projectFindView.replaceEditor.setText('\\t')
-          projectFindView.trigger 'project-find:replace-all'
+          atom.commands.dispatch(projectFindView[0], 'project-find:replace-all')
 
           waitsForPromise ->
             replacePromise
@@ -886,7 +886,7 @@ describe 'ProjectFindView', ->
     describe "when the replace button is pressed", ->
       it "runs the search, and replaces all the matches", ->
         projectFindView.findEditor.setText('items')
-        projectFindView.trigger 'core:confirm'
+        atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
         waitsForPromise ->
           searchPromise
@@ -913,7 +913,7 @@ describe 'ProjectFindView', ->
       describe "when there are search results after a replace", ->
         it "runs the search after the replace", ->
           projectFindView.findEditor.setText('items')
-          projectFindView.trigger 'core:confirm'
+          atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
           waitsForPromise ->
             searchPromise
@@ -932,7 +932,7 @@ describe 'ProjectFindView', ->
             expect(projectFindView.descriptionLabel.text()).toContain 'Replaced items with items-123 13 times in 2 files'
 
             projectFindView.replaceEditor.setText('cats')
-            advanceClock(projectFindView.replaceEditor.getEditor().getBuffer().stoppedChangingDelay)
+            advanceClock(projectFindView.replaceEditor.getModel().getBuffer().stoppedChangingDelay)
 
             expect(projectFindView.descriptionLabel.text()).not.toContain 'Replaced items'
             expect(projectFindView.descriptionLabel.text()).toContain "13 results found in 2 files for items"
@@ -945,7 +945,7 @@ describe 'ProjectFindView', ->
 
           spyOn(atom.project, 'scan').andCallThrough()
           spyOn(atom, 'beep')
-          projectFindView.trigger 'project-find:replace-all'
+          atom.commands.dispatch(projectFindView[0], 'project-find:replace-all')
 
           waitsForPromise ->
             replacePromise
@@ -960,7 +960,7 @@ describe 'ProjectFindView', ->
           projectFindView.findEditor.setText('items')
           projectFindView.replaceEditor.setText('sunshine')
 
-          projectFindView.trigger 'project-find:replace-all'
+          atom.commands.dispatch(projectFindView[0], 'project-find:replace-all')
 
           waitsForPromise ->
             replacePromise
@@ -971,7 +971,7 @@ describe 'ProjectFindView', ->
       describe "when the search text has changed since that last search", ->
         beforeEach ->
           projectFindView.findEditor.setText('items')
-          projectFindView.trigger 'core:confirm'
+          atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
           waitsForPromise ->
             searchPromise
@@ -984,7 +984,7 @@ describe 'ProjectFindView', ->
           projectFindView.replaceEditor.setText('ok')
           expect(projectFindView.resultsView).not.toBeVisible()
 
-          projectFindView.trigger 'project-find:replace-all'
+          atom.commands.dispatch(projectFindView[0], 'project-find:replace-all')
 
           waitsForPromise ->
             replacePromise
@@ -997,14 +997,14 @@ describe 'ProjectFindView', ->
       describe "when the text in the search box triggered the results", ->
         beforeEach ->
           projectFindView.findEditor.setText('items')
-          projectFindView.trigger 'core:confirm'
+          atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
           waitsForPromise ->
             searchPromise
 
         it "runs the search, and replaces all the matches", ->
           projectFindView.replaceEditor.setText('sunshine')
-          projectFindView.trigger 'project-find:replace-all'
+          atom.commands.dispatch(projectFindView[0], 'project-find:replace-all')
           expect(projectFindView.errorMessages).not.toBeVisible()
 
           waitsForPromise ->
@@ -1039,7 +1039,7 @@ describe 'ProjectFindView', ->
           called = true
           deferred.promise
 
-        projectFindView.trigger 'project-find:replace-all'
+        atom.commands.dispatch(projectFindView[0], 'project-find:replace-all')
 
         waitsFor -> called
 
@@ -1066,7 +1066,7 @@ describe 'ProjectFindView', ->
 
   describe "panel focus", ->
     beforeEach ->
-      atom.workspaceView.trigger 'project-find:show'
+      atom.commands.dispatch(workspaceElement, 'project-find:show')
       waitsForPromise -> activationPromise
 
     it "focuses the find editor when the panel gets focus", ->
