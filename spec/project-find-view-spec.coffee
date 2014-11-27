@@ -3,7 +3,8 @@ path = require 'path'
 temp = require 'temp'
 
 _ = require 'underscore-plus'
-{$, View, WorkspaceView} = require 'atom'
+{$, View} = require 'atom-space-pen-views'
+{WorkspaceView} = require 'atom'
 fs = require 'fs-plus'
 Q = require 'q'
 
