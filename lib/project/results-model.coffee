@@ -37,6 +37,9 @@ class ResultsModel
   onDidErrorForPath: (callback) ->
     @emitter.on 'did-error-for-path', callback
 
+  onDidStartSearching: (callback) ->
+    @emitter.on 'did-start-searching', callback
+
   onDidCancelSearching: (callback) ->
     @emitter.on 'did-cancel-searching', callback
 
@@ -124,7 +127,7 @@ class ResultsModel
         @searchErrors.push(error)
         @emitter.emit 'did-error-for-path', error
 
-    @emitter.emit 'search', @inProgressSearchPromise
+    @emitter.emit 'did-start-searching', @inProgressSearchPromise
     @inProgressSearchPromise.then (message) =>
       if message == 'cancelled'
         @emitter.emit 'did-cancel-searching'
