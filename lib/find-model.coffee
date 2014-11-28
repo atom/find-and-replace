@@ -13,6 +13,7 @@ class FindModel
     @useRegex = state.useRegex ? atom.config.get('find-and-replace.useRegex') ? false
     @inCurrentSelection = state.inCurrentSelection ? atom.config.get('find-and-replace.inCurrentSelection') ? false
     @caseSensitive = state.caseSensitive ? atom.config.get('find-and-replace.caseSensitive') ? false
+    @wholeWord = state.wholeWord ? atom.config.get('find-and-replace.wholeWord') ? false
     @valid = false
 
     atom.workspace.observeActivePaneItem @activePaneItemChanged
@@ -33,10 +34,10 @@ class FindModel
       @updateMarkers()
 
   serialize: ->
-    {@useRegex, @inCurrentSelection, @caseSensitive}
+    {@useRegex, @inCurrentSelection, @caseSensitive, @wholeWord}
 
   update: (newParams={}) ->
-    currentParams = {@pattern, @useRegex, @inCurrentSelection, @caseSensitive}
+    currentParams = {@pattern, @useRegex, @inCurrentSelection, @caseSensitive, @wholeWord}
     _.defaults(newParams, currentParams)
 
     unless @valid and _.isEqual(newParams, currentParams)
@@ -147,6 +148,10 @@ class FindModel
     flags += 'i' unless @caseSensitive
 
     if @useRegex
-      new RegExp(@pattern, flags)
+      expression = @pattern
     else
-      new RegExp(_.escapeRegExp(@pattern), flags)
+      expression = _.escapeRegExp(@pattern)
+
+    expression = "\\b#{expression}\\b" if @wholeWord
+
+    new RegExp(expression, flags)

@@ -215,14 +215,17 @@ describe 'FindView', ->
         expect(findView.caseOptionButton).not.toHaveClass 'selected'
         expect(findView.regexOptionButton).not.toHaveClass 'selected'
         expect(findView.selectionOptionButton).not.toHaveClass 'selected'
+        expect(findView.wholeWordOptionButton).not.toHaveClass 'selected'
 
         findView.caseOptionButton.click()
         findView.regexOptionButton.click()
         findView.selectionOptionButton.click()
+        findView.wholeWordOptionButton.click()
 
         expect(findView.caseOptionButton).toHaveClass 'selected'
         expect(findView.regexOptionButton).toHaveClass 'selected'
         expect(findView.selectionOptionButton).toHaveClass 'selected'
+        expect(findView.wholeWordOptionButton).toHaveClass 'selected'
 
         atom.packages.deactivatePackage("find-and-replace")
 
@@ -239,6 +242,7 @@ describe 'FindView', ->
         expect(findView.caseOptionButton).toHaveClass 'selected'
         expect(findView.regexOptionButton).toHaveClass 'selected'
         expect(findView.selectionOptionButton).toHaveClass 'selected'
+        expect(findView.wholeWordOptionButton).toHaveClass 'selected'
 
   describe "finding", ->
     beforeEach ->
@@ -317,6 +321,23 @@ describe 'FindView', ->
         expect(findView.resultCounter.text()).toEqual('3 of 6')
         expect(editor.getSelectedBufferRange()).toEqual [[2, 34], [2, 39]]
         expect(editorView).toHaveFocus()
+
+    describe "when whole-word search is enabled", ->
+      beforeEach ->
+        editor.setText("-----\nswhole-wordy\nwhole-word\nword\nwhole-swords")
+        editor.setCursorBufferPosition([0,0])
+        findView.findEditor.trigger 'find-and-replace:toggle-whole-word-option'
+
+      it "finds the whole words", ->
+        findView.findEditor.setText('word')
+        findView.findEditor.trigger 'core:confirm'
+        expect(editor.getSelectedBufferRange()).toEqual [[2, 6], [2, 10]]
+
+      it "doesn't highlights the search inside words", ->
+        findView.findEditor.setText('word')
+        findView.findEditor.trigger 'core:confirm'
+        expect(editorView.find('.highlight.find-result')).toHaveLength 1
+        expect(editorView.find('.highlight.current-result')).toHaveLength 1
 
     it "doesn't change the selection, beeps if there are no matches and keeps focus on the find view", ->
       editor.setCursorBufferPosition([2,0])
@@ -649,6 +670,31 @@ describe 'FindView', ->
           findView.findEditor.setText 'i[t'
           findView.findEditor.trigger 'core:confirm'
           expect(findView.descriptionLabel).toHaveClass 'text-error'
+
+    describe "when whole-word is toggled", ->
+      it "toggles whole-word via an event and finds text matching the pattern", ->
+        editor.setCursorBufferPosition([0,0])
+        findView.findEditor.setText 'sort'
+        findView.findEditor.trigger 'core:confirm'
+        expect(editor.getSelectedBufferRange()).toEqual [[0, 9], [0, 13]]
+
+        findView.findEditor.trigger 'find-and-replace:toggle-whole-word-option'
+        expect(editor.getSelectedBufferRange()).toEqual [[1,6], [1,10]]
+
+      it "toggles whole-word via a button and finds text matching the pattern", ->
+        editor.setCursorBufferPosition([0,0])
+        findView.findEditor.setText 'sort'
+        findView.findEditor.trigger 'core:confirm'
+        expect(editor.getSelectedBufferRange()).toEqual [[0, 9], [0, 13]]
+
+        findView.wholeWordOptionButton.click()
+        expect(editor.getSelectedBufferRange()).toEqual [[1,6], [1,10]]
+
+      it "re-runs the search using the new find text when toggled", ->
+        editor.setCursorBufferPosition([8,0])
+        findView.findEditor.setText 'apply'
+        findView.findEditor.trigger 'find-and-replace:toggle-whole-word-option'
+        expect(editor.getSelectedBufferRange()).toEqual [[11, 20], [11, 25]]
 
     describe "when case sensitivity is toggled", ->
       beforeEach ->
