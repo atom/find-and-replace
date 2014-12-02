@@ -40,9 +40,9 @@ class ResultsView extends ScrollView
       view.addClass('selected')
       view.confirm() if which is 1 and not ctrlKey
 
-    @subscriptions.add(@model.onDidAddResult @addResult)
-    @subscriptions.add(@model.onDidRemoveResult @removeResult)
-    @subscriptions.add(@model.onDidClearSearchState @clear)
+    @subscriptions.add @model.onDidAddResult @addResult
+    @subscriptions.add @model.onDidRemoveResult @removeResult
+    @subscriptions.add @model.onDidClearSearchState @clear
 
     @renderResults()
 
@@ -55,7 +55,7 @@ class ResultsView extends ScrollView
   hasResults: ->
     @model.getResultCount() > 0
 
-  addResult: (filePath, result) =>
+  addResult: ({filePath, result}) =>
     resultView = @getResultView(filePath)
 
     if resultView
@@ -64,7 +64,7 @@ class ResultsView extends ScrollView
       @renderResults()
       @selectFirstResult() if @getPathCount() == 1
 
-  removeResult: (filePath) =>
+  removeResult: ({filePath}) =>
     resultView = @getResultView(filePath)
     resultView.renderResult(null) if resultView
 

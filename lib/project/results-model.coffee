@@ -220,7 +220,7 @@ class ResultsModel
     @matchCount += result.matches.length
 
     @results[filePath] = result
-    @emitter.emit 'did-add-result', filePath, result
+    @emitter.emit 'did-add-result', {filePath, result}
 
   removeResult: (filePath) ->
     if @results[filePath]
@@ -229,7 +229,7 @@ class ResultsModel
 
       @paths = _.without(@paths, filePath)
       delete @results[filePath]
-      @emitter.emit 'did-remove-result', filePath
+      @emitter.emit 'did-remove-result', {filePath}
 
   getRegex: (pattern) ->
     flags = 'g'
