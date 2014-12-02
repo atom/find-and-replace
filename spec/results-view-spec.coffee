@@ -37,7 +37,7 @@ describe 'ResultsView', ->
   describe "when the result is for a long line", ->
     it "renders the context around the match", ->
       projectFindView.findEditor.setText('ghijkl')
-      atom.commands.dispatch projectFindView[0], 'core:confirm'
+      atom.commands.dispatch projectFindView.element, 'core:confirm'
 
       waitsForPromise ->
         searchPromise
@@ -57,7 +57,7 @@ describe 'ResultsView', ->
 
     it "renders the replacement when doing a search and there is a replacement pattern", ->
       projectFindView.replaceEditor.setText('cats')
-      atom.commands.dispatch projectFindView[0], 'core:confirm'
+      atom.commands.dispatch projectFindView.element, 'core:confirm'
 
       waitsForPromise ->
         searchPromise
@@ -70,7 +70,7 @@ describe 'ResultsView', ->
         expect(resultsView.find('.replacement').text()).toBe 'cats'
 
     it "renders the replacement when changing the text in the replacement field", ->
-      atom.commands.dispatch projectFindView[0], 'core:confirm'
+      atom.commands.dispatch projectFindView.element, 'core:confirm'
 
       waitsForPromise ->
         searchPromise
@@ -101,7 +101,7 @@ describe 'ResultsView', ->
   describe "when list is scrollable", ->
     it "adds more operations to the DOM when `scrollBottom` nears the `pixelOverdraw`", ->
       projectFindView.findEditor.setText(' ')
-      atom.commands.dispatch projectFindView[0], 'core:confirm'
+      atom.commands.dispatch projectFindView.element, 'core:confirm'
 
       waitsForPromise ->
         searchPromise
@@ -136,7 +136,7 @@ describe 'ResultsView', ->
 
         expect(resultsView.prop('scrollHeight')).toBeGreaterThan resultsView.height()
         previousScrollHeight = resultsView.prop('scrollHeight')
-        atom.commands.dispatch resultsView[0], 'core:move-to-bottom'
+        atom.commands.dispatch resultsView.element, 'core:move-to-bottom'
         expect(resultsView.find("li").length).toBe resultsView.getPathCount() + resultsView.getMatchCount()
 
   describe "arrowing through the list", ->
@@ -150,7 +150,7 @@ describe 'ResultsView', ->
 
       runs ->
         projectFindView.findEditor.setText('items')
-        atom.commands.dispatch projectFindView[0], 'core:confirm'
+        atom.commands.dispatch projectFindView.element, 'core:confirm'
         openHandler = jasmine.createSpy("open handler")
         atom.workspace.onDidOpen openHandler
 
@@ -162,9 +162,9 @@ describe 'ResultsView', ->
         resultsView.selectFirstResult()
 
         # open something in sample.coffee
-        _.times 3, -> atom.commands.dispatch resultsView[0], 'core:move-down'
+        _.times 3, -> atom.commands.dispatch resultsView.element, 'core:move-down'
         openHandler.reset()
-        atom.commands.dispatch resultsView[0], 'core:confirm'
+        atom.commands.dispatch resultsView.element, 'core:confirm'
 
       waitsFor ->
         openHandler.callCount == 1
@@ -174,9 +174,9 @@ describe 'ResultsView', ->
 
         # open something in sample.js
         resultsView.focus()
-        _.times 6, -> atom.commands.dispatch resultsView[0], 'core:move-down'
+        _.times 6, -> atom.commands.dispatch resultsView.element, 'core:move-down'
         openHandler.reset()
-        atom.commands.dispatch resultsView[0], 'core:confirm'
+        atom.commands.dispatch resultsView.element, 'core:confirm'
 
       waitsFor ->
         openHandler.callCount == 1
@@ -190,7 +190,7 @@ describe 'ResultsView', ->
 
       runs ->
         projectFindView.findEditor.setText('items')
-        atom.commands.dispatch projectFindView[0], 'core:confirm'
+        atom.commands.dispatch projectFindView.element, 'core:confirm'
 
       waitsForPromise ->
         searchPromise
@@ -207,7 +207,7 @@ describe 'ResultsView', ->
 
         # moves down for 13 results
         _.times length - 1, ->
-          atom.commands.dispatch resultsView[0], 'core:move-down'
+          atom.commands.dispatch resultsView.element, 'core:move-down'
 
           selectedItem = resultsView.find('.selected')
 
@@ -218,17 +218,16 @@ describe 'ResultsView', ->
 
         # stays at the bottom
         _.times 2, ->
-          atom.commands.dispatch resultsView[0], 'core:move-down'
+          atom.commands.dispatch resultsView.element, 'core:move-down'
 
           selectedItem = resultsView.find('.selected')
-
           expect(selectedItem[0]).toBe lastSelectedItem
 
           lastSelectedItem = selectedItem[0]
 
         # moves up to the top
         _.times length - 1, ->
-          atom.commands.dispatch resultsView[0], 'core:move-up'
+          atom.commands.dispatch resultsView.element, 'core:move-up'
 
           selectedItem = resultsView.find('.selected')
 
@@ -239,7 +238,7 @@ describe 'ResultsView', ->
 
         # stays at the top
         _.times 2, ->
-          atom.commands.dispatch resultsView[0], 'core:move-up'
+          atom.commands.dispatch resultsView.element, 'core:move-up'
 
           selectedItem = resultsView.find('.selected')
 
@@ -250,7 +249,7 @@ describe 'ResultsView', ->
     describe "when there are a list of items", ->
       beforeEach ->
         projectFindView.findEditor.setText('items')
-        atom.commands.dispatch projectFindView[0], 'core:confirm'
+        atom.commands.dispatch projectFindView.element, 'core:confirm'
         waitsForPromise -> searchPromise
         runs -> resultsView = getResultsView()
 
@@ -259,18 +258,18 @@ describe 'ResultsView', ->
         resultsView.find('.selected').removeClass('selected')
         resultsView.find('.path:eq(0) .search-result:first').addClass('selected')
 
-        atom.commands.dispatch resultsView[0], 'core:move-left'
+        atom.commands.dispatch resultsView.element, 'core:move-left'
 
         selectedItem = resultsView.find('.selected')
         expect(selectedItem).toHaveClass('collapsed')
-        expect(selectedItem[0]).toBe resultsView.find('.path:eq(0)')[0]
+        expect(selectedItem.element).toBe resultsView.find('.path:eq(0)').element
 
       it "expands the selected results view", ->
         # select item in first list
         resultsView.find('.selected').removeClass('selected')
         resultsView.find('.path:eq(0)').addClass('selected').addClass('collapsed')
 
-        atom.commands.dispatch resultsView[0], 'core:move-right'
+        atom.commands.dispatch resultsView.element, 'core:move-right'
 
         selectedItem = resultsView.find('.selected')
         expect(selectedItem).toHaveClass('search-result')
@@ -280,13 +279,13 @@ describe 'ResultsView', ->
         it "doesnt error when the user arrows down", ->
           resultsView.find('.selected').removeClass('selected')
           expect(resultsView.find('.selected')).not.toExist()
-          atom.commands.dispatch resultsView[0], 'core:move-down'
+          atom.commands.dispatch resultsView.element, 'core:move-down'
           expect(resultsView.find('.selected')).toExist()
 
         it "doesnt error when the user arrows up", ->
           resultsView.find('.selected').removeClass('selected')
           expect(resultsView.find('.selected')).not.toExist()
-          atom.commands.dispatch resultsView[0], 'core:move-up'
+          atom.commands.dispatch resultsView.element, 'core:move-up'
           expect(resultsView.find('.selected')).toExist()
 
       describe "when there are collapsed results", ->
@@ -295,7 +294,7 @@ describe 'ResultsView', ->
           resultsView.find('.path:eq(0) .search-result:last').addClass('selected')
           resultsView.find('.path:eq(1)').view().expand(false)
 
-          atom.commands.dispatch resultsView[0], 'core:move-down'
+          atom.commands.dispatch resultsView.element, 'core:move-down'
 
           selectedItem = resultsView.find('.selected')
           expect(selectedItem).toHaveClass('path')
@@ -306,7 +305,7 @@ describe 'ResultsView', ->
           resultsView.find('.path:eq(1) .search-result:first').addClass('selected')
           resultsView.find('.path:eq(0)').view().expand(false)
 
-          atom.commands.dispatch resultsView[0], 'core:move-up'
+          atom.commands.dispatch resultsView.element, 'core:move-up'
 
           selectedItem = resultsView.find('.selected')
           expect(selectedItem).toHaveClass('path')
@@ -315,14 +314,14 @@ describe 'ResultsView', ->
   describe "when the results view is empty", ->
     it "ignores core:confirm events", ->
       projectFindView.findEditor.setText('thiswillnotmatchanythingintheproject')
-      atom.commands.dispatch projectFindView[0], 'core:confirm'
+      atom.commands.dispatch projectFindView.element, 'core:confirm'
 
       waitsForPromise ->
         searchPromise
 
       runs ->
         resultsView = getResultsView()
-        expect(-> atom.commands.dispatch resultsView[0], 'core:confirm').not.toThrow()
+        expect(-> atom.commands.dispatch resultsView.element, 'core:confirm').not.toThrow()
 
   describe "copying items with core:copy", ->
     [resultsView, openHandler] = []
@@ -333,7 +332,7 @@ describe 'ResultsView', ->
 
       runs ->
         projectFindView.findEditor.setText('items')
-        atom.commands.dispatch projectFindView[0], 'core:confirm'
+        atom.commands.dispatch projectFindView.element, 'core:confirm'
 
       waitsForPromise ->
         searchPromise
@@ -343,6 +342,6 @@ describe 'ResultsView', ->
         resultsView.selectFirstResult()
 
     it "copies the selected line onto the clipboard", ->
-      _.times 2, -> atom.commands.dispatch resultsView[0], 'core:move-down'
-      atom.commands.dispatch resultsView[0], 'core:copy'
+      _.times 2, -> atom.commands.dispatch resultsView.element, 'core:move-down'
+      atom.commands.dispatch resultsView.element, 'core:copy'
       expect(atom.clipboard.read()).toBe '    return items if items.length <= 1'

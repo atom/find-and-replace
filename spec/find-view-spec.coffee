@@ -131,7 +131,7 @@ describe 'FindView', ->
 
       runs ->
         findView.findEditor.setText 'items'
-        atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
         findView.focus()
 
     describe "when core:cancel is triggered on the find view", ->
@@ -201,16 +201,16 @@ describe 'FindView', ->
         activationPromise
 
       runs ->
-        atom.commands.dispatch(findView.findEditor[0], 'core:move-up')
+        atom.commands.dispatch(findView.findEditor.element, 'core:move-up')
         expect(findView.findEditor.getText()).toBe 'shift'
-        atom.commands.dispatch(findView.findEditor[0], 'core:move-up')
+        atom.commands.dispatch(findView.findEditor.element, 'core:move-up')
         expect(findView.findEditor.getText()).toBe 'sort'
-        atom.commands.dispatch(findView.findEditor[0], 'core:move-up')
+        atom.commands.dispatch(findView.findEditor.element, 'core:move-up')
         expect(findView.findEditor.getText()).toBe 'items'
 
-        atom.commands.dispatch(findView.replaceEditor[0], 'core:move-up')
+        atom.commands.dispatch(findView.replaceEditor.element, 'core:move-up')
         expect(findView.replaceEditor.getText()).toBe 'dog'
-        atom.commands.dispatch(findView.replaceEditor[0], 'core:move-up')
+        atom.commands.dispatch(findView.replaceEditor.element, 'core:move-up')
         expect(findView.replaceEditor.getText()).toBe 'cat'
 
     it "serializes find options ", ->
@@ -263,16 +263,16 @@ describe 'FindView', ->
 
       runs ->
         findView.findEditor.setText 'items'
-        atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
 
     describe "when find-and-replace:confirm is triggered", ->
       it "runs a search", ->
         findView.findEditor.setText 'notinthefile'
-        atom.commands.dispatch(findView.findEditor[0], 'find-and-replace:confirm')
+        atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:confirm')
         expect(getResultDecorations(editor, 'find-result')).toHaveLength 0
 
         findView.findEditor.setText 'items'
-        atom.commands.dispatch(findView.findEditor[0], 'find-and-replace:confirm')
+        atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:confirm')
         expect(getResultDecorations(editor, 'find-result')).toHaveLength 5
 
     describe "when the find string contains an escaped char", ->
@@ -282,48 +282,48 @@ describe 'FindView', ->
 
       describe "when regex seach is enabled", ->
         beforeEach ->
-          atom.commands.dispatch(findView.findEditor[0], 'find-and-replace:toggle-regex-option')
+          atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
 
         it "finds a backslash", ->
           findView.findEditor.setText('\\\\')
-          atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+          atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
           expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 1]]
 
         it "finds a newline", ->
           findView.findEditor.setText('\\n')
-          atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+          atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
           expect(editor.getSelectedBufferRange()).toEqual [[0, 1], [1, 0]]
 
         it "finds a tab character", ->
           findView.findEditor.setText('\\t')
-          atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+          atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
           expect(editor.getSelectedBufferRange()).toEqual [[0, 0], [0, 1]]
 
       describe "when regex seach is disabled", ->
         it "finds the literal backslash t", ->
           findView.findEditor.setText('\\t')
-          atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+          atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
           expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 2]]
 
         it "finds a backslash", ->
           findView.findEditor.setText('\\')
-          atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+          atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
           expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 1]]
 
         it "finds two backslashes", ->
           findView.findEditor.setText('\\\\')
-          atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+          atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
           expect(editor.getSelectedBufferRange()).toEqual [[1, 2], [1, 4]]
 
         it "doesn't find when escaped", ->
           findView.findEditor.setText('\\\\t')
-          atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+          atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
           expect(editor.getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
 
     describe "when focusEditorAfterSearch is set", ->
       beforeEach ->
         atom.config.set('find-and-replace.focusEditorAfterSearch', true)
-        atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
 
       it "selects the first match following the cursor and correctly focuses the editor", ->
         expect(findView.resultCounter.text()).toEqual('3 of 6')
@@ -352,7 +352,7 @@ describe 'FindView', ->
       findView.findEditor.setText 'notinthefilebro'
       findView.findEditor.focus()
 
-      atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+      atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
       expect(editor.getCursorBufferPosition()).toEqual [2,0]
       expect(atom.beep).toHaveBeenCalled()
       expect(findView).toHaveFocus()
@@ -362,44 +362,44 @@ describe 'FindView', ->
     describe "updating the descriptionLabel", ->
       it "properly updates the info message", ->
         findView.findEditor.setText 'item'
-        atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
         expect(findView.descriptionLabel.text()).toEqual "6 results found for 'item'"
 
         findView.findEditor.setText 'notinthefilenope'
-        atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
         expect(findView.descriptionLabel.text()).toEqual "No results found for 'notinthefilenope'"
 
         findView.findEditor.setText 'item'
-        atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
         expect(findView.descriptionLabel.text()).toEqual "6 results found for 'item'"
 
         findView.findEditor.setText ''
-        atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
         expect(findView.descriptionLabel.text()).toContain "Find in Current Buffer"
 
       describe "when there is a find-error", ->
         beforeEach ->
           editor.setCursorBufferPosition([2,0])
-          atom.commands.dispatch(findView.findEditor[0], 'find-and-replace:toggle-regex-option')
+          atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
 
         it "displays the error", ->
           findView.findEditor.setText 'i[t'
-          atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+          atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
           expect(findView.descriptionLabel).toHaveClass 'text-error'
           expect(findView.descriptionLabel.text()).toContain 'Invalid regular expression'
 
         it "will be reset when there is no longer an error", ->
           findView.findEditor.setText 'i[t'
-          atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+          atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
           expect(findView.descriptionLabel).toHaveClass 'text-error'
 
           findView.findEditor.setText ''
-          atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+          atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
           expect(findView.descriptionLabel).not.toHaveClass 'text-error'
           expect(findView.descriptionLabel.text()).toContain "Find in Current Buffer"
 
           findView.findEditor.setText 'item'
-          atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+          atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
           expect(findView.descriptionLabel).not.toHaveClass 'text-error'
           expect(findView.descriptionLabel.text()).toContain "6 results"
 
@@ -407,7 +407,7 @@ describe 'FindView', ->
       expect(findView.resultCounter.text()).toEqual('2 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
 
-      atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+      atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
       expect(findView.resultCounter.text()).toEqual('3 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[2, 34], [2, 39]]
       expect(findView.findEditor).toHaveFocus()
@@ -428,26 +428,26 @@ describe 'FindView', ->
       expect(findView.resultCounter.text()).toEqual('2 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
 
-      atom.commands.dispatch(findView.findEditor[0], 'find-and-replace:show-previous')
+      atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:show-previous')
       expect(findView.resultCounter.text()).toEqual('1 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[1, 22], [1, 27]]
       expect(findView.findEditor).toHaveFocus()
 
     it "will re-run search if 'find-and-replace:find-next' is triggered after changing the findEditor's text", ->
       findView.findEditor.setText 'sort'
-      atom.commands.dispatch(findView.findEditor[0], 'find-and-replace:find-next')
+      atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:find-next')
 
       expect(findView.resultCounter.text()).toEqual('3 of 5')
       expect(editor.getSelectedBufferRange()).toEqual [[8, 11], [8, 15]]
 
     it "'find-and-replace:find-next' adds to the findEditor's history", ->
       findView.findEditor.setText 'sort'
-      atom.commands.dispatch(findView.findEditor[0], 'find-and-replace:find-next')
+      atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:find-next')
 
       expect(findView.resultCounter.text()).toEqual('3 of 5')
 
       findView.findEditor.setText 'nope'
-      atom.commands.dispatch(findView.findEditor[0], 'core:move-up')
+      atom.commands.dispatch(findView.findEditor.element, 'core:move-up')
       expect(findView.findEditor.getText()).toEqual 'sort'
 
     it "selects the previous match when the 'find-and-replace:find-previous' event is triggered and correctly focuses the editor", ->
@@ -459,7 +459,7 @@ describe 'FindView', ->
 
     it "will re-run search if 'find-and-replace:find-previous' is triggered after changing the findEditor's text", ->
       findView.findEditor.setText 'sort'
-      atom.commands.dispatch(findView.findEditor[0], 'find-and-replace:find-previous')
+      atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:find-previous')
 
       expect(findView.resultCounter.text()).toEqual('2 of 5')
       expect(editor.getSelectedBufferRange()).toEqual [[1, 6], [1, 10]]
@@ -495,8 +495,8 @@ describe 'FindView', ->
       expect(editor.getSelectedBufferRange()).toEqual [[8,11],[8,15]]
 
     it "does not highlight the found text when the find view is hidden", ->
-      atom.commands.dispatch(findView.findEditor[0], 'core:cancel')
-      atom.commands.dispatch(findView.findEditor[0], 'find-and-replace:find-next')
+      atom.commands.dispatch(findView.findEditor.element, 'core:cancel')
+      atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:find-next')
 
     describe "when the active pane item changes", ->
       beforeEach ->
@@ -531,7 +531,7 @@ describe 'FindView', ->
             atom.workspace.open('sample.coffee')
 
           runs ->
-            atom.commands.dispatch(findView.findEditor[0], 'find-and-replace:find-next')
+            atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:find-next')
             newEditor = atom.workspace.getActiveEditor()
             expect(getResultDecorations(newEditor, 'find-result')).toHaveLength 6
             expect(getResultDecorations(newEditor, 'current-result')).toHaveLength 1
@@ -575,7 +575,7 @@ describe 'FindView', ->
             expect(findView.resultCounter.text()).toEqual('7 found')
             expect(newEditor.getSelectedBufferRange()).toEqual [[0, 0], [0, 0]]
 
-            atom.commands.dispatch(findView.findEditor[0], 'find-and-replace:find-next')
+            atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:find-next')
             expect(findView.resultCounter.text()).toEqual('1 of 7')
             expect(newEditor.getSelectedBufferRange()).toEqual [[1, 9], [1, 14]]
 
@@ -628,7 +628,7 @@ describe 'FindView', ->
       it "does not beep if no matches were found", ->
         editor.setCursorBufferPosition([2,0])
         findView.findEditor.setText 'notinthefilebro'
-        atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
         atom.beep.reset()
 
         editor.insertText("blah blah")
@@ -640,7 +640,7 @@ describe 'FindView', ->
 
       it "toggles find within a selction via and event and only finds matches within the selection", ->
         findView.findEditor.setText 'items'
-        atom.commands.dispatch(findView.findEditor[0], 'find-and-replace:toggle-selection-option')
+        atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-selection-option')
         expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
         expect(findView.resultCounter.text()).toEqual('1 of 3')
 
@@ -653,7 +653,7 @@ describe 'FindView', ->
     describe "when regex is toggled", ->
       it "toggles regex via an event and finds text matching the pattern", ->
         editor.setCursorBufferPosition([2,0])
-        atom.commands.dispatch(findView.findEditor[0], 'find-and-replace:toggle-regex-option')
+        atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
         findView.findEditor.setText 'i[t]em+s'
         expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
 
@@ -666,15 +666,15 @@ describe 'FindView', ->
       it "re-runs the search using the new find text when toggled", ->
         editor.setCursorBufferPosition([1,0])
         findView.findEditor.setText 's(o)rt'
-        atom.commands.dispatch(findView.findEditor[0], 'find-and-replace:toggle-regex-option')
+        atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
         expect(editor.getSelectedBufferRange()).toEqual [[1, 6], [1, 10]]
 
       describe "when an invalid regex is entered", ->
         it "displays an error", ->
           editor.setCursorBufferPosition([2,0])
-          atom.commands.dispatch(findView.findEditor[0], 'find-and-replace:toggle-regex-option')
+          atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
           findView.findEditor.setText 'i[t'
-          atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+          atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
           expect(findView.descriptionLabel).toHaveClass 'text-error'
 
     describe "when whole-word is toggled", ->
@@ -709,16 +709,16 @@ describe 'FindView', ->
 
       it "toggles case sensitivity via an event and finds text matching the pattern", ->
         findView.findEditor.setText 'WORDs'
-        atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
         expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 5]]
 
         editor.setCursorBufferPosition([0,0])
-        atom.commands.dispatch(findView.findEditor[0], 'find-and-replace:toggle-case-option')
+        atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-case-option')
         expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 5]]
 
       it "toggles case sensitivity via a button and finds text matching the pattern", ->
         findView.findEditor.setText 'WORDs'
-        atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
         expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 5]]
 
         editor.setCursorBufferPosition([0,0])
@@ -733,7 +733,7 @@ describe 'FindView', ->
         expect(getResultDecorations(editor, 'find-result')).toHaveLength 5
 
         findView.findEditor.setText 'notinthefilebro'
-        atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
 
         runs ->
           expect(getResultDecorations(editor, 'find-result')).toHaveLength 0
@@ -742,14 +742,14 @@ describe 'FindView', ->
         firstResultMarker = getResultDecorationMarker('current-result')
         expect(getResultDecorations(editor, 'find-result')).toHaveLength 5
 
-        atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
-        atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
 
         nextResultMarker = getResultDecorationMarker('current-result')
         expect(nextResultMarker).not.toEqual firstResultMarker
 
-        atom.commands.dispatch(findView.findEditor[0], 'find-and-replace:find-previous')
-        atom.commands.dispatch(findView.findEditor[0], 'find-and-replace:find-previous')
+        atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:find-previous')
+        atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:find-previous')
 
         originalResultMarker = getResultDecorationMarker('current-result')
         expect(originalResultMarker).toEqual firstResultMarker
@@ -803,12 +803,12 @@ describe 'FindView', ->
 
       it "clears existing markers for another search", ->
         findView.findEditor.setText('notinthefile')
-        atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
         expect(editor.getMarkers().length).toEqual 1
 
       it "clears existing markers for an empty search", ->
         findView.findEditor.setText('')
-        atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
         expect(editor.getMarkers().length).toEqual 1
 
   describe "replacing", ->
@@ -826,22 +826,22 @@ describe 'FindView', ->
     describe "when the replacement string contains an escaped char", ->
       describe "when the regex option is chosen", ->
         beforeEach ->
-          atom.commands.dispatch(findView.findEditor[0], 'find-and-replace:toggle-regex-option')
+          atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
 
         it "inserts tabs and newlines", ->
           findView.replaceEditor.setText('\\t\\n')
-          atom.commands.dispatch(findView.replaceEditor[0], 'core:confirm')
+          atom.commands.dispatch(findView.replaceEditor.element, 'core:confirm')
           expect(editor.getText()).toMatch(/\t\n/)
 
         it "doesn't insert a escaped char if there are multiple backslashs in front of the char", ->
           findView.replaceEditor.setText('\\\\t\\\t')
-          atom.commands.dispatch(findView.replaceEditor[0], 'core:confirm')
+          atom.commands.dispatch(findView.replaceEditor.element, 'core:confirm')
           expect(editor.getText()).toMatch(/\\t\\\t/)
 
       describe "when in normal mode", ->
         it "inserts backslach n and t", ->
           findView.replaceEditor.setText('\\t\\n')
-          atom.commands.dispatch(findView.replaceEditor[0], 'core:confirm')
+          atom.commands.dispatch(findView.replaceEditor.element, 'core:confirm')
           expect(editor.getText()).toMatch(/\\t\\n/)
 
         it "inserts carriage returns", ->
@@ -849,33 +849,33 @@ describe 'FindView', ->
           editor.setText(textWithCarriageReturns)
 
           findView.replaceEditor.setText('\\t\\r')
-          atom.commands.dispatch(findView.replaceEditor[0], 'core:confirm')
+          atom.commands.dispatch(findView.replaceEditor.element, 'core:confirm')
           expect(editor.getText()).toMatch(/\\t\\r/)
 
     describe "replace next", ->
       describe "when core:confirm is triggered", ->
         it "replaces the match after the cursor and selects the next match", ->
-          atom.commands.dispatch(findView.replaceEditor[0], 'core:confirm')
+          atom.commands.dispatch(findView.replaceEditor.element, 'core:confirm')
           expect(findView.resultCounter.text()).toEqual('2 of 5')
           expect(editor.lineTextForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
           expect(editor.getSelectedBufferRange()).toEqual [[2, 33], [2, 38]]
 
         it "replaceEditor maintains focus after core:confirm is run", ->
           findView.replaceEditor.focus()
-          atom.commands.dispatch(findView.replaceEditor[0], 'core:confirm')
+          atom.commands.dispatch(findView.replaceEditor.element, 'core:confirm')
           expect(findView.replaceEditor).toHaveFocus()
 
         it "replaces the _current_ match and selects the next match", ->
-          atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+          atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
           editor.setSelectedBufferRange([[2, 8], [2, 13]])
           expect(findView.resultCounter.text()).toEqual('2 of 6')
 
-          atom.commands.dispatch(findView.replaceEditor[0], 'core:confirm')
+          atom.commands.dispatch(findView.replaceEditor.element, 'core:confirm')
           expect(findView.resultCounter.text()).toEqual('2 of 5')
           expect(editor.lineTextForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
           expect(editor.getSelectedBufferRange()).toEqual [[2, 33], [2, 38]]
 
-          atom.commands.dispatch(findView.replaceEditor[0], 'core:confirm')
+          atom.commands.dispatch(findView.replaceEditor.element, 'core:confirm')
           expect(findView.resultCounter.text()).toEqual('2 of 4')
           expect(editor.lineTextForBufferRow(2)).toBe "    if (cats.length <= 1) return cats;"
           expect(editor.getSelectedBufferRange()).toEqual [[3, 16], [3, 21]]
@@ -898,8 +898,8 @@ describe 'FindView', ->
     describe "replace previous", ->
       describe "when command is triggered", ->
         it "replaces the match after the cursor and selects the previous match", ->
-          atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
-          atom.commands.dispatch(findView[0], 'find-and-replace:replace-previous')
+          atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
+          atom.commands.dispatch(findView.element, 'find-and-replace:replace-previous')
           expect(findView.resultCounter.text()).toEqual('1 of 5')
           expect(editor.lineTextForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
           expect(editor.getSelectedBufferRange()).toEqual [[1, 22], [1, 27]]
@@ -929,7 +929,7 @@ describe 'FindView', ->
     describe "replacement patterns", ->
       describe "when the regex option is true", ->
         it "replaces $1, $2, etc... with substring matches", ->
-          atom.commands.dispatch(findView.findEditor[0], 'find-and-replace:toggle-regex-option')
+          atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
           findView.findEditor.setText('(items)([\\.;])')
           findView.replaceEditor.setText('$2$1')
           atom.commands.dispatch editorView, 'find-and-replace:replace-all'
@@ -956,10 +956,10 @@ describe 'FindView', ->
         text = 'something I want to search for but havent yet'
         findView.findEditor.setText(text)
 
-        atom.commands.dispatch(findView.findEditor[0], 'core:move-up')
+        atom.commands.dispatch(findView.findEditor.element, 'core:move-up')
         expect(findView.findEditor.getText()).toEqual ''
 
-        atom.commands.dispatch(findView.findEditor[0], 'core:move-down')
+        atom.commands.dispatch(findView.findEditor.element, 'core:move-down')
         expect(findView.findEditor.getText()).toEqual text
 
     describe "when there is history", ->
@@ -969,64 +969,64 @@ describe 'FindView', ->
         atom.commands.dispatch editorView, 'find-and-replace:show'
         editor.setText("zero\none\ntwo\nthree\n")
         findView.findEditor.setText('one')
-        atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
         findView.findEditor.setText('two')
-        atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
         findView.findEditor.setText('three')
-        atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
 
       it "can navigate the entire history stack", ->
         expect(findView.findEditor.getText()).toEqual 'three'
 
-        atom.commands.dispatch(findView.findEditor[0], 'core:move-down')
+        atom.commands.dispatch(findView.findEditor.element, 'core:move-down')
         expect(findView.findEditor.getText()).toEqual ''
 
-        atom.commands.dispatch(findView.findEditor[0], 'core:move-down')
+        atom.commands.dispatch(findView.findEditor.element, 'core:move-down')
         expect(findView.findEditor.getText()).toEqual ''
 
-        atom.commands.dispatch(findView.findEditor[0], 'core:move-up')
+        atom.commands.dispatch(findView.findEditor.element, 'core:move-up')
         expect(findView.findEditor.getText()).toEqual 'three'
 
-        atom.commands.dispatch(findView.findEditor[0], 'core:move-up')
+        atom.commands.dispatch(findView.findEditor.element, 'core:move-up')
         expect(findView.findEditor.getText()).toEqual 'two'
 
-        atom.commands.dispatch(findView.findEditor[0], 'core:move-up')
+        atom.commands.dispatch(findView.findEditor.element, 'core:move-up')
         expect(findView.findEditor.getText()).toEqual 'one'
 
-        atom.commands.dispatch(findView.findEditor[0], 'core:move-up')
+        atom.commands.dispatch(findView.findEditor.element, 'core:move-up')
         expect(findView.findEditor.getText()).toEqual 'one'
 
-        atom.commands.dispatch(findView.findEditor[0], 'core:move-down')
+        atom.commands.dispatch(findView.findEditor.element, 'core:move-down')
         expect(findView.findEditor.getText()).toEqual 'two'
 
       it "retains the current unsearched text", ->
         text = 'something I want to search for but havent yet'
         findView.findEditor.setText(text)
 
-        atom.commands.dispatch(findView.findEditor[0], 'core:move-up')
+        atom.commands.dispatch(findView.findEditor.element, 'core:move-up')
         expect(findView.findEditor.getText()).toEqual 'three'
 
-        atom.commands.dispatch(findView.findEditor[0], 'core:move-down')
+        atom.commands.dispatch(findView.findEditor.element, 'core:move-down')
         expect(findView.findEditor.getText()).toEqual text
 
-        atom.commands.dispatch(findView.findEditor[0], 'core:move-up')
+        atom.commands.dispatch(findView.findEditor.element, 'core:move-up')
         expect(findView.findEditor.getText()).toEqual 'three'
 
-        atom.commands.dispatch(findView.findEditor[0], 'core:move-down')
-        atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+        atom.commands.dispatch(findView.findEditor.element, 'core:move-down')
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
 
-        atom.commands.dispatch(findView.findEditor[0], 'core:move-down')
+        atom.commands.dispatch(findView.findEditor.element, 'core:move-down')
         expect(findView.findEditor.getText()).toEqual ''
 
       it "adds confirmed patterns to the history", ->
         findView.findEditor.setText("cool stuff")
-        atom.commands.dispatch(findView.findEditor[0], 'core:confirm')
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
 
         findView.findEditor.setText("cooler stuff")
-        atom.commands.dispatch(findView.findEditor[0], 'core:move-up')
+        atom.commands.dispatch(findView.findEditor.element, 'core:move-up')
         expect(findView.findEditor.getText()).toEqual 'cool stuff'
 
-        atom.commands.dispatch(findView.findEditor[0], 'core:move-up')
+        atom.commands.dispatch(findView.findEditor.element, 'core:move-up')
         expect(findView.findEditor.getText()).toEqual 'three'
 
       describe "when user types in the find editor", ->
@@ -1050,7 +1050,7 @@ describe 'FindView', ->
           advance()
           expect(findView.descriptionLabel.text()).toContain "zero"
 
-          atom.commands.dispatch(findView.findEditor[0], 'core:move-up')
+          atom.commands.dispatch(findView.findEditor.element, 'core:move-up')
           expect(findView.findEditor.getText()).toEqual 'three'
 
   describe "panel focus", ->

@@ -72,17 +72,17 @@ class ProjectFindView extends View
     subs.add atom.tooltips.add @regexOptionButton,
       title: "Use Regex"
       keyBindingCommand: 'project-find:toggle-regex-option',
-      keyBindingTarget: @findEditor[0]
+      keyBindingTarget: @findEditor.element
 
     subs.add atom.tooltips.add @caseOptionButton,
       title: "Match Case",
       keyBindingCommand: 'project-find:toggle-case-option',
-      keyBindingTarget: @findEditor[0]
+      keyBindingTarget: @findEditor.element
 
     subs.add atom.tooltips.add @replaceAllButton,
       title: "Replace All",
       keyBindingCommand: 'project-find:replace-all',
-      keyBindingTarget: @replaceEditor[0]
+      keyBindingTarget: @replaceEditor.element
 
   didHide: ->
     @hideAllTooltips()
@@ -98,7 +98,7 @@ class ProjectFindView extends View
     @subscriptions.add atom.commands.add 'atom-workspace',
       'find-and-replace:use-selection-as-find-pattern': @setSelectionAsFindPattern
 
-    @subscriptions.add atom.commands.add this[0],
+    @subscriptions.add atom.commands.add @element,
       'find-and-replace:focus-next': => @focusNextElement(1)
       'find-and-replace:focus-previous': => @focusNextElement(-1)
       'core:confirm': => @confirm()

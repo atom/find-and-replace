@@ -30,7 +30,7 @@ class HistoryCycler
   # * `history` a {History} object
   constructor: (@miniEditor, @history) ->
     @index = @history.length
-    atom.commands.add @miniEditor[0],
+    atom.commands.add @miniEditor.element,
       'core:move-up': => @previous()
       'core:move-down': => @next()
 

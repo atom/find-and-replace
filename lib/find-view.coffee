@@ -67,29 +67,29 @@ class FindView extends View
     subs.add atom.tooltips.add @regexOptionButton,
       title: "Use Regex"
       keyBindingCommand: 'find-and-replace:toggle-regex-option',
-      keyBindingTarget: @findEditor[0]
+      keyBindingTarget: @findEditor.element
     subs.add atom.tooltips.add @caseOptionButton,
       title: "Match Case",
       keyBindingCommand: 'find-and-replace:toggle-case-option',
-      keyBindingTarget: @findEditor[0]
+      keyBindingTarget: @findEditor.element
     subs.add atom.tooltips.add @selectionOptionButton,
       title: "Only In Selection",
       keyBindingCommand: 'find-and-replace:toggle-selection-option',
-      keyBindingTarget: @findEditor[0]
+      keyBindingTarget: @findEditor.element
 
     subs.add atom.tooltips.add @nextButton,
       title: "Find Next",
       keyBindingCommand: 'find-and-replace:find-next',
-      keyBindingTarget: @findEditor[0]
+      keyBindingTarget: @findEditor.element
 
     subs.add atom.tooltips.add @replaceNextButton,
       title: "Replace Next",
       keyBindingCommand: 'find-and-replace:replace-next',
-      keyBindingTarget: @replaceEditor[0]
+      keyBindingTarget: @replaceEditor.element
     subs.add atom.tooltips.add @replaceAllButton,
       title: "Replace All",
       keyBindingCommand: 'find-and-replace:replace-all',
-      keyBindingTarget: @replaceEditor[0]
+      keyBindingTarget: @replaceEditor.element
 
   didHide: ->
     @hideAllTooltips()
@@ -105,16 +105,16 @@ class FindView extends View
     @handleFindEvents()
     @handleReplaceEvents()
 
-    @subscriptions.add atom.commands.add @findEditor[0],
+    @subscriptions.add atom.commands.add @findEditor.element,
       'core:confirm': => @confirm()
       'find-and-replace:confirm': => @confirm()
       'find-and-replace:show-previous': => @showPrevious()
       'find-and-replace:find-all': => @findAll()
 
-    @subscriptions.add atom.commands.add @replaceEditor[0],
+    @subscriptions.add atom.commands.add @replaceEditor.element,
       'core:confirm': => @replaceNext()
 
-    @subscriptions.add atom.commands.add this[0],
+    @subscriptions.add atom.commands.add @element,
       'core:close': => @panel?.hide()
       'core:cancel': => @panel?.hide()
       'find-and-replace:focus-next': @toggleFocus

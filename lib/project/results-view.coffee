@@ -21,7 +21,7 @@ class ResultsView extends ScrollView
     @off 'core:move-left'
     @off 'core:move-right'
 
-    @subscriptions.add atom.commands.add this[0],
+    @subscriptions.add atom.commands.add @element,
       'core:move-down': => @selectNextResult()
       'core:move-up': => @selectPreviousResult()
       'core:move-left': => @collapseResult()
