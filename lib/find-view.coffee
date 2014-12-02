@@ -300,7 +300,6 @@ class FindView extends View
     ranges = for marker in @markers
       marker.getBufferRange()
     scrollMarker = @markers[@firstMarkerIndexAfterCursor()]
-    console.log(scrollMarker)
     editor = @findModel.getEditor()
     editor.setSelectedBufferRanges(ranges, flash: true)
     editor.scrollToBufferPosition(scrollMarker.getStartBufferPosition(), center: true)
