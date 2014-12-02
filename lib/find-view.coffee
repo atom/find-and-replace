@@ -297,8 +297,7 @@ class FindView extends View
 
   selectAllMarkers: =>
     return unless @markers?.length > 0
-    ranges = for marker in @markers
-      marker.getBufferRange()
+    ranges = (marker.getBufferRange() for marker in @markers)
     scrollMarker = @markers[@firstMarkerIndexAfterCursor()]
     editor = @findModel.getEditor()
     editor.setSelectedBufferRanges(ranges, flash: true)
