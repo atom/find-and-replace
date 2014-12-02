@@ -763,7 +763,6 @@ describe 'ProjectFindView', ->
 
         runs ->
           editor = atom.workspace.getActiveEditor()
-          editorView = atom.views.getView(editor)
           expect(getResultDecorations('find-result')).toHaveLength 0
 
         runs ->
@@ -797,7 +796,7 @@ describe 'ProjectFindView', ->
           initialSelectedRange = editor.getSelectedBufferRange()
 
           # now we can find next
-          atom.commands.dispatch editorView, 'find-and-replace:find-next'
+          atom.commands.dispatch atom.views.getView(editor), 'find-and-replace:find-next'
           expect(editor.getSelectedBufferRange()).not.toEqual initialSelectedRange
 
   describe "replacing", ->
