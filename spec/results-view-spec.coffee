@@ -1,6 +1,5 @@
 path = require 'path'
 _ = require 'underscore-plus'
-{WorkspaceView} = require 'atom'
 path = require 'path'
 
 ResultsPaneView = require '../lib/project/results-pane'
@@ -12,7 +11,7 @@ describe 'ResultsView', ->
   [pack, projectFindView, resultsView, searchPromise, workspaceElement] = []
 
   getExistingResultsPane = ->
-    pane = atom.workspaceView.panes.paneForUri(ResultsPaneView.URI)
+    pane = atom.workspace.paneForUri(ResultsPaneView.URI)
     return pane.itemForUri(ResultsPaneView.URI) if pane?
     null
 
@@ -20,11 +19,10 @@ describe 'ResultsView', ->
     resultsView = getExistingResultsPane().resultsView
 
   beforeEach ->
-    atom.workspaceView = new WorkspaceView()
-    atom.workspaceView.height(1000)
-    atom.project.setPaths([path.join(__dirname, 'fixtures')])
-    atom.workspaceView.attachToDom()
     workspaceElement = atom.views.getView(atom.workspace)
+    workspaceElement.style.height = '1000px'
+    jasmine.attachToDOM(workspaceElement)
+    atom.project.setPaths([path.join(__dirname, 'fixtures')])
     promise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
       mainModule.createViews()
       {projectFindView} = mainModule
@@ -126,7 +124,7 @@ describe 'ResultsView', ->
         expect(resultsView.find("li").length).toBeGreaterThan previousOperationCount
 
     it "renders all operations when core:move-to-bottom is triggered", ->
-      atom.workspaceView.height(300)
+      workspaceElement.style.height = '300px'
       projectFindView.findEditor.setText('so')
       projectFindView.confirm()
 
@@ -184,7 +182,6 @@ describe 'ResultsView', ->
         openHandler.callCount == 1
 
       runs ->
-        activePane = atom.workspaceView.getActivePaneView()
         expect(atom.workspace.getActivePaneItem().getPath()).toContain('sample.')
 
     it "arrows through the entire list without selecting paths and overshooting the boundaries", ->
@@ -325,7 +322,7 @@ describe 'ResultsView', ->
 
       runs ->
         resultsView = getResultsView()
-        expect(-> resultsView.trigger('core:confirm')).not.toThrow()
+        expect(-> atom.commands.dispatch resultsView[0], 'core:confirm').not.toThrow()
 
   describe "copying items with core:copy", ->
     [resultsView, openHandler] = []

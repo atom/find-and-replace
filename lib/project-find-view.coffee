@@ -231,7 +231,7 @@ class ProjectFindView extends View
   showResultPane: ->
     options = null
     options = {split: 'right'} if atom.config.get('find-and-replace.openProjectFindResultsInRightPane')
-    atom.workspaceView.open(ResultsPaneView.URI, options)
+    atom.workspace.open(ResultsPaneView.URI, options)
 
   onFinishedReplacing: (results) ->
     atom.beep() unless results.replacedPathCount
