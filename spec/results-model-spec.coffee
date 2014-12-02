@@ -33,8 +33,8 @@ describe 'ResultsModel', ->
       resultRemovedSpy = jasmine.createSpy()
 
       runs ->
-        resultsModel.on 'result-added', resultAddedSpy
-        resultsModel.on 'result-removed', resultRemovedSpy
+        resultsModel.onDidAddResult resultAddedSpy
+        resultsModel.onDidRemoveResult resultRemovedSpy
         searchPromise = resultsModel.search('items', ['*.js'], '')
 
       waitsForPromise ->
@@ -97,8 +97,8 @@ describe 'ResultsModel', ->
         atom.workspaceView.open()
 
       runs ->
-        resultsModel.on 'result-added', resultAddedSpy
-        resultsModel.on 'result-removed', resultRemovedSpy
+        resultsModel.onDidAddResult resultAddedSpy
+        resultsModel.onDidRemoveResult resultRemovedSpy
         searchPromise = resultsModel.search('items', ['*.js'], '')
 
       waitsForPromise ->
@@ -115,7 +115,7 @@ describe 'ResultsModel', ->
     cancelledSpy = null
     beforeEach ->
       cancelledSpy = jasmine.createSpy()
-      resultsModel.on 'cancelled-searching', cancelledSpy
+      resultsModel.onDidCancelSearching cancelledSpy
 
     it "populates the model with all the results, and updates in response to changes in the buffer", ->
       runs ->
