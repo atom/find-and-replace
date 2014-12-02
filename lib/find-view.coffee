@@ -4,7 +4,6 @@ _ = require 'underscore-plus'
 FindModel = require './find-model'
 {HistoryCycler} = require './history'
 
-
 module.exports =
 class FindView extends View
   @content: ->
