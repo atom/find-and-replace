@@ -25,7 +25,6 @@
   },
   "dependencies": {
     "atom-space-pen-views": "0.20.0",
-    "emissary": "1.x",
     "fs-plus": "2.x",
     "q": "^1.0.1",
     "temp": "0.6.0",
