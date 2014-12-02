@@ -27,7 +27,7 @@ class FindView extends View
           @button outlet: 'regexOptionButton', class: 'btn', '.*'
           @button outlet: 'caseOptionButton', class: 'btn', 'Aa'
           @button outlet: 'selectionOptionButton', class: 'btn option-selection', '"'
-          @button outlet: 'wholeWordOptionButton', class: 'btn', '\\b'
+          @button outlet: 'wholeWordOptionButton', class: 'btn option-whole-word', '\\b'
 
       @div class: 'replace-container block', =>
         @div class: 'editor-container', =>
