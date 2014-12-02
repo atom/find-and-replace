@@ -86,8 +86,9 @@ class ProjectFindView extends View
 
   didHide: ->
     @hideAllTooltips()
-    atom.workspaceView.focus()
-    atom.workspaceView.removeClass('find-visible')
+    workspaceElement = atom.views.getView(atom.workspace)
+    workspaceElement.focus()
+    workspaceElement.classList.remove('find-visible')
 
   hideAllTooltips: ->
     @tooltipSubscriptions.dispose()

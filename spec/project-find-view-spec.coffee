@@ -4,7 +4,6 @@ temp = require 'temp'
 
 _ = require 'underscore-plus'
 {$, View} = require 'atom-space-pen-views'
-{WorkspaceView} = require 'atom'
 fs = require 'fs-plus'
 Q = require 'q'
 
@@ -14,21 +13,20 @@ ResultsPaneView = require '../lib/project/results-pane'
 waitsForPromise = (fn) -> window.waitsForPromise timeout: 30000, fn
 
 describe 'ProjectFindView', ->
-  [activationPromise, editorView, projectFindView, searchPromise, resultsPane, workspaceElement] = []
+  [activationPromise, editor, editorView, projectFindView, searchPromise, resultsPane, workspaceElement] = []
 
   getAtomPanel = ->
     workspaceElement.querySelector('.project-find').parentNode
 
   getExistingResultsPane = ->
-    pane = atom.workspaceView.panes.paneForUri(ResultsPaneView.URI)
+    pane = atom.workspace.paneForUri(ResultsPaneView.URI)
     return pane.itemForUri(ResultsPaneView.URI) if pane?
     null
 
   beforeEach ->
-    atom.workspaceView = new WorkspaceView()
     workspaceElement = atom.views.getView(atom.workspace)
     atom.project.setPaths([path.join(__dirname, 'fixtures')])
-    atom.workspaceView.attachToDom()
+    jasmine.attachToDOM(workspaceElement)
 
     atom.config.set('find-and-replace.openProjectFindResultsInRightPane', false)
     activationPromise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
@@ -36,7 +34,7 @@ describe 'ProjectFindView', ->
       {projectFindView} = mainModule
       spy = spyOn(projectFindView, 'confirm').andCallFake ->
         searchPromise = spy.originalValue.call(projectFindView)
-        resultsPane = atom.workspaceView.find('.preview-pane').view()
+        resultsPane = $(workspaceElement).find('.preview-pane').view()
         searchPromise
 
   describe "when project-find:show is triggered", ->
@@ -163,7 +161,7 @@ describe 'ProjectFindView', ->
       nested.createFiles(['another.js'])
 
       tree.files.append(nested)
-      atom.workspaceView.append(tree)
+      workspaceElement.appendChild(tree[0])
 
     it "populates the pathsEditor when triggered with a directory", ->
       atom.commands.dispatch nested.name[0], 'project-find:show-in-current-directory'
@@ -210,7 +208,8 @@ describe 'ProjectFindView', ->
         atom.workspace.open('sample.js')
 
       runs ->
-        editorView = atom.workspaceView.getActiveView()
+        editor = atom.workspace.getActiveEditor()
+        editorView = atom.views.getView(editor)
         atom.commands.dispatch(workspaceElement, 'project-find:show')
 
       waitsForPromise ->
@@ -289,11 +288,11 @@ describe 'ProjectFindView', ->
 
     describe "splitting into a second pane", ->
       beforeEach ->
-        atom.workspaceView.height(1000)
-        atom.commands.dispatch editorView[0], 'project-find:show'
+        workspaceElement.style.height = '1000px'
+        atom.commands.dispatch editorView, 'project-find:show'
 
       it "splits when option is true", ->
-        initialPane = atom.workspaceView.getActivePaneView()
+        initialPane = atom.workspace.getActivePane()
         atom.config.set('find-and-replace.openProjectFindResultsInRightPane', true)
         projectFindView.findEditor.setText('items')
         atom.commands.dispatch(projectFindView[0], 'core:confirm')
@@ -302,11 +301,11 @@ describe 'ProjectFindView', ->
           searchPromise
 
         runs ->
-          pane1 = atom.workspaceView.getActivePaneView()
-          expect(pane1[0]).not.toBe initialPane[0]
+          pane1 = atom.workspace.getActivePane()
+          expect(pane1).not.toBe initialPane
 
       it "does not split when option is false", ->
-        initialPane = atom.workspaceView.getActivePaneView()
+        initialPane = atom.workspace.getActivePane()
         projectFindView.findEditor.setText('items')
         atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
@@ -314,8 +313,8 @@ describe 'ProjectFindView', ->
           searchPromise
 
         runs ->
-          pane1 = atom.workspaceView.getActivePaneView()
-          expect(pane1[0]).toBe initialPane[0]
+          pane1 = atom.workspace.getActivePane()
+          expect(pane1).toBe initialPane
 
       it "can be duplicated", ->
         atom.config.set('find-and-replace.openProjectFindResultsInRightPane', true)
@@ -326,25 +325,27 @@ describe 'ProjectFindView', ->
           searchPromise
 
         runs ->
-          resultsPaneView1 = getExistingResultsPane()
-          pane1 = atom.workspaceView.getActivePaneView()
-          pane1.splitRight(pane1.copyActiveItem())
+          resultsPaneView1 = atom.views.getView(getExistingResultsPane())
+          pane1 = atom.workspace.getActivePane()
+          pane1.splitRight(copyActiveItem: true)
 
-          pane2 = atom.workspaceView.getActivePaneView()
-          resultsPaneView2 = pane2.itemForUri(ResultsPaneView.URI)
+          pane2 = atom.workspace.getActivePane()
+          resultsPaneView2 = atom.views.getView(pane2.itemForUri(ResultsPaneView.URI))
 
-          expect(pane1[0]).not.toBe pane2[0]
-          expect(resultsPaneView1[0]).not.toBe resultsPaneView2[0]
+          console.log resultsPaneView1, resultsPaneView2
 
-          length = resultsPaneView1.find('li > ul > li').length
+          expect(pane1).not.toBe pane2
+          expect(resultsPaneView1).not.toBe resultsPaneView2
+
+          length = resultsPaneView1.querySelectorAll('li > ul > li').length
           expect(length).toBeGreaterThan 0
-          expect(resultsPaneView2.find('li > ul > li')).toHaveLength length
+          expect(resultsPaneView2.querySelectorAll('li > ul > li')).toHaveLength length
 
-          expect(resultsPaneView2.previewCount.html()).toEqual resultsPaneView1.previewCount.html()
+          expect(resultsPaneView2.querySelector('.preview-count').innerHTML).toEqual resultsPaneView1.querySelector('.preview-count').innerHTML
 
     describe "serialization", ->
       it "serializes if the case and regex options", ->
-        atom.commands.dispatch editorView[0], 'project-find:show'
+        atom.commands.dispatch editorView, 'project-find:show'
         expect(projectFindView.caseOptionButton).not.toHaveClass('selected')
         projectFindView.caseOptionButton.click()
         expect(projectFindView.caseOptionButton).toHaveClass('selected')
@@ -359,7 +360,7 @@ describe 'ProjectFindView', ->
           mainModule.createViews()
           {projectFindView} = mainModule
 
-        atom.commands.dispatch editorView[0], 'project-find:show'
+        atom.commands.dispatch editorView, 'project-find:show'
 
         waitsForPromise ->
           activationPromise
@@ -370,7 +371,7 @@ describe 'ProjectFindView', ->
 
     describe "description label", ->
       beforeEach ->
-        atom.commands.dispatch editorView[0], 'project-find:show'
+        atom.commands.dispatch editorView, 'project-find:show'
         atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option')
         spyOn(atom.project, 'scan').andCallFake -> Q()
 
@@ -403,7 +404,7 @@ describe 'ProjectFindView', ->
 
     describe "regex", ->
       beforeEach ->
-        atom.commands.dispatch editorView[0], 'project-find:show'
+        atom.commands.dispatch editorView, 'project-find:show'
         projectFindView.findEditor.setText('i(\\w)ems+')
         spyOn(atom.project, 'scan').andCallFake -> Q()
 
@@ -463,7 +464,7 @@ describe 'ProjectFindView', ->
 
     describe "case sensitivity", ->
       beforeEach ->
-        atom.commands.dispatch editorView[0], 'project-find:show'
+        atom.commands.dispatch editorView, 'project-find:show'
         spyOn(atom.project, 'scan').andCallFake -> Q()
         projectFindView.findEditor.setText('ITEMS')
         atom.commands.dispatch(projectFindView[0], 'core:confirm')
@@ -688,20 +689,20 @@ describe 'ProjectFindView', ->
 
     describe "when find-and-replace:set-find-pattern is triggered", ->
       it "places the selected text into the find editor", ->
-        editorView.getModel().setSelectedBufferRange([[1,6],[1,10]])
+        editor.setSelectedBufferRange([[1,6],[1,10]])
         atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
         expect(projectFindView.findEditor.getText()).toBe 'sort'
 
-        editorView.getModel().setSelectedBufferRange([[1,13],[1,21]])
+        editor.setSelectedBufferRange([[1,13],[1,21]])
         atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
         expect(projectFindView.findEditor.getText()).toBe 'function'
 
       it "places the previously selected text into the find editor if no selection", ->
-        editorView.getModel().setSelectedBufferRange([[1,13],[1,21]])
+        editor.setSelectedBufferRange([[1,13],[1,21]])
         atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
         expect(projectFindView.findEditor.getText()).toBe 'function'
 
-        editorView.getModel().setSelectedBufferRange([[1,30],[1,30]])
+        editor.setSelectedBufferRange([[1,30],[1,30]])
         atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
         expect(projectFindView.findEditor.getText()).toBe ''
 
@@ -741,6 +742,14 @@ describe 'ProjectFindView', ->
           expect(errorList.find("li:eq(1)").text()).toBe 'Broken'
 
     describe "buffer search sharing of the find pattern", ->
+      getResultDecorations = (clazz) ->
+        markerIdForDecorations = editor.decorationsForScreenRowRange(0, editor.getLineCount())
+        resultDecorations = []
+        for markerId, decorations of markerIdForDecorations
+          for decoration in decorations
+            resultDecorations.push decoration if decoration.getProperties().class is clazz
+        resultDecorations
+
       it 'highlights the search results in the selected file', ->
         # Process here is to
         # * open samplejs
@@ -753,8 +762,9 @@ describe 'ProjectFindView', ->
           atom.workspace.open('sample.js')
 
         runs ->
-          editorView = atom.workspaceView.getActiveView()
-          expect(editorView.find('.highlight.find-result')).toHaveLength 0
+          editor = atom.workspace.getActiveEditor()
+          editorView = atom.views.getView(editor)
+          expect(getResultDecorations('find-result')).toHaveLength 0
 
         runs ->
           projectFindView.findEditor.setText('items')
@@ -778,16 +788,17 @@ describe 'ProjectFindView', ->
         waits 0 # not sure why this is async
 
         runs ->
-          # sample.js has 6 results
-          expect(editorView.find('.highlight.find-result')).toHaveLength 5
-          expect(editorView.find('.highlight.current-result')).toHaveLength 1
-          expect(atom.workspaceView).toHaveClass 'find-visible'
 
-          initialSelectedRange = editorView.getModel().getSelectedBufferRange()
+          # sample.js has 6 results
+          expect(getResultDecorations('find-result')).toHaveLength 5
+          expect(getResultDecorations('current-result')).toHaveLength 1
+          expect(workspaceElement).toHaveClass 'find-visible'
+
+          initialSelectedRange = editor.getSelectedBufferRange()
 
           # now we can find next
-          atom.commands.dispatch editorView[0], 'find-and-replace:find-next'
-          expect(editorView.getModel().getSelectedBufferRange()).not.toEqual initialSelectedRange
+          atom.commands.dispatch editorView, 'find-and-replace:find-next'
+          expect(editor.getSelectedBufferRange()).not.toEqual initialSelectedRange
 
   describe "replacing", ->
     [testDir, sampleJs, sampleCoffee, replacePromise] = []
@@ -815,7 +826,7 @@ describe 'ProjectFindView', ->
       # have to close the project before attempting to delete. Unfortunately,
       # Pathwatcher's close function is also not synchronous. Once
       # atom/node-pathwatcher#4 is implemented this should be alot cleaner.
-      activePane = atom.workspaceView.getActivePaneView()
+      activePane = atom.workspace.getActivePane()
       for item in (activePane?.getItems() or [])
         spyOn(item, 'shouldPromptToSave').andReturn(false) if item.shouldPromptToSave?
         activePane.destroyItem(item)
