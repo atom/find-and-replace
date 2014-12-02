@@ -1,6 +1,6 @@
 _ = require 'underscore-plus'
-{ScrollView} = require 'atom'
-{Disposable, CompositeDisposable} = require 'event-kit'
+{ScrollView} = require 'atom-space-pen-views'
+{Disposable, CompositeDisposable} = require 'atom'
 ResultsView = require './results-view'
 Util = require './util'
 
