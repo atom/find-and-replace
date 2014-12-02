@@ -1,7 +1,8 @@
 fs = require 'fs-plus'
 Q = require 'q'
 _ = require 'underscore-plus'
-{$, $$$, TextEditorView, View} = require 'atom'
+{Disposable, CompositeDisposable} = require 'atom'
+{$, $$$, View, TextEditorView} = require 'atom-space-pen-views'
 
 {HistoryCycler} = require './history'
 Util = require './project/util'
@@ -42,6 +43,7 @@ class ProjectFindView extends View
           @subview 'pathsEditor', new TextEditorView(mini: true, placeholderText: 'File/directory pattern. eg. `src` to search in the "src" directory or `*.js` to search all javascript files.')
 
   initialize: (@findInBufferModel, @model, {findHistory, replaceHistory, pathsHistory}) ->
+    @subscriptions = new CompositeDisposable
     @handleEvents()
     @findHistory = new HistoryCycler(@findEditor, findHistory)
     @replaceHistory = new HistoryCycler(@replaceEditor, replaceHistory)
@@ -54,52 +56,72 @@ class ProjectFindView extends View
     @clearMessages()
     @updateOptionsLabel()
 
+  destroy: ->
+    @subscriptions?.dispose()
+    @tooltipSubscriptions?.dispose()
+
   setPanel: (@panel) ->
-    @subscribe @panel.onDidChangeVisible (visible) =>
+    @subscriptions.add @panel.onDidChangeVisible (visible) =>
       if visible then @didShow() else @didHide()
 
   didShow: ->
-    atom.workspaceView.addClass('find-visible')
-    unless @tooltipsInitialized
-      @regexOptionButton.setTooltip("Use Regex", command: 'project-find:toggle-regex-option', commandElement: @findEditor)
-      @caseOptionButton.setTooltip("Match Case", command: 'project-find:toggle-case-option', commandElement: @findEditor)
-      @replaceAllButton.setTooltip("Replace All", command: 'project-find:replace-all', commandElement: @replaceEditor)
-      @tooltipsInitialized = true
+    atom.views.getView(atom.workspace).classList.add('find-visible')
+    return if @tooltipSubscriptions?
+
+    @tooltipSubscriptions = subs = new CompositeDisposable
+    subs.add atom.tooltips.add @regexOptionButton,
+      title: "Use Regex"
+      keyBindingCommand: 'project-find:toggle-regex-option',
+      keyBindingTarget: @findEditor.element
+
+    subs.add atom.tooltips.add @caseOptionButton,
+      title: "Match Case",
+      keyBindingCommand: 'project-find:toggle-case-option',
+      keyBindingTarget: @findEditor.element
+
+    subs.add atom.tooltips.add @replaceAllButton,
+      title: "Replace All",
+      keyBindingCommand: 'project-find:replace-all',
+      keyBindingTarget: @replaceEditor.element
 
   didHide: ->
     @hideAllTooltips()
-    atom.workspaceView.focus()
-    atom.workspaceView.removeClass('find-visible')
+    workspaceElement = atom.views.getView(atom.workspace)
+    workspaceElement.focus()
+    workspaceElement.classList.remove('find-visible')
 
   hideAllTooltips: ->
-    @regexOptionButton.hideTooltip()
-    @caseOptionButton.hideTooltip()
-    @replaceAllButton.hideTooltip()
+    @tooltipSubscriptions.dispose()
+    @tooltipSubscriptions = null
 
   handleEvents: ->
-    @on 'core:confirm', => @confirm()
-    @on 'project-find:confirm', => @confirm()
-    @on 'find-and-replace:focus-next', => @focusNextElement(1)
-    @on 'find-and-replace:focus-previous', => @focusNextElement(-1)
-    @on 'core:cancel core:close', => @panel?.hide()
+    @subscriptions.add atom.commands.add 'atom-workspace',
+      'find-and-replace:use-selection-as-find-pattern': @setSelectionAsFindPattern
+
+    @subscriptions.add atom.commands.add @element,
+      'find-and-replace:focus-next': => @focusNextElement(1)
+      'find-and-replace:focus-previous': => @focusNextElement(-1)
+      'core:confirm': => @confirm()
+      'core:close': => @panel?.hide()
+      'core:cancel': => @panel?.hide()
+      'project-find:confirm': => @confirm()
+      'project-find:toggle-regex-option': => @toggleRegexOption()
+      'project-find:toggle-case-option': => @toggleCaseOption()
+      'project-find:replace-all': => @replaceAll()
+
+    @subscriptions.add @model.onDidClear => @clearMessages()
+    @subscriptions.add @model.onDidClearReplacementState (results) => @generateResultsMessage(results)
+    @subscriptions.add @model.onDidFinishSearching (results) => @generateResultsMessage(results)
+
     @on 'focus', (e) => @findEditor.focus()
-
-    @on 'project-find:toggle-regex-option', => @toggleRegexOption()
     @regexOptionButton.click => @toggleRegexOption()
-
-    @on 'project-find:toggle-case-option', => @toggleCaseOption()
     @caseOptionButton.click => @toggleCaseOption()
-
     @replaceAllButton.on 'click', => @replaceAll()
-    @on 'project-find:replace-all', => @replaceAll()
 
-    @subscribe @model, 'cleared', => @clearMessages()
-    @subscribe @model, 'replacement-state-cleared', (results) => @generateResultsMessage(results)
-    @subscribe @model, 'finished-searching', (results) => @generateResultsMessage(results)
-
-    @subscribe $(window), 'focus', => @onlyRunIfChanged = false
-
-    atom.workspaceView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
+    focusCallback = => @onlyRunIfChanged = false
+    $(window).on 'focus', focusCallback
+    @subscriptions.add new Disposable ->
+      $(window).off 'focus', focusCallback
 
     @handleEventsForReplace()
 
@@ -107,17 +129,17 @@ class ProjectFindView extends View
     @replaceEditor.getModel().getBuffer().onDidChange => @model.clearReplacementState()
     @replaceEditor.getModel().onDidStopChanging => @model.updateReplacementPattern(@replaceEditor.getText())
     @replacementsMade = 0
-    @subscribe @model, 'replace', (promise) =>
+    @subscriptions.add @model.onDidStartReplacing (promise) =>
       @replacementsMade = 0
       @replacmentInfoBlock.show()
       @replacementProgress.removeAttr('value')
 
-    @subscribe @model, 'path-replaced', (result) =>
+    @subscriptions.add @model.onDidReplacePath (result) =>
       @replacementsMade++
       @replacementProgress[0].value = @replacementsMade / @model.getPathCount()
       @replacmentInfo.text("Replaced #{@replacementsMade} of #{_.pluralize(@model.getPathCount(), 'file')}")
 
-    @subscribe @model, 'finished-replacing', (result) => @onFinishedReplacing(result)
+    @subscriptions.add @model.onDidFinishReplacing (result) => @onFinishedReplacing(result)
 
   toggleRegexOption: ->
     @model.toggleUseRegex()
@@ -140,13 +162,13 @@ class ProjectFindView extends View
     focusedIndex = 0 if focusedIndex >= elements.length
     focusedIndex = elements.length - 1 if focusedIndex < 0
     elements[focusedIndex].focus()
-    elements[focusedIndex].getEditor?().selectAll()
+    elements[focusedIndex].getModel?().selectAll()
 
   focusFindElement: ->
     selectedText = atom.workspace.getActiveEditor()?.getSelectedText?()
     @findEditor.setText(selectedText) if selectedText and selectedText.indexOf('\n') < 0
     @findEditor.focus()
-    @findEditor.getEditor().selectAll()
+    @findEditor.getModel().selectAll()
 
   confirm: ->
     if @findEditor.getText().length == 0
@@ -210,7 +232,7 @@ class ProjectFindView extends View
   showResultPane: ->
     options = null
     options = {split: 'right'} if atom.config.get('find-and-replace.openProjectFindResultsInRightPane')
-    atom.workspaceView.open(ResultsPaneView.URI, options)
+    atom.workspace.open(ResultsPaneView.URI, options)
 
   onFinishedReplacing: (results) ->
     atom.beep() unless results.replacedPathCount

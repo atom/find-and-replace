@@ -1,13 +1,15 @@
 _ = require 'underscore-plus'
-{Emitter} = require 'emissary'
+{Emitter} = require 'atom'
 
 HISTORY_MAX = 25
 
 class History
-  Emitter.includeInto(this)
-
   constructor: (@items=[]) ->
+    @emitter = new Emitter
     @length = @items.length
+
+  onDidAddItem: (callback) ->
+    @emitter.on 'did-add-item', callback
 
   serialize: ->
     @items[-HISTORY_MAX..]
@@ -21,7 +23,7 @@ class History
   add: (text) ->
     @items.push(text)
     @length = @items.length
-    @emit 'added', text
+    @emitter.emit 'did-add-item', text
 
 # Adds the ability to cycle through history
 class HistoryCycler
@@ -30,10 +32,11 @@ class HistoryCycler
   # * `history` a {History} object
   constructor: (@miniEditor, @history) ->
     @index = @history.length
-    @miniEditor.on 'core:move-up', => @previous()
-    @miniEditor.on 'core:move-down', => @next()
+    atom.commands.add @miniEditor.element,
+      'core:move-up': => @previous()
+      'core:move-down': => @next()
 
-    @history.on 'added', (text) =>
+    @history.onDidAddItem (text) =>
       @miniEditor.setText(text) if text isnt @miniEditor.getText()
 
   previous: ->

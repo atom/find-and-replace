@@ -1,6 +1,6 @@
 Q = require 'q'
 _ = require 'underscore-plus'
-{Emitter} = require 'emissary'
+{Emitter} = require 'atom'
 escapeHelper = require '../escape-helper'
 
 class Result
@@ -12,9 +12,8 @@ class Result
 
 module.exports =
 class ResultsModel
-  Emitter.includeInto(this)
-
   constructor: (state={}) ->
+    @emitter = new Emitter
     @useRegex = state.useRegex ? atom.config.get('find-and-replace.useRegex') ? false
     @caseSensitive = state.caseSensitive ? atom.config.get('find-and-replace.caseSensitive') ? false
 
@@ -23,13 +22,61 @@ class ResultsModel
 
     @clear()
 
+  onDidClear: (callback) ->
+    @emitter.on 'did-clear', callback
+
+  onDidClearSearchState: (callback) ->
+    @emitter.on 'did-clear-search-state', callback
+
+  onDidClearReplacementState: (callback) ->
+    @emitter.on 'did-clear-replacement-state', callback
+
+  onDidSearchPaths: (callback) ->
+    @emitter.on 'did-search-paths', callback
+
+  onDidErrorForPath: (callback) ->
+    @emitter.on 'did-error-for-path', callback
+
+  onDidStartSearching: (callback) ->
+    @emitter.on 'did-start-searching', callback
+
+  onDidCancelSearching: (callback) ->
+    @emitter.on 'did-cancel-searching', callback
+
+  onDidFinishSearching: (callback) ->
+    @emitter.on 'did-finish-searching', callback
+
+  onDidStartReplacing: (callback) ->
+    @emitter.on 'did-start-replacing', callback
+
+  onDidFinishReplacing: (callback) ->
+    @emitter.on 'did-finish-replacing', callback
+
+  onDidSearchPath: (callback) ->
+    @emitter.on 'did-search-path', callback
+
+  onDidReplacePath: (callback) ->
+    @emitter.on 'did-replace-path', callback
+
+  onDidChangeReplacementPattern: (callback) ->
+    @emitter.on 'did-change-replacement-pattern', callback
+
+  onDidAddResult: (callback) ->
+    @emitter.on 'did-add-result', callback
+
+  onDidRemoveResult: (callback) ->
+    @emitter.on 'did-remove-result', callback
+
+  onDidFinishSearching: (callback) ->
+    @emitter.on 'did-finish-searching', callback
+
   serialize: ->
     {@useRegex, @caseSensitive}
 
   clear: ->
     @clearSearchState()
     @clearReplacementState()
-    @emit('cleared', @getResultsSummary())
+    @emitter.emit 'did-clear', @getResultsSummary()
 
   clearSearchState: ->
     @pathCount = 0
@@ -45,14 +92,14 @@ class ResultsModel
       @inProgressSearchPromise.cancel()
       @inProgressSearchPromise = null
 
-    @emit('search-state-cleared', @getResultsSummary())
+    @emitter.emit 'did-clear-search-state', @getResultsSummary()
 
   clearReplacementState: ->
     @replacementPattern = null
     @replacedPathCount = null
     @replacementCount = null
     @replacementErrors = null
-    @emit('replacement-state-cleared', @getResultsSummary())
+    @emitter.emit 'did-clear-replacement-state', @getResultsSummary()
 
   search: (pattern, searchPaths, replacementPattern, {onlyRunIfChanged, keepReplacementState}={}) ->
     return Q() if onlyRunIfChanged and pattern? and searchPaths? and pattern == @pattern and _.isEqual(searchPaths, @searchedPaths)
@@ -70,7 +117,7 @@ class ResultsModel
     @updateReplacementPattern(replacementPattern)
 
     onPathsSearched = (numberOfPathsSearched) =>
-      @emit('paths-searched', numberOfPathsSearched)
+      @emitter.emit 'did-search-paths', numberOfPathsSearched
 
     @inProgressSearchPromise = atom.project.scan @regex, {paths: searchPaths, onPathsSearched}, (result, error) =>
       if result
@@ -78,15 +125,15 @@ class ResultsModel
       else
         @searchErrors ?= []
         @searchErrors.push(error)
-        @emit('path-error', error)
+        @emitter.emit 'did-error-for-path', error
 
-    @emit('search', @inProgressSearchPromise)
+    @emitter.emit 'did-start-searching', @inProgressSearchPromise
     @inProgressSearchPromise.then (message) =>
       if message == 'cancelled'
-        @emit('cancelled-searching')
+        @emitter.emit 'did-cancel-searching'
       else
         @inProgressSearchPromise = null
-        @emit('finished-searching', @getResultsSummary())
+        @emitter.emit 'did-finish-searching', @getResultsSummary()
 
   replace: (pattern, searchPaths, replacementPattern, replacementPaths) ->
     regex = @getRegex(pattern)
@@ -103,20 +150,20 @@ class ResultsModel
         if result.replacements
           @replacedPathCount++
           @replacementCount += result.replacements
-        @emit('path-replaced', result)
+        @emitter.emit 'did-replace-path', result
       else
         @replacementErrors ?= []
         @replacementErrors.push(error)
-        @emit('path-error', error)
+        @emitter.emit 'did-error-for-path', error
 
-    @emit('replace', promise)
+    @emitter.emit 'did-start-replacing', promise
     promise.then =>
-      @emit('finished-replacing', @getResultsSummary())
+      @emitter.emit 'did-finish-replacing', @getResultsSummary()
       @search(pattern, searchPaths, replacementPattern, {keepReplacementState: true})
 
   updateReplacementPattern: (replacementPattern) ->
     @replacementPattern = replacementPattern or null
-    @emit('replacement-pattern-changed', @regex, replacementPattern)
+    @emitter.emit 'did-change-replacement-pattern', @regex, replacementPattern
 
   setActive: (isActive) ->
     @active = isActive if (isActive and @pattern) or not isActive
@@ -173,7 +220,7 @@ class ResultsModel
     @matchCount += result.matches.length
 
     @results[filePath] = result
-    @emit('result-added', filePath, result)
+    @emitter.emit 'did-add-result', {filePath, result}
 
   removeResult: (filePath) ->
     if @results[filePath]
@@ -182,7 +229,7 @@ class ResultsModel
 
       @paths = _.without(@paths, filePath)
       delete @results[filePath]
-      @emit('result-removed', filePath)
+      @emitter.emit 'did-remove-result', {filePath}
 
   getRegex: (pattern) ->
     flags = 'g'
@@ -203,4 +250,4 @@ class ResultsModel
 
     result = Result.create({matches})
     @setResult(editor.getPath(), result)
-    @emit('finished-searching', @getResultsSummary())
+    @emitter.emit 'did-finish-searching', @getResultsSummary()

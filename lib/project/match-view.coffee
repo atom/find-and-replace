@@ -1,4 +1,5 @@
-{View, Range} = require 'atom'
+{View} = require 'atom-space-pen-views'
+{Range, CompositeDisposable} = require 'atom'
 
 LeadingWhitespace = /^\s+/
 removeLeadingWhitespace = (string) -> string.replace(LeadingWhitespace, '')
@@ -22,10 +23,13 @@ class MatchView extends View
 
   initialize: (@model, {@filePath, @match}) ->
     @render()
-    @subscribe @model, 'replacement-pattern-changed', @render
+    @subscriptions = new CompositeDisposable
+    @subscriptions.add @model.onDidChangeReplacementPattern @render
 
     if fontFamily = atom.config.get('editor.fontFamily')
       @preview.css('font-family', fontFamily)
+
+  beforeRemove: -> @subscriptions.dispose()
 
   render: =>
     if @model.replacementPattern and @model.regex and not @model.replacedPathCount?
@@ -38,7 +42,7 @@ class MatchView extends View
       @matchText.removeClass('highlight-error').addClass('highlight-info')
 
   confirm: ->
-    atom.workspaceView.open(@filePath, split: 'left').then (editor) =>
+    atom.workspace.open(@filePath, split: 'left').then (editor) =>
       editor.setSelectedBufferRange(@match.range, autoscroll: true)
 
   copy: ->

@@ -1,7 +1,5 @@
 path = require 'path'
 
-{$, WorkspaceView} = require 'atom'
-
 ResultsModel = require '../lib/project/results-model'
 
 # Default to 30 second promises
@@ -11,18 +9,13 @@ describe 'ResultsModel', ->
   [editor, searchPromise, resultsModel, searchPromise] = []
 
   beforeEach ->
-    atom.workspaceView = new WorkspaceView()
     atom.project.setPaths([path.join(__dirname, 'fixtures')])
 
     waitsForPromise ->
       atom.workspace.open('sample.js')
 
     runs ->
-      atom.workspaceView.attachToDom()
-
-      editor = atom.workspaceView.getActiveView()
-      editor = editor.editor
-
+      editor = atom.workspace.getActiveEditor()
       resultsModel = new ResultsModel()
 
   describe "searching for a pattern", ->
@@ -33,8 +26,8 @@ describe 'ResultsModel', ->
       resultRemovedSpy = jasmine.createSpy()
 
       runs ->
-        resultsModel.on 'result-added', resultAddedSpy
-        resultsModel.on 'result-removed', resultRemovedSpy
+        resultsModel.onDidAddResult resultAddedSpy
+        resultsModel.onDidRemoveResult resultRemovedSpy
         searchPromise = resultsModel.search('items', ['*.js'], '')
 
       waitsForPromise ->
@@ -94,18 +87,18 @@ describe 'ResultsModel', ->
       resultRemovedSpy = jasmine.createSpy()
 
       waitsForPromise ->
-        atom.workspaceView.open()
+        atom.workspace.open()
 
       runs ->
-        resultsModel.on 'result-added', resultAddedSpy
-        resultsModel.on 'result-removed', resultRemovedSpy
+        resultsModel.onDidAddResult resultAddedSpy
+        resultsModel.onDidRemoveResult resultRemovedSpy
         searchPromise = resultsModel.search('items', ['*.js'], '')
 
       waitsForPromise ->
         searchPromise
 
       runs ->
-        editor = atom.workspaceView.getActiveView().editor
+        editor = atom.workspace.getActiveEditor()
         editor.setText('items\nitems')
         spyOn(editor, 'scan').andCallThrough()
         advanceClock(editor.buffer.stoppedChangingDelay)
@@ -115,7 +108,7 @@ describe 'ResultsModel', ->
     cancelledSpy = null
     beforeEach ->
       cancelledSpy = jasmine.createSpy()
-      resultsModel.on 'cancelled-searching', cancelledSpy
+      resultsModel.onDidCancelSearching cancelledSpy
 
     it "populates the model with all the results, and updates in response to changes in the buffer", ->
       runs ->

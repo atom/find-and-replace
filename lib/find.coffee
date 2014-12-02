@@ -1,5 +1,5 @@
-{$} = require 'atom'
-{Subscriber} = require 'emissary'
+{$} = require 'atom-space-pen-views'
+{CompositeDisposable} = require 'atom'
 
 SelectNext = require './select-next'
 {History} = require './history'
@@ -22,20 +22,20 @@ module.exports =
     atom.workspace.addOpener (filePath) =>
       new ResultsPaneView() if filePath is ResultsPaneView.URI
 
-    @subscriber = new Subscriber()
+    @subscriptions = new CompositeDisposable
     @findModel = new FindModel(@modelState)
     @resultsModel = new ResultsModel(@resultsModelState)
     @findHistory = new History(findHistory)
     @replaceHistory = new History(replaceHistory)
     @pathsHistory = new History(pathsHistory)
 
-    @subscriber.subscribeToCommand atom.workspaceView, 'project-find:show', =>
+    @subscriptions.add atom.commands.add 'atom-workspace', 'project-find:show', =>
       @createViews()
       @findPanel.hide()
       @projectFindPanel.show()
       @projectFindView.focusFindElement()
 
-    @subscriber.subscribeToCommand atom.workspaceView, 'project-find:toggle', =>
+    @subscriptions.add atom.commands.add 'atom-workspace', 'project-find:toggle', =>
       @createViews()
       @findPanel.hide()
 
@@ -44,13 +44,13 @@ module.exports =
       else
         @projectFindPanel.show()
 
-    @subscriber.subscribeToCommand atom.workspaceView, 'project-find:show-in-current-directory', ({target}) =>
+    @subscriptions.add atom.commands.add 'atom-workspace', 'project-find:show-in-current-directory', ({target}) =>
       @createViews()
       @findPanel.hide()
       @projectFindPanel.show()
       @projectFindView.findInCurrentlySelectedDirectory(target)
 
-    @subscriber.subscribeToCommand atom.workspaceView, 'find-and-replace:use-selection-as-find-pattern', =>
+    @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:use-selection-as-find-pattern', =>
       return if @projectFindPanel?.isVisible() or @findPanel?.isVisible()
 
       @createViews()
@@ -58,7 +58,7 @@ module.exports =
       @findPanel.show()
       @findView.focusFindEditor()
 
-    @subscriber.subscribeToCommand atom.workspaceView, 'find-and-replace:toggle', =>
+    @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:toggle', =>
       @createViews()
       @projectFindPanel.hide()
 
@@ -68,31 +68,28 @@ module.exports =
         @findPanel.show()
         @findView.focusFindEditor()
 
-    @subscriber.subscribeToCommand atom.workspaceView, 'find-and-replace:show', =>
+    @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:show', =>
       @createViews()
       @projectFindPanel.hide()
       @findPanel.show()
       @findView.focusFindEditor()
 
-    @subscriber.subscribeToCommand atom.workspaceView, 'find-and-replace:show-replace', =>
+    @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:show-replace', =>
       @createViews()
       @projectFindPanel?.hide()
       @findPanel.show()
       @findView.focusReplaceEditor()
 
-    # in code editors
-    @subscriber.subscribeToCommand atom.workspaceView, 'core:cancel core:close', ({target}) =>
-      if target isnt atom.workspaceView.getActivePaneView()?[0]
-        $target = $(target)
-        if $target.is('atom-text-editor')
-          editor = $target
-        else
-          editor = $target.parents('.editor:not(.mini)')
+    # Handling cancel in the workspace + code editors
+    handleEditorCancel = ({target}) =>
+      isMiniEditor = target.tagName is 'ATOM-TEXT-EDITOR' and target.hasAttribute('mini')
+      unless isMiniEditor
+        @findPanel?.hide()
+        @projectFindPanel?.hide()
 
-        return unless editor.length
-
-      @findPanel?.hide()
-      @projectFindPanel?.hide()
+    @subscriptions.add atom.commands.add 'atom-workspace',
+      'core:cancel': handleEditorCancel
+      'core:close': handleEditorCancel
 
     selectNextObjectForEditorElement = (editorElement) =>
       @selectNextObjects ?= new WeakMap()
@@ -143,19 +140,21 @@ module.exports =
   deactivate: ->
     @findPanel?.destroy()
     @findPanel = null
+    @findView?.destroy()
     @findView = null
 
     @findModel = null
 
     @projectFindPanel?.destroy()
     @projectFindPanel = null
+    @projectFindView?.destroy()
     @projectFindView = null
 
     ResultsPaneView.model = null
     @resultsModel = null
 
-    @subscriber?.unsubscribe()
-    @subscriber = null
+    @subscriptions?.dispose()
+    @subscriptions = null
 
   serialize: ->
     viewState: @findView?.serialize() ? @viewState

@@ -1,6 +1,6 @@
 _ = require 'underscore-plus'
-{ScrollView} = require 'atom'
-{Disposable} = require 'event-kit'
+{ScrollView} = require 'atom-space-pen-views'
+{Disposable, CompositeDisposable} = require 'atom'
 ResultsView = require './results-view'
 Util = require './util'
 
@@ -26,6 +26,7 @@ class ResultsPaneView extends ScrollView
 
   initialize: ->
     super
+    @subscriptions = new CompositeDisposable
     @loadingMessage.hide()
 
     @model = @constructor.model
@@ -36,8 +37,11 @@ class ResultsPaneView extends ScrollView
 
     @on 'focus', @focused
 
-  beforeRemove: ->
+  destroy: ->
     @model.setActive(false)
+    @subscriptions.dispose()
+
+  beforeRemove: -> @destroy()
 
   copy: ->
     new ResultsPaneView()
@@ -64,12 +68,12 @@ class ResultsPaneView extends ScrollView
     @resultsView.focus()
 
   handleEvents: ->
-    @subscribe @model, 'search', @onSearch
-    @subscribe @model, 'cleared', @onCleared
-    @subscribe @model, 'replacement-state-cleared', @onReplacementStateCleared
-    @subscribe @model, 'finished-searching', @onFinishedSearching
-    @subscribe @model, 'paths-searched', @onPathsSearched
-    @subscribe @model, 'path-error', (error) => @appendError(error.message)
+    @subscriptions.add @model.onDidStartSearching @onSearch
+    @subscriptions.add @model.onDidFinishSearching @onFinishedSearching
+    @subscriptions.add @model.onDidClear @onCleared
+    @subscriptions.add @model.onDidClearReplacementState @onReplacementStateCleared
+    @subscriptions.add @model.onDidSearchPaths @onPathsSearched
+    @subscriptions.add @model.onDidErrorForPath (error) => @appendError(error.message)
 
   setErrors: (messages) ->
     if messages? and messages.length
