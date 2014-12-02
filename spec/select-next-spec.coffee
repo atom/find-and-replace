@@ -1,23 +1,22 @@
 path = require 'path'
-{WorkspaceView} = require 'atom'
 SelectNext = require '../lib/select-next'
 
 describe "SelectNext", ->
-  [editorView, editor, promise] = []
+  [workspaceElement, editorElement, editor, promise] = []
 
   beforeEach ->
-    atom.workspaceView = new WorkspaceView()
+    workspaceElement = atom.views.getView(atom.workspace)
     atom.project.setPaths([path.join(__dirname, 'fixtures')])
 
     waitsForPromise ->
       atom.workspace.open('sample.js')
 
     runs ->
-      atom.workspaceView.attachToDom()
-      editorView = atom.workspaceView.getActiveView()
-      editor = editorView.getEditor()
+      jasmine.attachToDOM(workspaceElement)
+      editor = atom.workspace.getActiveEditor()
+      editorElement = atom.views.getView(editor)
       promise = atom.packages.activatePackage("find-and-replace")
-      editorView.trigger 'find-and-replace:show'
+      atom.commands.dispatch editorElement, 'find-and-replace:show'
 
     waitsForPromise ->
       promise
@@ -26,7 +25,7 @@ describe "SelectNext", ->
     describe "when nothing is selected", ->
       it "selects the word under the cursor", ->
         editor.setCursorBufferPosition([1, 3])
-        editorView.trigger 'find-and-replace:select-next'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
         expect(editor.getSelectedBufferRanges()).toEqual [[[1, 2], [1, 5]]]
 
     describe "when a word is selected", ->
@@ -42,20 +41,20 @@ describe "SelectNext", ->
 
         editor.setSelectedBufferRange([[0, 0], [0, 3]])
 
-        editorView.trigger 'find-and-replace:select-next'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[0, 0], [0, 3]]
           [[3, 8], [3, 11]]
         ]
 
-        editorView.trigger 'find-and-replace:select-next'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[0, 0], [0, 3]]
           [[3, 8], [3, 11]]
           [[5, 6], [5, 9]]
         ]
 
-        editorView.trigger 'find-and-replace:select-next'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[0, 0], [0, 3]]
           [[3, 8], [3, 11]]
@@ -65,12 +64,12 @@ describe "SelectNext", ->
         editor.setText "Testing reallyTesting"
         editor.setCursorBufferPosition([0, 0])
 
-        editorView.trigger 'find-and-replace:select-next'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[0, 0], [0, 7]]
         ]
 
-        editorView.trigger 'find-and-replace:select-next'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[0, 0], [0, 7]]
         ]
@@ -88,20 +87,20 @@ describe "SelectNext", ->
 
         editor.setSelectedBufferRange([[1, 2], [1, 5]])
 
-        editorView.trigger 'find-and-replace:select-next'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[1, 2], [1, 5]]
           [[2, 0], [2, 3]]
         ]
 
-        editorView.trigger 'find-and-replace:select-next'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[1, 2], [1, 5]]
           [[2, 0], [2, 3]]
           [[3, 8], [3, 11]]
         ]
 
-        editorView.trigger 'find-and-replace:select-next'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[1, 2], [1, 5]]
           [[2, 0], [2, 3]]
@@ -109,7 +108,7 @@ describe "SelectNext", ->
           [[4, 0], [4, 3]]
         ]
 
-        editorView.trigger 'find-and-replace:select-next'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[1, 2], [1, 5]]
           [[2, 0], [2, 3]]
@@ -118,7 +117,7 @@ describe "SelectNext", ->
           [[5, 6], [5, 9]]
         ]
 
-        editorView.trigger 'find-and-replace:select-next'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[1, 2], [1, 5]]
           [[2, 0], [2, 3]]
@@ -135,7 +134,7 @@ describe "SelectNext", ->
           <a
         """
         editor.setSelectedBufferRange([[0, 0], [0, 1]])
-        editorView.trigger 'find-and-replace:select-next'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[0, 0], [0, 1]]
           [[1, 0], [1, 1]]
@@ -149,18 +148,18 @@ describe "SelectNext", ->
           a
         """
 
-        editorView.trigger 'find-and-replace:select-next'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[0, 0], [0, 1]]
         ]
 
-        editorView.trigger 'find-and-replace:select-next'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[0, 0], [0, 1]]
           [[2, 0], [2, 1]]
         ]
 
-        editorView.trigger 'find-and-replace:select-next'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[0, 0], [0, 1]]
           [[2, 0], [2, 1]]
@@ -178,14 +177,14 @@ describe "SelectNext", ->
           a 3rd for is here
         """
 
-        editorView.trigger 'find-and-replace:select-all'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-all'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[0, 0], [0, 3]]
           [[3, 8], [3, 11]]
           [[5, 6], [5, 9]]
         ]
 
-        editorView.trigger 'find-and-replace:select-all'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-all'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[0, 0], [0, 3]]
           [[3, 8], [3, 11]]
@@ -205,14 +204,14 @@ describe "SelectNext", ->
 
         editor.setSelectedBufferRange([[3, 8], [3, 11]])
 
-        editorView.trigger 'find-and-replace:select-all'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-all'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[3, 8], [3, 11]]
           [[0, 0], [0, 3]]
           [[5, 6], [5, 9]]
         ]
 
-        editorView.trigger 'find-and-replace:select-all'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-all'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[3, 8], [3, 11]]
           [[0, 0], [0, 3]]
@@ -226,7 +225,7 @@ describe "SelectNext", ->
           <a
         """
         editor.setSelectedBufferRange([[0, 0], [0, 1]])
-        editorView.trigger 'find-and-replace:select-all'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-all'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[0, 0], [0, 1]]
           [[1, 0], [1, 1]]
@@ -244,7 +243,7 @@ describe "SelectNext", ->
           a 3rd for is here
         """
 
-        editorView.trigger 'find-and-replace:select-undo'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-undo'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[0, 0], [0, 0]]
         ]
@@ -262,7 +261,7 @@ describe "SelectNext", ->
 
         editor.setSelectedBufferRange([[3, 8], [3, 11]])
 
-        editorView.trigger 'find-and-replace:select-undo'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-undo'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[3, 11], [3, 11]]
         ]
@@ -280,13 +279,13 @@ describe "SelectNext", ->
 
         editor.setSelectedBufferRange([[3, 8], [3, 11]])
 
-        editorView.trigger 'find-and-replace:select-next'
-        editorView.trigger 'find-and-replace:select-undo'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-undo'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[3, 8], [3, 11]]
         ]
 
-        editorView.trigger 'find-and-replace:select-undo'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-undo'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[3, 11], [3, 11]]
         ]
@@ -304,15 +303,15 @@ describe "SelectNext", ->
 
         editor.setSelectedBufferRange([[0, 0], [0, 3]])
 
-        editorView.trigger 'find-and-replace:select-next'
-        editorView.trigger 'find-and-replace:select-next'
-        editorView.trigger 'find-and-replace:select-undo'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-undo'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[0, 0], [0, 3]]
           [[3, 8], [3, 11]]
         ]
 
-        editorView.trigger 'find-and-replace:select-undo'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-undo'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[0, 0], [0, 3]]
         ]
@@ -329,12 +328,12 @@ describe "SelectNext", ->
         """
 
         editor.setSelectedBufferRange([[5, 6], [5, 9]])
-        editorView.trigger 'find-and-replace:select-next'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[5, 6], [5, 9]]
           [[0, 0], [0, 3]]
         ]
-        editorView.trigger 'find-and-replace:select-undo'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-undo'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[5, 6], [5, 9]]
         ]
@@ -350,10 +349,10 @@ describe "SelectNext", ->
         """
 
         editor.setSelectedBufferRange([[5, 6], [5, 9]])
-        editorView.trigger 'find-and-replace:select-next'
-        editorView.trigger 'find-and-replace:select-next'
-        editorView.trigger 'find-and-replace:select-next'
-        editorView.trigger 'find-and-replace:select-undo'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-undo'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[5, 6], [5, 9]]
           [[0, 0], [0, 3]]
@@ -371,7 +370,7 @@ describe "SelectNext", ->
           a 3rd for is here
         """
 
-        editorView.trigger 'find-and-replace:select-skip'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-skip'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[0, 0], [0, 0]]
         ]
@@ -389,7 +388,7 @@ describe "SelectNext", ->
 
         editor.setSelectedBufferRange([[3, 8], [3, 11]])
 
-        editorView.trigger 'find-and-replace:select-skip'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-skip'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[5, 6], [5, 9]]
         ]
@@ -407,14 +406,14 @@ describe "SelectNext", ->
 
         editor.setSelectedBufferRange([[0, 0], [0, 3]])
 
-        editorView.trigger 'find-and-replace:select-next'
-        editorView.trigger 'find-and-replace:select-skip'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-skip'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[0, 0], [0, 3]]
           [[5, 6], [5, 9]]
         ]
 
-        editorView.trigger 'find-and-replace:select-skip'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-skip'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[0, 0], [0, 3]]
         ]
@@ -431,8 +430,8 @@ describe "SelectNext", ->
         """
 
         editor.setSelectedBufferRange([[5, 6], [5, 9]])
-        editorView.trigger 'find-and-replace:select-next'
-        editorView.trigger 'find-and-replace:select-skip'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+        atom.commands.dispatch editorElement, 'find-and-replace:select-skip'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[5, 6], [5, 9]]
           [[3, 8], [3, 11]]

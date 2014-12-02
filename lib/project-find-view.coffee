@@ -94,6 +94,9 @@ class ProjectFindView extends View
     @tooltipSubscriptions = null
 
   handleEvents: ->
+    @subscriptions.add atom.commands.add 'atom-workspace',
+      'find-and-replace:use-selection-as-find-pattern': @setSelectionAsFindPattern
+
     @subscriptions.add atom.commands.add this[0],
       'find-and-replace:focus-next': => @focusNextElement(1)
       'find-and-replace:focus-previous': => @focusNextElement(-1)
@@ -118,8 +121,6 @@ class ProjectFindView extends View
     $(window).on 'focus', focusCallback
     @subscriptions.add new Disposable ->
       $(window).off 'focus', focusCallback
-
-    atom.workspaceView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
 
     @handleEventsForReplace()
 
