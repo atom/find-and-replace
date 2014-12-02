@@ -21,8 +21,7 @@ class FindView extends View
             @span outlet: 'resultCounter', class: 'text-subtle result-counter', ''
 
         @div class: 'btn-group btn-group-find', =>
-          @button outlet: 'previousButton', class: 'btn', 'Find Prev'
-          @button outlet: 'nextButton', class: 'btn', 'Find Next'
+          @button outlet: 'nextButton', class: 'btn', 'Find'
 
         @div class: 'btn-group btn-toggle btn-group-options', =>
           @button outlet: 'regexOptionButton', class: 'btn', '.*'
@@ -35,8 +34,7 @@ class FindView extends View
           @subview 'replaceEditor', new TextEditorView(mini: true, placeholderText: 'Replace in current buffer')
 
         @div class: 'btn-group btn-group-replace', =>
-          @button outlet: 'replacePreviousButton', class: 'btn btn-prev', 'Replace Prev'
-          @button outlet: 'replaceNextButton', class: 'btn btn-next', 'Replace Next'
+          @button outlet: 'replaceNextButton', class: 'btn btn-next', 'Replace'
 
         @div class: 'btn-group btn-group-replace-all', =>
           @button outlet: 'replaceAllButton', class: 'btn btn-all', 'Replace All'
@@ -62,10 +60,8 @@ class FindView extends View
       @selectionOptionButton.setTooltip("Only In Selection", command: 'find-and-replace:toggle-selection-option', commandElement: @findEditor)
       @wholeWordOptionButton.setTooltip("Whole Word", command: 'find-and-replace:toggle-whole-word-option', commandElement: @findEditor)
 
-      @previousButton.setTooltip("Find Previous", command: 'find-and-replace:find-previous', commandElement: @findEditor)
       @nextButton.setTooltip("Find Next", command: 'find-and-replace:find-next', commandElement: @findEditor)
 
-      @replacePreviousButton.setTooltip("Replace Previous", command: 'find-and-replace:replace-previous', commandElement: @replaceEditor)
       @replaceNextButton.setTooltip("Replace Next", command: 'find-and-replace:replace-next', commandElement: @replaceEditor)
       @replaceAllButton.setTooltip("Replace All", command: 'find-and-replace:replace-all', commandElement: @replaceEditor)
       @tooltipsInitialized = true
@@ -81,10 +77,8 @@ class FindView extends View
     @selectionOptionButton.hideTooltip()
     @wholeWordOptionButton.hideTooltip()
 
-    @previousButton.hideTooltip()
     @nextButton.hideTooltip()
 
-    @replacePreviousButton.hideTooltip()
     @replaceNextButton.hideTooltip()
     @replaceAllButton.hideTooltip()
 
@@ -124,13 +118,11 @@ class FindView extends View
   handleFindEvents: ->
     @findEditor.getModel().onDidStopChanging => @liveSearch()
     @nextButton.on 'click', => @findNext(focusEditorAfter: true)
-    @previousButton.on 'click', => @findPrevious(focusEditorAfter: true)
     atom.workspaceView.command 'find-and-replace:find-next', => @findNext(focusEditorAfter: true)
     atom.workspaceView.command 'find-and-replace:find-previous', => @findPrevious(focusEditorAfter: true)
     atom.workspaceView.command 'find-and-replace:use-selection-as-find-pattern', @setSelectionAsFindPattern
 
   handleReplaceEvents: ->
-    @replacePreviousButton.on 'click', @replacePrevious
     @replaceNextButton.on 'click', @replaceNext
     @replaceAllButton.on 'click', @replaceAll
     atom.workspaceView.command 'find-and-replace:replace-previous', @replacePrevious

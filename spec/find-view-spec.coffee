@@ -442,11 +442,6 @@ describe 'FindView', ->
       findView.findEditor.trigger 'core:move-up'
       expect(findView.findEditor.getText()).toEqual 'sort'
 
-    it "selects the previous match when the previous match button is pressed", ->
-      findView.previousButton.click()
-      expect(findView.resultCounter.text()).toEqual('1 of 6')
-      expect(editor.getSelectedBufferRange()).toEqual [[1, 27], [1, 22]]
-
     it "selects the previous match when the 'find-and-replace:find-previous' event is triggered and correctly focuses the editor", ->
       expect(findView).toHaveFocus()
       editorView.trigger('find-and-replace:find-previous')
@@ -910,15 +905,6 @@ describe 'FindView', ->
           expect(findView.resultCounter.text()).toEqual('2 of 5')
           expect(editor.lineTextForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
           expect(editor.getSelectedBufferRange()).toEqual [[2, 33], [2, 38]]
-
-    describe "replace previous", ->
-      describe "when button is clicked", ->
-        it "replaces the match after the cursor and selects the previous match", ->
-          findView.findEditor.trigger 'core:confirm'
-          findView.replacePreviousButton.click()
-          expect(findView.resultCounter.text()).toEqual('1 of 5')
-          expect(editor.lineTextForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
-          expect(editor.getSelectedBufferRange()).toEqual [[1, 22], [1, 27]]
 
       describe "when command is triggered", ->
         it "replaces the match after the cursor and selects the previous match", ->
