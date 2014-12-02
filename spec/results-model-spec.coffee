@@ -6,7 +6,7 @@ ResultsModel = require '../lib/project/results-model'
 waitsForPromise = (fn) -> window.waitsForPromise timeout: 30000, fn
 
 describe 'ResultsModel', ->
-  [workspaceElement, editor, searchPromise, resultsModel, searchPromise] = []
+  [editor, searchPromise, resultsModel, searchPromise] = []
 
   beforeEach ->
     atom.project.setPaths([path.join(__dirname, 'fixtures')])
