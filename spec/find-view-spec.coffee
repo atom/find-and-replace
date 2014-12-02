@@ -334,18 +334,18 @@ describe 'FindView', ->
       beforeEach ->
         editor.setText("-----\nswhole-wordy\nwhole-word\nword\nwhole-swords")
         editor.setCursorBufferPosition([0,0])
-        findView.findEditor.trigger 'find-and-replace:toggle-whole-word-option'
+        atom.commands.dispatch findView.findEditor.element, 'find-and-replace:toggle-whole-word-option'
 
       it "finds the whole words", ->
         findView.findEditor.setText('word')
-        findView.findEditor.trigger 'core:confirm'
+        atom.commands.dispatch findView.findEditor.element, 'core:confirm'
         expect(editor.getSelectedBufferRange()).toEqual [[2, 6], [2, 10]]
 
       it "doesn't highlights the search inside words", ->
         findView.findEditor.setText('word')
-        findView.findEditor.trigger 'core:confirm'
-        expect(editorView.find('.highlight.find-result')).toHaveLength 1
-        expect(editorView.find('.highlight.current-result')).toHaveLength 1
+        atom.commands.dispatch findView.findEditor.element, 'core:confirm'
+        expect(getResultDecorations(editor, 'find-result')).toHaveLength 1
+        expect(getResultDecorations(editor, 'current-result')).toHaveLength 1
 
     it "doesn't change the selection, beeps if there are no matches and keeps focus on the find view", ->
       editor.setCursorBufferPosition([2,0])
@@ -681,16 +681,16 @@ describe 'FindView', ->
       it "toggles whole-word via an event and finds text matching the pattern", ->
         editor.setCursorBufferPosition([0,0])
         findView.findEditor.setText 'sort'
-        findView.findEditor.trigger 'core:confirm'
+        atom.commands.dispatch findView.findEditor.element, 'core:confirm'
         expect(editor.getSelectedBufferRange()).toEqual [[0, 9], [0, 13]]
 
-        findView.findEditor.trigger 'find-and-replace:toggle-whole-word-option'
+        atom.commands.dispatch findView.findEditor.element, 'find-and-replace:toggle-whole-word-option'
         expect(editor.getSelectedBufferRange()).toEqual [[1,6], [1,10]]
 
       it "toggles whole-word via a button and finds text matching the pattern", ->
         editor.setCursorBufferPosition([0,0])
         findView.findEditor.setText 'sort'
-        findView.findEditor.trigger 'core:confirm'
+        atom.commands.dispatch findView.findEditor.element, 'core:confirm'
         expect(editor.getSelectedBufferRange()).toEqual [[0, 9], [0, 13]]
 
         findView.wholeWordOptionButton.click()
@@ -699,7 +699,7 @@ describe 'FindView', ->
       it "re-runs the search using the new find text when toggled", ->
         editor.setCursorBufferPosition([8,0])
         findView.findEditor.setText 'apply'
-        findView.findEditor.trigger 'find-and-replace:toggle-whole-word-option'
+        atom.commands.dispatch findView.findEditor.element, 'find-and-replace:toggle-whole-word-option'
         expect(editor.getSelectedBufferRange()).toEqual [[11, 20], [11, 25]]
 
     describe "when case sensitivity is toggled", ->
