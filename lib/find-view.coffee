@@ -93,8 +93,9 @@ class FindView extends View
 
   didHide: ->
     @hideAllTooltips()
-    atom.workspaceView.focus()
-    atom.workspaceView.removeClass('find-visible')
+    workspaceElement = atom.views.getView(atom.workspace)
+    workspaceElement.focus()
+    workspaceElement.classList.remove('find-visible')
 
   hideAllTooltips: ->
     @tooltipSubscriptions.dispose()
@@ -134,7 +135,8 @@ class FindView extends View
 
     @on 'focus', (e) => @findEditor.focus()
     @find('button').on 'click', =>
-      atom.workspaceView.focus()
+      workspaceElement = atom.views.getView(atom.workspace)
+      workspaceElement.focus()
 
   handleFindEvents: ->
     @findEditor.getModel().onDidStopChanging => @liveSearch()
@@ -200,7 +202,8 @@ class FindView extends View
       if fieldToFocus
         fieldToFocus.focus()
       else if focusEditorAfter
-        atom.workspaceView.focus()
+        workspaceElement = atom.views.getView(atom.workspace)
+        workspaceElement.focus()
       else
         @findEditor.focus()
 
