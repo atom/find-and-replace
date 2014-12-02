@@ -133,7 +133,7 @@ class FindView extends View
     @selectionOptionButton.on 'click', @toggleSelectionOption
     @wholeWordOptionButton.on 'click', @toggleWholeWordOption
 
-    @on 'focus', (e) => @findEditor.focus()
+    @on 'focus', => @findEditor.focus()
     @find('button').on 'click', =>
       workspaceElement = atom.views.getView(atom.workspace)
       workspaceElement.focus()

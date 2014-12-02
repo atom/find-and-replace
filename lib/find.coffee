@@ -1,7 +1,6 @@
 {$} = require 'atom-space-pen-views'
 {CompositeDisposable} = require 'atom'
 
-
 SelectNext = require './select-next'
 {History} = require './history'
 FindModel = require './find-model'
