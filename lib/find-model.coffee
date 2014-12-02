@@ -1,6 +1,5 @@
 _ = require 'underscore-plus'
-{Emitter} = require 'atom'
-{CompositeDisposable} = require 'event-kit'
+{Emitter, CompositeDisposable} = require 'atom'
 escapeHelper = require './escape-helper'
 
 module.exports =
