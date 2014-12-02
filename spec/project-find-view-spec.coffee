@@ -332,8 +332,6 @@ describe 'ProjectFindView', ->
           pane2 = atom.workspace.getActivePane()
           resultsPaneView2 = atom.views.getView(pane2.itemForUri(ResultsPaneView.URI))
 
-          console.log resultsPaneView1, resultsPaneView2
-
           expect(pane1).not.toBe pane2
           expect(resultsPaneView1).not.toBe resultsPaneView2
 
