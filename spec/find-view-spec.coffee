@@ -1064,3 +1064,16 @@ describe 'FindView', ->
 
       findView.focus()
       expect(findView.findEditor).toHaveFocus()
+
+    it "moves focus between editors with find-and-replace:focus-next", ->
+      findView.findEditor.focus()
+      expect(findView.findEditor).toHaveClass('is-focused')
+      expect(findView.replaceEditor).not.toHaveClass('is-focused')
+
+      atom.commands.dispatch findView.findEditor.element, 'find-and-replace:focus-next'
+      expect(findView.findEditor).not.toHaveClass('is-focused')
+      expect(findView.replaceEditor).toHaveClass('is-focused')
+
+      atom.commands.dispatch findView.replaceEditor.element, 'find-and-replace:focus-next'
+      expect(findView.findEditor).toHaveClass('is-focused')
+      expect(findView.replaceEditor).not.toHaveClass('is-focused')

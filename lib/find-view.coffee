@@ -165,7 +165,7 @@ class FindView extends View
     @replaceEditor.getModel().selectAll()
 
   toggleFocus: =>
-    if @findEditor.find(':focus').length > 0
+    if @findEditor.hasClass('is-focused')
       @replaceEditor.focus()
     else
       @findEditor.focus()

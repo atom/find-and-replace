@@ -1084,3 +1084,34 @@ describe 'ProjectFindView', ->
 
       projectFindView.focus()
       expect(projectFindView.findEditor).toHaveFocus()
+
+    it "moves focus between editors with find-and-replace:focus-next", ->
+      projectFindView.findEditor.focus()
+      expect(projectFindView.findEditor).toHaveClass('is-focused')
+      expect(projectFindView.replaceEditor).not.toHaveClass('is-focused')
+      expect(projectFindView.pathsEditor).not.toHaveClass('is-focused')
+
+      atom.commands.dispatch projectFindView.findEditor.element, 'find-and-replace:focus-next'
+      expect(projectFindView.findEditor).not.toHaveClass('is-focused')
+      expect(projectFindView.replaceEditor).toHaveClass('is-focused')
+      expect(projectFindView.pathsEditor).not.toHaveClass('is-focused')
+
+      atom.commands.dispatch projectFindView.replaceEditor.element, 'find-and-replace:focus-next'
+      expect(projectFindView.findEditor).not.toHaveClass('is-focused')
+      expect(projectFindView.replaceEditor).not.toHaveClass('is-focused')
+      expect(projectFindView.pathsEditor).toHaveClass('is-focused')
+
+      atom.commands.dispatch projectFindView.replaceEditor.element, 'find-and-replace:focus-next'
+      expect(projectFindView.findEditor).toHaveClass('is-focused')
+      expect(projectFindView.replaceEditor).not.toHaveClass('is-focused')
+      expect(projectFindView.pathsEditor).not.toHaveClass('is-focused')
+
+      atom.commands.dispatch projectFindView.replaceEditor.element, 'find-and-replace:focus-previous'
+      expect(projectFindView.findEditor).not.toHaveClass('is-focused')
+      expect(projectFindView.replaceEditor).not.toHaveClass('is-focused')
+      expect(projectFindView.pathsEditor).toHaveClass('is-focused')
+
+      atom.commands.dispatch projectFindView.replaceEditor.element, 'find-and-replace:focus-previous'
+      expect(projectFindView.findEditor).not.toHaveClass('is-focused')
+      expect(projectFindView.replaceEditor).toHaveClass('is-focused')
+      expect(projectFindView.pathsEditor).not.toHaveClass('is-focused')
