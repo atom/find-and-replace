@@ -4,21 +4,23 @@
   "description": "Find and replace within buffers and across the project.",
   "version": "0.149.0",
   "license": "MIT",
-  "activationEvents": [
-    "project-find:show",
-    "project-find:toggle",
-    "project-find:show-in-current-directory",
-    "find-and-replace:show",
-    "find-and-replace:toggle",
-    "find-and-replace:find-next",
-    "find-and-replace:find-previous",
-    "find-and-replace:use-selection-as-find-pattern",
-    "find-and-replace:show-replace",
-    "find-and-replace:replace-next",
-    "find-and-replace:replace-all",
-    "find-and-replace:select-next",
-    "find-and-replace:select-all"
-  ],
+  "activationCommands": {
+    "atom-workspace": [
+      "project-find:show",
+      "project-find:toggle",
+      "project-find:show-in-current-directory",
+      "find-and-replace:show",
+      "find-and-replace:toggle",
+      "find-and-replace:find-next",
+      "find-and-replace:find-previous",
+      "find-and-replace:use-selection-as-find-pattern",
+      "find-and-replace:show-replace",
+      "find-and-replace:replace-next",
+      "find-and-replace:replace-all",
+      "find-and-replace:select-next",
+      "find-and-replace:select-all"
+    ]
+  },
   "repository": "https://github.com/atom/find-and-replace",
   "engines": {
     "atom": "*"
