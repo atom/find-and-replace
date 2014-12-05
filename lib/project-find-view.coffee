@@ -165,7 +165,7 @@ class ProjectFindView extends View
     elements[focusedIndex].getModel?().selectAll()
 
   focusFindElement: ->
-    selectedText = atom.workspace.getActiveEditor()?.getSelectedText?()
+    selectedText = atom.workspace.getActiveTextEditor()?.getSelectedText?()
     @findEditor.setText(selectedText) if selectedText and selectedText.indexOf('\n') < 0
     @findEditor.focus()
     @findEditor.getModel().selectAll()

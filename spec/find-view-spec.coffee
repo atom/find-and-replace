@@ -27,7 +27,7 @@ describe 'FindView', ->
 
     runs ->
       jasmine.attachToDOM(workspaceElement)
-      editor = atom.workspace.getActiveEditor()
+      editor = atom.workspace.getActiveTextEditor()
       editorView = atom.views.getView(editor)
 
       activationPromise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
@@ -523,7 +523,7 @@ describe 'FindView', ->
             expect(getResultDecorations(editor, 'find-result')).toHaveLength 0
 
             # new one has 7 results
-            newEditor = atom.workspace.getActiveEditor()
+            newEditor = atom.workspace.getActiveTextEditor()
             expect(getResultDecorations(newEditor, 'find-result')).toHaveLength 7
 
         it "highlights the found text in the new edit session when find next is triggered", ->
@@ -532,7 +532,7 @@ describe 'FindView', ->
 
           runs ->
             atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:find-next')
-            newEditor = atom.workspace.getActiveEditor()
+            newEditor = atom.workspace.getActiveTextEditor()
             expect(getResultDecorations(newEditor, 'find-result')).toHaveLength 6
             expect(getResultDecorations(newEditor, 'current-result')).toHaveLength 1
 
@@ -608,7 +608,7 @@ describe 'FindView', ->
             atom.commands.dispatch newEditorView, 'core:close'
             editorView.focus()
 
-            expect(atom.workspace.getActiveEditor()).toBe editor
+            expect(atom.workspace.getActiveTextEditor()).toBe editor
 
           runs ->
             expect(getResultDecorations(editor, 'find-result')).toHaveLength 6

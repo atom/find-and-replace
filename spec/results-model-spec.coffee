@@ -15,7 +15,7 @@ describe 'ResultsModel', ->
       atom.workspace.open('sample.js')
 
     runs ->
-      editor = atom.workspace.getActiveEditor()
+      editor = atom.workspace.getActiveTextEditor()
       resultsModel = new ResultsModel()
 
   describe "searching for a pattern", ->
@@ -98,7 +98,7 @@ describe 'ResultsModel', ->
         searchPromise
 
       runs ->
-        editor = atom.workspace.getActiveEditor()
+        editor = atom.workspace.getActiveTextEditor()
         editor.setText('items\nitems')
         spyOn(editor, 'scan').andCallThrough()
         advanceClock(editor.buffer.stoppedChangingDelay)

@@ -208,7 +208,7 @@ describe 'ProjectFindView', ->
         atom.workspace.open('sample.js')
 
       runs ->
-        editor = atom.workspace.getActiveEditor()
+        editor = atom.workspace.getActiveTextEditor()
         editorView = atom.views.getView(editor)
         atom.commands.dispatch(workspaceElement, 'project-find:show')
 
@@ -760,7 +760,7 @@ describe 'ProjectFindView', ->
           atom.workspace.open('sample.js')
 
         runs ->
-          editor = atom.workspace.getActiveEditor()
+          editor = atom.workspace.getActiveTextEditor()
           expect(getResultDecorations('find-result')).toHaveLength 0
 
         runs ->

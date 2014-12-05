@@ -13,7 +13,7 @@ describe "SelectNext", ->
 
     runs ->
       jasmine.attachToDOM(workspaceElement)
-      editor = atom.workspace.getActiveEditor()
+      editor = atom.workspace.getActiveTextEditor()
       editorElement = atom.views.getView(editor)
       promise = atom.packages.activatePackage("find-and-replace")
       atom.commands.dispatch editorElement, 'find-and-replace:show'
