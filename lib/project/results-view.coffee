@@ -69,6 +69,7 @@ class ResultsView extends ScrollView
     return unless renderAll or @shouldRenderMoreResults()
 
     paths = @model.getPaths()
+    @foldFilledAt ?= 0
     for filePath in paths[@lastRenderedResultIndex..]
       result = @model.getResult(filePath)
       listItems = @children()
@@ -78,7 +79,10 @@ class ResultsView extends ScrollView
           insertPoint = index
           false
 
-      break if not listItems[insertPoint] not renderAll and not @shouldRenderMoreResults()
+      if @foldFilledAt is 0 and not @shouldRenderMoreResults()
+        @foldFilledAt = listItems.length
+
+      break if not renderAll and insertPoint > @foldFilledAt and not @shouldRenderMoreResults()
 
       resultView = new ResultView(@model, filePath, result)
       if listItems[insertPoint] then $(listItems[insertPoint]).before(resultView) else @append(resultView)
