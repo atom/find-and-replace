@@ -66,8 +66,6 @@ class ResultsView extends ScrollView
     resultView.renderResult(null) if resultView
 
   renderResults: ({renderAll}={}) ->
-    return unless renderAll or @shouldRenderMoreResults()
-
     paths = @model.getPaths()
     @foldFilledAt ?= 0
     for filePath in paths[@lastRenderedResultIndex..]
