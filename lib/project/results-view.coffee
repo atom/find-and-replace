@@ -72,14 +72,16 @@ class ResultsView extends ScrollView
     for filePath in paths[@lastRenderedResultIndex..]
       result = @model.getResult(filePath)
       listItems = @children()
-      paths = listItems.map( -> $(this).attr('data-path')).get()
-      paths.push(filePath)
-      index = paths.sort().indexOf(filePath.toString())
+      insertPoint = 0
+      listItems.each (index, item) ->
+        if item.dataset.path > filePath
+          insertPoint = index
+          false
 
-      break if not listItems[index] and not renderAll and not @shouldRenderMoreResults()
+      break if not listItems[insertPoint] not renderAll and not @shouldRenderMoreResults()
 
       resultView = new ResultView(@model, filePath, result)
-      if listItems[index] then $(listItems[index]).before(resultView) else @append(resultView)
+      if listItems[insertPoint] then $(listItems[insertPoint]).before(resultView) else @append(resultView)
 
       @lastRenderedResultIndex++
 
