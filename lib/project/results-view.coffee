@@ -73,7 +73,7 @@ class ResultsView extends ScrollView
       listItems = @children()
       insertPoint = listItems.length
       listItems.each (index, item) ->
-        if item.dataset.path > filePath
+        if (item.dataset.path).localeCompare(filePath) >= 0
           insertPoint = index
           false
 
