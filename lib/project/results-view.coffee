@@ -71,7 +71,7 @@ class ResultsView extends ScrollView
     for filePath in paths[@lastRenderedResultIndex..]
       result = @model.getResult(filePath)
       listItems = @children()
-      insertPoint = 0
+      insertPoint = listItems.length
       listItems.each (index, item) ->
         if item.dataset.path > filePath
           insertPoint = index
