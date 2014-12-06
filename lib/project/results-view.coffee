@@ -26,7 +26,6 @@ class ResultsView extends ScrollView
       'core:move-up': => @selectPreviousResult()
       'core:move-left': => @collapseResult()
       'core:move-right': => @expandResult()
-      'scroll resize': => @renderResults() if @shouldRenderMoreResults()
       'core:confirm': =>
         @find('.selected').view()?.confirm?()
         false
@@ -39,6 +38,9 @@ class ResultsView extends ScrollView
       view = $(target).view()
       view.addClass('selected')
       view.confirm() if which is 1 and not ctrlKey
+
+    @on 'scroll resize', =>
+      @renderResults() if @shouldRenderMoreResults()
 
     @subscriptions.add @model.onDidAddResult @addResult
     @subscriptions.add @model.onDidRemoveResult @removeResult
