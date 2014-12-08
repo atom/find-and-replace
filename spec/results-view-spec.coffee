@@ -99,7 +99,7 @@ describe 'ResultsView', ->
         expect(resultsView.find('.replacement')).toBeHidden()
 
   describe "when list is scrollable", ->
-    it "adds more operations to the DOM when `scrollBottom` nears the `pixelOverdraw`", ->
+    it "adds more results to the DOM when scrolling", ->
       projectFindView.findEditor.setText(' ')
       atom.commands.dispatch projectFindView.element, 'core:confirm'
 
@@ -113,17 +113,31 @@ describe 'ResultsView', ->
         previousScrollHeight = resultsView.prop('scrollHeight')
         previousOperationCount = resultsView.find("li").length
 
-        resultsView.scrollTop(resultsView.pixelOverdraw / 2)
+        resultsView.scrollTop(resultsView.pixelOverdraw * 2)
         resultsView.trigger('scroll') # Not sure why scroll event isn't being triggered on it's own
-        expect(resultsView.prop('scrollHeight')).toBe previousScrollHeight
-        expect(resultsView.find("li").length).toBe previousOperationCount
+        expect(resultsView.prop('scrollHeight')).toBeGreaterThan previousScrollHeight
+        expect(resultsView.find("li").length).toBeGreaterThan previousOperationCount
+
+    it "adds more results to the DOM when scrolled to bottom", ->
+      projectFindView.findEditor.setText(' ')
+      atom.commands.dispatch projectFindView.element, 'core:confirm'
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        resultsView = getResultsView()
+
+        expect(resultsView.prop('scrollHeight')).toBeGreaterThan resultsView.height()
+        previousScrollHeight = resultsView.prop('scrollHeight')
+        previousOperationCount = resultsView.find("li").length
 
         resultsView.scrollToBottom()
         resultsView.trigger('scroll') # Not sure why scroll event isn't being triggered on it's own
         expect(resultsView.prop('scrollHeight')).toBeGreaterThan previousScrollHeight
         expect(resultsView.find("li").length).toBeGreaterThan previousOperationCount
 
-    it "renders all operations when core:move-to-bottom is triggered", ->
+    it "renders all results when core:move-to-bottom is triggered", ->
       workspaceElement.style.height = '300px'
       projectFindView.findEditor.setText('so')
       projectFindView.confirm()

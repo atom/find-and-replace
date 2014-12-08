@@ -39,8 +39,8 @@ class ResultsView extends ScrollView
       view.addClass('selected')
       view.confirm() if which is 1 and not ctrlKey
 
-    @on 'scroll resize', =>
-      @renderResults() if @shouldRenderMoreResults()
+    @on 'scroll', => @renderResults()
+    @on 'resize', => @renderResults()
 
     @subscriptions.add @model.onDidAddResult @addResult
     @subscriptions.add @model.onDidRemoveResult @removeResult
@@ -84,7 +84,7 @@ class ResultsView extends ScrollView
     null # dont return an array
 
   shouldRenderMoreResults: ->
-    @prop('scrollHeight') <= @height() + @pixelOverdraw or @scrollBottom() + @pixelOverdraw >= @prop('scrollHeight')
+    @prop('scrollHeight') <= @height() + @pixelOverdraw or @prop('scrollHeight') <= @scrollBottom() + @pixelOverdraw
 
   selectFirstResult: ->
     @find('.search-result:first').addClass('selected')
