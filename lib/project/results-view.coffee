@@ -9,17 +9,13 @@ class ResultsView extends ScrollView
     @ol class: 'results-view list-tree focusable-panel has-collapsable-children', tabindex: -1
 
   initialize: (@model) ->
-    super
+    commandsDisposable = super()
+    commandsDisposable.dispose() # turn off default scrolling behavior from ScrollView
+
     @subscriptions = new CompositeDisposable
 
     @pixelOverdraw = 100
     @lastRenderedResultIndex = 0
-
-    # turn off default scrolling behavior from ScrollView
-    @off 'core:move-up'
-    @off 'core:move-down'
-    @off 'core:move-left'
-    @off 'core:move-right'
 
     @subscriptions.add atom.commands.add @element,
       'core:move-down': => @selectNextResult()
