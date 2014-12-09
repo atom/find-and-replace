@@ -38,6 +38,7 @@ class ResultsView extends ScrollView
       view = $(target).view()
       view.addClass('selected')
       view.confirm() if which is 1 and not ctrlKey
+      @renderResults() if @shouldRenderMoreResults()
 
     @on 'scroll', => @renderResults()
     @on 'resize', => @renderResults()
