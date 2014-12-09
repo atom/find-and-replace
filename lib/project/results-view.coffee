@@ -38,7 +38,7 @@ class ResultsView extends ScrollView
       view = $(target).view()
       view.addClass('selected')
       view.confirm() if which is 1 and not ctrlKey
-      @renderResults() if @shouldRenderMoreResults()
+      @renderResults()
 
     @on 'scroll', => @renderResults()
     @on 'resize', => @renderResults()
@@ -134,10 +134,12 @@ class ResultsView extends ScrollView
   collapseResult: ->
     parent = @find('.selected').closest('.path').view()
     parent.expand(false) if parent instanceof ResultView
+    @renderResults()
 
   expandResult: ->
     selectedView = @find('.selected').view()
     selectedView.expand(true) if selectedView instanceof ResultView
+    @renderResults()
 
   getPathCount: ->
     @model.getPathCount()

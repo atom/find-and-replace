@@ -137,6 +137,48 @@ describe 'ResultsView', ->
         expect(resultsView.prop('scrollHeight')).toBeGreaterThan previousScrollHeight
         expect(resultsView.find("li").length).toBeGreaterThan previousOperationCount
 
+    it "renders more results when a result is collapsed via core:move-left", ->
+      projectFindView.findEditor.setText(' ')
+      projectFindView.confirm()
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        resultsView = getResultsView()
+
+        expect(resultsView.find(".path").length).toBe 1
+
+        pathNode = resultsView.find(".path")[0]
+        pathNode.dispatchEvent(buildMouseEvent('mousedown', target: pathNode, which: 1))
+        expect(resultsView.find(".path").length).toBe 2
+
+        pathNode = resultsView.find(".path")[1]
+        pathNode.dispatchEvent(buildMouseEvent('mousedown', target: pathNode, which: 1))
+        expect(resultsView.find(".path").length).toBe 3
+
+    it "renders more results when a result is collapsed via click", ->
+      projectFindView.findEditor.setText(' ')
+      projectFindView.confirm()
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        resultsView = getResultsView()
+
+        expect(resultsView.find(".path-details").length).toBe 1
+
+        atom.commands.dispatch resultsView.element, 'core:move-down'
+        atom.commands.dispatch resultsView.element, 'core:move-left'
+
+        expect(resultsView.find(".path-details").length).toBe 2
+
+        atom.commands.dispatch resultsView.element, 'core:move-down'
+        atom.commands.dispatch resultsView.element, 'core:move-left'
+
+        expect(resultsView.find(".path-details").length).toBe 3
+
     it "renders all results when core:move-to-bottom is triggered", ->
       workspaceElement.style.height = '300px'
       projectFindView.findEditor.setText('so')
@@ -359,3 +401,13 @@ describe 'ResultsView', ->
       _.times 2, -> atom.commands.dispatch resultsView.element, 'core:move-down'
       atom.commands.dispatch resultsView.element, 'core:copy'
       expect(atom.clipboard.read()).toBe '    return items if items.length <= 1'
+
+buildMouseEvent = (type, properties...) ->
+  properties = _.extend({bubbles: true, cancelable: true}, properties...)
+  properties.detail ?= 1
+  event = new MouseEvent(type, properties)
+  Object.defineProperty(event, 'which', get: -> properties.which) if properties.which?
+  if properties.target?
+    Object.defineProperty(event, 'target', get: -> properties.target)
+    Object.defineProperty(event, 'srcObject', get: -> properties.target)
+  event
