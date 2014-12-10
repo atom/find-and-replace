@@ -228,6 +228,8 @@ class ProjectFindView extends View
     if absPath = @directoryPathForElement(selectedElement)
       relPath = atom.project.relativize(absPath)
       @pathsEditor.setText(relPath)
+      @findEditor.focus()
+      @findEditor.getModel().selectAll()
 
   showResultPane: ->
     options = null

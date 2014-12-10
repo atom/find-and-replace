@@ -172,6 +172,7 @@ describe 'ProjectFindView', ->
       runs ->
         expect(getAtomPanel()).toBeVisible()
         expect(projectFindView.pathsEditor.getText()).toBe('nested')
+        expect(projectFindView.findEditor).toHaveFocus()
 
         atom.commands.dispatch tree.name[0], 'project-find:show-in-current-directory'
         expect(projectFindView.pathsEditor.getText()).toBe('')
@@ -185,6 +186,7 @@ describe 'ProjectFindView', ->
       runs ->
         expect(getAtomPanel()).toBeVisible()
         expect(projectFindView.pathsEditor.getText()).toBe('nested')
+        expect(projectFindView.findEditor).toHaveFocus()
 
         atom.commands.dispatch tree.name[0], 'project-find:show-in-current-directory'
         expect(projectFindView.pathsEditor.getText()).toBe('')
@@ -198,6 +200,7 @@ describe 'ProjectFindView', ->
       runs ->
         expect(getAtomPanel()).toBeVisible()
         expect(projectFindView.pathsEditor.getText()).toBe('nested')
+        expect(projectFindView.findEditor).toHaveFocus()
 
         atom.commands.dispatch tree.files.find('> .file:eq(0)').view().name[0], 'project-find:show-in-current-directory'
         expect(projectFindView.pathsEditor.getText()).toBe('')
