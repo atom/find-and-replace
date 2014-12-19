@@ -54,9 +54,7 @@ module.exports =
       return if @projectFindPanel?.isVisible() or @findPanel?.isVisible()
 
       @createViews()
-      @projectFindPanel.hide()
-      @findPanel.show()
-      @findView.focusFindEditor()
+      @findView.setSelectionAsFindPattern()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:toggle', =>
       @createViews()
