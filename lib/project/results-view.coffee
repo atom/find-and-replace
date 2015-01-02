@@ -12,11 +12,21 @@ class ResultsView extends ScrollView
     commandsDisposable = super()
     commandsDisposable.dispose() # turn off default scrolling behavior from ScrollView
 
-    @subscriptions = new CompositeDisposable
-
     @pixelOverdraw = 100
     @lastRenderedResultIndex = 0
 
+    @on 'mousedown', '.match-result, .path', ({target, which, ctrlKey}) =>
+      @find('.selected').removeClass('selected')
+      view = $(target).view()
+      view.addClass('selected')
+      view.confirm() if which is 1 and not ctrlKey
+      @renderResults()
+
+    @on 'scroll', => @renderResults()
+    @on 'resize', => @renderResults()
+
+  attached: ->
+    @subscriptions = new CompositeDisposable
     @subscriptions.add atom.commands.add @element,
       'core:move-down': => @selectNextResult()
       'core:move-up': => @selectPreviousResult()
@@ -29,27 +39,15 @@ class ResultsView extends ScrollView
         @find('.selected').view()?.copy?()
         false
 
-    @on 'mousedown', '.match-result, .path', ({target, which, ctrlKey}) =>
-      @find('.selected').removeClass('selected')
-      view = $(target).view()
-      view.addClass('selected')
-      view.confirm() if which is 1 and not ctrlKey
-      @renderResults()
-
-    @on 'scroll', => @renderResults()
-    @on 'resize', => @renderResults()
-
     @subscriptions.add @model.onDidAddResult @addResult
     @subscriptions.add @model.onDidRemoveResult @removeResult
     @subscriptions.add @model.onDidClearSearchState @clear
 
     @renderResults()
 
-  destroy: ->
+  detached: ->
     @clear()
     @subscriptions.dispose()
-
-  beforeRemove: -> @destroy()
 
   hasResults: ->
     @model.getResultCount() > 0

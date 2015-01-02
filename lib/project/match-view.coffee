@@ -23,13 +23,14 @@ class MatchView extends View
 
   initialize: (@model, {@filePath, @match}) ->
     @render()
-    @subscriptions = new CompositeDisposable
-    @subscriptions.add @model.onDidChangeReplacementPattern @render
-
     if fontFamily = atom.config.get('editor.fontFamily')
       @preview.css('font-family', fontFamily)
 
-  beforeRemove: -> @subscriptions.dispose()
+  attached: ->
+    @subscriptions = new CompositeDisposable
+    @subscriptions.add @model.onDidChangeReplacementPattern @render
+
+  detached: -> @subscriptions.dispose()
 
   render: =>
     if @model.replacementPattern and @model.regex and not @model.replacedPathCount?

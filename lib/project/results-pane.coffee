@@ -26,22 +26,19 @@ class ResultsPaneView extends ScrollView
 
   initialize: ->
     super
-    @subscriptions = new CompositeDisposable
     @loadingMessage.hide()
-
     @model = @constructor.model
-    @model.setActive(true)
-
-    @handleEvents()
     @onFinishedSearching(@model.getResultsSummary())
-
     @on 'focus', @focused
 
-  destroy: ->
+  attached: ->
+    @model.setActive(true)
+    @subscriptions = new CompositeDisposable
+    @handleEvents()
+
+  detached: ->
     @model.setActive(false)
     @subscriptions.dispose()
-
-  beforeRemove: -> @destroy()
 
   copy: ->
     new ResultsPaneView()
