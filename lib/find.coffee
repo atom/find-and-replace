@@ -93,7 +93,7 @@ module.exports =
 
     selectNextObjectForEditorElement = (editorElement) =>
       @selectNextObjects ?= new WeakMap()
-      editor = $(editorElement).view().getModel()
+      editor = editorElement.getModel()
       selectNext = @selectNextObjects.get(editor)
       unless selectNext?
         selectNext = new SelectNext(editor)
