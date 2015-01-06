@@ -119,7 +119,7 @@ class ResultsModel
     onPathsSearched = (numberOfPathsSearched) =>
       @emitter.emit 'did-search-paths', numberOfPathsSearched
 
-    @inProgressSearchPromise = atom.project.scan @regex, {paths: searchPaths, onPathsSearched}, (result, error) =>
+    @inProgressSearchPromise = atom.workspace.scan @regex, {paths: searchPaths, onPathsSearched}, (result, error) =>
       if result
         @setResult(result.filePath, Result.create(result))
       else
@@ -145,7 +145,7 @@ class ResultsModel
     @replacedPathCount = 0
     @replacementCount = 0
 
-    promise = atom.project.replace regex, replacementPattern, replacementPaths, (result, error) =>
+    promise = atom.workspace.replace regex, replacementPattern, replacementPaths, (result, error) =>
       if result
         if result.replacements
           @replacedPathCount++
