@@ -58,7 +58,7 @@ class ResultsPaneView extends ScrollView
   getIconName: ->
     "search"
 
-  getUri: ->
+  getURI: ->
     @constructor.URI
 
   focused: =>

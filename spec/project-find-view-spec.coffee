@@ -19,8 +19,8 @@ describe 'ProjectFindView', ->
     workspaceElement.querySelector('.project-find').parentNode
 
   getExistingResultsPane = ->
-    pane = atom.workspace.paneForUri(ResultsPaneView.URI)
-    return pane.itemForUri(ResultsPaneView.URI) if pane?
+    pane = atom.workspace.paneForURI(ResultsPaneView.URI)
+    return pane.itemForURI(ResultsPaneView.URI) if pane?
     null
 
   beforeEach ->
@@ -333,7 +333,7 @@ describe 'ProjectFindView', ->
           pane1.splitRight(copyActiveItem: true)
 
           pane2 = atom.workspace.getActivePane()
-          resultsPaneView2 = atom.views.getView(pane2.itemForUri(ResultsPaneView.URI))
+          resultsPaneView2 = atom.views.getView(pane2.itemForURI(ResultsPaneView.URI))
 
           expect(pane1).not.toBe pane2
           expect(resultsPaneView1).not.toBe resultsPaneView2

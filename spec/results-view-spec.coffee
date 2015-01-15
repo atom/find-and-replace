@@ -11,8 +11,8 @@ describe 'ResultsView', ->
   [pack, projectFindView, resultsView, searchPromise, workspaceElement] = []
 
   getExistingResultsPane = ->
-    pane = atom.workspace.paneForUri(ResultsPaneView.URI)
-    return pane.itemForUri(ResultsPaneView.URI) if pane?
+    pane = atom.workspace.paneForURI(ResultsPaneView.URI)
+    return pane.itemForURI(ResultsPaneView.URI) if pane?
     null
 
   getResultsView = ->
