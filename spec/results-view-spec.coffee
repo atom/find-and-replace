@@ -1,6 +1,6 @@
 path = require 'path'
 _ = require 'underscore-plus'
-path = require 'path'
+temp = require "temp"
 
 ResultsPaneView = require '../lib/project/results-pane'
 
@@ -45,9 +45,25 @@ describe 'ResultsView', ->
       runs ->
         resultsView = getResultsView()
 
+        expect(resultsView.find('.path-name').text()).toBe "one-long-line.coffee"
         expect(resultsView.find('.preview').length).toBe 1
         expect(resultsView.find('.preview').text()).toBe 'test test test test test test test test test test test a b c d e f g h i j k l abcdefghijklmnopqrstuvwxyz'
         expect(resultsView.find('.match').text()).toBe 'ghijkl'
+
+  describe "when there are multiple project paths", ->
+    beforeEach ->
+      atom.project.addPath(temp.mkdirSync("another-project-path"))
+
+    it "includes the basename of the project path that contains the match", ->
+      projectFindView.findEditor.setText('ghijkl')
+      atom.commands.dispatch projectFindView.element, 'core:confirm'
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        resultsView = getResultsView()
+        expect(resultsView.find('.path-name').text()).toBe path.join("fixtures", "one-long-line.coffee")
 
   describe "rendering replacement text", ->
     modifiedDelay = null
@@ -65,6 +81,7 @@ describe 'ResultsView', ->
       runs ->
         resultsView = getResultsView()
 
+        expect(resultsView.find('.path-name').text()).toBe "one-long-line.coffee"
         expect(resultsView.find('.preview').length).toBe 1
         expect(resultsView.find('.match').text()).toBe 'ghijkl'
         expect(resultsView.find('.replacement').text()).toBe 'cats'
