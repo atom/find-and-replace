@@ -131,7 +131,7 @@ describe 'ProjectFindView', ->
         expect(getAtomPanel()).not.toBeVisible()
 
   describe "when project-find:show-in-current-directory is triggered", ->
-    [nested, tree] = []
+    [nested, tree, projectPath] = []
 
     class DirElement extends View
       @content: (path) ->
@@ -152,7 +152,8 @@ describe 'ProjectFindView', ->
         fs.writeFileSync(path, '')
 
     beforeEach ->
-      atom.project.setPaths([temp.mkdirSync("atom")])
+      projectPath = temp.mkdirSync("atom")
+      atom.project.setPaths([projectPath])
       p = atom.project.getPaths()[0]
       tree = new DirElement(p)
       tree.createFiles(['one.js', 'two.js'])
@@ -204,6 +205,20 @@ describe 'ProjectFindView', ->
 
         atom.commands.dispatch tree.files.find('> .file:eq(0)').view().name[0], 'project-find:show-in-current-directory'
         expect(projectFindView.pathsEditor.getText()).toBe('')
+
+    describe "when there are multiple root directories", ->
+      beforeEach ->
+        atom.project.addPath(temp.mkdirSync("another-path-"))
+
+      it "includes the basename of the containing root directory in the paths-editor", ->
+        atom.commands.dispatch nested.files.find('> .file:eq(0)').view().name[0], 'project-find:show-in-current-directory'
+
+        waitsForPromise ->
+          activationPromise
+
+        runs ->
+          expect(getAtomPanel()).toBeVisible()
+          expect(projectFindView.pathsEditor.getText()).toBe(path.join(path.basename(projectPath), 'nested'))
 
   describe "finding", ->
     beforeEach ->
