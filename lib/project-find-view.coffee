@@ -3,7 +3,6 @@ Q = require 'q'
 _ = require 'underscore-plus'
 {Disposable, CompositeDisposable} = require 'atom'
 {$, $$$, View, TextEditorView} = require 'atom-space-pen-views'
-{splitProjectPath} = require './project/helpers'
 
 {HistoryCycler} = require './history'
 Util = require './project/util'
@@ -227,7 +226,7 @@ class ProjectFindView extends View
 
   findInCurrentlySelectedDirectory: (selectedElement) ->
     if absPath = @directoryPathForElement(selectedElement)
-      [rootPath, relPath] = splitProjectPath(absPath)
+      [rootPath, relPath] = atom.project.relativizePath(absPath)
       if rootPath? and atom.project.getDirectories().length > 1
         relPath = path.join(path.basename(rootPath), relPath)
       @pathsEditor.setText(relPath)
