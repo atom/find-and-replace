@@ -72,6 +72,7 @@ atom-workspace.find-visible {
     .editor-container {
       position: relative;
       -webkit-flex: 1;
+      overflow: hidden;
 
       atom-text-editor {
         width: 100%;
@@ -144,6 +145,10 @@ atom-workspace.find-visible {
     .result-counter {
       margin-right: @component-padding;
     }
+  }
+
+  .block {
+    overflow: hidden;
   }
 }
 
