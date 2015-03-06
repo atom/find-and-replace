@@ -41,12 +41,15 @@ atom-workspace.find-visible {
 // Both project and buffer FNR styles
 .find-and-replace,
 .project-find {
-  min-width: 320px; // fit find input + result counter
+  @min-width: 100px;           // min width before it starts scrolling
+
   -webkit-user-select: none;
   padding: @component-padding/2;
+  overflow-x: scroll;
 
   .header {
     padding: @component-padding/4 @component-padding/2;
+    min-width: @min-width;
   }
   .header-item {
     margin: @component-padding/4 0;
@@ -56,6 +59,7 @@ atom-workspace.find-visible {
     display: flex;
     flex-wrap: wrap;
     width: 100%;
+    min-width: @min-width;
   }
   .input-block-item {
     display: flex;
@@ -140,6 +144,10 @@ atom-workspace.find-visible {
         font-size: 13px;
       }
     }
+  }
+
+  .find-container atom-text-editor {
+    padding-right: 64px; // leave some room for the results count
   }
 
   // results count
