@@ -41,39 +41,66 @@ atom-workspace.find-visible {
 // Both project and buffer FNR styles
 .find-and-replace,
 .project-find {
-  .options-label {
-    color: @text-color-subtle;
-    position: relative;
+  min-width: 320px; // fit find input + find-meta-container
+  -webkit-user-select: none;
+  padding: @component-padding / 2;
 
-    .options {
-      color: @text-color;
+  // replaces default blocks, adds wrapping when narrow
+  .info-block {
+    padding: @component-padding/4 @component-padding/2;
+  }
+  .info-block-item {
+    margin: @component-padding/4 0;
+  }
+
+  .input-block {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  .input-block-item {
+    flex: 1;
+    padding: @component-padding / 2;
+    display: flex;
+    .btn-group {
+      flex: 1;
+      display: flex;
+      .btn {
+        flex: 1;
+      }
+      & + .btn-group {
+        margin-left: @component-padding;
+      }
     }
   }
 
-  .subtle-info-message {
-    padding-left: 5px;
+  .description {
+    display: inline-block;
+    margin-bottom: .75em;
+    .subtle-info-message {
+      padding-left: 5px;
+      color: @text-color-subtle;
+      .highlight {
+        color: @text-color;
+        font-weight: normal;
+      }
+    }
+  }
+
+  .options-label {
     color: @text-color-subtle;
-    .highlight {
+    position: relative;
+    .options {
       color: @text-color;
-      font-weight: normal;
     }
   }
 
   .find-container,
   .replace-container,
   .paths-container {
-    display: -webkit-flex;
-    -webkit-flex-direction: row;
-
-    .btn-group {
-      margin-left: @component-padding;
-    }
 
     .editor-container {
       position: relative;
-      -webkit-flex: 1;
-      overflow: hidden;
-
       atom-text-editor {
         width: 100%;
       }
@@ -84,44 +111,33 @@ atom-workspace.find-visible {
 
 // Buffer find and replace
 .find-and-replace {
-  @button-width: 240px;
-  @option-button-width: 140px;
-  @find-button-width: @button-width - @option-button-width - @component-padding;
+  @button-width: 120px;
+  @option-button-width: 200px;
 
-  padding: @component-padding;
-  -webkit-user-select: none;
-
-  .btn-group-replace.btn-group {
-    width: @find-button-width;
-    .btn {
-      width: 100%;
-    }
+  .input-block-item {
+    flex: 1 1 260px;
   }
-
+  .input-block-item--flex {
+    flex: 100 1 260px;
+  }
+  .btn-group-replace.btn-group {
+    flex: 1 1 @button-width;
+  }
   .btn-group-replace-all.btn-group {
-    width: @option-button-width;
-    .btn {
-      width: 100%;
-    }
+    flex: 1 1 @option-button-width;
   }
 
   .btn-group-find.btn-group {
-    width: @find-button-width;
-    .btn {
-      width: 100%;
-    }
+    flex: 1 1 @button-width;
   }
   .btn-group-options.btn-group {
-    width: @option-button-width;
+    flex: 1 1 @option-button-width;
+
     .btn {
       .option-button();
-
-      // The -1px margin reduces the size, so add one to those with the neg margin.
-      width: @option-button-width / 4 + 1px;
-      &:first-child {
-        width: @option-button-width / 4;
-      }
-
+      flex: 1 1 25%;
+      padding: 0;
+      text-align: center;
       &.option-selection {
         font-family: "Times New Roman";
         font-size: 20px;
@@ -138,6 +154,7 @@ atom-workspace.find-visible {
     position: absolute;
     top: 1px;
     right: 0;
+    margin: @component-padding/2 @component-padding/2 0 0;
     z-index: 2;
     font-size: .9em;
     line-height: @component-line-height;
@@ -147,17 +164,18 @@ atom-workspace.find-visible {
       margin-right: @component-padding;
     }
   }
-
-  .block {
-    overflow: hidden;
-  }
 }
 
 // Project find and replace
 .project-find {
-  @project-button-width: 90px;
+  @project-button-width: 100px;
 
-  -webkit-user-select: none;
+  .input-block-item {
+    flex: 1 1 @project-button-width;
+  }
+  .input-block-item--flex {
+    flex: 100 1 260px;
+  }
 
   .loading,
   .preview-block,

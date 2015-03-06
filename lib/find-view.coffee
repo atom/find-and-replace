@@ -8,37 +8,36 @@ module.exports =
 class FindView extends View
   @content: ->
     @div tabIndex: -1, class: 'find-and-replace', =>
-      @div class: 'block', =>
-        @span outlet: 'descriptionLabel', class: 'description', 'Find in Current Buffer'
-        @span class: 'options-label pull-right', =>
+      @div class: 'info-block', =>
+        @span outlet: 'descriptionLabel', class: 'info-block-item description', 'Find in Current Buffer'
+        @span class: 'info-block-item options-label pull-right', =>
           @span 'Finding with Options: '
           @span outlet: 'optionsLabel', class: 'options'
 
-      @div class: 'find-container block', =>
-        @div class: 'editor-container', =>
+      @div class: 'input-block find-container', =>
+        @div class: 'input-block-item input-block-item--flex editor-container', =>
           @subview 'findEditor', new TextEditorView(mini: true, placeholderText: 'Find in current buffer')
-
           @div class: 'find-meta-container', =>
             @span outlet: 'resultCounter', class: 'text-subtle result-counter', ''
 
-        @div class: 'btn-group btn-group-find', =>
-          @button outlet: 'nextButton', class: 'btn', 'Find'
+        @div class: 'input-block-item', =>
+          @div class: 'btn-group btn-group-find', =>
+            @button outlet: 'nextButton', class: 'btn', 'Find'
+          @div class: 'btn-group btn-toggle btn-group-options', =>
+            @button outlet: 'regexOptionButton', class: 'btn', '.*'
+            @button outlet: 'caseOptionButton', class: 'btn', 'Aa'
+            @button outlet: 'selectionOptionButton', class: 'btn option-selection', '"'
+            @button outlet: 'wholeWordOptionButton', class: 'btn option-whole-word', '\\b'
 
-        @div class: 'btn-group btn-toggle btn-group-options', =>
-          @button outlet: 'regexOptionButton', class: 'btn', '.*'
-          @button outlet: 'caseOptionButton', class: 'btn', 'Aa'
-          @button outlet: 'selectionOptionButton', class: 'btn option-selection', '"'
-          @button outlet: 'wholeWordOptionButton', class: 'btn option-whole-word', '\\b'
-
-      @div class: 'replace-container block', =>
-        @div class: 'editor-container', =>
+      @div class: 'input-block replace-container', =>
+        @div class: 'input-block-item input-block-item--flex editor-container', =>
           @subview 'replaceEditor', new TextEditorView(mini: true, placeholderText: 'Replace in current buffer')
 
-        @div class: 'btn-group btn-group-replace', =>
-          @button outlet: 'replaceNextButton', class: 'btn btn-next', 'Replace'
-
-        @div class: 'btn-group btn-group-replace-all', =>
-          @button outlet: 'replaceAllButton', class: 'btn btn-all', 'Replace All'
+        @div class: 'input-block-item', =>
+          @div class: 'btn-group btn-group-replace', =>
+            @button outlet: 'replaceNextButton', class: 'btn btn-next', 'Replace'
+          @div class: 'btn-group btn-group-replace-all', =>
+            @button outlet: 'replaceAllButton', class: 'btn btn-all', 'Replace All'
 
   initialize: (@findModel, {findHistory, replaceHistory}) ->
     @subscriptions = new CompositeDisposable

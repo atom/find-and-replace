@@ -14,33 +14,33 @@ module.exports =
 class ProjectFindView extends View
   @content: ->
     @div tabIndex: -1, class: 'project-find padded', =>
-      @div class: 'block', =>
-        @span class: 'options-label pull-right', =>
+      @div class: 'info-block', =>
+        @span outlet: 'descriptionLabel', class: 'info-block-item description'
+        @span class: 'info-block-item options-label pull-right', =>
           @span 'Finding with Options: '
           @span outlet: 'optionsLabel', class: 'options'
-        @span outlet: 'descriptionLabel', class: 'description'
 
-      @div outlet: 'replacmentInfoBlock', class: 'block', =>
+      @div outlet: 'replacmentInfoBlock', class: 'input-block', =>
         @progress outlet: 'replacementProgress', class: 'inline-block'
         @span outlet: 'replacmentInfo', class: 'inline-block', 'Replaced 2 files of 10 files'
 
-      @div class: 'find-container block', =>
-        @div class: 'editor-container', =>
+      @div class: 'input-block find-container', =>
+        @div class: 'input-block-item input-block-item--flex editor-container', =>
           @subview 'findEditor', new TextEditorView(mini: true, placeholderText: 'Find in project')
+        @div class: 'input-block-item', =>
+          @div class: 'btn-group btn-toggle btn-group-options', =>
+            @button outlet: 'regexOptionButton', class: 'btn option-regex', '.*'
+            @button outlet: 'caseOptionButton', class: 'btn option-case-sensitive', 'Aa'
 
-        @div class: 'btn-group btn-toggle btn-group-options', =>
-          @button outlet: 'regexOptionButton', class: 'btn option-regex', '.*'
-          @button outlet: 'caseOptionButton', class: 'btn option-case-sensitive', 'Aa'
-
-      @div class: 'replace-container block', =>
-        @div class: 'editor-container', =>
+      @div class: 'input-block replace-container', =>
+        @div class: 'input-block-item input-block-item--flex editor-container', =>
           @subview 'replaceEditor', new TextEditorView(mini: true, placeholderText: 'Replace in project')
+        @div class: 'input-block-item', =>
+          @div class: 'btn-group btn-group-replace-all', =>
+            @button outlet: 'replaceAllButton', class: 'btn', 'Replace All'
 
-        @div class: 'btn-group btn-group-replace-all', =>
-          @button outlet: 'replaceAllButton', class: 'btn', 'Replace All'
-
-      @div class: 'paths-container block', =>
-        @div class: 'editor-container', =>
+      @div class: 'input-block paths-container', =>
+        @div class: 'input-block-item editor-container', =>
           @subview 'pathsEditor', new TextEditorView(mini: true, placeholderText: 'File/directory pattern. eg. `src` to search in the "src" directory or `*.js` to search all javascript files.')
 
   initialize: (@findInBufferModel, @model, {findHistory, replaceHistory, pathsHistory}) ->
