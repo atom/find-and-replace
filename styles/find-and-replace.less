@@ -41,15 +41,14 @@ atom-workspace.find-visible {
 // Both project and buffer FNR styles
 .find-and-replace,
 .project-find {
-  min-width: 320px; // fit find input + find-meta-container
+  min-width: 320px; // fit find input + result counter
   -webkit-user-select: none;
-  padding: @component-padding / 2;
+  padding: @component-padding/2;
 
-  // replaces default blocks, adds wrapping when narrow
-  .info-block {
+  .header {
     padding: @component-padding/4 @component-padding/2;
   }
-  .info-block-item {
+  .header-item {
     margin: @component-padding/4 0;
   }
 
@@ -59,24 +58,24 @@ atom-workspace.find-visible {
     width: 100%;
   }
   .input-block-item {
+    display: flex;
     flex: 1;
     padding: @component-padding / 2;
+  }
+
+  .btn-group {
     display: flex;
-    .btn-group {
+    flex: 1;
+    .btn {
       flex: 1;
-      display: flex;
-      .btn {
-        flex: 1;
-      }
-      & + .btn-group {
-        margin-left: @component-padding;
-      }
+    }
+    & + .btn-group {
+      margin-left: @component-padding;
     }
   }
 
   .description {
     display: inline-block;
-    margin-bottom: .75em;
     .subtle-info-message {
       padding-left: 5px;
       color: @text-color-subtle;
@@ -95,15 +94,10 @@ atom-workspace.find-visible {
     }
   }
 
-  .find-container,
-  .replace-container,
-  .paths-container {
-
-    .editor-container {
-      position: relative;
-      atom-text-editor {
-        width: 100%;
-      }
+  .editor-container {
+    position: relative;
+    atom-text-editor {
+      width: 100%;
     }
   }
 
@@ -111,28 +105,27 @@ atom-workspace.find-visible {
 
 // Buffer find and replace
 .find-and-replace {
-  @button-width: 120px;
-  @option-button-width: 200px;
+  @button-width: 120px;        // Find + Replace buttons
+  @option-button-width: 200px; // Replace All + option buttons
+  @item-width: 260px;          // wrap block width
 
   .input-block-item {
-    flex: 1 1 260px;
+    flex: 1 1 @item-width;
   }
   .input-block-item--flex {
-    flex: 100 1 260px;
+    flex: 100 1 @item-width;
   }
-  .btn-group-replace.btn-group {
+
+  .btn-group-find,
+  .btn-group-replace {
     flex: 1 1 @button-width;
   }
-  .btn-group-replace-all.btn-group {
+  .btn-group-replace-all,
+  .btn-group-options {
     flex: 1 1 @option-button-width;
   }
 
-  .btn-group-find.btn-group {
-    flex: 1 1 @button-width;
-  }
-  .btn-group-options.btn-group {
-    flex: 1 1 @option-button-width;
-
+  .btn-group-options {
     .btn {
       .option-button();
       flex: 1 1 25%;
@@ -143,13 +136,13 @@ atom-workspace.find-visible {
         font-size: 20px;
         padding-top: 3px;
       }
-
       &.option-whole-word {
         font-size: 13px;
       }
     }
   }
 
+  // results count
   .find-meta-container {
     position: absolute;
     top: 1px;
@@ -159,7 +152,6 @@ atom-workspace.find-visible {
     font-size: .9em;
     line-height: @component-line-height;
     pointer-events: none;
-
     .result-counter {
       margin-right: @component-padding;
     }
@@ -168,13 +160,14 @@ atom-workspace.find-visible {
 
 // Project find and replace
 .project-find {
+  @project-input-width: 260px;
   @project-button-width: 100px;
 
   .input-block-item {
     flex: 1 1 @project-button-width;
   }
   .input-block-item--flex {
-    flex: 100 1 260px;
+    flex: 100 1 @project-input-width;
   }
 
   .loading,
@@ -184,19 +177,15 @@ atom-workspace.find-visible {
     display: none;
   }
 
-  .btn-group.btn-group-options {
+  .btn-group-options {
     width: @project-button-width;
     .btn {
       .option-button();
-      width: 50%;
     }
   }
 
-  .btn-group.btn-group-replace-all {
+  .btn-group-replace-all {
     width: @project-button-width;
-    .btn {
-      width: 100%;
-    }
   }
 }
 

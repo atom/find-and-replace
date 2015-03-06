@@ -8,13 +8,13 @@ module.exports =
 class FindView extends View
   @content: ->
     @div tabIndex: -1, class: 'find-and-replace', =>
-      @div class: 'info-block', =>
-        @span outlet: 'descriptionLabel', class: 'info-block-item description', 'Find in Current Buffer'
-        @span class: 'info-block-item options-label pull-right', =>
+      @header class: 'header', =>
+        @span outlet: 'descriptionLabel', class: 'header-item description', 'Find in Current Buffer'
+        @span class: 'header-item options-label pull-right', =>
           @span 'Finding with Options: '
           @span outlet: 'optionsLabel', class: 'options'
 
-      @div class: 'input-block find-container', =>
+      @section class: 'input-block find-container', =>
         @div class: 'input-block-item input-block-item--flex editor-container', =>
           @subview 'findEditor', new TextEditorView(mini: true, placeholderText: 'Find in current buffer')
           @div class: 'find-meta-container', =>
@@ -29,7 +29,7 @@ class FindView extends View
             @button outlet: 'selectionOptionButton', class: 'btn option-selection', '"'
             @button outlet: 'wholeWordOptionButton', class: 'btn option-whole-word', '\\b'
 
-      @div class: 'input-block replace-container', =>
+      @section class: 'input-block replace-container', =>
         @div class: 'input-block-item input-block-item--flex editor-container', =>
           @subview 'replaceEditor', new TextEditorView(mini: true, placeholderText: 'Replace in current buffer')
 
