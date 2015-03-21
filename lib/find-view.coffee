@@ -177,8 +177,15 @@ class FindView extends View
     @findPrevious(focusEditorAfter: atom.config.get('find-and-replace.focusEditorAfterSearch'))
 
   liveSearch: ->
-    pattern = @findEditor.getText()
-    @updateModel { pattern }
+    if atom.config.get('find-and-replace.liveSearch')
+      pattern = @findEditor.getText()
+      @updateModel { pattern }
+    else
+      pattern = @findEditor.getText()
+      editor = this
+      updateModel = () ->
+        editor.updateModel { pattern } if editor.findEditor.getText() == pattern
+      setTimeout(updateModel, 750)
 
   findAll: (options={focusEditorAfter: true}) =>
     @findAndSelectResult(@selectAllMarkers, options)

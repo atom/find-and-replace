@@ -17,6 +17,10 @@ module.exports =
     openProjectFindResultsInRightPane:
       type: 'boolean'
       default: false
+    liveSearch:
+      type: 'boolean'
+      default: true
+
 
   activate: ({@viewState, @projectViewState, @resultsModelState, @modelState, findHistory, replaceHistory, pathsHistory}={}) ->
     atom.workspace.addOpener (filePath) =>
