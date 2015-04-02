@@ -13,11 +13,11 @@ module.exports =
 class ProjectFindView extends View
   @content: ->
     @div tabIndex: -1, class: 'project-find padded', =>
-      @div class: 'block', =>
+      @div class: 'find-header block', =>
+        @span outlet: 'descriptionLabel', class: 'description'
         @span class: 'options-label pull-right', =>
           @span 'Finding with Options: '
           @span outlet: 'optionsLabel', class: 'options'
-        @span outlet: 'descriptionLabel', class: 'description'
 
       @div outlet: 'replacmentInfoBlock', class: 'block', =>
         @progress outlet: 'replacementProgress', class: 'inline-block'
