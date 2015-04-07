@@ -41,42 +41,67 @@ atom-workspace.find-visible {
 // Both project and buffer FNR styles
 .find-and-replace,
 .project-find {
+  @min-width: 200px; // min width before it starts scrolling
+
+  -webkit-user-select: none;
+  padding: @component-padding/2;
+  overflow-x: scroll;
+
+  .header {
+    padding: @component-padding/4 @component-padding/2;
+    min-width: @min-width;
+  }
+  .header-item {
+    margin: @component-padding/4 0;
+  }
+
+  .input-block {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    min-width: @min-width;
+  }
+  .input-block-item {
+    display: flex;
+    flex: 1;
+    padding: @component-padding / 2;
+  }
+
+  .btn-group {
+    display: flex;
+    flex: 1;
+    .btn {
+      flex: 1;
+    }
+    & + .btn-group {
+      margin-left: @component-padding;
+    }
+  }
+
+  .description {
+    display: inline-block;
+    .subtle-info-message {
+      padding-left: 5px;
+      color: @text-color-subtle;
+      .highlight {
+        color: @text-color;
+        font-weight: normal;
+      }
+    }
+  }
+
   .options-label {
     color: @text-color-subtle;
     position: relative;
-
     .options {
       color: @text-color;
     }
   }
 
-  .subtle-info-message {
-    padding-left: 5px;
-    color: @text-color-subtle;
-    .highlight {
-      color: @text-color;
-      font-weight: normal;
-    }
-  }
-
-  .find-container,
-  .replace-container,
-  .paths-container {
-    display: -webkit-flex;
-    -webkit-flex-direction: row;
-
-    .btn-group {
-      margin-left: @component-padding;
-    }
-
-    .editor-container {
-      position: relative;
-      -webkit-flex: 1;
-      overflow: hidden;
-
-      atom-text-editor {
-        width: 100%;
-      }
+  .editor-container {
+    position: relative;
+    atom-text-editor {
+      width: 100%;
     }
   }
 
@@ -84,80 +109,74 @@ atom-workspace.find-visible {
 
 // Buffer find and replace
 .find-and-replace {
-  @button-width: 240px;
-  @option-button-width: 140px;
-  @find-button-width: @button-width - @option-button-width - @component-padding;
+  @button-width: 120px;        // Find + Replace buttons
+  @option-button-width: 200px; // Replace All + option buttons
+  @item-width: 260px;          // wrap block width
 
-  padding: @component-padding;
-  -webkit-user-select: none;
-
-  .btn-group-replace.btn-group {
-    width: @find-button-width;
-    .btn {
-      width: 100%;
-    }
+  .input-block-item {
+    flex: 1 1 @item-width;
+  }
+  .input-block-item--flex {
+    flex: 100 1 @item-width;
   }
 
-  .btn-group-replace-all.btn-group {
-    width: @option-button-width;
-    .btn {
-      width: 100%;
-    }
+  .btn-group-find,
+  .btn-group-replace {
+    flex: 1 1 @button-width;
+  }
+  .btn-group-replace-all,
+  .btn-group-options {
+    flex: 1 1 @option-button-width;
   }
 
-  .btn-group-find.btn-group {
-    width: @find-button-width;
-    .btn {
-      width: 100%;
-    }
-  }
-  .btn-group-options.btn-group {
-    width: @option-button-width;
+  .btn-group-options {
     .btn {
       .option-button();
-
-      // The -1px margin reduces the size, so add one to those with the neg margin.
-      width: @option-button-width / 4 + 1px;
-      &:first-child {
-        width: @option-button-width / 4;
-      }
-
+      flex: 1 1 25%;
+      padding: 0;
+      text-align: center;
       &.option-selection {
         font-family: "Times New Roman";
         font-size: 20px;
         padding-top: 3px;
       }
-
       &.option-whole-word {
         font-size: 13px;
       }
     }
   }
 
+  .find-container atom-text-editor {
+    padding-right: 64px; // leave some room for the results count
+  }
+
+  // results count
   .find-meta-container {
     position: absolute;
     top: 1px;
     right: 0;
+    margin: @component-padding/2 @component-padding/2 0 0;
     z-index: 2;
     font-size: .9em;
     line-height: @component-line-height;
     pointer-events: none;
-
     .result-counter {
       margin-right: @component-padding;
     }
-  }
-
-  .block {
-    overflow: hidden;
   }
 }
 
 // Project find and replace
 .project-find {
-  @project-button-width: 90px;
+  @project-input-width: 260px;
+  @project-button-width: 100px;
 
-  -webkit-user-select: none;
+  .input-block-item {
+    flex: 1 1 @project-button-width;
+  }
+  .input-block-item--flex {
+    flex: 100 1 @project-input-width;
+  }
 
   .loading,
   .preview-block,
@@ -166,19 +185,15 @@ atom-workspace.find-visible {
     display: none;
   }
 
-  .btn-group.btn-group-options {
+  .btn-group-options {
     width: @project-button-width;
     .btn {
       .option-button();
-      width: 50%;
     }
   }
 
-  .btn-group.btn-group-replace-all {
+  .btn-group-replace-all {
     width: @project-button-width;
-    .btn {
-      width: 100%;
-    }
   }
 }
 
