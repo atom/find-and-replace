@@ -240,7 +240,7 @@ describe 'ResultsView', ->
         atom.commands.dispatch resultsView.element, 'core:confirm'
 
       waitsFor ->
-        openHandler.callCount == 1
+        openHandler.callCount is 1
 
       runs ->
         expect(atom.workspace.getActivePaneItem().getPath()).toContain('sample.')
@@ -252,7 +252,7 @@ describe 'ResultsView', ->
         atom.commands.dispatch resultsView.element, 'core:confirm'
 
       waitsFor ->
-        openHandler.callCount == 1
+        openHandler.callCount is 1
 
       runs ->
         expect(atom.workspace.getActivePaneItem().getPath()).toContain('sample.')

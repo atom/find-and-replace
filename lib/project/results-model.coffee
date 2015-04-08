@@ -67,9 +67,6 @@ class ResultsModel
   onDidRemoveResult: (callback) ->
     @emitter.on 'did-remove-result', callback
 
-  onDidFinishSearching: (callback) ->
-    @emitter.on 'did-finish-searching', callback
-
   serialize: ->
     {@useRegex, @caseSensitive}
 
@@ -102,7 +99,7 @@ class ResultsModel
     @emitter.emit 'did-clear-replacement-state', @getResultsSummary()
 
   search: (pattern, searchPaths, replacementPattern, {onlyRunIfChanged, keepReplacementState}={}) ->
-    return Q() if onlyRunIfChanged and pattern? and searchPaths? and pattern == @pattern and _.isEqual(searchPaths, @searchedPaths)
+    return Q() if onlyRunIfChanged and pattern? and searchPaths? and pattern is @pattern and _.isEqual(searchPaths, @searchedPaths)
 
     if keepReplacementState
       @clearSearchState()
@@ -129,7 +126,7 @@ class ResultsModel
 
     @emitter.emit 'did-start-searching', @inProgressSearchPromise
     @inProgressSearchPromise.then (message) =>
-      if message == 'cancelled'
+      if message is 'cancelled'
         @emitter.emit 'did-cancel-searching'
       else
         @inProgressSearchPromise = null

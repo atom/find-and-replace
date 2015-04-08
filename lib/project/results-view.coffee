@@ -59,7 +59,7 @@ class ResultsView extends ScrollView
       resultView.renderResult(result)
     else
       @renderResults()
-      @selectFirstResult() if @getPathCount() == 1
+      @selectFirstResult() if @getPathCount() is 1
 
   removeResult: ({filePath}) =>
     resultView = @getResultView(filePath)
