@@ -31,5 +31,8 @@
     "q": "^1.0.1",
     "temp": "0.8.1",
     "underscore-plus": "1.x"
+  },
+  "devDependencies": {
+    "coffeelint": "^1.9.3"
   }
 }
