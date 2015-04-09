@@ -40,7 +40,7 @@ class HistoryCycler
       @miniEditor.setText(text) if text isnt @miniEditor.getText()
 
   previous: ->
-    if @history.length == 0 or (@atLastItem() and @miniEditor.getText() != @history.getLast())
+    if @history.length is 0 or (@atLastItem() and @miniEditor.getText() isnt @history.getLast())
       @scratch = @miniEditor.getText()
     else if @index > 0
       @index--
@@ -59,7 +59,7 @@ class HistoryCycler
     @miniEditor.setText item
 
   atLastItem: ->
-    @index == @history.length - 1
+    @index is @history.length - 1
 
   store: ->
     text = @miniEditor.getText()

@@ -132,7 +132,7 @@ class FindView extends View
     @wholeWordOptionButton.on 'click', @toggleWholeWordOption
 
     @on 'focus', => @findEditor.focus()
-    @find('button').on 'click', =>
+    @find('button').on 'click', ->
       workspaceElement = atom.views.getView(atom.workspace)
       workspaceElement.focus()
 
@@ -177,7 +177,7 @@ class FindView extends View
 
   liveSearch: ->
     pattern = @findEditor.getText()
-    @updateModel { pattern }
+    @updateModel {pattern}
 
   findAll: (options={focusEditorAfter: true}) =>
     @findAndSelectResult(@selectAllMarkers, options)
@@ -190,10 +190,10 @@ class FindView extends View
 
   findAndSelectResult: (selectFunction, {focusEditorAfter, fieldToFocus}) =>
     pattern = @findEditor.getText()
-    @updateModel { pattern }
+    @updateModel {pattern}
     @findHistory.store()
 
-    if @markers.length == 0
+    if @markers.length is 0
       atom.beep()
     else
       selectFunction()
@@ -213,11 +213,11 @@ class FindView extends View
 
   replace: (nextOrPreviousFn, nextIndexFn) ->
     pattern = @findEditor.getText()
-    @updateModel { pattern }
+    @updateModel {pattern}
     @findHistory.store()
     @replaceHistory.store()
 
-    if @markers.length == 0
+    if @markers.length is 0
       atom.beep()
     else
       unless currentMarker = @findModel.currentResultMarker
@@ -258,9 +258,9 @@ class FindView extends View
     if @findModel.currentResultMarker and (index = @markers.indexOf(@findModel.currentResultMarker)) > -1
       text = "#{ index + 1} of #{@markers.length}"
     else
-      if not @markers? or @markers.length == 0
+      if not @markers? or @markers.length is 0
         text = "no results"
-      else if @markers.length == 1
+      else if @markers.length is 1
         text = "1 found"
       else
         text = "#{@markers.length} found"
@@ -343,22 +343,22 @@ class FindView extends View
     @optionsLabel.text(label.join(', '))
 
   toggleRegexOption: =>
-    @updateModel {pattern: @findEditor.getText(), useRegex: !@findModel.useRegex}
+    @updateModel {pattern: @findEditor.getText(), useRegex: not @findModel.useRegex}
     @selectFirstMarkerAfterCursor()
     @updateOptionsLabel()
 
   toggleCaseOption: =>
-    @updateModel {pattern: @findEditor.getText(), caseSensitive: !@findModel.caseSensitive}
+    @updateModel {pattern: @findEditor.getText(), caseSensitive: not @findModel.caseSensitive}
     @selectFirstMarkerAfterCursor()
     @updateOptionsLabel()
 
   toggleSelectionOption: =>
-    @updateModel {pattern: @findEditor.getText(), inCurrentSelection: !@findModel.inCurrentSelection}
+    @updateModel {pattern: @findEditor.getText(), inCurrentSelection: not @findModel.inCurrentSelection}
     @selectFirstMarkerAfterCursor()
     @updateOptionsLabel()
 
   toggleWholeWordOption: =>
-    @updateModel {pattern: @findEditor.getText(), wholeWord: !@findModel.wholeWord}
+    @updateModel {pattern: @findEditor.getText(), wholeWord: not @findModel.wholeWord}
     @selectFirstMarkerAfterCursor()
     @updateOptionsLabel()
 

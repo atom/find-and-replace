@@ -171,7 +171,7 @@ class ProjectFindView extends View
     @findEditor.getModel().selectAll()
 
   confirm: ->
-    if @findEditor.getText().length == 0
+    if @findEditor.getText().length is 0
       @model.clear()
       return
 

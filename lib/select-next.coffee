@@ -95,11 +95,11 @@ class SelectNext
   updateSavedSelections: (selection=null) ->
     selections = @editor.getSelections()
     @selectionRanges = [] if selections.length < 3
-    if @selectionRanges.length == 0
+    if @selectionRanges.length is 0
       @selectionRanges.push s.getBufferRange() for s in selections
     else if selection
       selectionRange = selection.getBufferRange()
-      return unless @selectionRanges.indexOf(selectionRange) == -1
+      return unless @selectionRanges.indexOf(selectionRange) is -1
       @selectionRanges.push selectionRange
 
   isNonWordCharacter: (character) ->

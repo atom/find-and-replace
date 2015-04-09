@@ -123,7 +123,7 @@ class FindModel
 
   findMarker: (range) ->
     if @markers? and @markers.length
-      attributes = { class: @constructor.markerClass, startPosition: range.start, endPosition: range.end }
+      attributes = {class: @constructor.markerClass, startPosition: range.start, endPosition: range.end}
       _.find @editor.findMarkers(attributes), (marker) -> marker.isValid()
 
   createMarker: (range) ->

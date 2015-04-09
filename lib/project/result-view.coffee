@@ -40,7 +40,7 @@ class ResultView extends View
     else
       @description.hide()
 
-    if not matches or matches.length == 0
+    if not matches or matches.length is 0
       @hide()
     else
       @show()
