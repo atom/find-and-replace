@@ -328,8 +328,8 @@ class FindView extends View
       editor.scrollToCursorPosition(center: true)
 
   setSelectionAsFindPattern: =>
-    pattern = @findModel.getEditor().getSelectedText()
-    @updateModel {pattern}
+    pattern = @findModel.getEditor()?.getSelectedText() or @findModel.getEditor()?.getWordUnderCursor()
+    @updateModel {pattern} if pattern
 
   updateOptionsLabel: ->
     label = []

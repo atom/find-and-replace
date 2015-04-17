@@ -268,6 +268,5 @@ class ProjectFindView extends View
 
   setSelectionAsFindPattern: =>
     editor = atom.workspace.getActivePaneItem()
-    if editor?.getSelectedText?
-      pattern = editor.getSelectedText()
-      @findEditor.setText(pattern)
+    pattern = editor?.getSelectedText() or editor?.getWordUnderCursor()
+    @findEditor.setText(pattern) if pattern
