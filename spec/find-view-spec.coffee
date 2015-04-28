@@ -494,6 +494,11 @@ describe 'FindView', ->
       atom.commands.dispatch workspaceElement, 'find-and-replace:find-next'
       expect(editor.getSelectedBufferRange()).toEqual [[8,11],[8,15]]
 
+      atom.workspace.destroyActivePane()
+      atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
+      expect(findView.findEditor.getText()).toBe 'sort'
+      expect(editor.getSelectedBufferRange()).toEqual [[8,11],[8,15]]
+
     it "does not highlight the found text when the find view is hidden", ->
       atom.commands.dispatch(findView.findEditor.element, 'core:cancel')
       atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:find-next')
