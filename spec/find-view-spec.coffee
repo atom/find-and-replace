@@ -484,20 +484,70 @@ describe 'FindView', ->
       editor.setSelectedBufferRange([[2, 34], [2, 39]])
       expect(findView.resultCounter.text()).toEqual('3 of 6')
 
-    it "places the selected text into the find editor when find-and-replace:set-find-pattern is triggered", ->
-      editor.setSelectedBufferRange([[1,6],[1,10]])
-      atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
+    describe "when find-and-replace:use-selection-as-find-pattern is triggered", ->
+      it "places the selected text into the find editor", ->
+        editor.setSelectedBufferRange([[1,6],[1,10]])
+        atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
 
-      expect(findView.findEditor.getText()).toBe 'sort'
-      expect(editor.getSelectedBufferRange()).toEqual [[1,6],[1,10]]
+        expect(findView.findEditor.getText()).toBe 'sort'
+        expect(editor.getSelectedBufferRange()).toEqual [[1,6],[1,10]]
 
-      atom.commands.dispatch workspaceElement, 'find-and-replace:find-next'
-      expect(editor.getSelectedBufferRange()).toEqual [[8,11],[8,15]]
+        atom.commands.dispatch workspaceElement, 'find-and-replace:find-next'
+        expect(editor.getSelectedBufferRange()).toEqual [[8,11],[8,15]]
 
-      atom.workspace.destroyActivePane()
-      atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
-      expect(findView.findEditor.getText()).toBe 'sort'
-      expect(editor.getSelectedBufferRange()).toEqual [[8,11],[8,15]]
+        atom.workspace.destroyActivePane()
+        atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
+        expect(findView.findEditor.getText()).toBe 'sort'
+        expect(editor.getSelectedBufferRange()).toEqual [[8,11],[8,15]]
+
+      it "places the word under the cursor into the find editor", ->
+        editor.setSelectedBufferRange([[1,8],[1,8]])
+        atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
+
+        expect(findView.findEditor.getText()).toBe 'sort'
+        expect(editor.getSelectedBufferRange()).toEqual [[1,8],[1,8]]
+
+        atom.commands.dispatch workspaceElement, 'find-and-replace:find-next'
+        expect(editor.getSelectedBufferRange()).toEqual [[8,11],[8,15]]
+
+      it "places the previously selected text into the find editor if no selection", ->
+        editor.setSelectedBufferRange([[1,6],[1,10]])
+        atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
+        expect(findView.findEditor.getText()).toBe 'sort'
+
+        editor.setSelectedBufferRange([[1,1],[1,1]])
+        atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
+        expect(findView.findEditor.getText()).toBe 'sort'
+
+    describe "when find-and-replace:find-next-selected is triggered", ->
+      it "places the selected text into the find editor and finds the next occurrence", ->
+        editor.setSelectedBufferRange([[0,9],[0,13]])
+        atom.commands.dispatch workspaceElement, 'find-and-replace:find-next-selected'
+
+        expect(findView.findEditor.getText()).toBe 'sort'
+        expect(editor.getSelectedBufferRange()).toEqual [[1,6],[1,10]]
+
+      it "places the word under the cursor into the find editor and finds the next occurrence", ->
+        editor.setSelectedBufferRange([[1,8],[1,8]])
+        atom.commands.dispatch workspaceElement, 'find-and-replace:find-next-selected'
+
+        expect(findView.findEditor.getText()).toBe 'sort'
+        expect(editor.getSelectedBufferRange()).toEqual [[8,11],[8,15]]
+
+    describe "when find-and-replace:find-previous-selected is triggered", ->
+      it "places the selected text into the find editor and finds the previous occurrence ", ->
+        editor.setSelectedBufferRange([[0,9],[0,13]])
+        atom.commands.dispatch workspaceElement, 'find-and-replace:find-previous-selected'
+
+        expect(findView.findEditor.getText()).toBe 'sort'
+        expect(editor.getSelectedBufferRange()).toEqual [[11,9],[11,13]]
+
+      it "places the word under the cursor into the find editor and finds the previous occurrence", ->
+        editor.setSelectedBufferRange([[8,13],[8,13]])
+        atom.commands.dispatch workspaceElement, 'find-and-replace:find-previous-selected'
+
+        expect(findView.findEditor.getText()).toBe 'sort'
+        expect(editor.getSelectedBufferRange()).toEqual [[1,6],[1,10]]
 
     it "does not highlight the found text when the find view is hidden", ->
       atom.commands.dispatch(findView.findEditor.element, 'core:cancel')

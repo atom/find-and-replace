@@ -703,7 +703,7 @@ describe 'ProjectFindView', ->
         atom.commands.dispatch(projectFindView.replaceEditor[0], 'core:move-down')
         expect(projectFindView.replaceEditor.getText()).toEqual ''
 
-    describe "when find-and-replace:set-find-pattern is triggered", ->
+    describe "when find-and-replace:use-selection-as-find-pattern is triggered", ->
       it "places the selected text into the find editor", ->
         editor.setSelectedBufferRange([[1,6],[1,10]])
         atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
@@ -713,14 +713,23 @@ describe 'ProjectFindView', ->
         atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
         expect(projectFindView.findEditor.getText()).toBe 'function'
 
-      it "places the previously selected text into the find editor if no selection", ->
+      it "places the word under the cursor into the find editor", ->
+        editor.setSelectedBufferRange([[1,8],[1,8]])
+        atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
+        expect(projectFindView.findEditor.getText()).toBe 'sort'
+
+        editor.setSelectedBufferRange([[1,15],[1,15]])
+        atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
+        expect(projectFindView.findEditor.getText()).toBe 'function'
+
+      it "places the previously selected text into the find editor if no selection and no word under cursor", ->
         editor.setSelectedBufferRange([[1,13],[1,21]])
         atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
         expect(projectFindView.findEditor.getText()).toBe 'function'
 
-        editor.setSelectedBufferRange([[1,30],[1,30]])
+        editor.setSelectedBufferRange([[1,1],[1,1]])
         atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
-        expect(projectFindView.findEditor.getText()).toBe ''
+        expect(projectFindView.findEditor.getText()).toBe 'function'
 
     describe "when there is an error searching", ->
       it "displays the errors in the results pane", ->
