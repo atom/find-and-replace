@@ -99,7 +99,7 @@ class SelectNext
       @selectionRanges.push s.getBufferRange() for s in selections
     else if selection
       selectionRange = selection.getBufferRange()
-      return unless @selectionRanges.indexOf(selectionRange) is -1
+      return if @selectionRanges.some (existingRange) -> existingRange.isEqual(selectionRange)
       @selectionRanges.push selectionRange
 
   isNonWordCharacter: (character) ->
