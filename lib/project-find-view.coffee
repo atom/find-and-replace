@@ -1,4 +1,5 @@
 fs = require 'fs-plus'
+path = require 'path'
 Q = require 'q'
 _ = require 'underscore-plus'
 {Disposable, CompositeDisposable} = require 'atom'
