@@ -29,8 +29,10 @@ class ProjectFindView extends View
           @subview 'findEditor', new TextEditorView(mini: true, placeholderText: 'Find in project')
         @div class: 'input-block-item', =>
           @div class: 'btn-group btn-toggle btn-group-options', =>
-            @button outlet: 'regexOptionButton', class: 'btn option-regex', '.*'
-            @button outlet: 'caseOptionButton', class: 'btn option-case-sensitive', 'Aa'
+            @button outlet: 'regexOptionButton', class: 'btn option-regex', =>
+              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-regex" /></svg>'
+            @button outlet: 'caseOptionButton', class: 'btn option-case-sensitive', =>
+              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-case" /></svg>'
 
       @section class: 'input-block replace-container', =>
         @div class: 'input-block-item input-block-item--flex editor-container', =>
