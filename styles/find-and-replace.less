@@ -1,11 +1,6 @@
 @import "ui-variables";
 @import "syntax-variables";
 
-.option-button() {
-  font-size: 14px;
-  font-family: courier, monospace;
-}
-
 // result markers
 atom-text-editor,
 atom-text-editor::shadow {
@@ -78,6 +73,20 @@ atom-workspace.find-visible {
     }
   }
 
+  .btn-group-options {
+    .btn {
+      line-height: 1;
+    }
+  }
+
+  .btn > .icon {
+    width: 20px;
+    height: 16px;
+    vertical-align: middle;
+    fill: currentColor;
+    stroke: currentColor;
+  }
+
   .description {
     display: inline-block;
     .subtle-info-message {
@@ -131,18 +140,9 @@ atom-workspace.find-visible {
 
   .btn-group-options {
     .btn {
-      .option-button();
       flex: 1 1 25%;
       padding: 0;
       text-align: center;
-      &.option-selection {
-        font-family: "Times New Roman";
-        font-size: 20px;
-        padding-top: 3px;
-      }
-      &.option-whole-word {
-        font-size: 13px;
-      }
     }
   }
 
@@ -187,9 +187,6 @@ atom-workspace.find-visible {
 
   .btn-group-options {
     width: @project-button-width;
-    .btn {
-      .option-button();
-    }
   }
 
   .btn-group-replace-all {
