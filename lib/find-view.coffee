@@ -110,6 +110,10 @@ class FindView extends View
       title: "Only In Selection",
       keyBindingCommand: 'find-and-replace:toggle-selection-option',
       keyBindingTarget: @findEditor.element
+    subs.add atom.tooltips.add @wholeWordOptionButton,
+      title: "Whole Word",
+      keyBindingCommand: 'find-and-replace:toggle-whole-word-option',
+      keyBindingTarget: @findEditor.element
 
     subs.add atom.tooltips.add @nextButton,
       title: "Find Next",
