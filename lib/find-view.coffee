@@ -1,7 +1,6 @@
 _ = require 'underscore-plus'
 {$$$, View, TextEditorView} = require 'atom-space-pen-views'
 {CompositeDisposable} = require 'atom'
-FindModel = require './find-model'
 {HistoryCycler} = require './history'
 
 module.exports =
@@ -294,7 +293,7 @@ class FindView extends View
     @setErrorMessage(error.message)
 
   updateModel: (options) ->
-    @findModel.update(options)
+    @findModel.setSearchParams(options)
 
   updateResultCounter: =>
     if @findModel.currentResultMarker and (index = @markers.indexOf(@findModel.currentResultMarker)) > -1

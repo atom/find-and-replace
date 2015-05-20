@@ -3,7 +3,7 @@
 
 SelectNext = require './select-next'
 {History} = require './history'
-FindModel = require './find-model'
+BufferSearch = require './buffer-search'
 FindView = require './find-view'
 ProjectFindView = require './project-find-view'
 ResultsModel = require './project/results-model'
@@ -23,7 +23,14 @@ module.exports =
       new ResultsPaneView() if filePath is ResultsPaneView.URI
 
     @subscriptions = new CompositeDisposable
-    @findModel = new FindModel(@modelState)
+
+    @findModel = new BufferSearch(@modelState)
+    @subscriptions.add atom.workspace.observeActivePaneItem (paneItem) =>
+      if paneItem?.getBuffer?()
+        @findModel.setEditor(paneItem)
+      else
+        @findModel.setEditor(null)
+
     @resultsModel = new ResultsModel(@resultsModelState)
     @findHistory = new History(findHistory)
     @replaceHistory = new History(replaceHistory)
@@ -142,7 +149,7 @@ module.exports =
     @findPanel = null
     @findView?.destroy()
     @findView = null
-
+    @findModel?.destroy()
     @findModel = null
 
     @projectFindPanel?.destroy()
