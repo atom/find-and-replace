@@ -210,7 +210,7 @@ class ProjectFindView extends View
         @model.replace(pattern, @getPaths(), replacementPattern, @model.getPaths())
 
   getPaths: ->
-    path.trim() for path in @pathsEditor.getText().trim().split(',') when path
+    inputPath.trim() for inputPath in @pathsEditor.getText().trim().split(',') when inputPath
 
   directoryPathForElement: (element) ->
     elementPath = element?.dataset.path ? element?.querySelector('[data-path]')?.dataset.path
