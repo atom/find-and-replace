@@ -13,6 +13,8 @@
       "find-and-replace:toggle",
       "find-and-replace:find-next",
       "find-and-replace:find-previous",
+      "find-and-replace:find-next-selected",
+      "find-and-replace:find-previous-selected",
       "find-and-replace:use-selection-as-find-pattern",
       "find-and-replace:show-replace",
       "find-and-replace:replace-next",

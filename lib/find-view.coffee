@@ -182,6 +182,8 @@ class FindView extends View
     @subscriptions.add atom.commands.add 'atom-workspace',
       'find-and-replace:find-next': => @findNext(focusEditorAfter: true)
       'find-and-replace:find-previous': => @findPrevious(focusEditorAfter: true)
+      'find-and-replace:find-next-selected': @findNextSelected
+      'find-and-replace:find-previous-selected': @findPreviousSelected
       'find-and-replace:use-selection-as-find-pattern': @setSelectionAsFindPattern
 
   handleReplaceEvents: ->
@@ -370,8 +372,16 @@ class FindView extends View
   setSelectionAsFindPattern: =>
     editor = @findModel.getEditor()
     if editor?
-      pattern = editor.getSelectedText()
-      @updateModel {pattern}
+      pattern = editor.getSelectedText() or editor.getWordUnderCursor()
+      @updateModel {pattern} if pattern
+
+  findNextSelected: =>
+    @setSelectionAsFindPattern()
+    @findNext(focusEditorAfter: true)
+
+  findPreviousSelected: =>
+    @setSelectionAsFindPattern()
+    @findPrevious(focusEditorAfter: true)
 
   updateOptionsLabel: ->
     label = []

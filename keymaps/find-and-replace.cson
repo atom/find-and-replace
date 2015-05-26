@@ -11,6 +11,8 @@
 '.platform-darwin atom-text-editor':
   'cmd-g': 'find-and-replace:find-next'
   'cmd-G': 'find-and-replace:find-previous'
+  'cmd-f3': 'find-and-replace:find-next-selected'
+  'cmd-shift-f3': 'find-and-replace:find-previous-selected'
   'cmd-ctrl-g': 'find-and-replace:select-all'
   'cmd-d': 'find-and-replace:select-next'
   'cmd-e': 'find-and-replace:use-selection-as-find-pattern'
@@ -20,6 +22,8 @@
 '.platform-win32 atom-text-editor, .platform-linux atom-text-editor':
   'f3': 'find-and-replace:find-next'
   'shift-f3': 'find-and-replace:find-previous'
+  'ctrl-f3': 'find-and-replace:find-next-selected'
+  'ctrl-shift-f3': 'find-and-replace:find-previous-selected'
   'alt-f3': 'find-and-replace:select-all'
   'ctrl-d': 'find-and-replace:select-next'
   'ctrl-e': 'find-and-replace:use-selection-as-find-pattern'
