@@ -61,7 +61,7 @@ class SelectNext
   selectNextOccurrence: (options={}) ->
     startingRange = options.start ? @editor.getSelectedBufferRange().end
     range = @findNextOccurrence([startingRange, @editor.getEofBufferPosition()])
-    range ?= @findNextOccurrence([[0,0], @editor.getSelections()[0].getBufferRange().start])
+    range ?= @findNextOccurrence([[0, 0], @editor.getSelections()[0].getBufferRange().start])
     @addSelection(range) if range?
 
   findNextOccurrence: (scanRange) ->

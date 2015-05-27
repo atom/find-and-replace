@@ -81,7 +81,7 @@ class FindModel
     if @inCurrentSelection
       bufferRange = @editor.getSelectedBufferRange()
     else
-      bufferRange = [[0,0],[Infinity,Infinity]]
+      bufferRange = [[0, 0], [Infinity, Infinity]]
 
     updatedMarkers = []
     markersToRemoveById = {}
