@@ -255,7 +255,7 @@ describe 'FindView', ->
   describe "finding", ->
     beforeEach ->
       atom.config.set('find-and-replace.focusEditorAfterSearch', false)
-      editor.setCursorBufferPosition([2,0])
+      editor.setCursorBufferPosition([2, 0])
       atom.commands.dispatch editorView, 'find-and-replace:show'
 
       waitsForPromise ->
@@ -278,7 +278,7 @@ describe 'FindView', ->
     describe "when the find string contains an escaped char", ->
       beforeEach ->
         editor.setText("\t\n\\t\\\\")
-        editor.setCursorBufferPosition([0,0])
+        editor.setCursorBufferPosition([0, 0])
 
       describe "when regex seach is enabled", ->
         beforeEach ->
@@ -333,7 +333,7 @@ describe 'FindView', ->
     describe "when whole-word search is enabled", ->
       beforeEach ->
         editor.setText("-----\nswhole-wordy\nwhole-word\nword\nwhole-swords")
-        editor.setCursorBufferPosition([0,0])
+        editor.setCursorBufferPosition([0, 0])
         atom.commands.dispatch findView.findEditor.element, 'find-and-replace:toggle-whole-word-option'
 
       it "finds the whole words", ->
@@ -348,12 +348,12 @@ describe 'FindView', ->
         expect(getResultDecorations(editor, 'current-result')).toHaveLength 1
 
     it "doesn't change the selection, beeps if there are no matches and keeps focus on the find view", ->
-      editor.setCursorBufferPosition([2,0])
+      editor.setCursorBufferPosition([2, 0])
       findView.findEditor.setText 'notinthefilebro'
       findView.findEditor.focus()
 
       atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
-      expect(editor.getCursorBufferPosition()).toEqual [2,0]
+      expect(editor.getCursorBufferPosition()).toEqual [2, 0]
       expect(atom.beep).toHaveBeenCalled()
       expect(findView).toHaveFocus()
 
@@ -379,7 +379,7 @@ describe 'FindView', ->
 
       describe "when there is a find-error", ->
         beforeEach ->
-          editor.setCursorBufferPosition([2,0])
+          editor.setCursorBufferPosition([2, 0])
           atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
 
         it "displays the error", ->
@@ -419,7 +419,7 @@ describe 'FindView', ->
 
     it "selects the next match when the 'find-and-replace:find-next' event is triggered and correctly focuses the editor", ->
       expect(findView).toHaveFocus()
-      atom.commands.dispatch editorView,('find-and-replace:find-next')
+      atom.commands.dispatch editorView, 'find-and-replace:find-next'
       expect(findView.resultCounter.text()).toEqual('3 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[2, 34], [2, 39]]
       expect(editorView).toHaveFocus()
@@ -452,7 +452,7 @@ describe 'FindView', ->
 
     it "selects the previous match when the 'find-and-replace:find-previous' event is triggered and correctly focuses the editor", ->
       expect(findView).toHaveFocus()
-      atom.commands.dispatch editorView,('find-and-replace:find-previous')
+      atom.commands.dispatch editorView, 'find-and-replace:find-previous'
       expect(findView.resultCounter.text()).toEqual('1 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[1, 27], [1, 22]]
       expect(editorView).toHaveFocus()
@@ -467,13 +467,13 @@ describe 'FindView', ->
     it "selects all matches when 'find-and-replace:find-all' is triggered and correctly focuses the editor", ->
       expect(findView).toHaveFocus()
       atom.commands.dispatch findView.findEditor.element, 'find-and-replace:find-all'
-      expect(editor.getSelectedBufferRanges()).toEqual [[[1, 27], [1, 22]], [[2, 8], [2, 13]], [[2, 34], [2, 39]], [[3, 16], [3, 21]], [[4,10], [4, 15]], [[5, 16], [5, 21]]]
+      expect(editor.getSelectedBufferRanges()).toEqual [[[1, 27], [1, 22]], [[2, 8], [2, 13]], [[2, 34], [2, 39]], [[3, 16], [3, 21]], [[4, 10], [4, 15]], [[5, 16], [5, 21]]]
       expect(editorView).toHaveFocus()
 
     it "will re-run search if 'find-and-replace:find-all' is triggered after changing the findEditor's text", ->
       findView.findEditor.setText 'sort'
       atom.commands.dispatch findView.findEditor.element, 'find-and-replace:find-all'
-      expect(editor.getSelectedBufferRanges()).toEqual [[[0, 9], [0, 13]], [[1, 6], [1, 10]],[[8, 11], [8, 15]], [[8, 43], [8, 47]], [[11, 9], [11, 13]]]
+      expect(editor.getSelectedBufferRanges()).toEqual [[[0, 9], [0, 13]], [[1, 6], [1, 10]], [[8, 11], [8, 15]], [[8, 43], [8, 47]], [[11, 9], [11, 13]]]
 
     it "replaces results counter with number of results found when user moves the cursor", ->
       editor.moveDown()
@@ -486,68 +486,68 @@ describe 'FindView', ->
 
     describe "when find-and-replace:use-selection-as-find-pattern is triggered", ->
       it "places the selected text into the find editor", ->
-        editor.setSelectedBufferRange([[1,6],[1,10]])
+        editor.setSelectedBufferRange([[1, 6], [1, 10]])
         atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
 
         expect(findView.findEditor.getText()).toBe 'sort'
-        expect(editor.getSelectedBufferRange()).toEqual [[1,6],[1,10]]
+        expect(editor.getSelectedBufferRange()).toEqual [[1, 6], [1, 10]]
 
         atom.commands.dispatch workspaceElement, 'find-and-replace:find-next'
-        expect(editor.getSelectedBufferRange()).toEqual [[8,11],[8,15]]
+        expect(editor.getSelectedBufferRange()).toEqual [[8, 11], [8, 15]]
 
         atom.workspace.destroyActivePane()
         atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
         expect(findView.findEditor.getText()).toBe 'sort'
-        expect(editor.getSelectedBufferRange()).toEqual [[8,11],[8,15]]
+        expect(editor.getSelectedBufferRange()).toEqual [[8, 11], [8, 15]]
 
       it "places the word under the cursor into the find editor", ->
-        editor.setSelectedBufferRange([[1,8],[1,8]])
+        editor.setSelectedBufferRange([[1, 8], [1, 8]])
         atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
 
         expect(findView.findEditor.getText()).toBe 'sort'
-        expect(editor.getSelectedBufferRange()).toEqual [[1,8],[1,8]]
+        expect(editor.getSelectedBufferRange()).toEqual [[1, 8], [1, 8]]
 
         atom.commands.dispatch workspaceElement, 'find-and-replace:find-next'
-        expect(editor.getSelectedBufferRange()).toEqual [[8,11],[8,15]]
+        expect(editor.getSelectedBufferRange()).toEqual [[8, 11], [8, 15]]
 
       it "places the previously selected text into the find editor if no selection", ->
-        editor.setSelectedBufferRange([[1,6],[1,10]])
+        editor.setSelectedBufferRange([[1, 6], [1, 10]])
         atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
         expect(findView.findEditor.getText()).toBe 'sort'
 
-        editor.setSelectedBufferRange([[1,1],[1,1]])
+        editor.setSelectedBufferRange([[1, 1], [1, 1]])
         atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
         expect(findView.findEditor.getText()).toBe 'sort'
 
     describe "when find-and-replace:find-next-selected is triggered", ->
       it "places the selected text into the find editor and finds the next occurrence", ->
-        editor.setSelectedBufferRange([[0,9],[0,13]])
+        editor.setSelectedBufferRange([[0, 9], [0, 13]])
         atom.commands.dispatch workspaceElement, 'find-and-replace:find-next-selected'
 
         expect(findView.findEditor.getText()).toBe 'sort'
-        expect(editor.getSelectedBufferRange()).toEqual [[1,6],[1,10]]
+        expect(editor.getSelectedBufferRange()).toEqual [[1, 6], [1, 10]]
 
       it "places the word under the cursor into the find editor and finds the next occurrence", ->
-        editor.setSelectedBufferRange([[1,8],[1,8]])
+        editor.setSelectedBufferRange([[1, 8], [1, 8]])
         atom.commands.dispatch workspaceElement, 'find-and-replace:find-next-selected'
 
         expect(findView.findEditor.getText()).toBe 'sort'
-        expect(editor.getSelectedBufferRange()).toEqual [[8,11],[8,15]]
+        expect(editor.getSelectedBufferRange()).toEqual [[8, 11], [8, 15]]
 
     describe "when find-and-replace:find-previous-selected is triggered", ->
       it "places the selected text into the find editor and finds the previous occurrence ", ->
-        editor.setSelectedBufferRange([[0,9],[0,13]])
+        editor.setSelectedBufferRange([[0, 9], [0, 13]])
         atom.commands.dispatch workspaceElement, 'find-and-replace:find-previous-selected'
 
         expect(findView.findEditor.getText()).toBe 'sort'
-        expect(editor.getSelectedBufferRange()).toEqual [[11,9],[11,13]]
+        expect(editor.getSelectedBufferRange()).toEqual [[11, 9], [11, 13]]
 
       it "places the word under the cursor into the find editor and finds the previous occurrence", ->
-        editor.setSelectedBufferRange([[8,13],[8,13]])
+        editor.setSelectedBufferRange([[8, 13], [8, 13]])
         atom.commands.dispatch workspaceElement, 'find-and-replace:find-previous-selected'
 
         expect(findView.findEditor.getText()).toBe 'sort'
-        expect(editor.getSelectedBufferRange()).toEqual [[1,6],[1,10]]
+        expect(editor.getSelectedBufferRange()).toEqual [[1, 6], [1, 10]]
 
     it "does not highlight the found text when the find view is hidden", ->
       atom.commands.dispatch(findView.findEditor.element, 'core:cancel')
@@ -681,7 +681,7 @@ describe 'FindView', ->
         expect(findView.resultCounter.text()).toEqual('6 found')
 
       it "does not beep if no matches were found", ->
-        editor.setCursorBufferPosition([2,0])
+        editor.setCursorBufferPosition([2, 0])
         findView.findEditor.setText 'notinthefilebro'
         atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
         atom.beep.reset()
@@ -707,26 +707,26 @@ describe 'FindView', ->
 
     describe "when regex is toggled", ->
       it "toggles regex via an event and finds text matching the pattern", ->
-        editor.setCursorBufferPosition([2,0])
+        editor.setCursorBufferPosition([2, 0])
         atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
         findView.findEditor.setText 'i[t]em+s'
         expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
 
       it "toggles regex via a button and finds text matching the pattern", ->
-        editor.setCursorBufferPosition([2,0])
+        editor.setCursorBufferPosition([2, 0])
         findView.regexOptionButton.click()
         findView.findEditor.setText 'i[t]em+s'
         expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
 
       it "re-runs the search using the new find text when toggled", ->
-        editor.setCursorBufferPosition([1,0])
+        editor.setCursorBufferPosition([1, 0])
         findView.findEditor.setText 's(o)rt'
         atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
         expect(editor.getSelectedBufferRange()).toEqual [[1, 6], [1, 10]]
 
       describe "when an invalid regex is entered", ->
         it "displays an error", ->
-          editor.setCursorBufferPosition([2,0])
+          editor.setCursorBufferPosition([2, 0])
           atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
           findView.findEditor.setText 'i[t'
           atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
@@ -734,25 +734,25 @@ describe 'FindView', ->
 
     describe "when whole-word is toggled", ->
       it "toggles whole-word via an event and finds text matching the pattern", ->
-        editor.setCursorBufferPosition([0,0])
+        editor.setCursorBufferPosition([0, 0])
         findView.findEditor.setText 'sort'
         atom.commands.dispatch findView.findEditor.element, 'core:confirm'
         expect(editor.getSelectedBufferRange()).toEqual [[0, 9], [0, 13]]
 
         atom.commands.dispatch findView.findEditor.element, 'find-and-replace:toggle-whole-word-option'
-        expect(editor.getSelectedBufferRange()).toEqual [[1,6], [1,10]]
+        expect(editor.getSelectedBufferRange()).toEqual [[1, 6], [1, 10]]
 
       it "toggles whole-word via a button and finds text matching the pattern", ->
-        editor.setCursorBufferPosition([0,0])
+        editor.setCursorBufferPosition([0, 0])
         findView.findEditor.setText 'sort'
         atom.commands.dispatch findView.findEditor.element, 'core:confirm'
         expect(editor.getSelectedBufferRange()).toEqual [[0, 9], [0, 13]]
 
         findView.wholeWordOptionButton.click()
-        expect(editor.getSelectedBufferRange()).toEqual [[1,6], [1,10]]
+        expect(editor.getSelectedBufferRange()).toEqual [[1, 6], [1, 10]]
 
       it "re-runs the search using the new find text when toggled", ->
-        editor.setCursorBufferPosition([8,0])
+        editor.setCursorBufferPosition([8, 0])
         findView.findEditor.setText 'apply'
         atom.commands.dispatch findView.findEditor.element, 'find-and-replace:toggle-whole-word-option'
         expect(editor.getSelectedBufferRange()).toEqual [[11, 20], [11, 25]]
@@ -760,14 +760,14 @@ describe 'FindView', ->
     describe "when case sensitivity is toggled", ->
       beforeEach ->
         editor.setText "-----\nwords\nWORDs\n"
-        editor.setCursorBufferPosition([0,0])
+        editor.setCursorBufferPosition([0, 0])
 
       it "toggles case sensitivity via an event and finds text matching the pattern", ->
         findView.findEditor.setText 'WORDs'
         atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
         expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 5]]
 
-        editor.setCursorBufferPosition([0,0])
+        editor.setCursorBufferPosition([0, 0])
         atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-case-option')
         expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 5]]
 
@@ -776,7 +776,7 @@ describe 'FindView', ->
         atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
         expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 5]]
 
-        editor.setCursorBufferPosition([0,0])
+        editor.setCursorBufferPosition([0, 0])
         findView.caseOptionButton.click()
         expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 5]]
 
@@ -868,7 +868,7 @@ describe 'FindView', ->
 
   describe "replacing", ->
     beforeEach ->
-      editor.setCursorBufferPosition([2,0])
+      editor.setCursorBufferPosition([2, 0])
       atom.commands.dispatch editorView, 'find-and-replace:show-replace'
 
       waitsForPromise ->
