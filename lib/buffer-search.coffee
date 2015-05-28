@@ -107,21 +107,39 @@ class BufferSearch
           @createMarker(index, range)
           index++
         @emitter.emit "did-update", @markers.slice()
+    index
 
   bufferStoppedChanging: ->
     return if @replacing
     markerIndex = 0
     changes = @patch.changes()
+    scanEnd = Point.ZERO
     until (next = changes.next()).done
       changeStart = next.value.position
       changeEnd = next.value.position.traverse(next.value.newExtent)
-
-      while @markers[markerIndex]?.getBufferRange().end.isLessThan(changeStart)
+      continue if changeEnd.isLessThan(scanEnd)
+      while @markers[markerIndex]?.getBufferRange().end.compare(changeStart) <= 0
         markerIndex++
 
-      startPosition = @markers[markerIndex - 1]?.getBufferRange().end ? Point.ZERO
-      endPosition = @markers[markerIndex]?.getBufferRange().start ? Point.INFINITY
-      @createMarkers(markerIndex, startPosition, endPosition)
+      precedingMarker = @markers[markerIndex - 1]
+      followingMarker = @markers[markerIndex]
+
+      if followingMarker?
+        scanEnd = followingMarker.getBufferRange().end
+        followingMarker.destroy()
+      else
+        scanEnd = Point.INFINITY
+
+      if precedingMarker?
+        scanStart = precedingMarker.getBufferRange().start
+        precedingMarker.destroy()
+        @markers.splice(markerIndex - 1, 2)
+        markerIndex = @createMarkers(markerIndex - 1, scanStart, scanEnd) + 1
+      else
+        scanStart = Point.ZERO
+        @markers.splice(markerIndex, 1)
+        markerIndex = @createMarkers(markerIndex, scanStart, scanEnd)
+
     @patch.clear()
 
   setCurrentMarkerFromSelection: ->
@@ -158,6 +176,7 @@ class BufferSearch
     marker.onDidChange ({isValid}) =>
       unless isValid
         marker.destroy()
+        @patch.splice(marker.getBufferRange().start, Point(0, 1), Point(0, 1), ".")
         @markers.splice(@markers.indexOf(marker), 1)
         delete @decorationsByMarkerId[marker.id]
 
