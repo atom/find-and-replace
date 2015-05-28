@@ -6,6 +6,7 @@ describe "BufferSearch", ->
 
   beforeEach ->
     editor = new TextEditor
+    spyOn(editor, 'scanInBufferRange').andCallThrough()
 
     editor.setText """
       -----------
@@ -36,22 +37,28 @@ describe "BufferSearch", ->
     search.destroy()
     editor.destroy()
 
-  expectResultsUpdated = (expectEvent, ranges) ->
-    highlightedRanges = editor
+  getHighlightedRanges = ->
+    editor
       .getDecorations(type: 'highlight', class: 'find-result')
       .map (decoration) -> decoration.getMarker().getBufferRange()
       .sort (a, b) -> a.compare(b)
       .map (range) -> range.serialize()
-    expect(highlightedRanges).toEqual(ranges)
 
-    if expectEvent
-      emittedMarkerRanges = markersListener
-        .mostRecentCall.args[0]
-        .map (marker) -> marker.getBufferRange().serialize()
-      expect(emittedMarkerRanges).toEqual(ranges)
+  expectUpdateEvent = ->
+    emittedMarkerRanges = markersListener
+      .mostRecentCall.args[0]
+      .map (marker) -> marker.getBufferRange().serialize()
+    expect(emittedMarkerRanges).toEqual(getHighlightedRanges())
+
+  expectNoUpdateEvent = ->
+    expect(markersListener).not.toHaveBeenCalled()
+
+  scannedRanges = ->
+    args[1] for args in editor.scanInBufferRange.argsForCall
 
   it "highlights all the occurrences of the search regexp", ->
-    expectResultsUpdated false, [
+    expectUpdateEvent()
+    expect(getHighlightedRanges()).toEqual [
       [[1, 0], [1, 3]]
       [[2, 4], [2, 7]]
       [[3, 8], [3, 11]]
@@ -60,7 +67,15 @@ describe "BufferSearch", ->
       [[7, 8], [7, 11]]
     ]
 
+    expect(scannedRanges()).toEqual [
+      [[0, 0], [Infinity, Infinity]]
+    ]
+
   describe "when the buffer changes", ->
+    beforeEach ->
+      markersListener.reset()
+      editor.scanInBufferRange.reset()
+
     describe "when changes occur in the middle of the buffer", ->
       it "removes any invalidated search results and recreates markers in the changed regions", ->
         editor.setCursorBufferPosition([2, 5])
@@ -68,17 +83,18 @@ describe "BufferSearch", ->
         editor.insertText(".")
         editor.insertText(".")
 
-        expectResultsUpdated false, [
+        expectNoUpdateEvent()
+        expect(getHighlightedRanges()).toEqual [
           [[1, 0], [1, 3]]
           [[3, 8], [3, 11]]
           [[5, 0], [5, 3]]
           [[7, 8], [7, 11]]
         ]
 
-        spyOn(editor, 'scanInBufferRange').andCallThrough()
         advanceClock(editor.buffer.stoppedChangingDelay)
 
-        expectResultsUpdated true, [
+        expectUpdateEvent()
+        expect(getHighlightedRanges()).toEqual [
           [[1, 0], [1, 3]]
           [[2, 4], [2, 5]]
           [[2, 7], [2, 9]]
@@ -89,10 +105,9 @@ describe "BufferSearch", ->
           [[7, 8], [7, 11]]
         ]
 
-        scannedRanges = (args[1] for args in editor.scanInBufferRange.argsForCall)
-        expect(scannedRanges).toEqual [
-          [[1, 3], [3, 8]]
-          [[5, 3], [7, 8]]
+        expect(scannedRanges()).toEqual [
+          [[1, 0], [3, 11]]
+          [[5, 0], [7, 11]]
         ]
 
     describe "when changes occur within the first search result", ->
@@ -101,7 +116,8 @@ describe "BufferSearch", ->
         editor.insertText(".")
         editor.insertText(".")
 
-        expectResultsUpdated false, [
+        expectNoUpdateEvent()
+        expect(getHighlightedRanges()).toEqual [
           [[2, 4], [2, 7]]
           [[3, 8], [3, 11]]
           [[5, 0], [5, 3]]
@@ -109,10 +125,10 @@ describe "BufferSearch", ->
           [[7, 8], [7, 11]]
         ]
 
-        spyOn(editor, 'scanInBufferRange').andCallThrough()
         advanceClock(editor.buffer.stoppedChangingDelay)
 
-        expectResultsUpdated true, [
+        expectUpdateEvent()
+        expect(getHighlightedRanges()).toEqual [
           [[1, 0], [1, 2]]
           [[1, 4], [1, 5]]
           [[2, 4], [2, 7]]
@@ -122,9 +138,8 @@ describe "BufferSearch", ->
           [[7, 8], [7, 11]]
         ]
 
-        scannedRanges = (args[1] for args in editor.scanInBufferRange.argsForCall)
-        expect(scannedRanges).toEqual [
-          [[0, 0], [2, 4]]
+        expect(scannedRanges()).toEqual [
+          [[0, 0], [2, 7]]
         ]
 
     describe "when changes occur within the last search result", ->
@@ -133,7 +148,8 @@ describe "BufferSearch", ->
         editor.insertText(".")
         editor.insertText(".")
 
-        expectResultsUpdated false, [
+        expectNoUpdateEvent()
+        expect(getHighlightedRanges()).toEqual [
           [[1, 0], [1, 3]]
           [[2, 4], [2, 7]]
           [[3, 8], [3, 11]]
@@ -141,10 +157,10 @@ describe "BufferSearch", ->
           [[6, 4], [6, 7]]
         ]
 
-        spyOn(editor, 'scanInBufferRange').andCallThrough()
         advanceClock(editor.buffer.stoppedChangingDelay)
 
-        expectResultsUpdated true, [
+        expectUpdateEvent()
+        expect(getHighlightedRanges()).toEqual [
           [[1, 0], [1, 3]]
           [[2, 4], [2, 7]]
           [[3, 8], [3, 11]]
@@ -154,7 +170,100 @@ describe "BufferSearch", ->
           [[7, 11], [7, 13]]
         ]
 
-        scannedRanges = (args[1] for args in editor.scanInBufferRange.argsForCall)
-        expect(scannedRanges).toEqual [
-          [[6, 7], [Infinity, Infinity]]
+        expect(scannedRanges()).toEqual [
+          [[6, 4], [Infinity, Infinity]]
+        ]
+
+    describe "when changes occur within two adjacent markers", ->
+      it "rescans the changed region in a single scan", ->
+        editor.setCursorBufferPosition([2, 5])
+        editor.addCursorAtBufferPosition([3, 9])
+        editor.insertText(".")
+        editor.insertText(".")
+
+        expectNoUpdateEvent()
+        expect(getHighlightedRanges()).toEqual [
+          [[1, 0], [1, 3]]
+          [[5, 0], [5, 3]]
+          [[6, 4], [6, 7]]
+          [[7, 8], [7, 11]]
+        ]
+
+        advanceClock(editor.buffer.stoppedChangingDelay)
+
+        expectUpdateEvent()
+        expect(getHighlightedRanges()).toEqual [
+          [[1, 0], [1, 3]]
+          [[2, 4], [2, 5]]
+          [[2, 7], [2, 9]]
+          [[3, 8], [3, 9]]
+          [[3, 11], [3, 13]]
+          [[5, 0], [5, 3]]
+          [[6, 4], [6, 7]]
+          [[7, 8], [7, 11]]
+        ]
+
+        expect(scannedRanges()).toEqual [
+          [[1, 0], [5, 3]]
+        ]
+
+    describe "when changes extend an existing search result", ->
+      it "updates the results with the new extended ranges", ->
+        editor.setCursorBufferPosition([2, 4])
+        editor.addCursorAtBufferPosition([6, 7])
+        editor.insertText("a")
+        editor.insertText("a")
+
+        expectNoUpdateEvent()
+        expect(getHighlightedRanges()).toEqual [
+          [[1, 0], [1, 3]]
+          [[2, 6], [2, 9]]
+          [[3, 8], [3, 11]]
+          [[5, 0], [5, 3]]
+          [[6, 4], [6, 7]]
+          [[7, 8], [7, 11]]
+        ]
+
+        advanceClock(editor.buffer.stoppedChangingDelay)
+
+        expectUpdateEvent()
+        expect(getHighlightedRanges()).toEqual [
+          [[1, 0], [1, 3]]
+          [[2, 4], [2, 9]]
+          [[3, 8], [3, 11]]
+          [[5, 0], [5, 3]]
+          [[6, 4], [6, 9]]
+          [[7, 8], [7, 11]]
+        ]
+
+    describe "when the changes are undone", ->
+      it "recreates any temporarily-invalidated markers", ->
+        editor.setCursorBufferPosition([2, 5])
+        editor.insertText(".")
+        editor.insertText(".")
+        editor.backspace()
+        editor.backspace()
+
+        expect(getHighlightedRanges()).toEqual [
+          [[1, 0], [1, 3]]
+          [[3, 8], [3, 11]]
+          [[5, 0], [5, 3]]
+          [[6, 4], [6, 7]]
+          [[7, 8], [7, 11]]
+        ]
+
+        advanceClock(editor.buffer.stoppedChangingDelay)
+
+        expectUpdateEvent()
+        expect(getHighlightedRanges()).toEqual [
+          [[1, 0], [1, 3]]
+          [[2, 4], [2, 7]]
+          [[3, 8], [3, 11]]
+          [[5, 0], [5, 3]]
+          [[6, 4], [6, 7]]
+          [[7, 8], [7, 11]]
+        ]
+
+        expect(scannedRanges()).toEqual [
+          [[1, 0], [3, 11]]
         ]
