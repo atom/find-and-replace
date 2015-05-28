@@ -7,6 +7,8 @@ path = require 'path'
 module.exports =
 class ResultView extends View
   @content: (model, filePath, result) ->
+    # Note that filePath might be a URI rather than a local path. In practice, path.basename() and
+    # atom.project.relativizePath() seem to handle such URIs all right.
     iconClass = if fs.isReadmePath(filePath) then 'icon-book' else 'icon-file-text'
     fileBasename = path.basename(filePath)
 
