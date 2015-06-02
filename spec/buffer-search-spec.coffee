@@ -40,11 +40,13 @@ describe "BufferSearch", ->
   getHighlightedRanges = ->
     editor
       .getDecorations(type: 'highlight', class: 'find-result')
-      .map (decoration) -> decoration.getMarker().getBufferRange()
+      .map (decoration) -> decoration.getMarker()
+      .filter (marker) -> marker.isValid()
       .sort (a, b) -> a.compare(b)
-      .map (range) -> range.serialize()
+      .map (marker) -> marker.getBufferRange().serialize()
 
   expectUpdateEvent = ->
+    expect(markersListener).toHaveBeenCalled()
     emittedMarkerRanges = markersListener
       .mostRecentCall.args[0]
       .map (marker) -> marker.getBufferRange().serialize()
@@ -244,6 +246,7 @@ describe "BufferSearch", ->
         editor.backspace()
         editor.backspace()
 
+        expectNoUpdateEvent()
         expect(getHighlightedRanges()).toEqual [
           [[1, 0], [1, 3]]
           [[3, 8], [3, 11]]
@@ -254,7 +257,6 @@ describe "BufferSearch", ->
 
         advanceClock(editor.buffer.stoppedChangingDelay)
 
-        expectUpdateEvent()
         expect(getHighlightedRanges()).toEqual [
           [[1, 0], [1, 3]]
           [[2, 4], [2, 7]]
@@ -264,6 +266,4 @@ describe "BufferSearch", ->
           [[7, 8], [7, 11]]
         ]
 
-        expect(scannedRanges()).toEqual [
-          [[1, 0], [3, 11]]
-        ]
+        expect(scannedRanges()).toEqual []

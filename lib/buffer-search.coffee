@@ -1,5 +1,5 @@
 _ = require 'underscore-plus'
-{Point, Emitter, CompositeDisposable, TextBuffer} = require 'atom'
+{Point, Range, Emitter, CompositeDisposable, TextBuffer} = require 'atom'
 {Patch} = TextBuffer
 escapeHelper = require './escape-helper'
 
@@ -92,10 +92,12 @@ class BufferSearch
     @markers.forEach (marker) -> marker.destroy()
     @markers.length = 0
     @decorationsByMarkerId = {}
-    @emitter.emit "did-update", []
-    @createMarkers(0, Point.ZERO, Point.INFINITY)
+    if markers = @createMarkers(Point.ZERO, Point.INFINITY)
+      @markers = markers
+      @emitter.emit "did-update", @markers.slice()
 
-  createMarkers: (index, start, end) ->
+  createMarkers: (start, end) ->
+    newMarkers = []
     if @pattern and @editor
       if @inCurrentSelection
         selectedRange = @editor.getSelectedBufferRange()
@@ -103,43 +105,67 @@ class BufferSearch
         end = Point.min(end, selectedRange.end)
 
       if regex = @getRegex()
-        @editor.scanInBufferRange regex, [start, end], ({range}) =>
-          @createMarker(index, range)
-          index++
-        @emitter.emit "did-update", @markers.slice()
-    index
+        @editor.scanInBufferRange regex, Range(start, end), ({range}) =>
+          newMarkers.push(@createMarker(range))
+      else
+        return false
+    newMarkers
 
   bufferStoppedChanging: ->
     return if @replacing
-    markerIndex = 0
+
     changes = @patch.changes()
+    change = null
+    changesDone = false
+    changeEnd = Point.ZERO
     scanEnd = Point.ZERO
-    until (next = changes.next()).done
-      changeStart = next.value.position
-      changeEnd = next.value.position.traverse(next.value.newExtent)
-      continue if changeEnd.isLessThan(scanEnd)
-      while @markers[markerIndex]?.getBufferRange().end.compare(changeStart) <= 0
-        markerIndex++
+    withinChange = false
+    markerIndex = 0
+    lastValidMarkerIndex = -1
 
-      precedingMarker = @markers[markerIndex - 1]
-      followingMarker = @markers[markerIndex]
+    while (marker = @markers[markerIndex])? or change?
+      unless change?
+        until changesDone or changeEnd?.isGreaterThan(scanEnd)
+          {value: change, done: changesDone} = changes.next()
+          changeEnd = change.position.traverse(change.newExtent) if change?
 
-      if followingMarker?
-        scanEnd = followingMarker.getBufferRange().end
-        followingMarker.destroy()
+      markerRange = marker?.getBufferRange()
+
+      if withinChange
+        if marker?
+          if marker.isValid() and markerRange.start.isGreaterThan(changeEnd)
+            withinChange = false
+            scanEnd = markerRange.end
+        else
+          withinChange = false
+          scanEnd = Point.INFINITY
+
+        if not withinChange
+          if lastValidMarkerIndex >= 0
+            scanStart = @markers[lastValidMarkerIndex].getBufferRange().start
+            spliceIndex = lastValidMarkerIndex
+          else
+            scanStart = Point.ZERO
+            spliceIndex = 0
+
+          newMarkers = @createMarkers(scanStart, scanEnd)
+          oldMarkers = @markers.splice(spliceIndex, markerIndex - spliceIndex + 1, newMarkers...)
+          oldMarker.destroy() for oldMarker in oldMarkers
+          markerIndex += newMarkers.length - oldMarkers.length
+          lastValidMarkerIndex = markerIndex
+          change = null
       else
-        scanEnd = Point.INFINITY
+        if change? and markerRange.end.isGreaterThanOrEqual(change.position)
+          withinChange = true
+        else
+          if marker.isValid()
+            lastValidMarkerIndex = markerIndex
+          else
+            @markers[markerIndex] = @recreateMarker(marker)
 
-      if precedingMarker?
-        scanStart = precedingMarker.getBufferRange().start
-        precedingMarker.destroy()
-        @markers.splice(markerIndex - 1, 2)
-        markerIndex = @createMarkers(markerIndex - 1, scanStart, scanEnd) + 1
-      else
-        scanStart = Point.ZERO
-        @markers.splice(markerIndex, 1)
-        markerIndex = @createMarkers(markerIndex, scanStart, scanEnd)
+      markerIndex++
 
+    @emitter.emit "did-update", @markers.slice()
     @patch.clear()
 
   setCurrentMarkerFromSelection: ->
@@ -166,25 +192,22 @@ class BufferSearch
         endPosition: range.end
       )[0]
 
-  createMarker: (index, range) ->
+  recreateMarker: (marker) ->
+    delete @decorationsByMarkerId[marker.id]
+    marker.destroy()
+    @createMarker(marker.getBufferRange())
+
+  createMarker: (range) ->
     marker = @editor.markBufferRange(range,
       invalidate: 'inside'
       class: @constructor.markerClass
       persistent: false
     )
-
-    marker.onDidChange ({isValid}) =>
-      unless isValid
-        marker.destroy()
-        @patch.splice(marker.getBufferRange().start, Point(0, 1), Point(0, 1), ".")
-        @markers.splice(@markers.indexOf(marker), 1)
-        delete @decorationsByMarkerId[marker.id]
-
-    @markers.splice(index, 0, marker)
     @decorationsByMarkerId[marker.id] = @editor.decorateMarker(marker,
       type: 'highlight',
       class: @constructor.markerClass
     )
+    marker
 
   bufferChanged: ({oldRange, newRange, newText}) ->
     @patch.splice(
