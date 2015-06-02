@@ -115,61 +115,55 @@ class BufferSearch
     return if @replacing
 
     changes = @patch.changes()
-    change = null
-    withinChange = false
     scanEnd = Point.ZERO
     markerIndex = 0
-    markerIndexBeforeChange = -1
 
-    while (marker = @markers[markerIndex])? or change?
-      markerRange = marker?.getBufferRange()
+    until (next = changes.next()).done
+      change = next.value
+      changeStart = change.position
+      changeEnd = changeStart.traverse(change.newExtent)
+      continue if changeEnd.isLessThan(scanEnd)
 
-      # If we have already re-scanned the region affected by this change, find
-      # the next change that extends beyond what we've scanned.
-      until change? or (next = changes.next()).done
-        change = next.value
-        changeStart = change.position
-        changeEnd = changeStart.traverse(change.newExtent)
-        break if changeEnd.isGreaterThanOrEqual(scanEnd)
-        change = null
-
-      # If this marker is untouched and follows the change, or there are no more
-      # markers, then it is time to re-scan.
-      if withinChange
-        if marker?
-          if marker.isValid() and markerRange.start.isGreaterThan(changeEnd)
-            withinChange = false
-            scanEnd = markerRange.end
+      precedingMarkerIndex = -1
+      while marker = @markers[markerIndex]
+        if marker.isValid()
+          break if marker.getBufferRange().end.isGreaterThan(changeStart)
+          precedingMarkerIndex = markerIndex
         else
-          withinChange = false
-          scanEnd = Point.INFINITY
+          @markers[markerIndex] = @recreateMarker(marker)
+        markerIndex++
 
-        if not withinChange
-          if markerIndexBeforeChange >= 0
-            scanStart = @markers[markerIndexBeforeChange].getBufferRange().start
-            spliceIndex = markerIndexBeforeChange
-          else
-            scanStart = Point.ZERO
-            spliceIndex = 0
+      followingMarkerIndex = -1
+      while marker = @markers[markerIndex]
+        if marker.isValid()
+          followingMarkerIndex = markerIndex
+          break if marker.getBufferRange().start.isGreaterThanOrEqual(changeEnd)
+        else
+          @markers[markerIndex] = @recreateMarker(marker)
+        markerIndex++
 
-          newMarkers = @createMarkers(scanStart, scanEnd)
-          oldMarkers = @markers.splice(spliceIndex, markerIndex - spliceIndex + 1, newMarkers...)
-          oldMarker.destroy() for oldMarker in oldMarkers
-          markerIndex += newMarkers.length - oldMarkers.length
-          markerIndexBeforeChange = markerIndex
-          change = null
-
-      else if change? and markerRange.end.isGreaterThanOrEqual(changeStart)
-        withinChange = true
-      else if marker.isValid()
-        markerIndexBeforeChange = markerIndex
-
-      # A marker that is invalid but is outside of any change can simply be
-      # recreated. It must have been temporarily changed but then restored.
+      if precedingMarkerIndex >= 0
+        spliceStart = precedingMarkerIndex
+        scanStart = @markers[precedingMarkerIndex].getBufferRange().start
       else
-        @markers[markerIndex] = @recreateMarker(marker)
+        spliceStart = 0
+        scanStart = Point.ZERO
 
-      markerIndex++
+      if followingMarkerIndex >= 0
+        spliceEnd = followingMarkerIndex
+        scanEnd = @markers[followingMarkerIndex].getBufferRange().end
+      else
+        spliceEnd = Infinity
+        scanEnd = Point.INFINITY
+
+      newMarkers = @createMarkers(scanStart, scanEnd)
+      oldMarkers = @markers.splice(spliceStart, spliceEnd - spliceStart + 1, newMarkers...)
+      oldMarker.destroy() for oldMarker in oldMarkers
+      markerIndex += newMarkers.length - oldMarkers.length
+
+    while marker = @markers[++markerIndex]
+      unless marker.isValid()
+        @markers[markerIndex] = @recreateMarker(marker)
 
     @emitter.emit "did-update", @markers.slice()
     @patch.clear()
