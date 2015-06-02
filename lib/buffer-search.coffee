@@ -116,21 +116,25 @@ class BufferSearch
 
     changes = @patch.changes()
     change = null
-    changesDone = false
-    changeEnd = Point.ZERO
-    scanEnd = Point.ZERO
     withinChange = false
+    scanEnd = Point.ZERO
     markerIndex = 0
-    lastValidMarkerIndex = -1
+    markerIndexBeforeChange = -1
 
     while (marker = @markers[markerIndex])? or change?
-      unless change?
-        until changesDone or changeEnd?.isGreaterThan(scanEnd)
-          {value: change, done: changesDone} = changes.next()
-          changeEnd = change.position.traverse(change.newExtent) if change?
-
       markerRange = marker?.getBufferRange()
 
+      # If we have already re-scanned the region affected by this change, find
+      # the next change that extends beyond what we've scanned.
+      until change? or (next = changes.next()).done
+        change = next.value
+        changeStart = change.position
+        changeEnd = changeStart.traverse(change.newExtent)
+        break if changeEnd.isGreaterThanOrEqual(scanEnd)
+        change = null
+
+      # If this marker is untouched and follows the change, or there are no more
+      # markers, then it is time to re-scan.
       if withinChange
         if marker?
           if marker.isValid() and markerRange.start.isGreaterThan(changeEnd)
@@ -141,9 +145,9 @@ class BufferSearch
           scanEnd = Point.INFINITY
 
         if not withinChange
-          if lastValidMarkerIndex >= 0
-            scanStart = @markers[lastValidMarkerIndex].getBufferRange().start
-            spliceIndex = lastValidMarkerIndex
+          if markerIndexBeforeChange >= 0
+            scanStart = @markers[markerIndexBeforeChange].getBufferRange().start
+            spliceIndex = markerIndexBeforeChange
           else
             scanStart = Point.ZERO
             spliceIndex = 0
@@ -152,16 +156,18 @@ class BufferSearch
           oldMarkers = @markers.splice(spliceIndex, markerIndex - spliceIndex + 1, newMarkers...)
           oldMarker.destroy() for oldMarker in oldMarkers
           markerIndex += newMarkers.length - oldMarkers.length
-          lastValidMarkerIndex = markerIndex
+          markerIndexBeforeChange = markerIndex
           change = null
+
+      else if change? and markerRange.end.isGreaterThanOrEqual(changeStart)
+        withinChange = true
+      else if marker.isValid()
+        markerIndexBeforeChange = markerIndex
+
+      # A marker that is invalid but is outside of any change can simply be
+      # recreated. It must have been temporarily changed but then restored.
       else
-        if change? and markerRange.end.isGreaterThanOrEqual(change.position)
-          withinChange = true
-        else
-          if marker.isValid()
-            lastValidMarkerIndex = markerIndex
-          else
-            @markers[markerIndex] = @recreateMarker(marker)
+        @markers[markerIndex] = @recreateMarker(marker)
 
       markerIndex++
 
