@@ -40,11 +40,13 @@ describe "BufferSearch", ->
   getHighlightedRanges = ->
     editor
       .getDecorations(type: 'highlight', class: 'find-result')
-      .map (decoration) -> decoration.getMarker().getBufferRange()
+      .map (decoration) -> decoration.getMarker()
+      .filter (marker) -> marker.isValid()
       .sort (a, b) -> a.compare(b)
-      .map (range) -> range.serialize()
+      .map (marker) -> marker.getBufferRange().serialize()
 
   expectUpdateEvent = ->
+    expect(markersListener).toHaveBeenCalled()
     emittedMarkerRanges = markersListener
       .mostRecentCall.args[0]
       .map (marker) -> marker.getBufferRange().serialize()
@@ -236,16 +238,76 @@ describe "BufferSearch", ->
           [[7, 8], [7, 11]]
         ]
 
-    describe "when the changes are undone", ->
-      it "recreates any temporarily-invalidated markers", ->
-        editor.setCursorBufferPosition([2, 5])
-        editor.insertText(".")
-        editor.insertText(".")
-        editor.backspace()
-        editor.backspace()
+    describe "when the changes are before any marker", ->
+      it "doesn't change the markers", ->
+        editor.setCursorBufferPosition([0, 3])
+        editor.insertText("..")
+
+        expectNoUpdateEvent()
+        expect(getHighlightedRanges()).toEqual [
+          [[1, 0], [1, 3]]
+          [[2, 4], [2, 7]]
+          [[3, 8], [3, 11]]
+          [[5, 0], [5, 3]]
+          [[6, 4], [6, 7]]
+          [[7, 8], [7, 11]]
+        ]
+
+        advanceClock(editor.buffer.stoppedChangingDelay)
 
         expect(getHighlightedRanges()).toEqual [
           [[1, 0], [1, 3]]
+          [[2, 4], [2, 7]]
+          [[3, 8], [3, 11]]
+          [[5, 0], [5, 3]]
+          [[6, 4], [6, 7]]
+          [[7, 8], [7, 11]]
+        ]
+
+        expect(scannedRanges()).toEqual [
+          [[0, 0], [1, 3]]
+        ]
+
+    describe "when the changes are between markers", ->
+      it "doesn't change the markers", ->
+        editor.setCursorBufferPosition([3, 1])
+        editor.insertText("..")
+
+        expectNoUpdateEvent()
+        expect(getHighlightedRanges()).toEqual [
+          [[1, 0], [1, 3]]
+          [[2, 4], [2, 7]]
+          [[3, 10], [3, 13]]
+          [[5, 0], [5, 3]]
+          [[6, 4], [6, 7]]
+          [[7, 8], [7, 11]]
+        ]
+
+        advanceClock(editor.buffer.stoppedChangingDelay)
+
+        expectUpdateEvent()
+        expect(getHighlightedRanges()).toEqual [
+          [[1, 0], [1, 3]]
+          [[2, 4], [2, 7]]
+          [[3, 10], [3, 13]]
+          [[5, 0], [5, 3]]
+          [[6, 4], [6, 7]]
+          [[7, 8], [7, 11]]
+        ]
+
+        expect(scannedRanges()).toEqual [
+          [[2, 4], [3, 13]]
+        ]
+
+    describe "when the changes are after all the markers", ->
+      it "doesn't change the markers", ->
+        editor.setCursorBufferPosition([8, 3])
+        editor.insertText("..")
+
+        expectNoUpdateEvent()
+        expect(getHighlightedRanges()).toEqual [
+          [[1, 0], [1, 3]]
+          [[2, 4], [2, 7]]
           [[3, 8], [3, 11]]
           [[5, 0], [5, 3]]
           [[6, 4], [6, 7]]
@@ -265,5 +327,35 @@ describe "BufferSearch", ->
         ]
 
         expect(scannedRanges()).toEqual [
-          [[1, 0], [3, 11]]
+          [[7, 8], [Infinity, Infinity]]
         ]
+
+    describe "when the changes are undone", ->
+      it "recreates any temporarily-invalidated markers", ->
+        editor.setCursorBufferPosition([2, 5])
+        editor.insertText(".")
+        editor.insertText(".")
+        editor.backspace()
+        editor.backspace()
+
+        expectNoUpdateEvent()
+        expect(getHighlightedRanges()).toEqual [
+          [[1, 0], [1, 3]]
+          [[3, 8], [3, 11]]
+          [[5, 0], [5, 3]]
+          [[6, 4], [6, 7]]
+          [[7, 8], [7, 11]]
+        ]
+
+        advanceClock(editor.buffer.stoppedChangingDelay)
+
+        expect(getHighlightedRanges()).toEqual [
+          [[1, 0], [1, 3]]
+          [[2, 4], [2, 7]]
+          [[3, 8], [3, 11]]
+          [[5, 0], [5, 3]]
+          [[6, 4], [6, 7]]
+          [[7, 8], [7, 11]]
+        ]
+
+        expect(scannedRanges()).toEqual []
