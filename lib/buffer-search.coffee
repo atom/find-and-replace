@@ -202,6 +202,7 @@ class BufferSearch
       invalidate: 'inside'
       class: @constructor.markerClass
       persistent: false
+      maintainHistory: false
     )
     @decorationsByMarkerId[marker.id] = @editor.decorateMarker(marker,
       type: 'highlight',
