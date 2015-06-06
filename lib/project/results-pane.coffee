@@ -87,7 +87,7 @@ class ResultsPaneView extends ScrollView
   clearErrors: ->
     @errorList.html('').hide()
 
-  onSearch: (deferred) =>
+  onSearch: (promise) =>
     @loadingMessage.show()
 
     @previewCount.text('Searching...')
@@ -105,8 +105,8 @@ class ResultsPaneView extends ScrollView
       @showSearchedCountBlock = true
     , 500
 
-    deferred.done =>
-      @loadingMessage.hide()
+    onSuccessOrFailure = => @loadingMessage.hide()
+    promise.then(onSuccessOrFailure, onSuccessOrFailure)
 
   onPathsSearched: (numberOfPathsSearched) =>
     if @showSearchedCountBlock
