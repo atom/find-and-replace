@@ -61,7 +61,6 @@ class BufferSearch
   replace: (markers, replacementPattern) ->
     return unless markers?.length > 0
 
-    @replacing = true
     @editor.transact =>
       for marker in markers
         bufferRange = marker.getBufferRange()
@@ -74,9 +73,9 @@ class BufferSearch
 
         marker.destroy()
         @markers.splice(@markers.indexOf(marker), 1)
-    @replacing = false
+        delete @decorationsByMarkerId[marker.id]
 
-    @emitter.emit 'did-update', _.clone(@markers)
+    @emitter.emit 'did-update', @markers.slice()
 
   serialize: ->
     {@useRegex, @inCurrentSelection, @caseSensitive, @wholeWord}
@@ -112,8 +111,6 @@ class BufferSearch
     newMarkers
 
   bufferStoppedChanging: ->
-    return if @replacing
-
     changes = @patch.changes()
     scanEnd = Point.ZERO
     markerIndex = 0
@@ -158,7 +155,9 @@ class BufferSearch
 
       newMarkers = @createMarkers(scanStart, scanEnd)
       oldMarkers = @markers.splice(spliceStart, spliceEnd - spliceStart + 1, newMarkers...)
-      oldMarker.destroy() for oldMarker in oldMarkers
+      for oldMarker in oldMarkers
+        oldMarker.destroy()
+        delete @decorationsByMarkerId[oldMarker.id]
       markerIndex += newMarkers.length - oldMarkers.length
 
     while marker = @markers[++markerIndex]
@@ -167,6 +166,8 @@ class BufferSearch
 
     @emitter.emit "did-update", @markers.slice()
     @patch.clear()
+    @currentResultMarker = null
+    @setCurrentMarkerFromSelection()
 
   setCurrentMarkerFromSelection: ->
     marker = null
