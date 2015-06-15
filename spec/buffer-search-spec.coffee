@@ -2,7 +2,7 @@
 BufferSearch = require '../lib/buffer-search'
 
 describe "BufferSearch", ->
-  [search, editor, markersListener] = []
+  [search, editor, markersListener, currentResultListener] = []
 
   beforeEach ->
     editor = new TextEditor
@@ -25,7 +25,12 @@ describe "BufferSearch", ->
     markersListener = jasmine.createSpy('markersListener')
     search.onDidUpdate(markersListener)
 
+    currentResultListener = jasmine.createSpy('currentResultListener')
+    search.onDidChangeCurrentResult(currentResultListener)
+
     search.setEditor(editor)
+    markersListener.reset()
+
     search.setSearchParams(
       pattern: "a+"
       caseSensitive: false
@@ -38,19 +43,22 @@ describe "BufferSearch", ->
     editor.destroy()
 
   getHighlightedRanges = ->
-    editor
-      .getDecorations(type: 'highlight', class: 'find-result')
-      .map (decoration) -> decoration.getMarker()
-      .filter (marker) -> marker.isValid()
+    ranges = []
+    for decoration in editor.getDecorations(type: 'highlight')
+      marker = decoration.getMarker()
+      if marker.isValid() and decoration.getProperties()['class'] in ['find-result', 'current-result']
+        ranges.push(marker.getBufferRange())
+    ranges
       .sort (a, b) -> a.compare(b)
-      .map (marker) -> marker.getBufferRange().serialize()
+      .map (range) -> range.serialize()
 
   expectUpdateEvent = ->
-    expect(markersListener).toHaveBeenCalled()
+    expect(markersListener.callCount).toBe 1
     emittedMarkerRanges = markersListener
       .mostRecentCall.args[0]
       .map (marker) -> marker.getBufferRange().serialize()
     expect(emittedMarkerRanges).toEqual(getHighlightedRanges())
+    markersListener.reset()
 
   expectNoUpdateEvent = ->
     expect(markersListener).not.toHaveBeenCalled()
@@ -359,3 +367,60 @@ describe "BufferSearch", ->
         ]
 
         expect(scannedRanges()).toEqual []
+
+  describe "replacing a search result", ->
+    beforeEach ->
+      editor.scanInBufferRange.reset()
+
+    it "replaces the marked text with the given string", ->
+      markers = markersListener.mostRecentCall.args[0]
+      markersListener.reset()
+
+      editor.setSelectedBufferRange(markers[1].getBufferRange())
+      expect(currentResultListener).toHaveBeenCalledWith(markers[1])
+      currentResultListener.reset()
+
+      search.replace([markers[1]], "new-text")
+
+      expect(editor.getText()).toBe """
+        -----------
+        aaa bbb ccc
+        ddd new-text bbb
+        ccc ddd aaa
+        -----------
+        aaa bbb ccc
+        ddd aaa bbb
+        ccc ddd aaa
+        -----------
+      """
+
+      expectUpdateEvent()
+      expect(getHighlightedRanges()).toEqual [
+        [[1, 0], [1, 3]]
+        [[3, 8], [3, 11]]
+        [[5, 0], [5, 3]]
+        [[6, 4], [6, 7]]
+        [[7, 8], [7, 11]]
+      ]
+
+      editor.setSelectedBufferRange(markers[2].getBufferRange())
+      expect(currentResultListener).toHaveBeenCalledWith(markers[2])
+      currentResultListener.reset()
+
+      advanceClock(editor.buffer.stoppedChangingDelay)
+
+      expectUpdateEvent()
+      expect(getHighlightedRanges()).toEqual [
+        [[1, 0], [1, 3]]
+        [[3, 8], [3, 11]]
+        [[5, 0], [5, 3]]
+        [[6, 4], [6, 7]]
+        [[7, 8], [7, 11]]
+      ]
+      expect(scannedRanges()).toEqual [
+        [[1, 0], [3, 11]]
+      ]
+
+      expect(currentResultListener).toHaveBeenCalled()
+      expect(currentResultListener.mostRecentCall.args[0].getBufferRange()).toEqual markers[2].getBufferRange()
+      expect(currentResultListener.mostRecentCall.args[0].isDestroyed()).toBe false
