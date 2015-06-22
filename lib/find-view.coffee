@@ -234,9 +234,7 @@ class FindView extends View
     @updateModel {pattern}
     @findHistory.store()
 
-    if @markers.length is 0
-      atom.beep()
-    else
+    if @markers?.length > 0
       selectFunction()
       if fieldToFocus
         fieldToFocus.focus()
@@ -245,6 +243,8 @@ class FindView extends View
         workspaceElement.focus()
       else
         @findEditor.focus()
+    else
+      atom.beep()
 
   replaceNext: =>
     @replace('findNext', 'firstMarkerIndexAfterCursor')
