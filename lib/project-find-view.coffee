@@ -44,6 +44,9 @@ class ProjectFindView extends View
       @section class: 'input-block paths-container', =>
         @div class: 'input-block-item editor-container', =>
           @subview 'pathsEditor', new TextEditorView(mini: true, placeholderText: 'File/directory pattern. eg. `src` to search in the "src" directory or `*.js` to search all javascript files.')
+        @div class: 'input-block-item', =>
+          @button outlet: 'pathRegexOptionButton', class: 'btn option-regex', =>
+            @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-regex" /></svg>'
 
   initialize: (@findInBufferModel, @model, {findHistory, replaceHistory, pathsHistory}) ->
     @subscriptions = new CompositeDisposable
@@ -54,6 +57,7 @@ class ProjectFindView extends View
     @onlyRunIfChanged = true
 
     @regexOptionButton.addClass('selected') if @model.useRegex
+    @pathRegexOptionButton.addClass('selected') if @model.usePathRegex
     @caseOptionButton.addClass('selected') if @model.caseSensitive
 
     @clearMessages()
@@ -75,6 +79,11 @@ class ProjectFindView extends View
     subs.add atom.tooltips.add @regexOptionButton,
       title: "Use Regex"
       keyBindingCommand: 'project-find:toggle-regex-option',
+      keyBindingTarget: @findEditor.element
+
+    subs.add atom.tooltips.add @pathRegexOptionButton,
+      title: "Use Path Regex"
+      keyBindingCommand: 'project-find:toggle-path-regex-option',
       keyBindingTarget: @findEditor.element
 
     subs.add atom.tooltips.add @caseOptionButton,
@@ -118,6 +127,7 @@ class ProjectFindView extends View
 
     @on 'focus', (e) => @findEditor.focus()
     @regexOptionButton.click => @toggleRegexOption()
+    @pathRegexOptionButton.click => @togglePathRegexOption()
     @caseOptionButton.click => @toggleCaseOption()
     @replaceAllButton.on 'click', => @replaceAll()
 
@@ -147,6 +157,12 @@ class ProjectFindView extends View
   toggleRegexOption: ->
     @model.toggleUseRegex()
     if @model.useRegex then @regexOptionButton.addClass('selected') else @regexOptionButton.removeClass('selected')
+    @updateOptionsLabel()
+    @search(onlyRunIfActive: true)
+
+  togglePathRegexOption: ->
+    @model.togglePathRegex()
+    if @model.usePathRegex then @pathRegexOptionButton.addClass('selected') else @pathRegexOptionButton.removeClass('selected')
     @updateOptionsLabel()
     @search(onlyRunIfActive: true)
 
@@ -190,6 +206,7 @@ class ProjectFindView extends View
     return Q() if onlyRunIfActive and not @model.active
 
     pattern = @findEditor.getText()
+    pathPattern = @pathsEditor.getText()
     @findInBufferModel.setSearchParams({pattern})
 
     @clearMessages()

@@ -15,6 +15,7 @@ class ResultsModel
   constructor: (state={}) ->
     @emitter = new Emitter
     @useRegex = state.useRegex ? atom.config.get('find-and-replace.useRegex') ? false
+    @usePathRegex = state.usePathRegex ? atom.config.get('find-and-replace.usePathRegex') ? false
     @caseSensitive = state.caseSensitive ? atom.config.get('find-and-replace.caseSensitive') ? false
 
     atom.workspace.observeTextEditors (editor) =>
@@ -108,6 +109,7 @@ class ResultsModel
 
     @active = true
     @regex = @getRegex(pattern)
+    @pathRegex = @getPathRegex(searchPaths)
     @pattern = pattern
     @searchedPaths = searchPaths
 
@@ -115,10 +117,14 @@ class ResultsModel
 
     onPathsSearched = (numberOfPathsSearched) =>
       @emitter.emit 'did-search-paths', numberOfPathsSearched
-
-    @inProgressSearchPromise = atom.workspace.scan @regex, {paths: searchPaths, onPathsSearched}, (result, error) =>
+    pathsToSearch = if @usePathRegex then new Array() else searchPaths
+    @inProgressSearchPromise = atom.workspace.scan @regex, {paths: pathsToSearch, onPathsSearched}, (result, error) =>
       if result
-        @setResult(result.filePath, Result.create(result))
+        if @usePathRegex
+          if @pathRegex.test result.filePath
+            @setResult(result.filePath, Result.create(result))
+        else
+          @setResult(result.filePath, Result.create(result))
       else
         @searchErrors ?= []
         @searchErrors.push(error)
@@ -169,6 +175,9 @@ class ResultsModel
 
   toggleUseRegex: ->
     @useRegex = not @useRegex
+
+  togglePathRegex: ->
+    @usePathRegex = not @usePathRegex
 
   toggleCaseSensitive: ->
     @caseSensitive = not @caseSensitive
@@ -236,6 +245,15 @@ class ResultsModel
       new RegExp(pattern, flags)
     else
       new RegExp(_.escapeRegExp(pattern), flags)
+
+  getPathRegex: (pattern) ->
+    flags = 'g'
+    flags += 'i' unless @caseSensitive
+
+    if @usePathRegex
+      new RegExp(pattern.join(), flags)
+    else
+      pattern
 
   onContentsModified: (editor) =>
     return unless @active
