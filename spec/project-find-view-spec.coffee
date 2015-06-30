@@ -1142,3 +1142,37 @@ describe 'ProjectFindView', ->
       expect(projectFindView.findEditor).not.toHaveClass('is-focused')
       expect(projectFindView.replaceEditor).toHaveClass('is-focused')
       expect(projectFindView.pathsEditor).not.toHaveClass('is-focused')
+
+  describe "panel opening", ->
+    describe "when a panel is already open", ->
+      beforeEach ->
+        atom.config.set('find-and-replace.openProjectFindResultsInRightPane', true)
+
+        waitsForPromise ->
+          atom.workspace.open('sample.js')
+
+        runs ->
+          editor = atom.workspace.getActiveTextEditor()
+          editorView = atom.views.getView(editor)
+          atom.commands.dispatch(workspaceElement, 'project-find:show')
+
+        waitsForPromise ->
+          activationPromise
+
+        runs ->
+          projectFindView.findEditor.setText('items')
+          atom.commands.dispatch(projectFindView[0], 'core:confirm')
+
+        waitsForPromise ->
+          searchPromise
+
+      it "doesn't open another panel even if the active pane is vertically split", ->
+        atom.commands.dispatch(editorView, 'pane:split-down')
+        projectFindView.findEditor.setText('items')
+        atom.commands.dispatch(projectFindView[0], 'core:confirm')
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          expect(workspaceElement.querySelectorAll('.preview-pane').length).toBe(1)

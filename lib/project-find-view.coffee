@@ -237,8 +237,8 @@ class ProjectFindView extends View
       @findEditor.getModel().selectAll()
 
   showResultPane: ->
-    options = null
-    options = {split: 'right'} if atom.config.get('find-and-replace.openProjectFindResultsInRightPane')
+    options = {searchAllPanes: true}
+    options.split = 'right' if atom.config.get('find-and-replace.openProjectFindResultsInRightPane')
     atom.workspace.open(ResultsPaneView.URI, options)
 
   onFinishedReplacing: (results) ->
