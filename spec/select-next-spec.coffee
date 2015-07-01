@@ -74,6 +74,39 @@ describe "SelectNext", ->
           [[0, 0], [0, 7]]
         ]
 
+      describe "when there are no other occurrences", ->
+        describe "when part of a word is selected", ->
+          it "selects the next occurrence of the selected text", ->
+            editor.setText """
+              for
+              foo
+            """
+
+            editor.setCursorBufferPosition([0, 0])
+            atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+            expect(editor.getSelectedBufferRanges()).toEqual [
+              [[0, 0], [0, 3]]
+            ]
+
+            atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+            expect(editor.getSelectedBufferRanges()).toEqual [
+              [[0, 0], [0, 3]]
+            ]
+
+            editor.setSelectedBufferRange([[0, 1], [0, 2]])
+            atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+            expect(editor.getSelectedBufferRanges()).toEqual [
+              [[0, 1], [0, 2]]
+              [[1, 1], [1, 2]]
+            ]
+
+            atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+            expect(editor.getSelectedBufferRanges()).toEqual [
+              [[0, 1], [0, 2]]
+              [[1, 1], [1, 2]]
+              [[1, 2], [1, 3]]
+            ]
+
     describe "when part of a word is selected", ->
       it "selects the next occurrence of the selected text", ->
         editor.setText """
