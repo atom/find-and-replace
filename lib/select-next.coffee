@@ -10,15 +10,23 @@ class SelectNext
 
   constructor: (@editor) ->
     @selectionRanges = []
+    @noofSelections = 0
 
   findAndSelectNext: ->
     if @editor.getLastSelection().isEmpty()
       @selectWord()
     else
+      if(@editor.getSelectedBufferRanges().length isnt @noofSelections)
+        @noofSelections = 1
+        @resetSelectedWord()
       @selectNextOccurrence()
 
   findAndSelectAll: ->
-    @selectWord() if @editor.getLastSelection().isEmpty()
+    if @editor.getLastSelection().isEmpty()
+      @selectWord()
+    if(@editor.getSelectedBufferRanges().length < @noofSelections)
+      @resetSelectedWord()
+    @noofSelections = 0
     @selectAllOccurrences()
 
   undoLastSelection: ->
@@ -51,12 +59,15 @@ class SelectNext
 
   selectWord: ->
     @editor.selectWordsContainingCursors()
+    @noofSelections = 1
+    @wordUnderCursorIsSelected = true
     @wordSelected = @isWordSelected(@editor.getLastSelection())
 
   selectAllOccurrences: ->
     range = [[0, 0], @editor.getEofBufferPosition()]
     @scanForNextOccurrence range, ({range, stop}) =>
       @addSelection(range)
+      @noofSelections++
 
   selectNextOccurrence: (options={}) ->
     startingRange = options.start ? @editor.getSelectedBufferRange().end
@@ -64,8 +75,13 @@ class SelectNext
     range ?= @findNextOccurrence([[0, 0], @editor.getSelections()[0].getBufferRange().start])
     if range?
       @addSelection(range)
+      @noofSelections++
     else
-      @wordSelected = null
+      @resetSelectedWord()
+
+  resetSelectedWord: ->
+    @wordSelected = null
+    @wordUnderCursorIsSelected = false
 
   findNextOccurrence: (scanRange) ->
     foundRange = null
@@ -129,6 +145,6 @@ class SelectNext
         @isNonWordCharacterToTheRight(selection)
       containsOnlyWordCharacters = not @isNonWordCharacter(selection.getText())
 
-      nonWordCharacterToTheLeft and nonWordCharacterToTheRight and containsOnlyWordCharacters
+      nonWordCharacterToTheLeft and nonWordCharacterToTheRight and containsOnlyWordCharacters and @wordUnderCursorIsSelected
     else
       false
