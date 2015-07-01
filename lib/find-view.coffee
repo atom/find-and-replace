@@ -283,7 +283,7 @@ class FindView extends View
       results = @markers.length
       resultsStr = if results then _.pluralize(results, 'result') else 'No results'
       @setInfoMessage("#{resultsStr} found for '#{@findModel.pattern}'")
-      if @findEditor.hasFocus() && results > 0
+      if @findEditor.hasFocus() and results > 0
         @findAndSelectResult(@selectFirstMarkerStartingFromCursor, {focusEditorAfter: false})
     else
       @clearMessage()
@@ -327,7 +327,7 @@ class FindView extends View
     markerIndex = @firstMarkerIndexAfterCursor(true)
     @selectMarkerAtIndex(markerIndex)
 
-  firstMarkerIndexAfterCursor: (indexIncluded = false)->
+  firstMarkerIndexAfterCursor: (indexIncluded = false) ->
     editor = @findModel.getEditor()
     return -1 unless editor
 
