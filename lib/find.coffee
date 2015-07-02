@@ -17,7 +17,7 @@ module.exports =
     openProjectFindResultsInRightPane:
       type: 'boolean'
       default: false
-    scrollToResultOnType:
+    scrollToResultOnLiveSearch:
       type: 'boolean'
       default: false
 
