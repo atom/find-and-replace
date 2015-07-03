@@ -190,7 +190,10 @@ class ProjectFindView extends View
     return Q() if onlyRunIfActive and not @model.active
 
     pattern = @findEditor.getText()
-    @findInBufferModel.setSearchParams({pattern})
+    @findInBufferModel.setSearchParams
+      pattern: pattern
+      useRegex: @model.useRegex
+      caseSensitive: @model.caseSensitive
 
     @clearMessages()
     @showResultPane().then =>
