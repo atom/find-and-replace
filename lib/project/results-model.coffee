@@ -16,6 +16,7 @@ class ResultsModel
     @emitter = new Emitter
     @useRegex = state.useRegex ? atom.config.get('find-and-replace.useRegex') ? false
     @caseSensitive = state.caseSensitive ? atom.config.get('find-and-replace.caseSensitive') ? false
+    @wholeWord = state.wholeWord ? atom.config.get('find-and-replace.wholeWord') ? false
 
     atom.workspace.observeTextEditors (editor) =>
       editor.onDidStopChanging => @onContentsModified(editor)
@@ -68,7 +69,7 @@ class ResultsModel
     @emitter.on 'did-remove-result', callback
 
   serialize: ->
-    {@useRegex, @caseSensitive}
+    {@useRegex, @caseSensitive, @wholeWord}
 
   clear: ->
     @clearSearchState()
@@ -173,6 +174,9 @@ class ResultsModel
   toggleCaseSensitive: ->
     @caseSensitive = not @caseSensitive
 
+  toggleWholeWord: ->
+    @wholeWord = not @wholeWord
+
   getResultsSummary: ->
     pattern = @pattern or ''
     {
@@ -233,9 +237,13 @@ class ResultsModel
     flags += 'i' unless @caseSensitive
 
     if @useRegex
-      new RegExp(pattern, flags)
+      expression = pattern
     else
-      new RegExp(_.escapeRegExp(pattern), flags)
+      expression = _.escapeRegExp(pattern)
+
+    expression = "\\b#{expression}\\b" if @wholeWord
+
+    new RegExp(expression, flags)
 
   onContentsModified: (editor) =>
     return unless @active

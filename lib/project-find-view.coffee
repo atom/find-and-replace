@@ -33,6 +33,8 @@ class ProjectFindView extends View
               @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-regex" /></svg>'
             @button outlet: 'caseOptionButton', class: 'btn option-case-sensitive', =>
               @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-case" /></svg>'
+            @button outlet: 'wholeWordOptionButton', class: 'btn option-whole-word', =>
+              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-word" /></svg>'
 
       @section class: 'input-block replace-container', =>
         @div class: 'input-block-item input-block-item--flex editor-container', =>
@@ -55,6 +57,7 @@ class ProjectFindView extends View
 
     @regexOptionButton.addClass('selected') if @model.useRegex
     @caseOptionButton.addClass('selected') if @model.caseSensitive
+    @wholeWordOptionButton.addClass('selected') if @model.wholeWord
 
     @clearMessages()
     @updateOptionsLabel()
@@ -80,6 +83,11 @@ class ProjectFindView extends View
     subs.add atom.tooltips.add @caseOptionButton,
       title: "Match Case",
       keyBindingCommand: 'project-find:toggle-case-option',
+      keyBindingTarget: @findEditor.element
+
+    subs.add atom.tooltips.add @wholeWordOptionButton,
+      title: "Whole Word",
+      keyBindingCommand: 'project-find:toggle-whole-word-option',
       keyBindingTarget: @findEditor.element
 
     subs.add atom.tooltips.add @replaceAllButton,
@@ -110,6 +118,7 @@ class ProjectFindView extends View
       'project-find:confirm': => @confirm()
       'project-find:toggle-regex-option': => @toggleRegexOption()
       'project-find:toggle-case-option': => @toggleCaseOption()
+      'project-find:toggle-whole-word-option': => @toggleWholeWordOption()
       'project-find:replace-all': => @replaceAll()
 
     @subscriptions.add @model.onDidClear => @clearMessages()
@@ -119,6 +128,7 @@ class ProjectFindView extends View
     @on 'focus', (e) => @findEditor.focus()
     @regexOptionButton.click => @toggleRegexOption()
     @caseOptionButton.click => @toggleCaseOption()
+    @wholeWordOptionButton.click => @toggleWholeWordOption()
     @replaceAllButton.on 'click', => @replaceAll()
 
     focusCallback = => @onlyRunIfChanged = false
@@ -153,6 +163,12 @@ class ProjectFindView extends View
   toggleCaseOption: ->
     @model.toggleCaseSensitive()
     if @model.caseSensitive then @caseOptionButton.addClass('selected') else @caseOptionButton.removeClass('selected')
+    @updateOptionsLabel()
+    @search(onlyRunIfActive: true)
+
+  toggleWholeWordOption: ->
+    @model.toggleWholeWord()
+    if @model.wholeWord then @wholeWordOptionButton.addClass('selected') else @wholeWordOptionButton.removeClass('selected')
     @updateOptionsLabel()
     @search(onlyRunIfActive: true)
 
@@ -267,6 +283,7 @@ class ProjectFindView extends View
       label.push('Case Sensitive')
     else
       label.push('Case Insensitive')
+    label.push('Whole Word') if @model.wholeWord
     @optionsLabel.text(label.join(', '))
 
   setSelectionAsFindPattern: =>
