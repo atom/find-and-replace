@@ -829,17 +829,25 @@ describe 'FindView', ->
       beforeEach ->
         findView.findEditor.focus()
 
-      it "scrolls to the first match depending on the settings", ->
-        editor.moveToTop()
+      it "scrolls to the first match if the settings scrollToResultOnLiveSearch is true", ->
         atom.config.set('find-and-replace.scrollToResultOnLiveSearch', true)
-        findView.findEditor.setText 'sort'
-        advance()
-        expect(editor.getSelectedBufferRange()).toEqual [[0, 9], [0, 13]]
-        expect(findView.findEditor).toHaveFocus()
+        editor.setHeight(3)
         editor.moveToTop()
-        atom.config.set('find-and-replace.scrollToResultOnLiveSearch', false)
-        findView.findEditor.setText 'concat'
+        originalScrollPosition = editor.getScrollTop()
+        findView.findEditor.setText 'Array'
         advance()
+        expect(editor.getScrollTop()).not.toEqual originalScrollPosition
+        expect(editor.getSelectedBufferRange()).toEqual [[11, 14], [11, 19]]
+        expect(findView.findEditor).toHaveFocus()
+
+      it "doesn't scroll to the first match if the settings scrollToResultOnLiveSearch is false", ->
+        atom.config.set('find-and-replace.scrollToResultOnLiveSearch', false)
+        editor.setHeight(3)
+        editor.moveToTop()
+        originalScrollPosition = editor.getScrollTop()
+        findView.findEditor.setText 'Array'
+        advance()
+        expect(editor.getScrollTop()).toEqual originalScrollPosition
         expect(editor.getSelectedBufferRange()).toEqual []
         expect(findView.findEditor).toHaveFocus()
 
