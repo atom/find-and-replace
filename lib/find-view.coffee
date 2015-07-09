@@ -258,15 +258,15 @@ class FindView extends View
     @findHistory.store()
     @replaceHistory.store()
 
-    if @markers.length is 0
-      atom.beep()
-    else
+    if @markers?.length > 0
       unless currentMarker = @findModel.currentResultMarker
         markerIndex = @[nextIndexFn]()
         currentMarker = @markers[markerIndex]
 
       @findModel.replace([currentMarker], @replaceEditor.getText())
       @[nextOrPreviousFn](fieldToFocus: @replaceEditor)
+    else
+      atom.beep()
 
   replaceAll: =>
     @updateModel {pattern: @findEditor.getText()}

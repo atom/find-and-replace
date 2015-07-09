@@ -900,6 +900,12 @@ describe 'FindView', ->
         findView.findEditor.setText('items')
         findView.replaceEditor.setText('cats')
 
+    describe "when the find string is empty", ->
+      it "beeps", ->
+        findView.findEditor.setText('')
+        atom.commands.dispatch(findView.replaceEditor.element, 'core:confirm')
+        expect(atom.beep).toHaveBeenCalled()
+
     describe "when the replacement string contains an escaped char", ->
       describe "when the regex option is chosen", ->
         beforeEach ->
