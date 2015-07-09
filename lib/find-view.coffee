@@ -283,6 +283,8 @@ class FindView extends View
       results = @markers.length
       resultsStr = if results then _.pluralize(results, 'result') else 'No results'
       @setInfoMessage("#{resultsStr} found for '#{@findModel.pattern}'")
+      if @findEditor.hasFocus() and results > 0 and atom.config.get('find-and-replace.scrollToResultOnLiveSearch')
+        @findAndSelectResult(@selectFirstMarkerStartingFromCursor, {focusEditorAfter: false})
     else
       @clearMessage()
 
@@ -321,7 +323,11 @@ class FindView extends View
     markerIndex = @firstMarkerIndexAfterCursor()
     @selectMarkerAtIndex(markerIndex)
 
-  firstMarkerIndexAfterCursor: ->
+  selectFirstMarkerStartingFromCursor: =>
+    markerIndex = @firstMarkerIndexAfterCursor(true)
+    @selectMarkerAtIndex(markerIndex)
+
+  firstMarkerIndexAfterCursor: (indexIncluded = false) ->
     editor = @findModel.getEditor()
     return -1 unless editor
 
@@ -331,6 +337,7 @@ class FindView extends View
 
     for marker, index in @markers
       markerStartPosition = marker.bufferMarker.getStartPosition()
+      return index if markerStartPosition.isEqual(start) and indexIncluded
       return index if markerStartPosition.isGreaterThan(start)
     0
 

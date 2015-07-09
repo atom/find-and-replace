@@ -829,6 +829,28 @@ describe 'FindView', ->
       beforeEach ->
         findView.findEditor.focus()
 
+      it "scrolls to the first match if the settings scrollToResultOnLiveSearch is true", ->
+        atom.config.set('find-and-replace.scrollToResultOnLiveSearch', true)
+        editor.setHeight(3)
+        editor.moveToTop()
+        originalScrollPosition = editor.getScrollTop()
+        findView.findEditor.setText 'Array'
+        advance()
+        expect(editor.getScrollTop()).not.toEqual originalScrollPosition
+        expect(editor.getSelectedBufferRange()).toEqual [[11, 14], [11, 19]]
+        expect(findView.findEditor).toHaveFocus()
+
+      it "doesn't scroll to the first match if the settings scrollToResultOnLiveSearch is false", ->
+        atom.config.set('find-and-replace.scrollToResultOnLiveSearch', false)
+        editor.setHeight(3)
+        editor.moveToTop()
+        originalScrollPosition = editor.getScrollTop()
+        findView.findEditor.setText 'Array'
+        advance()
+        expect(editor.getScrollTop()).toEqual originalScrollPosition
+        expect(editor.getSelectedBufferRange()).toEqual []
+        expect(findView.findEditor).toHaveFocus()
+
       it "updates the search results", ->
         expect(findView.descriptionLabel.text()).toContain "6 results"
 
