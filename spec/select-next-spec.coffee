@@ -28,7 +28,7 @@ describe "SelectNext", ->
         atom.commands.dispatch editorElement, 'find-and-replace:select-next'
         expect(editor.getSelectedBufferRanges()).toEqual [[[1, 2], [1, 5]]]
 
-    describe "when a word is selected", ->
+    describe "when the word under the cursor selected", ->
       it "selects the next occurrence of the selected word skipping any non-word matches", ->
         editor.setText """
           for
@@ -39,7 +39,11 @@ describe "SelectNext", ->
           a 3rd for is here
         """
 
-        editor.setSelectedBufferRange([[0, 0], [0, 3]])
+        editor.setCursorBufferPosition([0, 0])
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[0, 0], [0, 3]]
+        ]
 
         atom.commands.dispatch editorElement, 'find-and-replace:select-next'
         expect(editor.getSelectedBufferRanges()).toEqual [
@@ -72,6 +76,118 @@ describe "SelectNext", ->
         atom.commands.dispatch editorElement, 'find-and-replace:select-next'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[0, 0], [0, 7]]
+        ]
+
+      describe "when there are no other occurrences", ->
+        describe "when part of a word is selected", ->
+          it "selects the next occurrence of the selected text", ->
+            editor.setText """
+              for
+              foo
+            """
+
+            editor.setCursorBufferPosition([0, 0])
+            atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+            expect(editor.getSelectedBufferRanges()).toEqual [
+              [[0, 0], [0, 3]]
+            ]
+
+            atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+            expect(editor.getSelectedBufferRanges()).toEqual [
+              [[0, 0], [0, 3]]
+            ]
+
+            editor.setSelectedBufferRange([[0, 1], [0, 2]])
+            atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+            expect(editor.getSelectedBufferRanges()).toEqual [
+              [[0, 1], [0, 2]]
+              [[1, 1], [1, 2]]
+            ]
+
+            atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+            expect(editor.getSelectedBufferRanges()).toEqual [
+              [[0, 1], [0, 2]]
+              [[1, 1], [1, 2]]
+              [[1, 2], [1, 3]]
+            ]
+
+      describe "when the same word is manual selected", ->
+        it "selects the next occurrence of the selected word even if its non-word matches", ->
+          editor.setText """
+            for
+            information
+            format
+            another for
+            fork
+            a 3rd for is here
+          """
+
+          editor.setCursorBufferPosition([0, 0])
+          atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+          expect(editor.getSelectedBufferRanges()).toEqual [
+            [[0, 0], [0, 3]]
+          ]
+          atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+          expect(editor.getSelectedBufferRanges()).toEqual [
+            [[0, 0], [0, 3]]
+            [[3, 8], [3, 11]]
+          ]
+          editor.setSelectedBufferRange([[0, 0], [0, 3]])
+          atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+          expect(editor.getSelectedBufferRanges()).toEqual [
+            [[0, 0], [0, 3]]
+            [[1, 2], [1, 5]]
+          ]
+    describe "when a word is manual selected", ->
+      it "selects the next occurrence of the selected word even if its non-word matches", ->
+        editor.setText """
+          for
+          information
+          format
+          another for
+          fork
+          a 3rd for is here
+        """
+
+        editor.setSelectedBufferRange([[0, 0], [0, 3]])
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[0, 0], [0, 3]]
+          [[1, 2], [1, 5]]
+        ]
+
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[0, 0], [0, 3]]
+          [[1, 2], [1, 5]]
+          [[2, 0], [2, 3]]
+        ]
+
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[0, 0], [0, 3]]
+          [[1, 2], [1, 5]]
+          [[2, 0], [2, 3]]
+          [[3, 8], [3, 11]]
+        ]
+
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[0, 0], [0, 3]]
+          [[1, 2], [1, 5]]
+          [[2, 0], [2, 3]]
+          [[3, 8], [3, 11]]
+          [[4, 0], [4, 3]]
+        ]
+
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[0, 0], [0, 3]]
+          [[1, 2], [1, 5]]
+          [[2, 0], [2, 3]]
+          [[3, 8], [3, 11]]
+          [[4, 0], [4, 3]]
+          [[5, 6], [5, 9]]
         ]
 
     describe "when part of a word is selected", ->
@@ -177,6 +293,7 @@ describe "SelectNext", ->
           a 3rd for is here
         """
 
+        editor.setCursorBufferPosition([0, 0])
         atom.commands.dispatch editorElement, 'find-and-replace:select-all'
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[0, 0], [0, 3]]
@@ -191,7 +308,37 @@ describe "SelectNext", ->
           [[5, 6], [5, 9]]
         ]
 
-    describe "when a word is selected", ->
+      describe "when all occurrences of the word under the cursor is selected", ->
+        describe "when a word is manual selected", ->
+          it "find and selects all occurrences of a part of a work", ->
+            editor.setText """
+              for
+              information
+              format
+              another for
+              fork
+              a 3rd for is here
+            """
+            editor.setCursorBufferPosition([0, 0])
+            atom.commands.dispatch editorElement, 'find-and-replace:select-all'
+            expect(editor.getSelectedBufferRanges()).toEqual [
+              [[0, 0], [0, 3]]
+              [[3, 8], [3, 11]]
+              [[5, 6], [5, 9]]
+            ]
+
+            editor.setSelectedBufferRange([[0, 0], [0, 3]])
+            atom.commands.dispatch editorElement, 'find-and-replace:select-all'
+            expect(editor.getSelectedBufferRanges()).toEqual [
+              [[0, 0], [0, 3]]
+              [[1, 2], [1, 5]]
+              [[2, 0], [2, 3]]
+              [[3, 8], [3, 11]]
+              [[4, 0], [4, 3]]
+              [[5, 6], [5, 9]]
+            ]
+
+    describe "when a word is manual selected", ->
       it "find and selects all occurrences", ->
         editor.setText """
           for
@@ -208,6 +355,9 @@ describe "SelectNext", ->
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[3, 8], [3, 11]]
           [[0, 0], [0, 3]]
+          [[1, 2], [1, 5]]
+          [[2, 0], [2, 3]]
+          [[4, 0], [4, 3]]
           [[5, 6], [5, 9]]
         ]
 
@@ -215,6 +365,9 @@ describe "SelectNext", ->
         expect(editor.getSelectedBufferRanges()).toEqual [
           [[3, 8], [3, 11]]
           [[0, 0], [0, 3]]
+          [[1, 2], [1, 5]]
+          [[2, 0], [2, 3]]
+          [[4, 0], [4, 3]]
           [[5, 6], [5, 9]]
         ]
 
@@ -301,7 +454,8 @@ describe "SelectNext", ->
           a 3rd for is here
         """
 
-        editor.setSelectedBufferRange([[0, 0], [0, 3]])
+        editor.setCursorBufferPosition([0, 0])
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
 
         atom.commands.dispatch editorElement, 'find-and-replace:select-next'
         atom.commands.dispatch editorElement, 'find-and-replace:select-next'
@@ -348,7 +502,9 @@ describe "SelectNext", ->
           a 3rd for is here
         """
 
-        editor.setSelectedBufferRange([[5, 6], [5, 9]])
+        editor.setCursorBufferPosition([5, 6])
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+
         atom.commands.dispatch editorElement, 'find-and-replace:select-next'
         atom.commands.dispatch editorElement, 'find-and-replace:select-next'
         atom.commands.dispatch editorElement, 'find-and-replace:select-next'
@@ -375,7 +531,26 @@ describe "SelectNext", ->
           [[0, 0], [0, 0]]
         ]
 
-    describe "when a word is selected", ->
+    describe "when the word under the cursor selected", ->
+      it "unselects current word and selects next match", ->
+        editor.setText """
+          for
+          information
+          format
+          another for
+          fork
+          a 3rd for is here
+        """
+
+        editor.setCursorBufferPosition([3, 8])
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+
+        atom.commands.dispatch editorElement, 'find-and-replace:select-skip'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[5, 6], [5, 9]]
+        ]
+
+    describe "when a word is manual selected", ->
       it "unselects current word and selects next match", ->
         editor.setText """
           for
@@ -390,7 +565,7 @@ describe "SelectNext", ->
 
         atom.commands.dispatch editorElement, 'find-and-replace:select-skip'
         expect(editor.getSelectedBufferRanges()).toEqual [
-          [[5, 6], [5, 9]]
+          [[4, 0], [4, 3]]
         ]
 
     describe "when two words are selected", ->
@@ -404,7 +579,8 @@ describe "SelectNext", ->
           a 3rd for is here
         """
 
-        editor.setSelectedBufferRange([[0, 0], [0, 3]])
+        editor.setCursorBufferPosition([0, 0])
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
 
         atom.commands.dispatch editorElement, 'find-and-replace:select-next'
         atom.commands.dispatch editorElement, 'find-and-replace:select-skip'
@@ -429,7 +605,9 @@ describe "SelectNext", ->
           a 3rd for is here
         """
 
-        editor.setSelectedBufferRange([[5, 6], [5, 9]])
+        editor.setCursorBufferPosition([5, 6])
+        atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+
         atom.commands.dispatch editorElement, 'find-and-replace:select-next'
         atom.commands.dispatch editorElement, 'find-and-replace:select-skip'
         expect(editor.getSelectedBufferRanges()).toEqual [
