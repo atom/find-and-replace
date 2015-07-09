@@ -108,6 +108,7 @@ describe 'ProjectFindView', ->
     it "honors config settings for find options", ->
       atom.config.set('find-and-replace.useRegex', true)
       atom.config.set('find-and-replace.caseSensitive', true)
+      atom.config.set('find-and-replace.wholeWord', true)
 
       atom.commands.dispatch(workspaceElement, 'project-find:show')
 
@@ -117,6 +118,7 @@ describe 'ProjectFindView', ->
       runs ->
         expect(projectFindView.caseOptionButton).toHaveClass 'selected'
         expect(projectFindView.regexOptionButton).toHaveClass 'selected'
+        expect(projectFindView.wholeWordOptionButton).toHaveClass 'selected'
 
   describe "when project-find:toggle is triggered", ->
     it "toggles the visibility of the ProjectFindView", ->
@@ -360,7 +362,7 @@ describe 'ProjectFindView', ->
           expect(resultsPaneView2.querySelector('.preview-count').innerHTML).toEqual resultsPaneView1.querySelector('.preview-count').innerHTML
 
     describe "serialization", ->
-      it "serializes if the case and regex options", ->
+      it "serializes if the case, regex and whole word options", ->
         atom.commands.dispatch editorView, 'project-find:show'
         expect(projectFindView.caseOptionButton).not.toHaveClass('selected')
         projectFindView.caseOptionButton.click()
@@ -369,6 +371,10 @@ describe 'ProjectFindView', ->
         expect(projectFindView.regexOptionButton).not.toHaveClass('selected')
         projectFindView.regexOptionButton.click()
         expect(projectFindView.regexOptionButton).toHaveClass('selected')
+
+        expect(projectFindView.wholeWordOptionButton).not.toHaveClass('selected')
+        projectFindView.wholeWordOptionButton.click()
+        expect(projectFindView.wholeWordOptionButton).toHaveClass('selected')
 
         atom.packages.deactivatePackage("find-and-replace")
 
@@ -384,6 +390,7 @@ describe 'ProjectFindView', ->
         runs ->
           expect(projectFindView.caseOptionButton).toHaveClass('selected')
           expect(projectFindView.regexOptionButton).toHaveClass('selected')
+          expect(projectFindView.wholeWordOptionButton).toHaveClass('selected')
 
     describe "description label", ->
       beforeEach ->
@@ -510,6 +517,39 @@ describe 'ProjectFindView', ->
         runs ->
           expect(projectFindView.caseOptionButton).toHaveClass('selected')
           expect(atom.workspace.scan.mostRecentCall.args[0]).toEqual /ITEMS/g
+
+    describe "whole word", ->
+      beforeEach ->
+        atom.commands.dispatch editorView, 'project-find:show'
+        spyOn(atom.workspace, 'scan').andCallFake -> Q()
+        projectFindView.findEditor.setText('wholeword')
+        atom.commands.dispatch(projectFindView[0], 'core:confirm')
+        waitsForPromise -> searchPromise
+
+      it "does not run whole word search by default", ->
+        expect(atom.workspace.scan.argsForCall[0][0]).toEqual /wholeword/gi
+
+      it "toggles whole word option via an event and finds files matching the pattern", ->
+        expect(projectFindView.wholeWordOptionButton).not.toHaveClass('selected')
+        atom.commands.dispatch(projectFindView[0], 'project-find:toggle-whole-word-option')
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          expect(projectFindView.wholeWordOptionButton).toHaveClass('selected')
+          expect(atom.workspace.scan.mostRecentCall.args[0]).toEqual /\bwholeword\b/gi
+
+      it "toggles whole word option via a button and finds files matching the pattern", ->
+        expect(projectFindView.wholeWordOptionButton).not.toHaveClass('selected')
+        projectFindView.wholeWordOptionButton.click()
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          expect(projectFindView.wholeWordOptionButton).toHaveClass('selected')
+          expect(atom.workspace.scan.mostRecentCall.args[0]).toEqual /\bwholeword\b/gi
 
     describe "when project-find:confirm is triggered", ->
       it "displays the results and no errors", ->
