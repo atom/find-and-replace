@@ -1,10 +1,10 @@
 '.platform-darwin':
-  'cmd-F': 'project-find:show'
+  # 'cmd-F': 'project-find:show'
   'cmd-f': 'find-and-replace:show'
   'cmd-alt-f': 'find-and-replace:show-replace'
 
 '.platform-win32, .platform-linux':
-  'ctrl-F': 'project-find:show'
+  # 'ctrl-F': 'project-find:show'
   'ctrl-f': 'find-and-replace:show'
   'ctrl-alt-f': 'find-and-replace:show-replace'
 
