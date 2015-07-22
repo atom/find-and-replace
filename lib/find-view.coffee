@@ -379,6 +379,9 @@ class FindView extends View
     editor = @findModel.getEditor()
     if editor?
       pattern = editor.getSelectedText() or editor.getWordUnderCursor()
+      if @findModel.useRegex
+        pattern = pattern.replace /[.?*+^$[\]\\(){}|-]/g, (match) ->
+          "\\" + match
       @updateModel {pattern} if pattern
 
   findNextSelected: =>

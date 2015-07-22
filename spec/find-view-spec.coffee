@@ -519,6 +519,12 @@ describe 'FindView', ->
         atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
         expect(findView.findEditor.getText()).toBe 'sort'
 
+      it "places selected text into the find editor and escapes it when Regex is enabled", ->
+        atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
+        editor.setSelectedBufferRange([[6, 6], [6, 65]])
+        atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
+        expect(findView.findEditor.getText()).toBe 'current < pivot \\? left\\.push\\(current\\) : right\\.push\\(current\\);'
+
     describe "when find-and-replace:find-next-selected is triggered", ->
       it "places the selected text into the find editor and finds the next occurrence", ->
         editor.setSelectedBufferRange([[0, 9], [0, 13]])
