@@ -61,6 +61,7 @@ class ProjectFindView extends View
 
     @clearMessages()
     @updateOptionsLabel()
+    @updateModel()
 
   destroy: ->
     @subscriptions?.dispose()
@@ -158,18 +159,21 @@ class ProjectFindView extends View
     @model.toggleUseRegex()
     if @model.useRegex then @regexOptionButton.addClass('selected') else @regexOptionButton.removeClass('selected')
     @updateOptionsLabel()
+    @updateModel()
     @search(onlyRunIfActive: true)
 
   toggleCaseOption: ->
     @model.toggleCaseSensitive()
     if @model.caseSensitive then @caseOptionButton.addClass('selected') else @caseOptionButton.removeClass('selected')
     @updateOptionsLabel()
+    @updateModel()
     @search(onlyRunIfActive: true)
 
   toggleWholeWordOption: ->
     @model.toggleWholeWord()
     if @model.wholeWord then @wholeWordOptionButton.addClass('selected') else @wholeWordOptionButton.removeClass('selected')
     @updateOptionsLabel()
+    @updateModel()
     @search(onlyRunIfActive: true)
 
   focusNextElement: (direction) ->
@@ -275,6 +279,14 @@ class ProjectFindView extends View
 
   setErrorMessage: (errorMessage) ->
     @descriptionLabel.html(errorMessage).addClass('text-error')
+
+  updateModel: ->
+    # Set syntax highlighting if using regular expressions
+    if @model.useRegex
+      grammar = atom.grammars.grammarForScopeName('source.regexp.python')
+      @findEditor.getModel().setGrammar(grammar)
+    else
+      @findEditor.getModel().setGrammar(atom.grammars.nullGrammar)
 
   updateOptionsLabel: ->
     label = []
