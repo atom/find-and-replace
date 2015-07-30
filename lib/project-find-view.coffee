@@ -186,8 +186,7 @@ class ProjectFindView extends View
   focusFindElement: ->
     selectedText = atom.workspace.getActiveTextEditor()?.getSelectedText?()
     if selectedText and selectedText.indexOf('\n') < 0
-      if @model.useRegex
-        selectedText = Util.escapeRegex(selectedText)
+      selectedText = Util.escapeRegex(selectedText) if @model.useRegex
       @findEditor.setText(selectedText)
     @findEditor.focus()
     @findEditor.getModel().selectAll()
@@ -293,6 +292,5 @@ class ProjectFindView extends View
     editor = atom.workspace.getActivePaneItem()
     if editor?
       pattern = editor.getSelectedText() or editor.getWordUnderCursor()
-      if @model.useRegex
-        pattern = Util.escapeRegex(pattern)
+      pattern = Util.escapeRegex(pattern) if @model.useRegex
       @findEditor.setText(pattern) if pattern

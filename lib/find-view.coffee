@@ -197,8 +197,7 @@ class FindView extends View
   focusFindEditor: =>
     selectedText = atom.workspace.getActiveTextEditor()?.getSelectedText?()
     if selectedText and selectedText.indexOf('\n') < 0
-      if @findModel.useRegex
-        selectedText = Util.escapeRegex(selectedText)
+      selectedText = Util.escapeRegex(selectedText) if @findModel.useRegex
       @findEditor.setText(selectedText)
     @findEditor.focus()
     @findEditor.getModel().selectAll()
@@ -382,8 +381,7 @@ class FindView extends View
     editor = @findModel.getEditor()
     if editor?
       pattern = editor.getSelectedText() or editor.getWordUnderCursor()
-      if @findModel.useRegex
-        pattern = Util.escapeRegex(pattern)
+      pattern = Util.escapeRegex(pattern) if @findModel.useRegex
       @updateModel {pattern} if pattern
 
   findNextSelected: =>
