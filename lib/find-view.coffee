@@ -2,6 +2,7 @@ _ = require 'underscore-plus'
 {$$$, View, TextEditorView} = require 'atom-space-pen-views'
 {CompositeDisposable} = require 'atom'
 {HistoryCycler} = require './history'
+Util = require './project/util'
 
 module.exports =
 class FindView extends View
@@ -196,6 +197,8 @@ class FindView extends View
   focusFindEditor: =>
     selectedText = atom.workspace.getActiveTextEditor()?.getSelectedText?()
     if selectedText and selectedText.indexOf('\n') < 0
+      if @findModel.useRegex
+        selectedText = Util.escapeRegex(selectedText)
       @findEditor.setText(selectedText)
     @findEditor.focus()
     @findEditor.getModel().selectAll()
@@ -380,8 +383,7 @@ class FindView extends View
     if editor?
       pattern = editor.getSelectedText() or editor.getWordUnderCursor()
       if @findModel.useRegex
-        pattern = pattern.replace /[.?*+^$[\]\\(){}|-]/g, (match) ->
-          "\\" + match
+        pattern = Util.escapeRegex(pattern)
       @updateModel {pattern} if pattern
 
   findNextSelected: =>
