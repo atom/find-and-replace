@@ -296,6 +296,12 @@ class FindView extends View
 
   updateModel: (options) ->
     @findModel.setSearchParams(options)
+    # Set syntax highlighting if using regular expressions
+    if @findModel.useRegex
+      grammar = atom.grammars.grammarForScopeName('source.regexp.python')
+      @findEditor.getModel().setGrammar(grammar)
+    else
+      @findEditor.getModel().setGrammar(atom.grammars.nullGrammar)
 
   updateResultCounter: =>
     if @findModel.currentResultMarker and (index = @markers.indexOf(@findModel.currentResultMarker)) > -1
