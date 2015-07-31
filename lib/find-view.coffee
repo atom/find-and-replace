@@ -300,7 +300,7 @@ class FindView extends View
     @findModel.setSearchParams(options)
     # Set syntax highlighting if using regular expressions
     if @findModel.useRegex
-      grammar = atom.grammars.grammarForScopeName('source.regexp.python')
+      grammar = atom.grammars.grammarForScopeName('source.js.regexp')
       @findEditor.getModel().setGrammar(grammar)
     else
       @findEditor.getModel().setGrammar(atom.grammars.nullGrammar)
