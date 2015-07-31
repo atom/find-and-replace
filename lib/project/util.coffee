@@ -6,6 +6,10 @@ module.exports =
     @escapeNode.innerText = str
     @escapeNode.innerHTML
 
+  escapeRegex: (str) =>
+    str.replace /[.?*+^$[\]\\(){}|-]/g, (match) ->
+      "\\" + match
+
   sanitizePattern: (pattern) ->
     pattern = @escapeHtml(pattern)
     pattern.replace(/\n/g, '\\n').replace(/\t/g, '\\t')

@@ -89,6 +89,12 @@ describe 'ProjectFindView', ->
         expect(getAtomPanel()).toBeVisible()
         expect(projectFindView.findEditor.getText()).toBe('length')
 
+      it "places selected text into the find editor and escapes it when Regex is enabled", ->
+        atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option')
+        editor.setSelectedBufferRange([[6, 6], [6, 65]])
+        atom.commands.dispatch(workspaceElement, 'project-find:show')
+        expect(projectFindView.findEditor.getText()).toBe 'current < pivot \\? left\\.push\\(current\\) : right\\.push\\(current\\);'
+
     describe "when the ProjectFindView is already attached", ->
       beforeEach ->
         atom.commands.dispatch(workspaceElement, 'project-find:show')
@@ -770,6 +776,12 @@ describe 'ProjectFindView', ->
         editor.setSelectedBufferRange([[1, 1], [1, 1]])
         atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
         expect(projectFindView.findEditor.getText()).toBe 'function'
+
+      it "places selected text into the find editor and escapes it when Regex is enabled", ->
+        atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option')
+        editor.setSelectedBufferRange([[6, 6], [6, 65]])
+        atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
+        expect(projectFindView.findEditor.getText()).toBe 'current < pivot \\? left\\.push\\(current\\) : right\\.push\\(current\\);'
 
     describe "when there is an error searching", ->
       it "displays the errors in the results pane", ->
