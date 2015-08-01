@@ -20,7 +20,7 @@ module.exports =
     scrollToResultOnLiveSearch:
       type: 'boolean'
       default: false
-      title: 'Scroll To Result On Live Search (incremental find in buffer)'
+      title: 'Scroll To Result On Live-Search (incremental find in buffer)'
       description: 'When you type in the buffer find box, the closest match will be selected and made visible in the editor.'
     liveSearchMinimumCharacters:
       type: 'integer'
