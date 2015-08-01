@@ -207,7 +207,7 @@ class ProjectFindView extends View
 
     pattern = @findEditor.getText()
     @findInBufferModel.setSearchParams
-      pattern: @findEditor.getText()
+      pattern: pattern
       inCurrentSelection: false
 
     @clearMessages()
