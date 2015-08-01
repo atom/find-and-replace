@@ -889,6 +889,40 @@ describe 'FindView', ->
         expect(findView.descriptionLabel.text()).toContain "6 results"
         expect(findView).toHaveFocus()
 
+      it "respects the `liveSearchMinimumCharacters` setting", ->
+        expect(findView.descriptionLabel.text()).toContain "6 results"
+        atom.config.set('find-and-replace.liveSearchMinimumCharacters', 3)
+
+        findView.findEditor.setText 'why do I need these 2 lines? The editor does not trigger contents-modified without them'
+        advance()
+
+        findView.findEditor.setText ''
+        advance()
+        expect(findView.descriptionLabel.text()).toContain "Find in Current Buffer"
+        expect(findView).toHaveFocus()
+
+        findView.findEditor.setText 'ite'
+        advance()
+        expect(findView.descriptionLabel.text()).toContain "6 results"
+        expect(findView).toHaveFocus()
+
+        findView.findEditor.setText 'i'
+        advance()
+        expect(findView.descriptionLabel.text()).toContain "6 results"
+        expect(findView).toHaveFocus()
+
+        findView.findEditor.setText ''
+        advance()
+        expect(findView.descriptionLabel.text()).toContain "Find in Current Buffer"
+        expect(findView).toHaveFocus()
+
+        atom.config.set('find-and-replace.liveSearchMinimumCharacters', 0)
+
+        findView.findEditor.setText 'i'
+        advance()
+        expect(findView.descriptionLabel.text()).toContain "20 results"
+        expect(findView).toHaveFocus()
+
     describe "when another find is called", ->
       previousMarkers = null
 
