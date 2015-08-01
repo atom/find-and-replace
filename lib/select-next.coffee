@@ -82,10 +82,11 @@ class SelectNext
     selection = @editor.getLastSelection()
     text = _.escapeRegExp(selection.getText())
 
-    @wordSelected ?= @isWordSelected(selection)
-    if @wordSelected
-      nonWordCharacters = atom.config.get('editor.nonWordCharacters')
-      text = "(^|[ \t#{_.escapeRegExp(nonWordCharacters)}]+)#{text}(?=$|[\\s#{_.escapeRegExp(nonWordCharacters)}]+)"
+    if atom.config.get('find-and-replace.skipNonWordMatches')
+      @wordSelected ?= @isWordSelected(selection)
+      if @wordSelected
+        nonWordCharacters = atom.config.get('editor.nonWordCharacters')
+        text = "(^|[ \t#{_.escapeRegExp(nonWordCharacters)}]+)#{text}(?=$|[\\s#{_.escapeRegExp(nonWordCharacters)}]+)"
 
     @editor.scanInBufferRange new RegExp(text, 'g'), range, (result) ->
       if prefix = result.match[1]

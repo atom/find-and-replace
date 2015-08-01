@@ -22,6 +22,11 @@ module.exports =
       default: false
       title: 'Scroll To Result On Live Search (incremental find in buffer)'
       description: 'When you type in the buffer find box, the closest match will be selected and made visible in the editor.'
+    skipNonWordMatches:
+      type: 'boolean'
+      default: true
+      title: 'When a Word is Selected, Skip Non-Word Matches (Select Next)'
+      description: 'If the selected text is a whole word, only whole words will match when using select next feature.'
 
   activate: ({@viewState, @projectViewState, @resultsModelState, @modelState, findHistory, replaceHistory, pathsHistory}={}) ->
     atom.workspace.addOpener (filePath) ->
