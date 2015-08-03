@@ -122,7 +122,10 @@ class ProjectFindView extends View
       'project-find:replace-all': => @replaceAll()
 
     updateInterfaceForResults = (results) =>
-      @generateResultsMessage(results)
+      if results.matchCount is 0 and results.pattern is ''
+        @clearMessages()
+      else
+        @generateResultsMessage(results)
       @updateReplaceAllButtonEnablement(results)
 
     resetInterface = =>
