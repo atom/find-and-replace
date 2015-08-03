@@ -1055,36 +1055,41 @@ describe 'ProjectFindView', ->
 
     describe "when the project-find:replace-all is triggered", ->
       describe "when there are no results", ->
-        it "doesnt replace anything", ->
+        beforeEach ->
           projectFindView.findEditor.setText('nopenotinthefile')
+          atom.commands.dispatch(projectFindView[0], 'core:confirm')
+
+          waitsForPromise ->
+            searchPromise
+
+        it "doesnt replace anything", ->
           projectFindView.replaceEditor.setText('sunshine')
 
           spyOn(atom.workspace, 'scan').andCallThrough()
           spyOn(atom, 'beep')
           atom.commands.dispatch(projectFindView[0], 'project-find:replace-all')
 
-          waitsForPromise ->
-            replacePromise
+          # The replacement isnt even run
+          expect(replacePromise).toBeUndefined()
 
-          runs ->
-            expect(atom.workspace.scan).toHaveBeenCalled()
-            expect(atom.beep).toHaveBeenCalled()
-            expect(projectFindView.descriptionLabel.text()).toContain "Nothing replaced"
+          expect(atom.workspace.scan).not.toHaveBeenCalled()
+          expect(atom.beep).toHaveBeenCalled()
+          expect(projectFindView.descriptionLabel.text().replace(/(  )/g, ' ')).toContain "No results"
 
       describe "when no search has been run", ->
-        it "runs the search then replaces everything", ->
+        it "does nothing", ->
           projectFindView.findEditor.setText('items')
           projectFindView.replaceEditor.setText('sunshine')
 
+          spyOn(atom, 'beep')
           atom.commands.dispatch(projectFindView[0], 'project-find:replace-all')
 
-          waitsForPromise ->
-            replacePromise
+          expect(replacePromise).toBeUndefined()
 
-          runs ->
-            expect(projectFindView.descriptionLabel.text()).toContain "Replaced items with sunshine 13 times in 2 files"
+          expect(atom.beep).toHaveBeenCalled()
+          expect(projectFindView.descriptionLabel.text()).toContain "Find in Project"
 
-      describe "when the search text has changed since that last search", ->
+      describe "when a search has been run", ->
         beforeEach ->
           projectFindView.findEditor.setText('items')
           atom.commands.dispatch(projectFindView[0], 'core:confirm')
@@ -1092,7 +1097,7 @@ describe 'ProjectFindView', ->
           waitsForPromise ->
             searchPromise
 
-        it "clears the search results and does another replace", ->
+        it "replaces the original search text with the replacement when the search text has changed since that last search", ->
           spyOn(atom.workspace, 'scan').andCallThrough()
           spyOn(atom, 'beep')
 
@@ -1108,17 +1113,9 @@ describe 'ProjectFindView', ->
           runs ->
             expect(atom.workspace.scan).toHaveBeenCalled()
             expect(atom.beep).not.toHaveBeenCalled()
-            expect(projectFindView.descriptionLabel.text()).toContain "Replaced sort with ok 10 times in 2 files"
+            expect(projectFindView.descriptionLabel.text()).toContain "Replaced items with ok 13 times in 2 files"
 
-      describe "when the text in the search box triggered the results", ->
-        beforeEach ->
-          projectFindView.findEditor.setText('items')
-          atom.commands.dispatch(projectFindView[0], 'core:confirm')
-
-          waitsForPromise ->
-            searchPromise
-
-        it "runs the search, and replaces all the matches", ->
+        it "replaces all the matches and updates the results view", ->
           projectFindView.replaceEditor.setText('sunshine')
           atom.commands.dispatch(projectFindView[0], 'project-find:replace-all')
           expect(projectFindView.errorMessages).not.toBeVisible()

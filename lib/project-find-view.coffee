@@ -229,14 +229,15 @@ class ProjectFindView extends View
         @setErrorMessage(e.message)
 
   replaceAll: ->
+    return atom.beep() unless @model.matchCount
+
     @clearMessages()
     @showResultPane().then =>
       pattern = @findEditor.getText()
       replacementPattern = @replaceEditor.getText()
 
-      @model.search(pattern, @getPaths(), replacementPattern, onlyRunIfChanged: true).then =>
-        @clearMessages()
-        @model.replace(pattern, @getPaths(), replacementPattern, @model.getPaths())
+      @clearMessages()
+      @model.replace(@getPaths(), replacementPattern, @model.getPaths())
 
   getPaths: ->
     inputPath.trim() for inputPath in @pathsEditor.getText().trim().split(',') when inputPath
