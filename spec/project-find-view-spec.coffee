@@ -933,39 +933,41 @@ describe 'ProjectFindView', ->
         beforeEach ->
           atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option')
 
-        it "finds the escape char", ->
           projectFindView.findEditor.setText('a')
+          atom.commands.dispatch(projectFindView[0], 'project-find:confirm')
+          waitsForPromise -> searchPromise
+
+        it "finds the escape char", ->
           projectFindView.replaceEditor.setText('\\t')
           atom.commands.dispatch(projectFindView[0], 'project-find:replace-all')
 
-          waitsForPromise ->
-            replacePromise
+          waitsForPromise -> replacePromise
 
           runs ->
             fileContent = fs.readFileSync(filePath, 'utf8')
             expect(fileContent).toBe("\t\nb\n\t")
 
         it "doesn't insert a escaped char if there are multiple backslashs in front of the char", ->
-          projectFindView.findEditor.setText('a')
           projectFindView.replaceEditor.setText('\\\\t')
           atom.commands.dispatch(projectFindView[0], 'project-find:replace-all')
 
-          waitsForPromise ->
-            replacePromise
+          waitsForPromise -> replacePromise
 
           runs ->
             fileContent = fs.readFileSync(filePath, 'utf8')
             expect(fileContent).toBe("\\t\nb\n\\t")
 
-
       describe "when regex option is not set", ->
-        it "finds the escape char", ->
+        beforeEach ->
           projectFindView.findEditor.setText('a')
+          atom.commands.dispatch(projectFindView[0], 'project-find:confirm')
+          waitsForPromise -> searchPromise
+
+        it "finds the escape char", ->
           projectFindView.replaceEditor.setText('\\t')
           atom.commands.dispatch(projectFindView[0], 'project-find:replace-all')
 
-          waitsForPromise ->
-            replacePromise
+          waitsForPromise -> replacePromise
 
           runs ->
             fileContent = fs.readFileSync(filePath, 'utf8')
@@ -1141,9 +1143,13 @@ describe 'ProjectFindView', ->
             expect(sampleCoffeeContent.match(/sunshine/g)).toHaveLength 7
 
     describe "when there is an error replacing", ->
+      beforeEach ->
+        projectFindView.findEditor.setText('items')
+        atom.commands.dispatch(projectFindView[0], 'project-find:confirm')
+        waitsForPromise -> searchPromise
+
       it "displays the errors in the results pane", ->
         [callback, deferred, called, resultsPaneView, errorList] = []
-        projectFindView.findEditor.setText('items')
         projectFindView.replaceEditor.setText('sunshine')
 
         spyOn(atom.workspace, 'replace').andCallFake (regex, replacement, paths, fn) ->
