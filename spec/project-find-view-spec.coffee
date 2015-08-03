@@ -1054,7 +1054,20 @@ describe 'ProjectFindView', ->
             expect(projectFindView.descriptionLabel.text()).toContain "13 results found in 2 files for items"
 
     describe "when the project-find:replace-all is triggered", ->
-      describe "when there are no results", ->
+      describe "when no search has been run", ->
+        it "does nothing", ->
+          projectFindView.findEditor.setText('items')
+          projectFindView.replaceEditor.setText('sunshine')
+
+          spyOn(atom, 'beep')
+          atom.commands.dispatch(projectFindView[0], 'project-find:replace-all')
+
+          expect(replacePromise).toBeUndefined()
+
+          expect(atom.beep).toHaveBeenCalled()
+          expect(projectFindView.descriptionLabel.text()).toContain "Find in Project"
+
+      describe "when a search with no results has been run", ->
         beforeEach ->
           projectFindView.findEditor.setText('nopenotinthefile')
           atom.commands.dispatch(projectFindView[0], 'core:confirm')
@@ -1076,20 +1089,7 @@ describe 'ProjectFindView', ->
           expect(atom.beep).toHaveBeenCalled()
           expect(projectFindView.descriptionLabel.text().replace(/(  )/g, ' ')).toContain "No results"
 
-      describe "when no search has been run", ->
-        it "does nothing", ->
-          projectFindView.findEditor.setText('items')
-          projectFindView.replaceEditor.setText('sunshine')
-
-          spyOn(atom, 'beep')
-          atom.commands.dispatch(projectFindView[0], 'project-find:replace-all')
-
-          expect(replacePromise).toBeUndefined()
-
-          expect(atom.beep).toHaveBeenCalled()
-          expect(projectFindView.descriptionLabel.text()).toContain "Find in Project"
-
-      describe "when a search has been run", ->
+      describe "when a search with results has been run", ->
         beforeEach ->
           projectFindView.findEditor.setText('items')
           atom.commands.dispatch(projectFindView[0], 'core:confirm')
