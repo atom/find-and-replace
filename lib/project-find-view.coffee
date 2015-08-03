@@ -41,7 +41,7 @@ class ProjectFindView extends View
           @subview 'replaceEditor', new TextEditorView(mini: true, placeholderText: 'Replace in project')
         @div class: 'input-block-item', =>
           @div class: 'btn-group btn-group-replace-all', =>
-            @button outlet: 'replaceAllButton', class: 'btn', 'Replace All'
+            @button outlet: 'replaceAllButton', class: 'btn', disabled: 'disabled', 'Replace All'
 
       @section class: 'input-block paths-container', =>
         @div class: 'input-block-item editor-container', =>
@@ -121,9 +121,17 @@ class ProjectFindView extends View
       'project-find:toggle-whole-word-option': => @toggleWholeWordOption()
       'project-find:replace-all': => @replaceAll()
 
-    @subscriptions.add @model.onDidClear => @clearMessages()
-    @subscriptions.add @model.onDidClearReplacementState (results) => @generateResultsMessage(results)
-    @subscriptions.add @model.onDidFinishSearching (results) => @generateResultsMessage(results)
+    updateInterfaceForResults = (results) =>
+      @generateResultsMessage(results)
+      @updateReplaceAllButtonEnablement(results)
+
+    resetInterface = =>
+      @clearMessages()
+      @updateReplaceAllButtonEnablement(null)
+
+    @subscriptions.add @model.onDidClear(resetInterface)
+    @subscriptions.add @model.onDidClearReplacementState(updateInterfaceForResults)
+    @subscriptions.add @model.onDidFinishSearching(updateInterfaceForResults)
 
     @on 'focus', (e) => @findEditor.focus()
     @regexOptionButton.click => @toggleRegexOption()
@@ -277,6 +285,9 @@ class ProjectFindView extends View
 
   setErrorMessage: (errorMessage) ->
     @descriptionLabel.html(errorMessage).addClass('text-error')
+
+  updateReplaceAllButtonEnablement: (results) ->
+    @replaceAllButton[0].disabled = !results?.matchCount
 
   updateOptionsLabel: ->
     label = []

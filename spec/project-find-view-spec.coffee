@@ -971,6 +971,34 @@ describe 'ProjectFindView', ->
             fileContent = fs.readFileSync(filePath, 'utf8')
             expect(fileContent).toBe("\\t\nb\n\\t")
 
+    describe "replace all button enablement", ->
+      it "is disabled initially", ->
+        expect(projectFindView.replaceAllButton[0].disabled).toBe true
+
+      it "is enabled when a search has results and disabled when there are no results", ->
+        projectFindView.findEditor.setText('items')
+        atom.commands.dispatch(projectFindView[0], 'project-find:confirm')
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          expect(projectFindView.replaceAllButton[0].disabled).toBe false
+
+          projectFindView.findEditor.setText('nopenotinthefile')
+          atom.commands.dispatch(projectFindView[0], 'project-find:confirm')
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          expect(projectFindView.replaceAllButton[0].disabled).toBe true
+
+          projectFindView.findEditor.setText('')
+          atom.commands.dispatch(projectFindView[0], 'project-find:confirm')
+
+          expect(projectFindView.replaceAllButton[0].disabled).toBe true
+
     describe "when the replace button is pressed", ->
       it "runs the search, and replaces all the matches", ->
         projectFindView.findEditor.setText('items')
