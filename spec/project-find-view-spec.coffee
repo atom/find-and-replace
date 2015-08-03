@@ -929,6 +929,8 @@ describe 'ProjectFindView', ->
         atom.project.setPaths([projectPath])
         atom.commands.dispatch(workspaceElement, 'project-find:show')
 
+        spyOn(atom, 'confirm').andReturn 0
+
       describe "when the regex option is chosen", ->
         beforeEach ->
           atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option')
@@ -1002,6 +1004,9 @@ describe 'ProjectFindView', ->
           expect(projectFindView.replaceAllButton[0].disabled).toBe true
 
     describe "when the replace button is pressed", ->
+      beforeEach ->
+        spyOn(atom, 'confirm').andReturn 0
+
       it "runs the search, and replaces all the matches", ->
         projectFindView.findEditor.setText('items')
         atom.commands.dispatch(projectFindView[0], 'core:confirm')
@@ -1057,6 +1062,9 @@ describe 'ProjectFindView', ->
 
     describe "when the project-find:replace-all is triggered", ->
       describe "when no search has been run", ->
+        beforeEach ->
+          spyOn(atom, 'confirm').andReturn 0
+
         it "does nothing", ->
           projectFindView.findEditor.setText('items')
           projectFindView.replaceEditor.setText('sunshine')
@@ -1071,6 +1079,7 @@ describe 'ProjectFindView', ->
 
       describe "when a search with no results has been run", ->
         beforeEach ->
+          spyOn(atom, 'confirm').andReturn 0
           projectFindView.findEditor.setText('nopenotinthefile')
           atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
@@ -1100,6 +1109,7 @@ describe 'ProjectFindView', ->
             searchPromise
 
         it "replaces the original search text with the replacement when the search text has changed since that last search", ->
+          spyOn(atom, 'confirm').andReturn 0
           spyOn(atom.workspace, 'scan').andCallThrough()
           spyOn(atom, 'beep')
 
@@ -1118,6 +1128,7 @@ describe 'ProjectFindView', ->
             expect(projectFindView.descriptionLabel.text()).toContain "Replaced items with ok 13 times in 2 files"
 
         it "replaces all the matches and updates the results view", ->
+          spyOn(atom, 'confirm').andReturn 0
           projectFindView.replaceEditor.setText('sunshine')
           atom.commands.dispatch(projectFindView[0], 'project-find:replace-all')
           expect(projectFindView.errorMessages).not.toBeVisible()
@@ -1142,8 +1153,22 @@ describe 'ProjectFindView', ->
             expect(sampleCoffeeContent.match(/items/g)).toBeFalsy()
             expect(sampleCoffeeContent.match(/sunshine/g)).toHaveLength 7
 
+        describe "when the confirm box is cancelled", ->
+          beforeEach ->
+            spyOn(atom, 'confirm').andReturn 1
+
+          it "does not replace", ->
+            projectFindView.replaceEditor.setText('sunshine')
+            atom.commands.dispatch(projectFindView[0], 'project-find:replace-all')
+
+            waitsForPromise -> replacePromise
+
+            runs ->
+              expect(projectFindView.descriptionLabel.text()).toContain "13 results found"
+
     describe "when there is an error replacing", ->
       beforeEach ->
+        spyOn(atom, 'confirm').andReturn 0
         projectFindView.findEditor.setText('items')
         atom.commands.dispatch(projectFindView[0], 'project-find:confirm')
         waitsForPromise -> searchPromise

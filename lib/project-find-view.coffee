@@ -231,13 +231,19 @@ class ProjectFindView extends View
   replaceAll: ->
     return atom.beep() unless @model.matchCount
 
-    @clearMessages()
     @showResultPane().then =>
-      pattern = @findEditor.getText()
+      pattern = @model.pattern
       replacementPattern = @replaceEditor.getText()
 
-      @clearMessages()
-      @model.replace(@getPaths(), replacementPattern, @model.getPaths())
+      message = "This will replace '#{pattern}' with '#{replacementPattern}' #{_.pluralize(@model.matchCount, 'time')} in #{_.pluralize(@model.pathCount, 'file')}"
+      buttonChosen = atom.confirm
+        message: 'Are you sure you want to replace all?'
+        detailedMessage: message
+        buttons: ['Ok', 'Cancel']
+
+      if buttonChosen is 0
+        @clearMessages()
+        @model.replace(@getPaths(), replacementPattern, @model.getPaths())
 
   getPaths: ->
     inputPath.trim() for inputPath in @pathsEditor.getText().trim().split(',') when inputPath
