@@ -274,9 +274,12 @@ class FindView extends View
 
   replaceAll: =>
     @updateModel {pattern: @findEditor.getText()}
-    @replaceHistory.store()
-    @findHistory.store()
-    @findModel.replace(@markers, @replaceEditor.getText())
+    if @markers.length
+      @replaceHistory.store()
+      @findHistory.store()
+      @findModel.replace(@markers, @replaceEditor.getText())
+    else
+      atom.beep()
 
   markersUpdated: (@markers) =>
     @findError = null
