@@ -308,7 +308,7 @@ class ProjectFindView extends View
 
   updateReplaceAllButtonEnablement: (results) ->
     canReplace = results?.matchCount and results?.pattern is @findEditor.getText()
-    @replaceAllButton[0].disabled = !canReplace
+    @replaceAllButton[0].disabled = not canReplace
 
   updateOptionsLabel: ->
     label = []
