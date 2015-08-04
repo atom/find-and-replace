@@ -220,7 +220,8 @@ class FindView extends View
 
   liveSearch: ->
     pattern = @findEditor.getText()
-    @updateModel {pattern}
+    if pattern.length is 0 or pattern.length >= atom.config.get('find-and-replace.liveSearchMinimumCharacters')
+      @updateModel {pattern}
 
   findAll: (options={focusEditorAfter: true}) =>
     @findAndSelectResult(@selectAllMarkers, options)
