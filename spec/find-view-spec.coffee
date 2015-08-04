@@ -446,7 +446,6 @@ describe 'FindView', ->
           expect(findView.descriptionLabel).not.toHaveClass 'text-error'
           expect(findView.descriptionLabel.text()).toContain "6 results"
 
-
     it "selects the first match following the cursor", ->
       expect(findView.resultCounter.text()).toEqual('2 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
