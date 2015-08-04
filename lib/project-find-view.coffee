@@ -41,7 +41,7 @@ class ProjectFindView extends View
           @subview 'replaceEditor', new TextEditorView(mini: true, placeholderText: 'Replace in project')
         @div class: 'input-block-item', =>
           @div class: 'btn-group btn-group-replace-all', =>
-            @button outlet: 'replaceAllButton', class: 'btn', 'Replace All'
+            @button outlet: 'replaceAllButton', class: 'btn', disabled: 'disabled', 'Replace All'
 
       @section class: 'input-block paths-container', =>
         @div class: 'input-block-item editor-container', =>
@@ -121,9 +121,20 @@ class ProjectFindView extends View
       'project-find:toggle-whole-word-option': => @toggleWholeWordOption()
       'project-find:replace-all': => @replaceAll()
 
-    @subscriptions.add @model.onDidClear => @clearMessages()
-    @subscriptions.add @model.onDidClearReplacementState (results) => @generateResultsMessage(results)
-    @subscriptions.add @model.onDidFinishSearching (results) => @generateResultsMessage(results)
+    updateInterfaceForResults = (results) =>
+      if results.matchCount is 0 and results.pattern is ''
+        @clearMessages()
+      else
+        @generateResultsMessage(results)
+      @updateReplaceAllButtonEnablement(results)
+
+    resetInterface = =>
+      @clearMessages()
+      @updateReplaceAllButtonEnablement(null)
+
+    @subscriptions.add @model.onDidClear(resetInterface)
+    @subscriptions.add @model.onDidClearReplacementState(updateInterfaceForResults)
+    @subscriptions.add @model.onDidFinishSearching(updateInterfaceForResults)
 
     @on 'focus', (e) => @findEditor.focus()
     @regexOptionButton.click => @toggleRegexOption()
@@ -136,6 +147,8 @@ class ProjectFindView extends View
     @subscriptions.add new Disposable ->
       $(window).off 'focus', focusCallback
 
+    @findEditor.getModel().getBuffer().onDidChange =>
+      @updateReplaceAllButtonEnablement(@model.getResultsSummary())
     @handleEventsForReplace()
 
   handleEventsForReplace: ->
@@ -218,14 +231,29 @@ class ProjectFindView extends View
         @setErrorMessage(e.message)
 
   replaceAll: ->
-    @clearMessages()
+    return atom.beep() unless @model.matchCount
+
+    currentPattern = @findEditor.getText()
+    if @model.pattern isnt currentPattern
+      atom.confirm
+        message: "The searched pattern '#{@model.pattern}' was changed to '#{currentPattern}'"
+        detailedMessage: "Please run the search with the new pattern '#{currentPattern}' before running a replace-all"
+        buttons: ['OK']
+      return
+
     @showResultPane().then =>
-      pattern = @findEditor.getText()
+      pattern = @model.pattern
       replacementPattern = @replaceEditor.getText()
 
-      @model.search(pattern, @getPaths(), replacementPattern, onlyRunIfChanged: true).then =>
+      message = "This will replace '#{pattern}' with '#{replacementPattern}' #{_.pluralize(@model.matchCount, 'time')} in #{_.pluralize(@model.pathCount, 'file')}"
+      buttonChosen = atom.confirm
+        message: 'Are you sure you want to replace all?'
+        detailedMessage: message
+        buttons: ['OK', 'Cancel']
+
+      if buttonChosen is 0
         @clearMessages()
-        @model.replace(pattern, @getPaths(), replacementPattern, @model.getPaths())
+        @model.replace(@getPaths(), replacementPattern, @model.getPaths())
 
   getPaths: ->
     inputPath.trim() for inputPath in @pathsEditor.getText().trim().split(',') when inputPath
@@ -277,6 +305,10 @@ class ProjectFindView extends View
 
   setErrorMessage: (errorMessage) ->
     @descriptionLabel.html(errorMessage).addClass('text-error')
+
+  updateReplaceAllButtonEnablement: (results) ->
+    canReplace = results?.matchCount and results?.pattern is @findEditor.getText()
+    @replaceAllButton[0].disabled = not canReplace
 
   updateOptionsLabel: ->
     label = []

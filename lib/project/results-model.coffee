@@ -133,8 +133,8 @@ class ResultsModel
         @inProgressSearchPromise = null
         @emitter.emit 'did-finish-searching', @getResultsSummary()
 
-  replace: (pattern, searchPaths, replacementPattern, replacementPaths) ->
-    regex = @getRegex(pattern)
+  replace: (searchPaths, replacementPattern, replacementPaths) ->
+    return unless @pattern and @regex?
 
     @updateReplacementPattern(replacementPattern)
     replacementPattern = escapeHelper.unescapeEscapeSequence(replacementPattern) if @useRegex
@@ -143,7 +143,7 @@ class ResultsModel
     @replacedPathCount = 0
     @replacementCount = 0
 
-    promise = atom.workspace.replace regex, replacementPattern, replacementPaths, (result, error) =>
+    promise = atom.workspace.replace @regex, replacementPattern, replacementPaths, (result, error) =>
       if result
         if result.replacements
           @replacedPathCount++
@@ -157,7 +157,7 @@ class ResultsModel
     @emitter.emit 'did-start-replacing', promise
     promise.then =>
       @emitter.emit 'did-finish-replacing', @getResultsSummary()
-      @search(pattern, searchPaths, replacementPattern, {keepReplacementState: true})
+      @search(@pattern, searchPaths, replacementPattern, {keepReplacementState: true})
 
   updateReplacementPattern: (replacementPattern) ->
     @replacementPattern = replacementPattern or null
