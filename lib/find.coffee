@@ -46,6 +46,9 @@ module.exports =
     @replaceHistory = new History(replaceHistory)
     @pathsHistory = new History(pathsHistory)
 
+    @subscriptions.add atom.commands.add '.find-and-replace, .project-find', 'window:focus-next-pane', =>
+      atom.views.getView(atom.workspace).focus()
+
     @subscriptions.add atom.commands.add 'atom-workspace', 'project-find:show', =>
       @createViews()
       @findPanel.hide()
