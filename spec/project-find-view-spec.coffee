@@ -992,6 +992,12 @@ describe 'ProjectFindView', ->
           projectFindView.findEditor.setText('nopenotinthefile')
           atom.commands.dispatch(projectFindView[0], 'project-find:confirm')
 
+          projectFindView.findEditor.setText('itemss')
+          expect(projectFindView.replaceAllButton[0].disabled).toBe true
+
+          projectFindView.findEditor.setText('items')
+          expect(projectFindView.replaceAllButton[0].disabled).toBe false
+
         waitsForPromise ->
           searchPromise
 
@@ -1108,24 +1114,18 @@ describe 'ProjectFindView', ->
           waitsForPromise ->
             searchPromise
 
-        it "replaces the original search text with the replacement when the search text has changed since that last search", ->
+        it "messages the user when the search text has changed since that last search", ->
           spyOn(atom, 'confirm').andReturn 0
           spyOn(atom.workspace, 'scan').andCallThrough()
-          spyOn(atom, 'beep')
 
           projectFindView.findEditor.setText('sort')
           projectFindView.replaceEditor.setText('ok')
-          expect(projectFindView.resultsView).not.toBeVisible()
 
           atom.commands.dispatch(projectFindView[0], 'project-find:replace-all')
 
-          waitsForPromise ->
-            replacePromise
-
-          runs ->
-            expect(atom.workspace.scan).toHaveBeenCalled()
-            expect(atom.beep).not.toHaveBeenCalled()
-            expect(projectFindView.descriptionLabel.text()).toContain "Replaced items with ok 13 times in 2 files"
+          expect(atom.confirm).toHaveBeenCalled()
+          expect(replacePromise).toBeUndefined()
+          expect(atom.workspace.scan).not.toHaveBeenCalled()
 
         it "replaces all the matches and updates the results view", ->
           spyOn(atom, 'confirm').andReturn 0

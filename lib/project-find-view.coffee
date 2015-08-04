@@ -147,6 +147,8 @@ class ProjectFindView extends View
     @subscriptions.add new Disposable ->
       $(window).off 'focus', focusCallback
 
+    @findEditor.getModel().getBuffer().onDidChange =>
+      @updateReplaceAllButtonEnablement(@model.getResultsSummary())
     @handleEventsForReplace()
 
   handleEventsForReplace: ->
@@ -231,6 +233,14 @@ class ProjectFindView extends View
   replaceAll: ->
     return atom.beep() unless @model.matchCount
 
+    currentPattern = @findEditor.getText()
+    if @model.pattern isnt currentPattern
+      atom.confirm
+        message: "The searched pattern '#{@model.pattern}' was changed to '#{currentPattern}'"
+        detailedMessage: "Please run the search with the new pattern '#{currentPattern}' before running a replace-all"
+        buttons: ['OK']
+      return
+
     @showResultPane().then =>
       pattern = @model.pattern
       replacementPattern = @replaceEditor.getText()
@@ -239,7 +249,7 @@ class ProjectFindView extends View
       buttonChosen = atom.confirm
         message: 'Are you sure you want to replace all?'
         detailedMessage: message
-        buttons: ['Ok', 'Cancel']
+        buttons: ['OK', 'Cancel']
 
       if buttonChosen is 0
         @clearMessages()
@@ -297,7 +307,8 @@ class ProjectFindView extends View
     @descriptionLabel.html(errorMessage).addClass('text-error')
 
   updateReplaceAllButtonEnablement: (results) ->
-    @replaceAllButton[0].disabled = !results?.matchCount
+    canReplace = results?.matchCount and results?.pattern is @findEditor.getText()
+    @replaceAllButton[0].disabled = !canReplace
 
   updateOptionsLabel: ->
     label = []
