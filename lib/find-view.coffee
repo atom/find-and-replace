@@ -81,6 +81,7 @@ class FindView extends View
     @replaceHistory = new HistoryCycler(@replaceEditor, replaceHistory)
     @handleEvents()
     @updateOptionButtons()
+    @updateReplaceEnablement()
 
     @clearMessage()
     @updateOptionsLabel()
@@ -273,14 +274,18 @@ class FindView extends View
 
   replaceAll: =>
     @updateModel {pattern: @findEditor.getText()}
-    @replaceHistory.store()
-    @findHistory.store()
-    @findModel.replace(@markers, @replaceEditor.getText())
+    if @markers.length
+      @replaceHistory.store()
+      @findHistory.store()
+      @findModel.replace(@markers, @replaceEditor.getText())
+    else
+      atom.beep()
 
   markersUpdated: (@markers) =>
     @findError = null
     @updateOptionButtons()
     @updateResultCounter()
+    @updateReplaceEnablement()
 
     if @findModel.pattern
       results = @markers.length
@@ -435,3 +440,8 @@ class FindView extends View
     @setOptionButtonState(@caseOptionButton, @findModel.caseSensitive)
     @setOptionButtonState(@selectionOptionButton, @findModel.inCurrentSelection)
     @setOptionButtonState(@wholeWordOptionButton, @findModel.wholeWord)
+
+  updateReplaceEnablement: ->
+    canReplace = @markers?.length > 0
+    @replaceAllButton[0].disabled = not canReplace
+    @replaceNextButton[0].disabled = not canReplace

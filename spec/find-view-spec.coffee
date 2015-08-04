@@ -380,6 +380,28 @@ describe 'FindView', ->
 
       expect(findView.descriptionLabel.text()).toEqual "No results found for 'notinthefilebro'"
 
+    describe "updating the replace button enablement", ->
+      it "enables the replace buttons when are search results", ->
+        findView.findEditor.setText 'item'
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
+        expect(findView.replaceAllButton[0].disabled).toBe false
+        expect(findView.replaceNextButton[0].disabled).toBe false
+
+        findView.findEditor.setText 'nopenotinthefile'
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
+        expect(findView.replaceAllButton[0].disabled).toBe true
+        expect(findView.replaceNextButton[0].disabled).toBe true
+
+        findView.findEditor.setText 'i'
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
+        expect(findView.replaceAllButton[0].disabled).toBe false
+        expect(findView.replaceNextButton[0].disabled).toBe false
+
+        findView.findEditor.setText ''
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
+        expect(findView.replaceAllButton[0].disabled).toBe true
+        expect(findView.replaceNextButton[0].disabled).toBe true
+
     describe "updating the descriptionLabel", ->
       it "properly updates the info message", ->
         findView.findEditor.setText 'item'
