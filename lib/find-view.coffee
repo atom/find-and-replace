@@ -282,7 +282,6 @@ class FindView extends View
       atom.beep()
 
   markersUpdated: (@markers) =>
-    console.log 'updated', markers
     @findError = null
     @updateOptionButtons()
     @updateResultCounter()
