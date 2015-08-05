@@ -1,5 +1,6 @@
 {TextEditor} = require 'atom'
 BufferSearch = require '../lib/buffer-search'
+FindOptions = require '../lib/find-options'
 
 describe "BufferSearch", ->
   [search, editor, markersListener, currentResultListener] = []
@@ -20,7 +21,8 @@ describe "BufferSearch", ->
       -----------
     """
 
-    search = new BufferSearch
+    findOptions = new FindOptions
+    search = new BufferSearch(findOptions)
 
     markersListener = jasmine.createSpy('markersListener')
     search.onDidUpdate(markersListener)
@@ -31,8 +33,8 @@ describe "BufferSearch", ->
     search.setEditor(editor)
     markersListener.reset()
 
-    search.setSearchParams(
-      pattern: "a+"
+    search.setFindOptions(
+      findPattern: "a+"
       caseSensitive: false
       useRegex: true
       wholeWord: false
