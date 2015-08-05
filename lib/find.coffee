@@ -34,19 +34,19 @@ module.exports =
       new ResultsPaneView() if filePath is ResultsPaneView.URI
 
     @subscriptions = new CompositeDisposable
+    @findHistory = new History(findHistory)
+    @replaceHistory = new History(replaceHistory)
+    @pathsHistory = new History(pathsHistory)
 
     @findOptions = new FindOptions(@modelState)
     @findModel = new BufferSearch(@findOptions)
+    @resultsModel = new ResultsModel(@findOptions)
+
     @subscriptions.add atom.workspace.observeActivePaneItem (paneItem) =>
       if paneItem?.getBuffer?()
         @findModel.setEditor(paneItem)
       else
         @findModel.setEditor(null)
-
-    @resultsModel = new ResultsModel(@resultsModelState)
-    @findHistory = new History(findHistory)
-    @replaceHistory = new History(replaceHistory)
-    @pathsHistory = new History(pathsHistory)
 
     @subscriptions.add atom.commands.add '.find-and-replace, .project-find', 'window:focus-next-pane', =>
       atom.views.getView(atom.workspace).focus()
