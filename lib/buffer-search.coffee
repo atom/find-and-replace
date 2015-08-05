@@ -3,31 +3,18 @@ _ = require 'underscore-plus'
 {Patch} = TextBuffer
 escapeHelper = require './escape-helper'
 
-SearchParams = [
-  'useRegex',
-  'pattern',
-  'caseSensitive',
-  'wholeWord',
-  'inCurrentSelection'
-]
-
 module.exports =
 class BufferSearch
   @markerClass: 'find-result'
 
-  constructor: (searchParams={}) ->
+  constructor: (@findOptions) ->
     @emitter = new Emitter
     @patch = new Patch
     @subscriptions = null
     @markers = []
     @editor = null
-    @setSearchParams(_.defaults({}, searchParams, {
-      pattern: "",
-      useRegex: atom.config.get('find-and-replace.useRegex') ? false
-      wholeWord: atom.config.get('find-and-replace.wholeWord') ? false
-      caseSensitive: atom.config.get('find-and-replace.caseSensitive') ? false
-      inCurrentSelection: atom.config.get('find-and-replace.inCurrentSelection') ? false
-    }))
+
+    @findOptions.onDidChange => @recreateMarkers()
 
   onDidUpdate: (callback) ->
     @emitter.on 'did-update', callback
@@ -50,13 +37,10 @@ class BufferSearch
 
   getEditor: -> @editor
 
-  setSearchParams: (newParams={}) ->
-    changed = false
-    for key in SearchParams
-      if newParams[key]? and newParams[key] isnt this[key]
-        this[key] = newParams[key]
-        changed = true
-    @recreateMarkers() if changed
+  setFindOptions: (newParams={}) ->
+    @findOptions.set(newParams)
+
+  getFindOptions: -> @findOptions
 
   replace: (markers, replacementPattern) ->
     return unless markers?.length > 0
@@ -65,7 +49,7 @@ class BufferSearch
       for marker in markers
         bufferRange = marker.getBufferRange()
         replacementText = null
-        if @useRegex
+        if @findOptions.useRegex
           replacementPattern = escapeHelper.unescapeEscapeSequence(replacementPattern)
           textToReplace = @editor.getTextInBufferRange(bufferRange)
           replacementText = textToReplace.replace(@getRegex(), replacementPattern)
@@ -76,9 +60,6 @@ class BufferSearch
         delete @decorationsByMarkerId[marker.id]
 
     @emitter.emit 'did-update', @markers.slice()
-
-  serialize: ->
-    {@useRegex, @inCurrentSelection, @caseSensitive, @wholeWord}
 
   destroy: ->
     @subscriptions?.dispose()
@@ -97,8 +78,8 @@ class BufferSearch
 
   createMarkers: (start, end) ->
     newMarkers = []
-    if @pattern and @editor
-      if @inCurrentSelection
+    if @findOptions.findPattern and @editor
+      if @findOptions.inCurrentSelection
         selectedRange = @editor.getSelectedBufferRange()
         start = Point.max(start, selectedRange.start)
         end = Point.min(end, selectedRange.end)
@@ -221,14 +202,14 @@ class BufferSearch
 
   getRegex: ->
     flags = 'g'
-    flags += 'i' unless @caseSensitive
+    flags += 'i' unless @findOptions.caseSensitive
 
-    if @useRegex
-      expression = @pattern
+    if @findOptions.useRegex
+      expression = @findOptions.findPattern
     else
-      expression = _.escapeRegExp(@pattern)
+      expression = _.escapeRegExp(@findOptions.findPattern)
 
-    expression = "\\b#{expression}\\b" if @wholeWord
+    expression = "\\b#{expression}\\b" if @findOptions.wholeWord
 
     try
       new RegExp(expression, flags)

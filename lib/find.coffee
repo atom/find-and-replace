@@ -3,6 +3,7 @@
 
 SelectNext = require './select-next'
 {History} = require './history'
+FindOptions = require './find-options'
 BufferSearch = require './buffer-search'
 FindView = require './find-view'
 ProjectFindView = require './project-find-view'
@@ -34,7 +35,8 @@ module.exports =
 
     @subscriptions = new CompositeDisposable
 
-    @findModel = new BufferSearch(@modelState)
+    @findOptions = new FindOptions(@modelState)
+    @findModel = new BufferSearch(@findOptions)
     @subscriptions.add atom.workspace.observeActivePaneItem (paneItem) =>
       if paneItem?.getBuffer?()
         @findModel.setEditor(paneItem)
@@ -178,7 +180,7 @@ module.exports =
 
   serialize: ->
     viewState: @findView?.serialize() ? @viewState
-    modelState: @findModel?.serialize() ? @modelState
+    modelState: @findOptions?.serialize() ? @modelState
     projectViewState: @projectFindView?.serialize() ? @projectViewState
     resultsModelState: @resultsModel?.serialize() ? @resultsModelState
     findHistory: @findHistory.serialize()
