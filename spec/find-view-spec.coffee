@@ -123,6 +123,16 @@ describe 'FindView', ->
         atom.commands.dispatch workspaceElement, 'find-and-replace:toggle'
         expect(getFindAtomPanel()).not.toBeVisible()
 
+  describe "when the find-view is focused and window:focus-next-pane is triggered", ->
+    beforeEach ->
+      atom.commands.dispatch editorView, 'find-and-replace:show'
+      waitsForPromise -> activationPromise
+
+    it "attaches FindView to the root view", ->
+      expect(workspaceElement.querySelector('.find-and-replace')).toHaveFocus()
+      atom.commands.dispatch(findView.findEditor.element, 'window:focus-next-pane')
+      expect(workspaceElement.querySelector('.find-and-replace')).not.toHaveFocus()
+
   describe "when FindView's replace editor is visible", ->
     it "keeps the replace editor visible when find-and-replace:show is triggered", ->
       atom.commands.dispatch editorView, 'find-and-replace:show-replace'
@@ -369,6 +379,28 @@ describe 'FindView', ->
       expect(findView).toHaveFocus()
 
       expect(findView.descriptionLabel.text()).toEqual "No results found for 'notinthefilebro'"
+
+    describe "updating the replace button enablement", ->
+      it "enables the replace buttons when are search results", ->
+        findView.findEditor.setText 'item'
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
+        expect(findView.replaceAllButton[0].disabled).toBe false
+        expect(findView.replaceNextButton[0].disabled).toBe false
+
+        findView.findEditor.setText 'nopenotinthefile'
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
+        expect(findView.replaceAllButton[0].disabled).toBe true
+        expect(findView.replaceNextButton[0].disabled).toBe true
+
+        findView.findEditor.setText 'i'
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
+        expect(findView.replaceAllButton[0].disabled).toBe false
+        expect(findView.replaceNextButton[0].disabled).toBe false
+
+        findView.findEditor.setText ''
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
+        expect(findView.replaceAllButton[0].disabled).toBe true
+        expect(findView.replaceNextButton[0].disabled).toBe true
 
     describe "updating the descriptionLabel", ->
       it "properly updates the info message", ->
