@@ -29,7 +29,7 @@ module.exports =
       minimum: 0
       description: 'When you type in the buffer find box, you must type this many characters to automatically search'
 
-  activate: ({@viewState, @projectViewState, @resultsModelState, @modelState, findHistory, replaceHistory, pathsHistory}={}) ->
+  activate: ({@resultsModelState, @modelState, findHistory, replaceHistory, pathsHistory}={}) ->
     atom.workspace.addOpener (filePath) ->
       new ResultsPaneView() if filePath is ResultsPaneView.URI
 
@@ -179,9 +179,7 @@ module.exports =
     @subscriptions = null
 
   serialize: ->
-    viewState: @findView?.serialize() ? @viewState
     modelState: @findOptions?.serialize() ? @modelState
-    projectViewState: @projectFindView?.serialize() ? @projectViewState
     resultsModelState: @resultsModel?.serialize() ? @resultsModelState
     findHistory: @findHistory.serialize()
     replaceHistory: @replaceHistory.serialize()
