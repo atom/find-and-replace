@@ -876,6 +876,50 @@ describe 'ProjectFindView', ->
           atom.commands.dispatch atom.views.getView(editor), 'find-and-replace:find-next'
           expect(editor.getSelectedBufferRange()).not.toEqual initialSelectedRange
 
+      it 'ignores "Only in Selection" check in Find View', ->
+        [findView] = []
+
+        # File Find is opened
+        runs ->
+          atom.commands.dispatch editorView, 'find-and-replace:show'
+
+        waitsForPromise ->
+          atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
+            mainModule.createViews()
+            {findView} = mainModule
+
+        # "Only in Selection" is enabled, and then Project Find is opened
+        runs ->
+          findView.selectionOptionButton.click()
+          atom.commands.dispatch(workspaceElement, 'project-find:show')
+
+        waitsForPromise ->
+          activationPromise
+
+        # "var" is searched
+        runs ->
+          projectFindView.findEditor.setText('var')
+          atom.commands.dispatch(projectFindView[0], 'core:confirm')
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          resultsPaneView = getExistingResultsPane()
+          resultsView = resultsPaneView.resultsView
+          resultsView.scrollToBottom() # To load ALL the results
+
+          resultsView.selectFirstResult()
+          _.times 10, -> atom.commands.dispatch(resultsView[0], 'core:move-down')
+          atom.commands.dispatch(resultsView[0], 'core:confirm')
+
+        waits 0 # not sure why this is async
+
+        # all markers are shown as expected
+        runs ->
+          expect(getResultDecorations('find-result')).toHaveLength 2
+          expect(getResultDecorations('current-result')).toHaveLength 1
+
   describe "replacing", ->
     [testDir, sampleJs, sampleCoffee, replacePromise] = []
 
