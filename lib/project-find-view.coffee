@@ -54,12 +54,8 @@ class ProjectFindView extends View
     @pathsHistory = new HistoryCycler(@pathsEditor, pathsHistory)
     @onlyRunIfChanged = true
 
-    @regexOptionButton.addClass('selected') if @model.getFindOptions().useRegex
-    @caseOptionButton.addClass('selected') if @model.getFindOptions().caseSensitive
-    @wholeWordOptionButton.addClass('selected') if @model.getFindOptions().wholeWord
-
     @clearMessages()
-    @updateOptionsLabel()
+    @updateOptionViews()
 
   destroy: ->
     @subscriptions?.dispose()
@@ -134,6 +130,7 @@ class ProjectFindView extends View
     @subscriptions.add @model.onDidClear(resetInterface)
     @subscriptions.add @model.onDidClearReplacementState(updateInterfaceForResults)
     @subscriptions.add @model.onDidFinishSearching(updateInterfaceForResults)
+    @subscriptions.add @model.getFindOptions().onDidChange @updateOptionViews
 
     @on 'focus', (e) => @findEditor.focus()
     @regexOptionButton.click => @toggleRegexOption()
@@ -165,24 +162,6 @@ class ProjectFindView extends View
       @replacmentInfo.text("Replaced #{@replacementsMade} of #{_.pluralize(@model.getPathCount(), 'file')}")
 
     @subscriptions.add @model.onDidFinishReplacing (result) => @onFinishedReplacing(result)
-
-  toggleRegexOption: ->
-    @model.getFindOptions().toggleUseRegex()
-    if @model.getFindOptions().useRegex then @regexOptionButton.addClass('selected') else @regexOptionButton.removeClass('selected')
-    @updateOptionsLabel()
-    @search(onlyRunIfActive: true)
-
-  toggleCaseOption: ->
-    @model.getFindOptions().toggleCaseSensitive()
-    if @model.getFindOptions().caseSensitive then @caseOptionButton.addClass('selected') else @caseOptionButton.removeClass('selected')
-    @updateOptionsLabel()
-    @search(onlyRunIfActive: true)
-
-  toggleWholeWordOption: ->
-    @model.getFindOptions().toggleWholeWord()
-    if @model.getFindOptions().wholeWord then @wholeWordOptionButton.addClass('selected') else @wholeWordOptionButton.removeClass('selected')
-    @updateOptionsLabel()
-    @search(onlyRunIfActive: true)
 
   focusNextElement: (direction) ->
     elements = [@findEditor, @replaceEditor, @pathsEditor]
@@ -307,6 +286,17 @@ class ProjectFindView extends View
     canReplace = results?.matchCount and results?.pattern is @findEditor.getText()
     @replaceAllButton[0].disabled = not canReplace
 
+  setSelectionAsFindPattern: =>
+    editor = atom.workspace.getActivePaneItem()
+    if editor?
+      pattern = editor.getSelectedText() or editor.getWordUnderCursor()
+      pattern = Util.escapeRegex(pattern) if @model.getFindOptions().useRegex
+      @findEditor.setText(pattern) if pattern
+
+  updateOptionViews: =>
+    @updateOptionButtons()
+    @updateOptionsLabel()
+
   updateOptionsLabel: ->
     label = []
     label.push('Regex') if @model.getFindOptions().useRegex
@@ -317,9 +307,25 @@ class ProjectFindView extends View
     label.push('Whole Word') if @model.getFindOptions().wholeWord
     @optionsLabel.text(label.join(', '))
 
-  setSelectionAsFindPattern: =>
-    editor = atom.workspace.getActivePaneItem()
-    if editor?
-      pattern = editor.getSelectedText() or editor.getWordUnderCursor()
-      pattern = Util.escapeRegex(pattern) if @model.getFindOptions().useRegex
-      @findEditor.setText(pattern) if pattern
+  updateOptionButtons: ->
+    @setOptionButtonState(@regexOptionButton, @model.getFindOptions().useRegex)
+    @setOptionButtonState(@caseOptionButton, @model.getFindOptions().caseSensitive)
+    @setOptionButtonState(@wholeWordOptionButton, @model.getFindOptions().wholeWord)
+
+  setOptionButtonState: (optionButton, selected) ->
+    if selected
+      optionButton.addClass 'selected'
+    else
+      optionButton.removeClass 'selected'
+
+  toggleRegexOption: ->
+    @model.getFindOptions().toggleUseRegex()
+    @search(onlyRunIfActive: true)
+
+  toggleCaseOption: ->
+    @model.getFindOptions().toggleCaseSensitive()
+    @search(onlyRunIfActive: true)
+
+  toggleWholeWordOption: ->
+    @model.getFindOptions().toggleWholeWord()
+    @search(onlyRunIfActive: true)

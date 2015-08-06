@@ -80,11 +80,10 @@ class FindView extends View
     @findHistory = new HistoryCycler(@findEditor, findHistory)
     @replaceHistory = new HistoryCycler(@replaceEditor, replaceHistory)
     @handleEvents()
-    @updateOptionButtons()
-    @updateReplaceEnablement()
 
     @clearMessage()
-    @updateOptionsLabel()
+    @updateOptionViews()
+    @updateReplaceEnablement()
 
   destroy: ->
     @subscriptions?.dispose()
@@ -166,6 +165,7 @@ class FindView extends View
     @subscriptions.add @findModel.onDidUpdate @markersUpdated
     @subscriptions.add @findModel.onDidError @findError
     @subscriptions.add @findModel.onDidChangeCurrentResult @updateResultCounter
+    @subscriptions.add @findModel.getFindOptions().onDidChange @updateOptionViews
 
     @regexOptionButton.on 'click', @toggleRegexOption
     @caseOptionButton.on 'click', @toggleCaseOption
@@ -283,7 +283,6 @@ class FindView extends View
 
   markersUpdated: (@markers) =>
     @findError = null
-    @updateOptionButtons()
     @updateResultCounter()
     @updateReplaceEnablement()
 
@@ -398,6 +397,10 @@ class FindView extends View
     @setSelectionAsFindPattern()
     @findPrevious(focusEditorAfter: true)
 
+  updateOptionViews: =>
+    @updateOptionButtons()
+    @updateOptionsLabel()
+
   updateOptionsLabel: ->
     label = []
     label.push('Regex') if @findModel.getFindOptions().useRegex
@@ -409,25 +412,11 @@ class FindView extends View
     label.push('Whole Word') if @findModel.getFindOptions().wholeWord
     @optionsLabel.text(label.join(', '))
 
-  toggleRegexOption: =>
-    @updateModel {findPattern: @findEditor.getText(), useRegex: not @findModel.getFindOptions().useRegex}
-    @selectFirstMarkerAfterCursor()
-    @updateOptionsLabel()
-
-  toggleCaseOption: =>
-    @updateModel {findPattern: @findEditor.getText(), caseSensitive: not @findModel.getFindOptions().caseSensitive}
-    @selectFirstMarkerAfterCursor()
-    @updateOptionsLabel()
-
-  toggleSelectionOption: =>
-    @updateModel {findPattern: @findEditor.getText(), inCurrentSelection: not @findModel.getFindOptions().inCurrentSelection}
-    @selectFirstMarkerAfterCursor()
-    @updateOptionsLabel()
-
-  toggleWholeWordOption: =>
-    @updateModel {findPattern: @findEditor.getText(), wholeWord: not @findModel.getFindOptions().wholeWord}
-    @selectFirstMarkerAfterCursor()
-    @updateOptionsLabel()
+  updateOptionButtons: ->
+    @setOptionButtonState(@regexOptionButton, @findModel.getFindOptions().useRegex)
+    @setOptionButtonState(@caseOptionButton, @findModel.getFindOptions().caseSensitive)
+    @setOptionButtonState(@selectionOptionButton, @findModel.getFindOptions().inCurrentSelection)
+    @setOptionButtonState(@wholeWordOptionButton, @findModel.getFindOptions().wholeWord)
 
   setOptionButtonState: (optionButton, selected) ->
     if selected
@@ -435,11 +424,21 @@ class FindView extends View
     else
       optionButton.removeClass 'selected'
 
-  updateOptionButtons: ->
-    @setOptionButtonState(@regexOptionButton, @findModel.getFindOptions().useRegex)
-    @setOptionButtonState(@caseOptionButton, @findModel.getFindOptions().caseSensitive)
-    @setOptionButtonState(@selectionOptionButton, @findModel.getFindOptions().inCurrentSelection)
-    @setOptionButtonState(@wholeWordOptionButton, @findModel.getFindOptions().wholeWord)
+  toggleRegexOption: =>
+    @updateModel {findPattern: @findEditor.getText(), useRegex: not @findModel.getFindOptions().useRegex}
+    @selectFirstMarkerAfterCursor()
+
+  toggleCaseOption: =>
+    @updateModel {findPattern: @findEditor.getText(), caseSensitive: not @findModel.getFindOptions().caseSensitive}
+    @selectFirstMarkerAfterCursor()
+
+  toggleSelectionOption: =>
+    @updateModel {findPattern: @findEditor.getText(), inCurrentSelection: not @findModel.getFindOptions().inCurrentSelection}
+    @selectFirstMarkerAfterCursor()
+
+  toggleWholeWordOption: =>
+    @updateModel {findPattern: @findEditor.getText(), wholeWord: not @findModel.getFindOptions().wholeWord}
+    @selectFirstMarkerAfterCursor()
 
   updateReplaceEnablement: ->
     canReplace = @markers?.length > 0
