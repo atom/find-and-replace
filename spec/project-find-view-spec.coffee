@@ -819,12 +819,12 @@ describe 'ProjectFindView', ->
           expect(errorList.find("li:eq(1)").text()).toBe 'Broken'
 
     describe "buffer search sharing of the find pattern", ->
-      getResultDecorations = (clazz) ->
+      getResultDecorations = (className) ->
         markerIdForDecorations = editor.decorationsForScreenRowRange(0, editor.getLineCount())
         resultDecorations = []
         for markerId, decorations of markerIdForDecorations
           for decoration in decorations
-            resultDecorations.push decoration if decoration.getProperties().class is clazz
+            resultDecorations.push decoration if decoration.getProperties().class is className
         resultDecorations
 
       it 'highlights the search results in the selected file', ->
