@@ -1,6 +1,7 @@
 path = require 'path'
 
 ResultsModel = require '../lib/project/results-model'
+FindOptions = require '../lib/find-options'
 
 # Default to 30 second promises
 waitsForPromise = (fn) -> window.waitsForPromise timeout: 30000, fn
@@ -16,7 +17,8 @@ describe 'ResultsModel', ->
 
     runs ->
       editor = atom.workspace.getActiveTextEditor()
-      resultsModel = new ResultsModel()
+      findOptions = new FindOptions
+      resultsModel = new ResultsModel(findOptions)
 
   describe "searching for a pattern", ->
     beforeEach ->

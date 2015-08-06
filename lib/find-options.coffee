@@ -39,3 +39,19 @@ class FindOptions
         this[key] = newParams[key]
         changed = true
     @emitter.emit('did-change') if changed
+
+  toggleUseRegex: ->
+    @useRegex = not @useRegex
+    @emitter.emit('did-change')
+
+  toggleCaseSensitive: ->
+    @caseSensitive = not @caseSensitive
+    @emitter.emit('did-change')
+
+  toggleWholeWord: ->
+    @wholeWord = not @wholeWord
+    @emitter.emit('did-change')
+
+  toggleInCurrentSelection: ->
+    @inCurrentSelection = not @inCurrentSelection
+    @emitter.emit('did-change')

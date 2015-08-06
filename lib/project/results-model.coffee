@@ -12,11 +12,8 @@ class Result
 
 module.exports =
 class ResultsModel
-  constructor: (state={}) ->
+  constructor: (@findOptions) ->
     @emitter = new Emitter
-    @useRegex = state.useRegex ? atom.config.get('find-and-replace.useRegex') ? false
-    @caseSensitive = state.caseSensitive ? atom.config.get('find-and-replace.caseSensitive') ? false
-    @wholeWord = state.wholeWord ? atom.config.get('find-and-replace.wholeWord') ? false
 
     atom.workspace.observeTextEditors (editor) =>
       editor.onDidStopChanging => @onContentsModified(editor)
@@ -68,9 +65,6 @@ class ResultsModel
   onDidRemoveResult: (callback) ->
     @emitter.on 'did-remove-result', callback
 
-  serialize: ->
-    {@useRegex, @caseSensitive, @wholeWord}
-
   clear: ->
     @clearSearchState()
     @clearReplacementState()
@@ -83,7 +77,6 @@ class ResultsModel
     @results = {}
     @paths = []
     @active = false
-    @pattern = ''
     @searchErrors = null
 
     if @inProgressSearchPromise?
@@ -99,8 +92,8 @@ class ResultsModel
     @replacementErrors = null
     @emitter.emit 'did-clear-replacement-state', @getResultsSummary()
 
-  search: (pattern, searchPaths, replacementPattern, {onlyRunIfChanged, keepReplacementState}={}) ->
-    return Q() if onlyRunIfChanged and pattern? and searchPaths? and pattern is @pattern and _.isEqual(searchPaths, @searchedPaths)
+  search: (findPattern, searchPaths, replacementPattern, {onlyRunIfChanged, keepReplacementState}={}) ->
+    return Q() if onlyRunIfChanged and findPattern? and searchPaths? and findPattern is @findOptions.findPattern and _.isEqual(searchPaths, @searchedPaths)
 
     if keepReplacementState
       @clearSearchState()
@@ -108,9 +101,9 @@ class ResultsModel
       @clear()
 
     @active = true
-    @regex = @getRegex(pattern)
-    @pattern = pattern
+    @regex = @getRegex(findPattern)
     @searchedPaths = searchPaths
+    @findOptions.set({findPattern})
 
     @updateReplacementPattern(replacementPattern)
 
@@ -134,10 +127,10 @@ class ResultsModel
         @emitter.emit 'did-finish-searching', @getResultsSummary()
 
   replace: (searchPaths, replacementPattern, replacementPaths) ->
-    return unless @pattern and @regex?
+    return unless @findOptions.findPattern and @regex?
 
     @updateReplacementPattern(replacementPattern)
-    replacementPattern = escapeHelper.unescapeEscapeSequence(replacementPattern) if @useRegex
+    replacementPattern = escapeHelper.unescapeEscapeSequence(replacementPattern) if @findOptions.useRegex
 
     @active = false # not active until the search after finish
     @replacedPathCount = 0
@@ -157,28 +150,21 @@ class ResultsModel
     @emitter.emit 'did-start-replacing', promise
     promise.then =>
       @emitter.emit 'did-finish-replacing', @getResultsSummary()
-      @search(@pattern, searchPaths, replacementPattern, {keepReplacementState: true})
+      @search(@findOptions.findPattern, searchPaths, replacementPattern, {keepReplacementState: true})
 
   updateReplacementPattern: (replacementPattern) ->
     @replacementPattern = replacementPattern or null
     @emitter.emit 'did-change-replacement-pattern', @regex, replacementPattern
 
   setActive: (isActive) ->
-    @active = isActive if (isActive and @pattern) or not isActive
+    @active = isActive if (isActive and @findOptions.pattern) or not isActive
 
   getActive: -> @active
 
-  toggleUseRegex: ->
-    @useRegex = not @useRegex
-
-  toggleCaseSensitive: ->
-    @caseSensitive = not @caseSensitive
-
-  toggleWholeWord: ->
-    @wholeWord = not @wholeWord
+  getFindOptions: -> @findOptions
 
   getResultsSummary: ->
-    pattern = @pattern or ''
+    pattern = @findOptions.findPattern
     {
       pattern
       @pathCount
@@ -195,9 +181,6 @@ class ResultsModel
 
   getMatchCount: ->
     @matchCount
-
-  getPattern: ->
-    @pattern or ''
 
   getPaths: ->
     @paths
@@ -234,14 +217,14 @@ class ResultsModel
 
   getRegex: (pattern) ->
     flags = 'g'
-    flags += 'i' unless @caseSensitive
+    flags += 'i' unless @findOptions.caseSensitive
 
-    if @useRegex
+    if @findOptions.useRegex
       expression = pattern
     else
       expression = _.escapeRegExp(pattern)
 
-    expression = "\\b#{expression}\\b" if @wholeWord
+    expression = "\\b#{expression}\\b" if @findOptions.wholeWord
 
     new RegExp(expression, flags)
 

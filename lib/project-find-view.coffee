@@ -55,9 +55,9 @@ class ProjectFindView extends View
     @pathsHistory = new HistoryCycler(@pathsEditor, pathsHistory)
     @onlyRunIfChanged = true
 
-    @regexOptionButton.addClass('selected') if @model.useRegex
-    @caseOptionButton.addClass('selected') if @model.caseSensitive
-    @wholeWordOptionButton.addClass('selected') if @model.wholeWord
+    @regexOptionButton.addClass('selected') if @model.getFindOptions().useRegex
+    @caseOptionButton.addClass('selected') if @model.getFindOptions().caseSensitive
+    @wholeWordOptionButton.addClass('selected') if @model.getFindOptions().wholeWord
 
     @clearMessages()
     @updateOptionsLabel()
@@ -168,20 +168,20 @@ class ProjectFindView extends View
     @subscriptions.add @model.onDidFinishReplacing (result) => @onFinishedReplacing(result)
 
   toggleRegexOption: ->
-    @model.toggleUseRegex()
-    if @model.useRegex then @regexOptionButton.addClass('selected') else @regexOptionButton.removeClass('selected')
+    @model.getFindOptions().toggleUseRegex()
+    if @model.getFindOptions().useRegex then @regexOptionButton.addClass('selected') else @regexOptionButton.removeClass('selected')
     @updateOptionsLabel()
     @search(onlyRunIfActive: true)
 
   toggleCaseOption: ->
-    @model.toggleCaseSensitive()
-    if @model.caseSensitive then @caseOptionButton.addClass('selected') else @caseOptionButton.removeClass('selected')
+    @model.getFindOptions().toggleCaseSensitive()
+    if @model.getFindOptions().caseSensitive then @caseOptionButton.addClass('selected') else @caseOptionButton.removeClass('selected')
     @updateOptionsLabel()
     @search(onlyRunIfActive: true)
 
   toggleWholeWordOption: ->
-    @model.toggleWholeWord()
-    if @model.wholeWord then @wholeWordOptionButton.addClass('selected') else @wholeWordOptionButton.removeClass('selected')
+    @model.getFindOptions().toggleWholeWord()
+    if @model.getFindOptions().wholeWord then @wholeWordOptionButton.addClass('selected') else @wholeWordOptionButton.removeClass('selected')
     @updateOptionsLabel()
     @search(onlyRunIfActive: true)
 
@@ -199,7 +199,7 @@ class ProjectFindView extends View
   focusFindElement: ->
     selectedText = atom.workspace.getActiveTextEditor()?.getSelectedText?()
     if selectedText and selectedText.indexOf('\n') < 0
-      selectedText = Util.escapeRegex(selectedText) if @model.useRegex
+      selectedText = Util.escapeRegex(selectedText) if @model.getFindOptions().useRegex
       @findEditor.setText(selectedText)
     @findEditor.focus()
     @findEditor.getModel().selectAll()
@@ -220,32 +220,31 @@ class ProjectFindView extends View
   search: ({onlyRunIfActive, onlyRunIfChanged}={}) ->
     return Q() if onlyRunIfActive and not @model.active
 
-    pattern = @findEditor.getText()
-    @findInBufferModel.setFindOptions({pattern})
+    findPattern = @findEditor.getText()
+    # @findInBufferModel.setFindOptions({findPattern})
 
     @clearMessages()
     @showResultPane().then =>
       try
-        @model.search(pattern, @getPaths(), @replaceEditor.getText(), {onlyRunIfChanged})
+        @model.search(findPattern, @getPaths(), @replaceEditor.getText(), {onlyRunIfChanged})
       catch e
         @setErrorMessage(e.message)
 
   replaceAll: ->
     return atom.beep() unless @model.matchCount
-
+    findPattern = @model.getFindOptions().findPattern
     currentPattern = @findEditor.getText()
-    if @model.pattern isnt currentPattern
+    if findPattern isnt currentPattern
       atom.confirm
-        message: "The searched pattern '#{@model.pattern}' was changed to '#{currentPattern}'"
+        message: "The searched pattern '#{findPattern}' was changed to '#{currentPattern}'"
         detailedMessage: "Please run the search with the new pattern '#{currentPattern}' before running a replace-all"
         buttons: ['OK']
       return
 
     @showResultPane().then =>
-      pattern = @model.pattern
       replacementPattern = @replaceEditor.getText()
 
-      message = "This will replace '#{pattern}' with '#{replacementPattern}' #{_.pluralize(@model.matchCount, 'time')} in #{_.pluralize(@model.pathCount, 'file')}"
+      message = "This will replace '#{findPattern}' with '#{replacementPattern}' #{_.pluralize(@model.matchCount, 'time')} in #{_.pluralize(@model.pathCount, 'file')}"
       buttonChosen = atom.confirm
         message: 'Are you sure you want to replace all?'
         detailedMessage: message
@@ -312,17 +311,17 @@ class ProjectFindView extends View
 
   updateOptionsLabel: ->
     label = []
-    label.push('Regex') if @model.useRegex
-    if @model.caseSensitive
+    label.push('Regex') if @model.getFindOptions().useRegex
+    if @model.getFindOptions().caseSensitive
       label.push('Case Sensitive')
     else
       label.push('Case Insensitive')
-    label.push('Whole Word') if @model.wholeWord
+    label.push('Whole Word') if @model.getFindOptions().wholeWord
     @optionsLabel.text(label.join(', '))
 
   setSelectionAsFindPattern: =>
     editor = atom.workspace.getActivePaneItem()
     if editor?
       pattern = editor.getSelectedText() or editor.getWordUnderCursor()
-      pattern = Util.escapeRegex(pattern) if @model.useRegex
+      pattern = Util.escapeRegex(pattern) if @model.getFindOptions().useRegex
       @findEditor.setText(pattern) if pattern
