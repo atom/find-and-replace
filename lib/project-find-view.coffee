@@ -46,7 +46,7 @@ class ProjectFindView extends View
         @div class: 'input-block-item editor-container', =>
           @subview 'pathsEditor', new TextEditorView(mini: true, placeholderText: 'File/directory pattern. eg. `src` to search in the "src" directory or `*.js` to search all javascript files.')
 
-  initialize: (@findInBufferModel, @model, {findHistory, replaceHistory, pathsHistory}) ->
+  initialize: (@model, {findHistory, replaceHistory, pathsHistory}) ->
     @subscriptions = new CompositeDisposable
     @handleEvents()
     @findHistory = new HistoryCycler(@findEditor, findHistory)

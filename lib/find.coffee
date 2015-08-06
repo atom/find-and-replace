@@ -138,7 +138,7 @@ module.exports =
     history = {@findHistory, @replaceHistory, @pathsHistory}
 
     @findView = new FindView(@findModel, history)
-    @projectFindView = new ProjectFindView(@findModel, @resultsModel, history)
+    @projectFindView = new ProjectFindView(@resultsModel, history)
 
     @findPanel = atom.workspace.addBottomPanel(item: @findView, visible: false, className: 'tool-panel panel-bottom')
     @projectFindPanel = atom.workspace.addBottomPanel(item: @projectFindView, visible: false, className: 'tool-panel panel-bottom')
