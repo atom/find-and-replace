@@ -1,3 +1,4 @@
+_ = require 'underscore-plus'
 {Emitter} = require 'atom'
 
 Params = [
@@ -55,3 +56,16 @@ class FindOptions
   toggleInCurrentSelection: ->
     @inCurrentSelection = not @inCurrentSelection
     @emitter.emit('did-change')
+
+  getFindPatternRegex: ->
+    flags = 'g'
+    flags += 'i' unless @caseSensitive
+
+    if @useRegex
+      expression = @findPattern
+    else
+      expression = _.escapeRegExp(@findPattern)
+
+    expression = "\\b#{expression}\\b" if @wholeWord
+
+    new RegExp(expression, flags)

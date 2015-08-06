@@ -52,7 +52,7 @@ class BufferSearch
         if @findOptions.useRegex
           replacementPattern = escapeHelper.unescapeEscapeSequence(replacementPattern)
           textToReplace = @editor.getTextInBufferRange(bufferRange)
-          replacementText = textToReplace.replace(@getRegex(), replacementPattern)
+          replacementText = textToReplace.replace(@getFindPatternRegex(), replacementPattern)
         @editor.setTextInBufferRange(bufferRange, replacementText ? replacementPattern)
 
         marker.destroy()
@@ -84,7 +84,7 @@ class BufferSearch
         start = Point.max(start, selectedRange.start)
         end = Point.min(end, selectedRange.end)
 
-      if regex = @getRegex()
+      if regex = @getFindPatternRegex()
         @editor.scanInBufferRange regex, Range(start, end), ({range}) =>
           newMarkers.push(@createMarker(range))
       else
@@ -200,19 +200,9 @@ class BufferSearch
       newText
     )
 
-  getRegex: ->
-    flags = 'g'
-    flags += 'i' unless @findOptions.caseSensitive
-
-    if @findOptions.useRegex
-      expression = @findOptions.findPattern
-    else
-      expression = _.escapeRegExp(@findOptions.findPattern)
-
-    expression = "\\b#{expression}\\b" if @findOptions.wholeWord
-
+  getFindPatternRegex: ->
     try
-      new RegExp(expression, flags)
+      @findOptions.getFindPatternRegex()
     catch e
       @emitter.emit 'did-error', e
       null

@@ -100,10 +100,12 @@ class ResultsModel
     else
       @clear()
 
-    @active = true
-    @regex = @getRegex(findPattern)
-    @searchedPaths = searchPaths
     @findOptions.set({findPattern})
+
+    @regex = @findOptions.getFindPatternRegex()
+
+    @active = true
+    @searchedPaths = searchPaths
 
     @updateReplacementPattern(replacementPattern)
 
@@ -214,19 +216,6 @@ class ResultsModel
       @paths = _.without(@paths, filePath)
       delete @results[filePath]
       @emitter.emit 'did-remove-result', {filePath}
-
-  getRegex: (pattern) ->
-    flags = 'g'
-    flags += 'i' unless @findOptions.caseSensitive
-
-    if @findOptions.useRegex
-      expression = pattern
-    else
-      expression = _.escapeRegExp(pattern)
-
-    expression = "\\b#{expression}\\b" if @findOptions.wholeWord
-
-    new RegExp(expression, flags)
 
   onContentsModified: (editor) =>
     return unless @active
