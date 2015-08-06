@@ -220,7 +220,6 @@ class ProjectFindView extends View
     return Promise.resolve() if onlyRunIfActive and not @model.active
 
     findPattern = @findEditor.getText()
-    # @findInBufferModel.setFindOptions({findPattern})
 
     @clearMessages()
     @showResultPane().then =>
