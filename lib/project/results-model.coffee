@@ -1,4 +1,3 @@
-Q = require 'q'
 _ = require 'underscore-plus'
 {Emitter} = require 'atom'
 escapeHelper = require '../escape-helper'
@@ -93,7 +92,8 @@ class ResultsModel
     @emitter.emit 'did-clear-replacement-state', @getResultsSummary()
 
   search: (findPattern, searchPaths, replacementPattern, {onlyRunIfChanged, keepReplacementState}={}) ->
-    return Q() if onlyRunIfChanged and findPattern? and searchPaths? and findPattern is @findOptions.findPattern and _.isEqual(searchPaths, @searchedPaths)
+    if onlyRunIfChanged and findPattern? and searchPaths? and findPattern is @findOptions.findPattern and _.isEqual(searchPaths, @searchedPaths)
+      return Promise.resolve()
 
     if keepReplacementState
       @clearSearchState()

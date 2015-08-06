@@ -1,6 +1,5 @@
 fs = require 'fs-plus'
 path = require 'path'
-Q = require 'q'
 _ = require 'underscore-plus'
 {Disposable, CompositeDisposable} = require 'atom'
 {$, $$$, View, TextEditorView} = require 'atom-space-pen-views'
@@ -218,7 +217,7 @@ class ProjectFindView extends View
     searchPromise
 
   search: ({onlyRunIfActive, onlyRunIfChanged}={}) ->
-    return Q() if onlyRunIfActive and not @model.active
+    return Promise.resolve() if onlyRunIfActive and not @model.active
 
     findPattern = @findEditor.getText()
     # @findInBufferModel.setFindOptions({findPattern})
