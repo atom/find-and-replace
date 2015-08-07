@@ -1,7 +1,6 @@
 _ = require 'underscore-plus'
 {$$$, View} = require 'atom-space-pen-views'
 {CompositeDisposable, TextEditor} = require 'atom'
-{HistoryCycler} = require './history'
 TextEditorView = require './text-editor-view'
 Util = require './project/util'
 
@@ -92,10 +91,12 @@ class FindView extends View
         </symbol>
       </svg>'
 
-  initialize: (@model, {findHistory, replaceHistory}) ->
+  initialize: (@model, {@findHistoryCycler, @replaceHistoryCycler}) ->
     @subscriptions = new CompositeDisposable
-    @findHistory = new HistoryCycler(@findEditor, findHistory)
-    @replaceHistory = new HistoryCycler(@replaceEditor, replaceHistory)
+
+    @findHistoryCycler.addEditorElement(@findEditor.element)
+    @replaceHistoryCycler.addEditorElement(@replaceEditor.element)
+
     @handleEvents()
 
     @clearMessage()
@@ -259,7 +260,7 @@ class FindView extends View
 
   findAndSelectResult: (selectFunction, {focusEditorAfter, fieldToFocus}) =>
     @search()
-    @findHistory.store()
+    @findHistoryCycler.store()
 
     if @markers?.length > 0
       selectFunction()
@@ -281,8 +282,8 @@ class FindView extends View
 
   replace: (nextOrPreviousFn, nextIndexFn) ->
     @search()
-    @findHistory.store()
-    @replaceHistory.store()
+    @findHistoryCycler.store()
+    @replaceHistoryCycler.store()
 
     if @markers?.length > 0
       unless currentMarker = @model.currentResultMarker
@@ -297,8 +298,8 @@ class FindView extends View
   replaceAll: =>
     @search()
     if @markers?.length
-      @replaceHistory.store()
-      @findHistory.store()
+      @findHistoryCycler.store()
+      @replaceHistoryCycler.store()
       @model.replace(@markers, @replaceEditor.getText())
     else
       atom.beep()

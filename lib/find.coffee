@@ -2,7 +2,7 @@
 {CompositeDisposable, TextEditor} = require 'atom'
 
 SelectNext = require './select-next'
-{History} = require './history'
+{History, HistoryCycler} = require './history'
 FindOptions = require './find-options'
 BufferSearch = require './buffer-search'
 FindView = require './find-view'
@@ -137,10 +137,16 @@ module.exports =
 
     findBuffer = new TextEditor(mini: true).getBuffer()
     replaceBuffer = new TextEditor(mini: true).getBuffer()
-    history = {@findHistory, @replaceHistory, @pathsHistory, findBuffer, replaceBuffer}
+    pathsBuffer = new TextEditor(mini: true).getBuffer()
 
-    @findView = new FindView(@findModel, history)
-    @projectFindView = new ProjectFindView(@resultsModel, history)
+    findHistoryCycler = new HistoryCycler(findBuffer, @findHistory)
+    replaceHistoryCycler = new HistoryCycler(replaceBuffer, @replaceHistory)
+    pathsHistoryCycler = new HistoryCycler(pathsBuffer, @pathsHistory)
+
+    options = {findBuffer, replaceBuffer, pathsBuffer, findHistoryCycler, replaceHistoryCycler, pathsHistoryCycler}
+
+    @findView = new FindView(@findModel, options)
+    @projectFindView = new ProjectFindView(@resultsModel, options)
 
     @findPanel = atom.workspace.addBottomPanel(item: @findView, visible: false, className: 'tool-panel panel-bottom')
     @projectFindPanel = atom.workspace.addBottomPanel(item: @projectFindView, visible: false, className: 'tool-panel panel-bottom')

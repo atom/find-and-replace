@@ -5,14 +5,13 @@ _ = require 'underscore-plus'
 {$, $$$, View} = require 'atom-space-pen-views'
 TextEditorView = require './text-editor-view'
 
-{HistoryCycler} = require './history'
 Util = require './project/util'
 ResultsModel = require './project/results-model'
 ResultsPaneView = require './project/results-pane'
 
 module.exports =
 class ProjectFindView extends View
-  @content: (model, {findBuffer, replaceBuffer}) ->
+  @content: (model, {findBuffer, replaceBuffer, pathsBuffer}) ->
     findEditor = new TextEditor
       mini: true
       tabLength: 2
@@ -28,6 +27,14 @@ class ProjectFindView extends View
       softWrapped: false
       buffer: replaceBuffer
       placeholderText: 'Replace in project'
+
+    pathsEditor = new TextEditor
+      mini: true
+      tabLength: 2
+      softTabs: true
+      softWrapped: false
+      buffer: pathsBuffer
+      placeholderText: 'File/directory pattern. eg. `src` to search in the "src" directory or `*.js` to search all javascript files.'
 
     @div tabIndex: -1, class: 'project-find padded', =>
       @header class: 'header', =>
@@ -61,14 +68,16 @@ class ProjectFindView extends View
 
       @section class: 'input-block paths-container', =>
         @div class: 'input-block-item editor-container', =>
-          @subview 'pathsEditor', new TextEditorView(mini: true, placeholderText: 'File/directory pattern. eg. `src` to search in the "src" directory or `*.js` to search all javascript files.')
+          @subview 'pathsEditor', new TextEditorView(editor: pathsEditor)
 
-  initialize: (@model, {findHistory, replaceHistory, pathsHistory, findBuffer, replaceBuffer}) ->
+  initialize: (@model, {@findHistoryCycler, @replaceHistoryCycler, @pathsHistoryCycler}) ->
     @subscriptions = new CompositeDisposable
     @handleEvents()
-    @findHistory = new HistoryCycler(@findEditor, findHistory)
-    @replaceHistory = new HistoryCycler(@replaceEditor, replaceHistory)
-    @pathsHistory = new HistoryCycler(@pathsEditor, pathsHistory)
+
+    @findHistoryCycler.addEditorElement(@findEditor.element)
+    @replaceHistoryCycler.addEditorElement(@replaceEditor.element)
+    @pathsHistoryCycler.addEditorElement(@pathsEditor.element)
+
     @onlyRunIfChanged = true
 
     @clearMessages()
@@ -204,9 +213,9 @@ class ProjectFindView extends View
       @model.clear()
       return
 
-    @findHistory.store()
-    @replaceHistory.store()
-    @pathsHistory.store()
+    @findHistoryCycler.store()
+    @replaceHistoryCycler.store()
+    @pathsHistoryCycler.store()
 
     searchPromise = @search({@onlyRunIfChanged})
     @onlyRunIfChanged = true
