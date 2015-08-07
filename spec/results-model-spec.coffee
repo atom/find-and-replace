@@ -30,7 +30,7 @@ describe 'ResultsModel', ->
       runs ->
         resultsModel.onDidAddResult resultAddedSpy
         resultsModel.onDidRemoveResult resultRemovedSpy
-        searchPromise = resultsModel.search('items', ['*.js'], '')
+        searchPromise = resultsModel.search('items', '*.js', '')
 
       waitsForPromise ->
         searchPromise
@@ -94,7 +94,7 @@ describe 'ResultsModel', ->
       runs ->
         resultsModel.onDidAddResult resultAddedSpy
         resultsModel.onDidRemoveResult resultRemovedSpy
-        searchPromise = resultsModel.search('items', ['*.js'], '')
+        searchPromise = resultsModel.search('items', '*.js', '')
 
       waitsForPromise ->
         searchPromise
@@ -114,7 +114,7 @@ describe 'ResultsModel', ->
 
     it "populates the model with all the results, and updates in response to changes in the buffer", ->
       runs ->
-        searchPromise = resultsModel.search('items', ['*.js'], '')
+        searchPromise = resultsModel.search('items', '*.js', '')
 
         expect(resultsModel.inProgressSearchPromise).toBeTruthy()
         resultsModel.clear()
@@ -128,8 +128,8 @@ describe 'ResultsModel', ->
 
     it "populates the model with all the results, and updates in response to changes in the buffer", ->
       runs ->
-        searchPromise = resultsModel.search('items', ['*.js'], '')
-        searchPromise = resultsModel.search('sort', ['*.js'], '')
+        searchPromise = resultsModel.search('items', '*.js', '')
+        searchPromise = resultsModel.search('sort', '*.js', '')
 
       waitsForPromise ->
         searchPromise

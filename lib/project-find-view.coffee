@@ -117,7 +117,7 @@ class ProjectFindView extends View
       'project-find:replace-all': => @replaceAll()
 
     updateInterfaceForResults = (results) =>
-      if results.matchCount is 0 and results.pattern is ''
+      if results.matchCount is 0 and results.findPattern is ''
         @clearMessages()
       else
         @generateResultsMessage(results)
@@ -149,7 +149,7 @@ class ProjectFindView extends View
 
   handleEventsForReplace: ->
     @replaceEditor.getModel().getBuffer().onDidChange => @model.clearReplacementState()
-    @replaceEditor.getModel().onDidStopChanging => @model.updateReplacementPattern(@replaceEditor.getText())
+    @replaceEditor.getModel().onDidStopChanging => @model.getFindOptions().set(replacePattern: @replaceEditor.getText())
     @replacementsMade = 0
     @subscriptions.add @model.onDidStartReplacing (promise) =>
       @replacementsMade = 0
@@ -199,11 +199,13 @@ class ProjectFindView extends View
     return Promise.resolve() if onlyRunIfActive and not @model.active
 
     findPattern = @findEditor.getText()
+    pathsPattern = @pathsEditor.getText()
+    replacePattern = @replaceEditor.getText()
 
     @clearMessages()
     @showResultPane().then =>
       try
-        @model.search(findPattern, @getPaths(), @replaceEditor.getText(), {onlyRunIfChanged})
+        @model.search(findPattern, pathsPattern, replacePattern, {onlyRunIfChanged})
       catch e
         @setErrorMessage(e.message)
 
@@ -219,9 +221,10 @@ class ProjectFindView extends View
       return
 
     @showResultPane().then =>
-      replacementPattern = @replaceEditor.getText()
+      pathsPattern = @pathsEditor.getText()
+      replacePattern = @replaceEditor.getText()
 
-      message = "This will replace '#{findPattern}' with '#{replacementPattern}' #{_.pluralize(@model.matchCount, 'time')} in #{_.pluralize(@model.pathCount, 'file')}"
+      message = "This will replace '#{findPattern}' with '#{replacePattern}' #{_.pluralize(@model.matchCount, 'time')} in #{_.pluralize(@model.pathCount, 'file')}"
       buttonChosen = atom.confirm
         message: 'Are you sure you want to replace all?'
         detailedMessage: message
@@ -229,10 +232,7 @@ class ProjectFindView extends View
 
       if buttonChosen is 0
         @clearMessages()
-        @model.replace(@getPaths(), replacementPattern, @model.getPaths())
-
-  getPaths: ->
-    inputPath.trim() for inputPath in @pathsEditor.getText().trim().split(',') when inputPath
+        @model.replace(pathsPattern, replacePattern, @model.getPaths())
 
   directoryPathForElement: (element) ->
     elementPath = element?.dataset.path ? element?.querySelector('[data-path]')?.dataset.path
@@ -283,7 +283,7 @@ class ProjectFindView extends View
     @descriptionLabel.html(errorMessage).addClass('text-error')
 
   updateReplaceAllButtonEnablement: (results) ->
-    canReplace = results?.matchCount and results?.pattern is @findEditor.getText()
+    canReplace = results?.matchCount and results?.findPattern is @findEditor.getText()
     @replaceAllButton[0].disabled = not canReplace
 
   setSelectionAsFindPattern: =>

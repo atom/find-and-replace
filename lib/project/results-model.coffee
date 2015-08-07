@@ -55,9 +55,6 @@ class ResultsModel
   onDidReplacePath: (callback) ->
     @emitter.on 'did-replace-path', callback
 
-  onDidChangeReplacementPattern: (callback) ->
-    @emitter.on 'did-change-replacement-pattern', callback
-
   onDidAddResult: (callback) ->
     @emitter.on 'did-add-result', callback
 
@@ -85,14 +82,14 @@ class ResultsModel
     @emitter.emit 'did-clear-search-state', @getResultsSummary()
 
   clearReplacementState: ->
-    @replacementPattern = null
+    @replacePattern = null
     @replacedPathCount = null
     @replacementCount = null
     @replacementErrors = null
     @emitter.emit 'did-clear-replacement-state', @getResultsSummary()
 
-  search: (findPattern, searchPaths, replacementPattern, {onlyRunIfChanged, keepReplacementState}={}) ->
-    if onlyRunIfChanged and findPattern? and searchPaths? and findPattern is @findOptions.findPattern and _.isEqual(searchPaths, @searchedPaths)
+  search: (findPattern, pathsPattern, replacePattern, {onlyRunIfChanged, keepReplacementState}={}) ->
+    if onlyRunIfChanged and findPattern? and pathsPattern? and findPattern is @findOptions.findPattern and pathsPattern is @findOptions.pathsPattern
       return Promise.resolve()
 
     if keepReplacementState
@@ -100,14 +97,11 @@ class ResultsModel
     else
       @clear()
 
-    @findOptions.set({findPattern})
-
+    @findOptions.set({findPattern, replacePattern, pathsPattern})
     @regex = @findOptions.getFindPatternRegex()
 
     @active = true
-    @searchedPaths = searchPaths
-
-    @updateReplacementPattern(replacementPattern)
+    searchPaths = @pathsArrayFromPathsPattern(pathsPattern)
 
     onPathsSearched = (numberOfPathsSearched) =>
       @emitter.emit 'did-search-paths', numberOfPathsSearched
@@ -128,17 +122,18 @@ class ResultsModel
         @inProgressSearchPromise = null
         @emitter.emit 'did-finish-searching', @getResultsSummary()
 
-  replace: (searchPaths, replacementPattern, replacementPaths) ->
+  replace: (pathsPattern, replacePattern, replacementPaths) ->
     return unless @findOptions.findPattern and @regex?
 
-    @updateReplacementPattern(replacementPattern)
-    replacementPattern = escapeHelper.unescapeEscapeSequence(replacementPattern) if @findOptions.useRegex
+    @findOptions.set({replacePattern, pathsPattern})
 
-    @active = false # not active until the search after finish
+    replacePattern = escapeHelper.unescapeEscapeSequence(replacePattern) if @findOptions.useRegex
+
+    @active = false # not active until the search is finished
     @replacedPathCount = 0
     @replacementCount = 0
 
-    promise = atom.workspace.replace @regex, replacementPattern, replacementPaths, (result, error) =>
+    promise = atom.workspace.replace @regex, replacePattern, replacementPaths, (result, error) =>
       if result
         if result.replacements
           @replacedPathCount++
@@ -152,27 +147,26 @@ class ResultsModel
     @emitter.emit 'did-start-replacing', promise
     promise.then =>
       @emitter.emit 'did-finish-replacing', @getResultsSummary()
-      @search(@findOptions.findPattern, searchPaths, replacementPattern, {keepReplacementState: true})
-
-  updateReplacementPattern: (replacementPattern) ->
-    @replacementPattern = replacementPattern or null
-    @emitter.emit 'did-change-replacement-pattern', @regex, replacementPattern
+      @search(@findOptions.findPattern, @findOptions.pathsPattern, @findOptions.replacePattern, {keepReplacementState: true})
+    .catch (e) ->
+      console.error e.stack
 
   setActive: (isActive) ->
-    @active = isActive if (isActive and @findOptions.pattern) or not isActive
+    @active = isActive if (isActive and @findOptions.findPattern) or not isActive
 
   getActive: -> @active
 
   getFindOptions: -> @findOptions
 
   getResultsSummary: ->
-    pattern = @findOptions.findPattern
+    findPattern = @findOptions.findPattern
+    replacePattern = @findOptions.replacePattern
     {
-      pattern
+      findPattern
+      replacePattern
       @pathCount
       @matchCount
       @searchErrors
-      @replacementPattern
       @replacedPathCount
       @replacementCount
       @replacementErrors
@@ -228,3 +222,6 @@ class ResultsModel
     result = Result.create({matches})
     @setResult(editor.getPath(), result)
     @emitter.emit 'did-finish-searching', @getResultsSummary()
+
+  pathsArrayFromPathsPattern: (pathsPattern) ->
+    (inputPath.trim() for inputPath in pathsPattern.trim().split(',') when inputPath)
