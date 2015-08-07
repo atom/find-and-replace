@@ -1,12 +1,29 @@
 _ = require 'underscore-plus'
-{$$$, View, TextEditorView} = require 'atom-space-pen-views'
-{CompositeDisposable} = require 'atom'
+{$$$, View} = require 'atom-space-pen-views'
+{CompositeDisposable, TextEditor} = require 'atom'
 {HistoryCycler} = require './history'
+TextEditorView = require './text-editor-view'
 Util = require './project/util'
 
 module.exports =
 class FindView extends View
-  @content: ->
+  @content: (model, {findBuffer, replaceBuffer}) ->
+    findEditor = new TextEditor
+      mini: true
+      tabLength: 2
+      softTabs: true
+      softWrapped: false
+      buffer: findBuffer
+      placeholderText: 'Find in current buffer'
+
+    replaceEditor = new TextEditor
+      mini: true
+      tabLength: 2
+      softTabs: true
+      softWrapped: false
+      buffer: replaceBuffer
+      placeholderText: 'Replace in current buffer'
+
     @div tabIndex: -1, class: 'find-and-replace', =>
       @header class: 'header', =>
         @span outlet: 'descriptionLabel', class: 'header-item description', 'Find in Current Buffer'
@@ -16,7 +33,7 @@ class FindView extends View
 
       @section class: 'input-block find-container', =>
         @div class: 'input-block-item input-block-item--flex editor-container', =>
-          @subview 'findEditor', new TextEditorView(mini: true, placeholderText: 'Find in current buffer')
+          @subview 'findEditor', new TextEditorView(editor: findEditor)
           @div class: 'find-meta-container', =>
             @span outlet: 'resultCounter', class: 'text-subtle result-counter', ''
 
@@ -35,7 +52,7 @@ class FindView extends View
 
       @section class: 'input-block replace-container', =>
         @div class: 'input-block-item input-block-item--flex editor-container', =>
-          @subview 'replaceEditor', new TextEditorView(mini: true, placeholderText: 'Replace in current buffer')
+          @subview 'replaceEditor', new TextEditorView(editor: replaceEditor)
 
         @div class: 'input-block-item', =>
           @div class: 'btn-group btn-group-replace', =>
