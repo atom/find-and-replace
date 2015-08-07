@@ -28,13 +28,13 @@ class MatchView extends View
 
   attached: ->
     @subscriptions = new CompositeDisposable
-    @subscriptions.add @model.onDidChangeReplacementPattern @render
+    @subscriptions.add @model.getFindOptions().onDidChangeReplacePattern @render
 
   detached: -> @subscriptions.dispose()
 
   render: =>
-    if @model.replacementPattern and @model.regex and not @model.replacedPathCount?
-      replacementText = @match.matchText.replace(@model.regex, @model.replacementPattern)
+    if @model.getFindOptions().replacePattern and @model.regex and not @model.replacedPathCount?
+      replacementText = @match.matchText.replace(@model.regex, @model.getFindOptions().replacePattern)
       @replacementText.text(replacementText)
       @replacementText.show()
       @matchText.removeClass('highlight-info').addClass('highlight-error')

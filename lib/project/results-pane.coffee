@@ -105,8 +105,9 @@ class ResultsPaneView extends ScrollView
       @showSearchedCountBlock = true
     , 500
 
-    deferred.done =>
-      @loadingMessage.hide()
+    hideLoadingMessage = => @loadingMessage.hide()
+
+    deferred.then(hideLoadingMessage).catch(hideLoadingMessage)
 
   onPathsSearched: (numberOfPathsSearched) =>
     if @showSearchedCountBlock

@@ -1,6 +1,5 @@
 fs = require 'fs-plus'
 path = require 'path'
-Q = require 'q'
 _ = require 'underscore-plus'
 {Disposable, CompositeDisposable} = require 'atom'
 {$, $$$, View, TextEditorView} = require 'atom-space-pen-views'
@@ -47,7 +46,7 @@ class ProjectFindView extends View
         @div class: 'input-block-item editor-container', =>
           @subview 'pathsEditor', new TextEditorView(mini: true, placeholderText: 'File/directory pattern. eg. `src` to search in the "src" directory or `*.js` to search all javascript files.')
 
-  initialize: (@findInBufferModel, @model, {findHistory, replaceHistory, pathsHistory}) ->
+  initialize: (@model, {findHistory, replaceHistory, pathsHistory}) ->
     @subscriptions = new CompositeDisposable
     @handleEvents()
     @findHistory = new HistoryCycler(@findEditor, findHistory)
@@ -55,12 +54,8 @@ class ProjectFindView extends View
     @pathsHistory = new HistoryCycler(@pathsEditor, pathsHistory)
     @onlyRunIfChanged = true
 
-    @regexOptionButton.addClass('selected') if @model.useRegex
-    @caseOptionButton.addClass('selected') if @model.caseSensitive
-    @wholeWordOptionButton.addClass('selected') if @model.wholeWord
-
     @clearMessages()
-    @updateOptionsLabel()
+    @updateOptionViews()
 
   destroy: ->
     @subscriptions?.dispose()
@@ -122,7 +117,7 @@ class ProjectFindView extends View
       'project-find:replace-all': => @replaceAll()
 
     updateInterfaceForResults = (results) =>
-      if results.matchCount is 0 and results.pattern is ''
+      if results.matchCount is 0 and results.findPattern is ''
         @clearMessages()
       else
         @generateResultsMessage(results)
@@ -135,6 +130,7 @@ class ProjectFindView extends View
     @subscriptions.add @model.onDidClear(resetInterface)
     @subscriptions.add @model.onDidClearReplacementState(updateInterfaceForResults)
     @subscriptions.add @model.onDidFinishSearching(updateInterfaceForResults)
+    @subscriptions.add @model.getFindOptions().onDidChange @updateOptionViews
 
     @on 'focus', (e) => @findEditor.focus()
     @regexOptionButton.click => @toggleRegexOption()
@@ -153,7 +149,7 @@ class ProjectFindView extends View
 
   handleEventsForReplace: ->
     @replaceEditor.getModel().getBuffer().onDidChange => @model.clearReplacementState()
-    @replaceEditor.getModel().onDidStopChanging => @model.updateReplacementPattern(@replaceEditor.getText())
+    @replaceEditor.getModel().onDidStopChanging => @model.getFindOptions().set(replacePattern: @replaceEditor.getText())
     @replacementsMade = 0
     @subscriptions.add @model.onDidStartReplacing (promise) =>
       @replacementsMade = 0
@@ -166,24 +162,6 @@ class ProjectFindView extends View
       @replacmentInfo.text("Replaced #{@replacementsMade} of #{_.pluralize(@model.getPathCount(), 'file')}")
 
     @subscriptions.add @model.onDidFinishReplacing (result) => @onFinishedReplacing(result)
-
-  toggleRegexOption: ->
-    @model.toggleUseRegex()
-    if @model.useRegex then @regexOptionButton.addClass('selected') else @regexOptionButton.removeClass('selected')
-    @updateOptionsLabel()
-    @search(onlyRunIfActive: true)
-
-  toggleCaseOption: ->
-    @model.toggleCaseSensitive()
-    if @model.caseSensitive then @caseOptionButton.addClass('selected') else @caseOptionButton.removeClass('selected')
-    @updateOptionsLabel()
-    @search(onlyRunIfActive: true)
-
-  toggleWholeWordOption: ->
-    @model.toggleWholeWord()
-    if @model.wholeWord then @wholeWordOptionButton.addClass('selected') else @wholeWordOptionButton.removeClass('selected')
-    @updateOptionsLabel()
-    @search(onlyRunIfActive: true)
 
   focusNextElement: (direction) ->
     elements = [@findEditor, @replaceEditor, @pathsEditor]
@@ -199,7 +177,7 @@ class ProjectFindView extends View
   focusFindElement: ->
     selectedText = atom.workspace.getActiveTextEditor()?.getSelectedText?()
     if selectedText and selectedText.indexOf('\n') < 0
-      selectedText = Util.escapeRegex(selectedText) if @model.useRegex
+      selectedText = Util.escapeRegex(selectedText) if @model.getFindOptions().useRegex
       @findEditor.setText(selectedText)
     @findEditor.focus()
     @findEditor.getModel().selectAll()
@@ -217,35 +195,40 @@ class ProjectFindView extends View
     @onlyRunIfChanged = true
     searchPromise
 
-  search: ({onlyRunIfActive, onlyRunIfChanged}={}) ->
-    return Q() if onlyRunIfActive and not @model.active
+  search: (options={}) ->
+    # We always want to set the options passed in, even if we dont end up doing the search
+    @model.getFindOptions().set(options)
 
-    pattern = @findEditor.getText()
-    @findInBufferModel.setSearchParams({pattern})
+    {onlyRunIfActive, onlyRunIfChanged} = options
+    return Promise.resolve() if onlyRunIfActive and not @model.active
+
+    findPattern = @findEditor.getText()
+    pathsPattern = @pathsEditor.getText()
+    replacePattern = @replaceEditor.getText()
 
     @clearMessages()
     @showResultPane().then =>
       try
-        @model.search(pattern, @getPaths(), @replaceEditor.getText(), {onlyRunIfChanged})
+        @model.search(findPattern, pathsPattern, replacePattern, options)
       catch e
         @setErrorMessage(e.message)
 
   replaceAll: ->
     return atom.beep() unless @model.matchCount
-
+    findPattern = @model.getFindOptions().findPattern
     currentPattern = @findEditor.getText()
-    if @model.pattern isnt currentPattern
+    if findPattern isnt currentPattern
       atom.confirm
-        message: "The searched pattern '#{@model.pattern}' was changed to '#{currentPattern}'"
+        message: "The searched pattern '#{findPattern}' was changed to '#{currentPattern}'"
         detailedMessage: "Please run the search with the new pattern '#{currentPattern}' before running a replace-all"
         buttons: ['OK']
       return
 
     @showResultPane().then =>
-      pattern = @model.pattern
-      replacementPattern = @replaceEditor.getText()
+      pathsPattern = @pathsEditor.getText()
+      replacePattern = @replaceEditor.getText()
 
-      message = "This will replace '#{pattern}' with '#{replacementPattern}' #{_.pluralize(@model.matchCount, 'time')} in #{_.pluralize(@model.pathCount, 'file')}"
+      message = "This will replace '#{findPattern}' with '#{replacePattern}' #{_.pluralize(@model.matchCount, 'time')} in #{_.pluralize(@model.pathCount, 'file')}"
       buttonChosen = atom.confirm
         message: 'Are you sure you want to replace all?'
         detailedMessage: message
@@ -253,10 +236,7 @@ class ProjectFindView extends View
 
       if buttonChosen is 0
         @clearMessages()
-        @model.replace(@getPaths(), replacementPattern, @model.getPaths())
-
-  getPaths: ->
-    inputPath.trim() for inputPath in @pathsEditor.getText().trim().split(',') when inputPath
+        @model.replace(pathsPattern, replacePattern, @model.getPaths())
 
   directoryPathForElement: (element) ->
     elementPath = element?.dataset.path ? element?.querySelector('[data-path]')?.dataset.path
@@ -307,22 +287,46 @@ class ProjectFindView extends View
     @descriptionLabel.html(errorMessage).addClass('text-error')
 
   updateReplaceAllButtonEnablement: (results) ->
-    canReplace = results?.matchCount and results?.pattern is @findEditor.getText()
+    canReplace = results?.matchCount and results?.findPattern is @findEditor.getText()
     @replaceAllButton[0].disabled = not canReplace
-
-  updateOptionsLabel: ->
-    label = []
-    label.push('Regex') if @model.useRegex
-    if @model.caseSensitive
-      label.push('Case Sensitive')
-    else
-      label.push('Case Insensitive')
-    label.push('Whole Word') if @model.wholeWord
-    @optionsLabel.text(label.join(', '))
 
   setSelectionAsFindPattern: =>
     editor = atom.workspace.getActivePaneItem()
     if editor?
       pattern = editor.getSelectedText() or editor.getWordUnderCursor()
-      pattern = Util.escapeRegex(pattern) if @model.useRegex
+      pattern = Util.escapeRegex(pattern) if @model.getFindOptions().useRegex
       @findEditor.setText(pattern) if pattern
+
+  updateOptionViews: =>
+    @updateOptionButtons()
+    @updateOptionsLabel()
+
+  updateOptionsLabel: ->
+    label = []
+    label.push('Regex') if @model.getFindOptions().useRegex
+    if @model.getFindOptions().caseSensitive
+      label.push('Case Sensitive')
+    else
+      label.push('Case Insensitive')
+    label.push('Whole Word') if @model.getFindOptions().wholeWord
+    @optionsLabel.text(label.join(', '))
+
+  updateOptionButtons: ->
+    @setOptionButtonState(@regexOptionButton, @model.getFindOptions().useRegex)
+    @setOptionButtonState(@caseOptionButton, @model.getFindOptions().caseSensitive)
+    @setOptionButtonState(@wholeWordOptionButton, @model.getFindOptions().wholeWord)
+
+  setOptionButtonState: (optionButton, selected) ->
+    if selected
+      optionButton.addClass 'selected'
+    else
+      optionButton.removeClass 'selected'
+
+  toggleRegexOption: ->
+    @search(onlyRunIfActive: true, useRegex: not @model.getFindOptions().useRegex)
+
+  toggleCaseOption: ->
+    @search(onlyRunIfActive: true, caseSensitive: not @model.getFindOptions().caseSensitive)
+
+  toggleWholeWordOption: ->
+    @search(onlyRunIfActive: true, wholeWord: not @model.getFindOptions().wholeWord)

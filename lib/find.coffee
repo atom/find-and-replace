@@ -3,6 +3,7 @@
 
 SelectNext = require './select-next'
 {History} = require './history'
+FindOptions = require './find-options'
 BufferSearch = require './buffer-search'
 FindView = require './find-view'
 ProjectFindView = require './project-find-view'
@@ -28,23 +29,24 @@ module.exports =
       minimum: 0
       description: 'When you type in the buffer find box, you must type this many characters to automatically search'
 
-  activate: ({@viewState, @projectViewState, @resultsModelState, @modelState, findHistory, replaceHistory, pathsHistory}={}) ->
+  activate: ({findOptions, findHistory, replaceHistory, pathsHistory}={}) ->
     atom.workspace.addOpener (filePath) ->
       new ResultsPaneView() if filePath is ResultsPaneView.URI
 
     @subscriptions = new CompositeDisposable
+    @findHistory = new History(findHistory)
+    @replaceHistory = new History(replaceHistory)
+    @pathsHistory = new History(pathsHistory)
 
-    @findModel = new BufferSearch(@modelState)
+    @findOptions = new FindOptions(findOptions)
+    @findModel = new BufferSearch(@findOptions)
+    @resultsModel = new ResultsModel(@findOptions)
+
     @subscriptions.add atom.workspace.observeActivePaneItem (paneItem) =>
       if paneItem?.getBuffer?()
         @findModel.setEditor(paneItem)
       else
         @findModel.setEditor(null)
-
-    @resultsModel = new ResultsModel(@resultsModelState)
-    @findHistory = new History(findHistory)
-    @replaceHistory = new History(replaceHistory)
-    @pathsHistory = new History(pathsHistory)
 
     @subscriptions.add atom.commands.add '.find-and-replace, .project-find', 'window:focus-next-pane', =>
       atom.views.getView(atom.workspace).focus()
@@ -136,7 +138,7 @@ module.exports =
     history = {@findHistory, @replaceHistory, @pathsHistory}
 
     @findView = new FindView(@findModel, history)
-    @projectFindView = new ProjectFindView(@findModel, @resultsModel, history)
+    @projectFindView = new ProjectFindView(@resultsModel, history)
 
     @findPanel = atom.workspace.addBottomPanel(item: @findView, visible: false, className: 'tool-panel panel-bottom')
     @projectFindPanel = atom.workspace.addBottomPanel(item: @projectFindView, visible: false, className: 'tool-panel panel-bottom')
@@ -177,10 +179,7 @@ module.exports =
     @subscriptions = null
 
   serialize: ->
-    viewState: @findView?.serialize() ? @viewState
-    modelState: @findModel?.serialize() ? @modelState
-    projectViewState: @projectFindView?.serialize() ? @projectViewState
-    resultsModelState: @resultsModel?.serialize() ? @resultsModelState
+    findOptions: @findOptions.serialize()
     findHistory: @findHistory.serialize()
     replaceHistory: @replaceHistory.serialize()
     pathsHistory: @replaceHistory.serialize()

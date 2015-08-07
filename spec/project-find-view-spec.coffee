@@ -5,7 +5,6 @@ temp = require 'temp'
 _ = require 'underscore-plus'
 {$, View} = require 'atom-space-pen-views'
 fs = require 'fs-plus'
-Q = require 'q'
 
 ResultsPaneView = require '../lib/project/results-pane'
 
@@ -402,7 +401,7 @@ describe 'ProjectFindView', ->
       beforeEach ->
         atom.commands.dispatch editorView, 'project-find:show'
         atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option')
-        spyOn(atom.workspace, 'scan').andCallFake -> Q()
+        spyOn(atom.workspace, 'scan').andReturn(Promise.resolve())
 
       it "shows an error when the pattern is invalid and clears when no error", ->
         projectFindView.findEditor.setText('[')
@@ -435,7 +434,7 @@ describe 'ProjectFindView', ->
       beforeEach ->
         atom.commands.dispatch editorView, 'project-find:show'
         projectFindView.findEditor.setText('i(\\w)ems+')
-        spyOn(atom.workspace, 'scan').andCallFake -> Q()
+        spyOn(atom.workspace, 'scan').andCallFake -> Promise.resolve()
 
       it "escapes regex patterns by default", ->
         atom.commands.dispatch(projectFindView[0], 'core:confirm')
@@ -494,7 +493,7 @@ describe 'ProjectFindView', ->
     describe "case sensitivity", ->
       beforeEach ->
         atom.commands.dispatch editorView, 'project-find:show'
-        spyOn(atom.workspace, 'scan').andCallFake -> Q()
+        spyOn(atom.workspace, 'scan').andCallFake -> Promise.resolve()
         projectFindView.findEditor.setText('ITEMS')
         atom.commands.dispatch(projectFindView[0], 'core:confirm')
         waitsForPromise -> searchPromise
@@ -527,7 +526,7 @@ describe 'ProjectFindView', ->
     describe "whole word", ->
       beforeEach ->
         atom.commands.dispatch editorView, 'project-find:show'
-        spyOn(atom.workspace, 'scan').andCallFake -> Q()
+        spyOn(atom.workspace, 'scan').andCallFake -> Promise.resolve()
         projectFindView.findEditor.setText('wholeword')
         atom.commands.dispatch(projectFindView[0], 'core:confirm')
         waitsForPromise -> searchPromise
@@ -638,7 +637,7 @@ describe 'ProjectFindView', ->
             expect(projectFindView.errorMessages).not.toBeVisible()
 
         it "only searches paths matching text in the path filter", ->
-          spyOn(atom.workspace, 'scan').andCallFake -> Q()
+          spyOn(atom.workspace, 'scan').andCallFake -> Promise.resolve()
           projectFindView.pathsEditor.setText('*.js')
           atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
@@ -646,7 +645,7 @@ describe 'ProjectFindView', ->
             searchPromise
 
           runs ->
-            expect(atom.workspace.scan.argsForCall[0][1]['paths']).toEqual ['*.js']
+            expect(atom.workspace.scan.argsForCall[0][1].paths).toEqual ['*.js']
 
         it "updates the results list when a buffer changes", ->
           atom.commands.dispatch(projectFindView[0], 'core:confirm')
@@ -683,7 +682,7 @@ describe 'ProjectFindView', ->
       describe "when no results exist", ->
         beforeEach ->
           projectFindView.findEditor.setText('notintheprojectbro')
-          spyOn(atom.workspace, 'scan').andCallFake -> Q()
+          spyOn(atom.workspace, 'scan').andCallFake -> Promise.resolve()
 
         it "displays no errors and no results", ->
           atom.commands.dispatch(projectFindView[0], 'core:confirm')
@@ -701,7 +700,7 @@ describe 'ProjectFindView', ->
       beforeEach ->
         atom.commands.dispatch(workspaceElement, 'project-find:show')
         spyOn(atom.workspace, 'scan').andCallFake ->
-          promise = Q()
+          promise = Promise.resolve()
           promise.cancel = ->
           promise
 
@@ -785,13 +784,12 @@ describe 'ProjectFindView', ->
 
     describe "when there is an error searching", ->
       it "displays the errors in the results pane", ->
-        [callback, deferred, called, resultsPaneView, errorList] = []
+        [callback, resolve, called, resultsPaneView, errorList] = []
         projectFindView.findEditor.setText('items')
         spyOn(atom.workspace, 'scan').andCallFake (regex, options, fn) ->
           callback = fn
-          deferred = Q.defer()
           called = true
-          deferred.promise
+          new Promise (res) -> resolve = res
 
         atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
@@ -807,7 +805,7 @@ describe 'ProjectFindView', ->
           expect(errorList.find("li")).toHaveLength 1
 
           callback(null, {path: '/some/path.js', code: 'ENOENT', message: 'Broken'})
-          deferred.resolve()
+          resolve()
 
         waitsForPromise ->
           searchPromise
@@ -818,20 +816,20 @@ describe 'ProjectFindView', ->
           expect(errorList.find("li:eq(0)").text()).toBe 'Nope'
           expect(errorList.find("li:eq(1)").text()).toBe 'Broken'
 
-    describe "buffer search sharing of the find pattern", ->
-      getResultDecorations = (clazz) ->
+    describe "buffer search sharing of the find options", ->
+      getResultDecorations = (className) ->
         markerIdForDecorations = editor.decorationsForScreenRowRange(0, editor.getLineCount())
         resultDecorations = []
         for markerId, decorations of markerIdForDecorations
           for decoration in decorations
-            resultDecorations.push decoration if decoration.getProperties().class is clazz
+            resultDecorations.push decoration if decoration.getProperties().class is className
         resultDecorations
 
       it 'highlights the search results in the selected file', ->
         # Process here is to
         # * open samplejs
         # * run a search that has sample js results
-        # * that should place the pattern in the buffer find and replace
+        # * that should place the pattern in the buffer find
         # * focus sample.js by clicking on a sample.js result
         # * when the file has been activated, it's results for the project search should be highlighted
 
@@ -843,7 +841,7 @@ describe 'ProjectFindView', ->
           expect(getResultDecorations('find-result')).toHaveLength 0
 
         runs ->
-          projectFindView.findEditor.setText('items')
+          projectFindView.findEditor.setText('item')
           atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
         waitsForPromise ->
@@ -862,9 +860,7 @@ describe 'ProjectFindView', ->
           atom.commands.dispatch(resultsView[0], 'core:confirm')
 
         waits 0 # not sure why this is async
-
         runs ->
-
           # sample.js has 6 results
           expect(getResultDecorations('find-result')).toHaveLength 5
           expect(getResultDecorations('current-result')).toHaveLength 1
@@ -875,6 +871,18 @@ describe 'ProjectFindView', ->
           # now we can find next
           atom.commands.dispatch atom.views.getView(editor), 'find-and-replace:find-next'
           expect(editor.getSelectedBufferRange()).not.toEqual initialSelectedRange
+
+          # Now we toggle the whole-word option to make sure it is updated in the buffer find
+          atom.commands.dispatch(projectFindView[0], 'project-find:toggle-whole-word-option')
+
+        waits 0
+        runs ->
+          # sample.js has 0 results for whole word `item`
+          expect(getResultDecorations('find-result')).toHaveLength 0
+          expect(workspaceElement).toHaveClass 'find-visible'
+
+          # Now we toggle the whole-word option to make sure it is updated in the buffer find
+          atom.commands.dispatch(projectFindView[0], 'project-find:toggle-whole-word-option')
 
   describe "replacing", ->
     [testDir, sampleJs, sampleCoffee, replacePromise] = []
@@ -1174,14 +1182,13 @@ describe 'ProjectFindView', ->
         waitsForPromise -> searchPromise
 
       it "displays the errors in the results pane", ->
-        [callback, deferred, called, resultsPaneView, errorList] = []
+        [callback, resolve, called, resultsPaneView, errorList] = []
         projectFindView.replaceEditor.setText('sunshine')
 
         spyOn(atom.workspace, 'replace').andCallFake (regex, replacement, paths, fn) ->
           callback = fn
-          deferred = Q.defer()
           called = true
-          deferred.promise
+          new Promise (res) -> resolve = res
 
         atom.commands.dispatch(projectFindView[0], 'project-find:replace-all')
 
@@ -1197,7 +1204,7 @@ describe 'ProjectFindView', ->
           expect(errorList.find("li")).toHaveLength 1
 
           callback(null, {path: '/some/path.js', code: 'ENOENT', message: 'Broken'})
-          deferred.resolve()
+          resolve()
 
         waitsForPromise ->
           replacePromise

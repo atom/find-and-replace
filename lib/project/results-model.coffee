@@ -1,4 +1,3 @@
-Q = require 'q'
 _ = require 'underscore-plus'
 {Emitter} = require 'atom'
 escapeHelper = require '../escape-helper'
@@ -12,11 +11,8 @@ class Result
 
 module.exports =
 class ResultsModel
-  constructor: (state={}) ->
+  constructor: (@findOptions) ->
     @emitter = new Emitter
-    @useRegex = state.useRegex ? atom.config.get('find-and-replace.useRegex') ? false
-    @caseSensitive = state.caseSensitive ? atom.config.get('find-and-replace.caseSensitive') ? false
-    @wholeWord = state.wholeWord ? atom.config.get('find-and-replace.wholeWord') ? false
 
     atom.workspace.observeTextEditors (editor) =>
       editor.onDidStopChanging => @onContentsModified(editor)
@@ -59,17 +55,11 @@ class ResultsModel
   onDidReplacePath: (callback) ->
     @emitter.on 'did-replace-path', callback
 
-  onDidChangeReplacementPattern: (callback) ->
-    @emitter.on 'did-change-replacement-pattern', callback
-
   onDidAddResult: (callback) ->
     @emitter.on 'did-add-result', callback
 
   onDidRemoveResult: (callback) ->
     @emitter.on 'did-remove-result', callback
-
-  serialize: ->
-    {@useRegex, @caseSensitive, @wholeWord}
 
   clear: ->
     @clearSearchState()
@@ -83,7 +73,6 @@ class ResultsModel
     @results = {}
     @paths = []
     @active = false
-    @pattern = ''
     @searchErrors = null
 
     if @inProgressSearchPromise?
@@ -93,26 +82,27 @@ class ResultsModel
     @emitter.emit 'did-clear-search-state', @getResultsSummary()
 
   clearReplacementState: ->
-    @replacementPattern = null
+    @replacePattern = null
     @replacedPathCount = null
     @replacementCount = null
     @replacementErrors = null
     @emitter.emit 'did-clear-replacement-state', @getResultsSummary()
 
-  search: (pattern, searchPaths, replacementPattern, {onlyRunIfChanged, keepReplacementState}={}) ->
-    return Q() if onlyRunIfChanged and pattern? and searchPaths? and pattern is @pattern and _.isEqual(searchPaths, @searchedPaths)
+  search: (findPattern, pathsPattern, replacePattern, options={}) ->
+    {onlyRunIfChanged, keepReplacementState} = options
+    if onlyRunIfChanged and findPattern? and pathsPattern? and findPattern is @findOptions.findPattern and pathsPattern is @findOptions.pathsPattern
+      return Promise.resolve()
 
     if keepReplacementState
       @clearSearchState()
     else
       @clear()
 
-    @active = true
-    @regex = @getRegex(pattern)
-    @pattern = pattern
-    @searchedPaths = searchPaths
+    @findOptions.set(_.extend({findPattern, replacePattern, pathsPattern}, options))
+    @regex = @findOptions.getFindPatternRegex()
 
-    @updateReplacementPattern(replacementPattern)
+    @active = true
+    searchPaths = @pathsArrayFromPathsPattern(pathsPattern)
 
     onPathsSearched = (numberOfPathsSearched) =>
       @emitter.emit 'did-search-paths', numberOfPathsSearched
@@ -133,17 +123,18 @@ class ResultsModel
         @inProgressSearchPromise = null
         @emitter.emit 'did-finish-searching', @getResultsSummary()
 
-  replace: (searchPaths, replacementPattern, replacementPaths) ->
-    return unless @pattern and @regex?
+  replace: (pathsPattern, replacePattern, replacementPaths) ->
+    return unless @findOptions.findPattern and @regex?
 
-    @updateReplacementPattern(replacementPattern)
-    replacementPattern = escapeHelper.unescapeEscapeSequence(replacementPattern) if @useRegex
+    @findOptions.set({replacePattern, pathsPattern})
 
-    @active = false # not active until the search after finish
+    replacePattern = escapeHelper.unescapeEscapeSequence(replacePattern) if @findOptions.useRegex
+
+    @active = false # not active until the search is finished
     @replacedPathCount = 0
     @replacementCount = 0
 
-    promise = atom.workspace.replace @regex, replacementPattern, replacementPaths, (result, error) =>
+    promise = atom.workspace.replace @regex, replacePattern, replacementPaths, (result, error) =>
       if result
         if result.replacements
           @replacedPathCount++
@@ -157,34 +148,26 @@ class ResultsModel
     @emitter.emit 'did-start-replacing', promise
     promise.then =>
       @emitter.emit 'did-finish-replacing', @getResultsSummary()
-      @search(@pattern, searchPaths, replacementPattern, {keepReplacementState: true})
-
-  updateReplacementPattern: (replacementPattern) ->
-    @replacementPattern = replacementPattern or null
-    @emitter.emit 'did-change-replacement-pattern', @regex, replacementPattern
+      @search(@findOptions.findPattern, @findOptions.pathsPattern, @findOptions.replacePattern, {keepReplacementState: true})
+    .catch (e) ->
+      console.error e.stack
 
   setActive: (isActive) ->
-    @active = isActive if (isActive and @pattern) or not isActive
+    @active = isActive if (isActive and @findOptions.findPattern) or not isActive
 
   getActive: -> @active
 
-  toggleUseRegex: ->
-    @useRegex = not @useRegex
-
-  toggleCaseSensitive: ->
-    @caseSensitive = not @caseSensitive
-
-  toggleWholeWord: ->
-    @wholeWord = not @wholeWord
+  getFindOptions: -> @findOptions
 
   getResultsSummary: ->
-    pattern = @pattern or ''
+    findPattern = @findOptions.findPattern
+    replacePattern = @findOptions.replacePattern
     {
-      pattern
+      findPattern
+      replacePattern
       @pathCount
       @matchCount
       @searchErrors
-      @replacementPattern
       @replacedPathCount
       @replacementCount
       @replacementErrors
@@ -195,9 +178,6 @@ class ResultsModel
 
   getMatchCount: ->
     @matchCount
-
-  getPattern: ->
-    @pattern or ''
 
   getPaths: ->
     @paths
@@ -232,19 +212,6 @@ class ResultsModel
       delete @results[filePath]
       @emitter.emit 'did-remove-result', {filePath}
 
-  getRegex: (pattern) ->
-    flags = 'g'
-    flags += 'i' unless @caseSensitive
-
-    if @useRegex
-      expression = pattern
-    else
-      expression = _.escapeRegExp(pattern)
-
-    expression = "\\b#{expression}\\b" if @wholeWord
-
-    new RegExp(expression, flags)
-
   onContentsModified: (editor) =>
     return unless @active
     return unless editor.getPath()
@@ -256,3 +223,6 @@ class ResultsModel
     result = Result.create({matches})
     @setResult(editor.getPath(), result)
     @emitter.emit 'did-finish-searching', @getResultsSummary()
+
+  pathsArrayFromPathsPattern: (pathsPattern) ->
+    (inputPath.trim() for inputPath in pathsPattern.trim().split(',') when inputPath)
