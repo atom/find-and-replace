@@ -816,7 +816,7 @@ describe 'ProjectFindView', ->
           expect(errorList.find("li:eq(0)").text()).toBe 'Nope'
           expect(errorList.find("li:eq(1)").text()).toBe 'Broken'
 
-    describe "buffer search sharing of the find pattern", ->
+    describe "buffer search sharing of the find options", ->
       getResultDecorations = (className) ->
         markerIdForDecorations = editor.decorationsForScreenRowRange(0, editor.getLineCount())
         resultDecorations = []
@@ -829,7 +829,7 @@ describe 'ProjectFindView', ->
         # Process here is to
         # * open samplejs
         # * run a search that has sample js results
-        # * that should place the pattern in the buffer find and replace
+        # * that should place the pattern in the buffer find
         # * focus sample.js by clicking on a sample.js result
         # * when the file has been activated, it's results for the project search should be highlighted
 
@@ -841,7 +841,7 @@ describe 'ProjectFindView', ->
           expect(getResultDecorations('find-result')).toHaveLength 0
 
         runs ->
-          projectFindView.findEditor.setText('items')
+          projectFindView.findEditor.setText('item')
           atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
         waitsForPromise ->
@@ -860,9 +860,7 @@ describe 'ProjectFindView', ->
           atom.commands.dispatch(resultsView[0], 'core:confirm')
 
         waits 0 # not sure why this is async
-
         runs ->
-
           # sample.js has 6 results
           expect(getResultDecorations('find-result')).toHaveLength 5
           expect(getResultDecorations('current-result')).toHaveLength 1
@@ -873,6 +871,18 @@ describe 'ProjectFindView', ->
           # now we can find next
           atom.commands.dispatch atom.views.getView(editor), 'find-and-replace:find-next'
           expect(editor.getSelectedBufferRange()).not.toEqual initialSelectedRange
+
+          # Now we toggle the whole-word option to make sure it is updated in the buffer find
+          atom.commands.dispatch(projectFindView[0], 'project-find:toggle-whole-word-option')
+
+        waits 0
+        runs ->
+          # sample.js has 0 results for whole word `item`
+          expect(getResultDecorations('find-result')).toHaveLength 0
+          expect(workspaceElement).toHaveClass 'find-visible'
+
+          # Now we toggle the whole-word option to make sure it is updated in the buffer find
+          atom.commands.dispatch(projectFindView[0], 'project-find:toggle-whole-word-option')
 
   describe "replacing", ->
     [testDir, sampleJs, sampleCoffee, replacePromise] = []

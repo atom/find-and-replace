@@ -320,10 +320,10 @@ class ProjectFindView extends View
       optionButton.removeClass 'selected'
 
   toggleRegexOption: ->
-    @search(onlyRunIfActive: true, useRegex: not @model.getFindOptions().toggleUseRegex())
+    @search(onlyRunIfActive: true, useRegex: not @model.getFindOptions().useRegex)
 
   toggleCaseOption: ->
-    @search(onlyRunIfActive: true, caseSensitive: not @model.getFindOptions().toggleCaseSensitive())
+    @search(onlyRunIfActive: true, caseSensitive: not @model.getFindOptions().caseSensitive)
 
   toggleWholeWordOption: ->
-    @search(onlyRunIfActive: true, wholeWord: not @model.getFindOptions().toggleWholeWord())
+    @search(onlyRunIfActive: true, wholeWord: not @model.getFindOptions().wholeWord)
