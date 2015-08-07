@@ -3,7 +3,7 @@ BufferSearch = require '../lib/buffer-search'
 FindOptions = require '../lib/find-options'
 
 describe "BufferSearch", ->
-  [search, editor, markersListener, currentResultListener] = []
+  [model, editor, markersListener, currentResultListener] = []
 
   beforeEach ->
     editor = new TextEditor
@@ -22,26 +22,24 @@ describe "BufferSearch", ->
     """
 
     findOptions = new FindOptions
-    search = new BufferSearch(findOptions)
+    model = new BufferSearch(findOptions)
 
     markersListener = jasmine.createSpy('markersListener')
-    search.onDidUpdate(markersListener)
+    model.onDidUpdate(markersListener)
 
     currentResultListener = jasmine.createSpy('currentResultListener')
-    search.onDidChangeCurrentResult(currentResultListener)
+    model.onDidChangeCurrentResult(currentResultListener)
 
-    search.setEditor(editor)
+    model.setEditor(editor)
     markersListener.reset()
 
-    search.setFindOptions(
-      findPattern: "a+"
+    model.search "a+",
       caseSensitive: false
       useRegex: true
       wholeWord: false
-    )
 
   afterEach ->
-    search.destroy()
+    model.destroy()
     editor.destroy()
 
   getHighlightedRanges = ->
@@ -382,7 +380,7 @@ describe "BufferSearch", ->
       expect(currentResultListener).toHaveBeenCalledWith(markers[1])
       currentResultListener.reset()
 
-      search.replace([markers[1]], "new-text")
+      model.replace([markers[1]], "new-text")
 
       expect(editor.getText()).toBe """
         -----------
