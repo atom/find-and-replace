@@ -40,14 +40,13 @@ class FindOptions
     changedParams = null
     for key in Params
       if newParams[key]? and newParams[key] isnt this[key]
-        changedParams ?= []
-        changedParams.push(key)
-        this[key] = newParams[key]
+        changedParams ?= {}
+        this[key] = changedParams[key] = newParams[key]
 
     if changedParams?
-      for param in changedParams
+      for param, val of changedParams
         @emitter.emit("did-change-#{param}")
-      @emitter.emit('did-change')
+      @emitter.emit('did-change', changedParams)
 
   toggleUseRegex: ->
     @useRegex = not @useRegex

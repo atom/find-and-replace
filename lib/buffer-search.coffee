@@ -14,7 +14,14 @@ class BufferSearch
     @markers = []
     @editor = null
 
-    @findOptions.onDidChange => @recreateMarkers()
+    recreateMarkers = @recreateMarkers.bind(this)
+    @findOptions.onDidChange (changedParams) =>
+      return unless changedParams? or changedParams.findPattern? or
+        changedParams.useRegex? or
+        changedParams.wholeWord? or
+        changedParams.caseSensitive? or
+        changedParams.inCurrentSelection?
+      @recreateMarkers()
 
   onDidUpdate: (callback) ->
     @emitter.on 'did-update', callback
@@ -37,23 +44,30 @@ class BufferSearch
 
   getEditor: -> @editor
 
-  setFindOptions: (newParams={}) ->
-    @findOptions.set(newParams)
+  setFindOptions: (newParams) -> @findOptions.set(newParams)
 
   getFindOptions: -> @findOptions
 
-  replace: (markers, replacementPattern) ->
+  search: (findPattern, otherOptions) ->
+    options = {findPattern}
+    if otherOptions?
+      for k, v of otherOptions
+        options[k] = v
+    @findOptions.set(options)
+
+  replace: (markers, replacePattern) ->
     return unless markers?.length > 0
+    @findOptions.set({replacePattern})
 
     @editor.transact =>
       for marker in markers
         bufferRange = marker.getBufferRange()
         replacementText = null
         if @findOptions.useRegex
-          replacementPattern = escapeHelper.unescapeEscapeSequence(replacementPattern)
+          replacePattern = escapeHelper.unescapeEscapeSequence(replacePattern)
           textToReplace = @editor.getTextInBufferRange(bufferRange)
-          replacementText = textToReplace.replace(@getFindPatternRegex(), replacementPattern)
-        @editor.setTextInBufferRange(bufferRange, replacementText ? replacementPattern)
+          replacementText = textToReplace.replace(@getFindPatternRegex(), replacePattern)
+        @editor.setTextInBufferRange(bufferRange, replacementText ? replacePattern)
 
         marker.destroy()
         @markers.splice(@markers.indexOf(marker), 1)
