@@ -222,7 +222,14 @@ class FindView extends View
   liveSearch: ->
     findPattern = @findEditor.getText()
     if findPattern.length is 0 or findPattern.length >= atom.config.get('find-and-replace.liveSearchMinimumCharacters')
-      @model.search(findPattern)
+      @search(findPattern)
+
+  search: (findPattern, options) ->
+    if arguments.length is 1 and typeof findPattern is 'object'
+      options = findPattern
+      findPattern = null
+    findPattern ?= @findEditor.getText()
+    @model.search(findPattern, options)
 
   findAll: (options={focusEditorAfter: true}) =>
     @findAndSelectResult(@selectAllMarkers, options)
@@ -234,7 +241,7 @@ class FindView extends View
     @findAndSelectResult(@selectFirstMarkerBeforeCursor, options)
 
   findAndSelectResult: (selectFunction, {focusEditorAfter, fieldToFocus}) =>
-    @model.search(@findEditor.getText())
+    @search()
     @findHistory.store()
 
     if @markers?.length > 0
@@ -256,7 +263,7 @@ class FindView extends View
     @replace('findPrevious', 'firstMarkerIndexBeforeCursor')
 
   replace: (nextOrPreviousFn, nextIndexFn) ->
-    @model.search(@findEditor.getText())
+    @search()
     @findHistory.store()
     @replaceHistory.store()
 
@@ -271,7 +278,7 @@ class FindView extends View
       atom.beep()
 
   replaceAll: =>
-    @model.search(@findEditor.getText())
+    @search()
     if @markers?.length
       @replaceHistory.store()
       @findHistory.store()
@@ -382,7 +389,7 @@ class FindView extends View
     if editor?
       findPattern = editor.getSelectedText() or editor.getWordUnderCursor()
       findPattern = Util.escapeRegex(findPattern) if @model.getFindOptions().useRegex
-      @model.search(findPattern) if findPattern
+      @search(findPattern) if findPattern
 
   findNextSelected: =>
     @setSelectionAsFindPattern()
@@ -420,19 +427,19 @@ class FindView extends View
       optionButton.removeClass 'selected'
 
   toggleRegexOption: =>
-    @model.search(@findEditor.getText(), useRegex: not @model.getFindOptions().useRegex)
+    @search(useRegex: not @model.getFindOptions().useRegex)
     @selectFirstMarkerAfterCursor()
 
   toggleCaseOption: =>
-    @model.search(@findEditor.getText(), caseSensitive: not @model.getFindOptions().caseSensitive)
+    @search(caseSensitive: not @model.getFindOptions().caseSensitive)
     @selectFirstMarkerAfterCursor()
 
   toggleSelectionOption: =>
-    @model.search(@findEditor.getText(), inCurrentSelection: not @model.getFindOptions().inCurrentSelection)
+    @search(inCurrentSelection: not @model.getFindOptions().inCurrentSelection)
     @selectFirstMarkerAfterCursor()
 
   toggleWholeWordOption: =>
-    @model.search(@findEditor.getText(), wholeWord: not @model.getFindOptions().wholeWord)
+    @search(@findEditor.getText(), wholeWord: not @model.getFindOptions().wholeWord)
     @selectFirstMarkerAfterCursor()
 
   updateReplaceEnablement: ->
