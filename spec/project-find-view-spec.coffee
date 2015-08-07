@@ -645,7 +645,7 @@ describe 'ProjectFindView', ->
             searchPromise
 
           runs ->
-            expect(atom.workspace.scan.argsForCall[0][1]['paths']).toEqual ['*.js']
+            expect(atom.workspace.scan.argsForCall[0][1].paths).toEqual ['*.js']
 
         it "updates the results list when a buffer changes", ->
           atom.commands.dispatch(projectFindView[0], 'core:confirm')
