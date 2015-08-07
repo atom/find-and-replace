@@ -196,6 +196,9 @@ class ProjectFindView extends View
     searchPromise
 
   search: (options={}) ->
+    # We always want to set the options passed in, even if we dont end up doing the search
+    @model.getFindOptions().set(options)
+
     {onlyRunIfActive, onlyRunIfChanged} = options
     return Promise.resolve() if onlyRunIfActive and not @model.active
 
