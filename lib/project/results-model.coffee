@@ -88,7 +88,8 @@ class ResultsModel
     @replacementErrors = null
     @emitter.emit 'did-clear-replacement-state', @getResultsSummary()
 
-  search: (findPattern, pathsPattern, replacePattern, {onlyRunIfChanged, keepReplacementState}={}) ->
+  search: (findPattern, pathsPattern, replacePattern, options) ->
+    {onlyRunIfChanged, keepReplacementState} = options
     if onlyRunIfChanged and findPattern? and pathsPattern? and findPattern is @findOptions.findPattern and pathsPattern is @findOptions.pathsPattern
       return Promise.resolve()
 
@@ -97,7 +98,7 @@ class ResultsModel
     else
       @clear()
 
-    @findOptions.set({findPattern, replacePattern, pathsPattern})
+    @findOptions.set(_.extend({findPattern, replacePattern, pathsPattern}, options))
     @regex = @findOptions.getFindPatternRegex()
 
     @active = true

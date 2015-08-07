@@ -48,22 +48,6 @@ class FindOptions
         @emitter.emit("did-change-#{param}")
       @emitter.emit('did-change', changedParams)
 
-  toggleUseRegex: ->
-    @useRegex = not @useRegex
-    @emitter.emit('did-change')
-
-  toggleCaseSensitive: ->
-    @caseSensitive = not @caseSensitive
-    @emitter.emit('did-change')
-
-  toggleWholeWord: ->
-    @wholeWord = not @wholeWord
-    @emitter.emit('did-change')
-
-  toggleInCurrentSelection: ->
-    @inCurrentSelection = not @inCurrentSelection
-    @emitter.emit('did-change')
-
   getFindPatternRegex: ->
     flags = 'g'
     flags += 'i' unless @caseSensitive

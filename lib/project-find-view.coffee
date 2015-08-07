@@ -195,7 +195,8 @@ class ProjectFindView extends View
     @onlyRunIfChanged = true
     searchPromise
 
-  search: ({onlyRunIfActive, onlyRunIfChanged}={}) ->
+  search: (options={}) ->
+    {onlyRunIfActive, onlyRunIfChanged} = options
     return Promise.resolve() if onlyRunIfActive and not @model.active
 
     findPattern = @findEditor.getText()
@@ -205,7 +206,7 @@ class ProjectFindView extends View
     @clearMessages()
     @showResultPane().then =>
       try
-        @model.search(findPattern, pathsPattern, replacePattern, {onlyRunIfChanged})
+        @model.search(findPattern, pathsPattern, replacePattern, options)
       catch e
         @setErrorMessage(e.message)
 
@@ -319,13 +320,10 @@ class ProjectFindView extends View
       optionButton.removeClass 'selected'
 
   toggleRegexOption: ->
-    @model.getFindOptions().toggleUseRegex()
-    @search(onlyRunIfActive: true)
+    @search(onlyRunIfActive: true, useRegex: not @model.getFindOptions().toggleUseRegex())
 
   toggleCaseOption: ->
-    @model.getFindOptions().toggleCaseSensitive()
-    @search(onlyRunIfActive: true)
+    @search(onlyRunIfActive: true, caseSensitive: not @model.getFindOptions().toggleCaseSensitive())
 
   toggleWholeWordOption: ->
-    @model.getFindOptions().toggleWholeWord()
-    @search(onlyRunIfActive: true)
+    @search(onlyRunIfActive: true, wholeWord: not @model.getFindOptions().toggleWholeWord())
