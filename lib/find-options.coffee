@@ -27,6 +27,9 @@ class FindOptions
   onDidChange: (callback) ->
     @emitter.on('did-change', callback)
 
+  onDidChangeReplacePattern: (callback) ->
+    @emitter.on('did-change-replacePattern', callback)
+
   serialize: ->
     result = {}
     for param in Params
@@ -34,12 +37,17 @@ class FindOptions
     result
 
   set: (newParams={}) ->
-    changed = false
+    changedParams = null
     for key in Params
       if newParams[key]? and newParams[key] isnt this[key]
+        changedParams ?= []
+        changedParams.push(key)
         this[key] = newParams[key]
-        changed = true
-    @emitter.emit('did-change') if changed
+
+    if changedParams?
+      for param in changedParams
+        @emitter.emit("did-change-#{param}")
+      @emitter.emit('did-change')
 
   toggleUseRegex: ->
     @useRegex = not @useRegex
