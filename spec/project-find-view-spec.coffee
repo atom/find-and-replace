@@ -876,6 +876,70 @@ describe 'ProjectFindView', ->
           atom.commands.dispatch atom.views.getView(editor), 'find-and-replace:find-next'
           expect(editor.getSelectedBufferRange()).not.toEqual initialSelectedRange
 
+      it 'doesnt highlight in case-insensitive way when case sensitive search', ->
+        waitsForPromise ->
+          atom.workspace.open('sample.js')
+
+        runs ->
+          editor = atom.workspace.getActiveTextEditor()
+          expect(getResultDecorations('find-result')).toHaveLength 0
+
+        runs ->
+          projectFindView.findEditor.setText('Ar')
+          projectFindView.caseOptionButton.click()
+          atom.commands.dispatch(projectFindView[0], 'core:confirm')
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          resultsPaneView = getExistingResultsPane()
+          resultsView = resultsPaneView.resultsView
+          resultsView.scrollToBottom() # To load ALL the results
+
+          resultsView.selectFirstResult()
+          _.times 10, -> atom.commands.dispatch(resultsView[0], 'core:move-down')
+          atom.commands.dispatch(resultsView[0], 'core:confirm')
+
+        waits 0 # not sure why this is async
+
+        runs ->
+          # sample.js has one "Ar" and 4 "ar"
+          expect(getResultDecorations('find-result')).toHaveLength 0
+          expect(getResultDecorations('current-result')).toHaveLength 1
+
+      it 'highlights matching strings when regex search', ->
+        waitsForPromise ->
+          atom.workspace.open('sample.js')
+
+        runs ->
+          editor = atom.workspace.getActiveTextEditor()
+          expect(getResultDecorations('find-result')).toHaveLength 0
+
+        runs ->
+          projectFindView.findEditor.setText('fun..ion')
+          projectFindView.regexOptionButton.click()
+          atom.commands.dispatch(projectFindView[0], 'core:confirm')
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          resultsPaneView = getExistingResultsPane()
+          resultsView = resultsPaneView.resultsView
+          resultsView.scrollToBottom() # To load ALL the results
+
+          resultsView.selectFirstResult()
+          _.times 10, -> atom.commands.dispatch(resultsView[0], 'core:move-down')
+          atom.commands.dispatch(resultsView[0], 'core:confirm')
+
+        waits 0 # not sure why this is async
+
+        runs ->
+          # sample.js has 2 "function"
+          expect(getResultDecorations('find-result')).toHaveLength 1
+          expect(getResultDecorations('current-result')).toHaveLength 1
+
   describe "replacing", ->
     [testDir, sampleJs, sampleCoffee, replacePromise] = []
 
