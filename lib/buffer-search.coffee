@@ -16,7 +16,8 @@ class BufferSearch
 
     recreateMarkers = @recreateMarkers.bind(this)
     @findOptions.onDidChange (changedParams) =>
-      return unless changedParams? or changedParams.findPattern? or
+      return unless changedParams?
+      return unless changedParams.findPattern? or
         changedParams.useRegex? or
         changedParams.wholeWord? or
         changedParams.caseSensitive? or
