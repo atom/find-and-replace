@@ -21,6 +21,16 @@ module.exports =
       description: 'When you type in the buffer find box, you must type this many characters to automatically search'
 
   activate: (@state) ->
+    {visiblePanel} = @state
+
+    if visiblePanel?
+      setImmediate =>
+        @createViews()
+        if visiblePanel is 'find'
+          @findPanel.show()
+        else if visiblePanel is 'project-find'
+          @projectFindPanel.show()
+
     @subscriptions = new CompositeDisposable
     @subscriptions.add atom.workspace.observeActivePaneItem (paneItem) =>
       @createModels()
@@ -148,9 +158,9 @@ module.exports =
     ResultsPaneView ?= require './project/results-pane'
     {HistoryCycler} = require './history'
 
-    findBuffer = new TextBuffer
-    replaceBuffer = new TextBuffer
-    pathsBuffer = new TextBuffer
+    findBuffer = new TextBuffer(@findOptions.findPattern or '')
+    replaceBuffer = new TextBuffer(@findOptions.replacePattern or '')
+    pathsBuffer = new TextBuffer(@findOptions.pathsPattern or '')
 
     findHistoryCycler = new HistoryCycler(findBuffer, @findHistory)
     replaceHistoryCycler = new HistoryCycler(replaceBuffer, @replaceHistory)
@@ -200,7 +210,17 @@ module.exports =
     @subscriptions = null
 
   serialize: ->
-    findOptions: @findOptions.serialize()
-    findHistory: @findHistory.serialize()
-    replaceHistory: @replaceHistory.serialize()
-    pathsHistory: @replaceHistory.serialize()
+    visiblePanel = if @findPanel.isVisible()
+      'find'
+    else if @projectFindPanel.isVisible()
+      'project-find'
+    else
+      null
+
+    {
+      findOptions: @findOptions.serialize()
+      findHistory: @findHistory.serialize()
+      replaceHistory: @replaceHistory.serialize()
+      pathsHistory: @replaceHistory.serialize()
+      visiblePanel: visiblePanel
+    }
