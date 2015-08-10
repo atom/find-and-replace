@@ -12,7 +12,7 @@ ResultsPaneView = require '../lib/project/results-pane'
 waitsForPromise = (fn) -> window.waitsForPromise timeout: 30000, fn
 
 describe 'ProjectFindView', ->
-  [activationPromise, editor, editorView, projectFindView, searchPromise, resultsPane, workspaceElement] = []
+  [activationPromise, editor, editorView, projectFindView, searchPromise, resultsPane, workspaceElement, mainModule] = []
 
   getAtomPanel = ->
     workspaceElement.querySelector('.project-find').parentNode
@@ -28,7 +28,8 @@ describe 'ProjectFindView', ->
     jasmine.attachToDOM(workspaceElement)
 
     atom.config.set('find-and-replace.openProjectFindResultsInRightPane', false)
-    activationPromise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
+    activationPromise = atom.packages.activatePackage("find-and-replace").then (options) ->
+      mainModule = options.mainModule
       mainModule.createViews()
       {projectFindView} = mainModule
       spy = spyOn(projectFindView, 'confirm').andCallFake ->
@@ -824,6 +825,42 @@ describe 'ProjectFindView', ->
           for decoration in decorations
             resultDecorations.push decoration if decoration.getProperties().class is className
         resultDecorations
+
+      it "shares the buffers and history cyclers between both buffer and project views", ->
+        {findView} = mainModule
+
+        projectFindView.findEditor.setText('findme')
+        projectFindView.replaceEditor.setText('replaceme')
+
+        atom.commands.dispatch editorView, 'find-and-replace:show'
+        expect(findView.findEditor.getText()).toBe 'findme'
+        expect(findView.replaceEditor.getText()).toBe 'replaceme'
+
+        # add some things to the history
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
+        findView.findEditor.setText('findme1')
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
+        findView.findEditor.setText('')
+
+        atom.commands.dispatch(findView.replaceEditor.element, 'core:confirm')
+        findView.replaceEditor.setText('replaceme1')
+        atom.commands.dispatch(findView.replaceEditor.element, 'core:confirm')
+        findView.replaceEditor.setText('')
+
+        # Back to the project view to make sure we're using the same cycler
+        atom.commands.dispatch editorView, 'project-find:show'
+
+        expect(projectFindView.findEditor.getText()).toBe ''
+        atom.commands.dispatch(projectFindView.findEditor.element, 'core:move-up')
+        expect(projectFindView.findEditor.getText()).toBe 'findme1'
+        atom.commands.dispatch(projectFindView.findEditor.element, 'core:move-up')
+        expect(projectFindView.findEditor.getText()).toBe 'findme'
+
+        expect(projectFindView.replaceEditor.getText()).toBe ''
+        atom.commands.dispatch(projectFindView.replaceEditor.element, 'core:move-up')
+        expect(projectFindView.replaceEditor.getText()).toBe 'replaceme1'
+        atom.commands.dispatch(projectFindView.replaceEditor.element, 'core:move-up')
+        expect(projectFindView.replaceEditor.getText()).toBe 'replaceme'
 
       it 'highlights the search results in the selected file', ->
         # Process here is to
