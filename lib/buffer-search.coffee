@@ -3,31 +3,26 @@ _ = require 'underscore-plus'
 {Patch} = TextBuffer
 escapeHelper = require './escape-helper'
 
-SearchParams = [
-  'useRegex',
-  'pattern',
-  'caseSensitive',
-  'wholeWord',
-  'inCurrentSelection'
-]
-
 module.exports =
 class BufferSearch
   @markerClass: 'find-result'
 
-  constructor: (searchParams={}) ->
+  constructor: (@findOptions) ->
     @emitter = new Emitter
     @patch = new Patch
     @subscriptions = null
     @markers = []
     @editor = null
-    @setSearchParams(_.defaults({}, searchParams, {
-      pattern: "",
-      useRegex: atom.config.get('find-and-replace.useRegex') ? false
-      wholeWord: atom.config.get('find-and-replace.wholeWord') ? false
-      caseSensitive: atom.config.get('find-and-replace.caseSensitive') ? false
-      inCurrentSelection: atom.config.get('find-and-replace.inCurrentSelection') ? false
-    }))
+
+    recreateMarkers = @recreateMarkers.bind(this)
+    @findOptions.onDidChange (changedParams) =>
+      return unless changedParams?
+      return unless changedParams.findPattern? or
+        changedParams.useRegex? or
+        changedParams.wholeWord? or
+        changedParams.caseSensitive? or
+        changedParams.inCurrentSelection?
+      @recreateMarkers()
 
   onDidUpdate: (callback) ->
     @emitter.on 'did-update', callback
@@ -50,35 +45,36 @@ class BufferSearch
 
   getEditor: -> @editor
 
-  setSearchParams: (newParams={}) ->
-    changed = false
-    for key in SearchParams
-      if newParams[key]? and newParams[key] isnt this[key]
-        this[key] = newParams[key]
-        changed = true
-    @recreateMarkers() if changed
+  setFindOptions: (newParams) -> @findOptions.set(newParams)
 
-  replace: (markers, replacementPattern) ->
+  getFindOptions: -> @findOptions
+
+  search: (findPattern, otherOptions) ->
+    options = {findPattern}
+    if otherOptions?
+      for k, v of otherOptions
+        options[k] = v
+    @findOptions.set(options)
+
+  replace: (markers, replacePattern) ->
     return unless markers?.length > 0
+    @findOptions.set({replacePattern})
 
     @editor.transact =>
       for marker in markers
         bufferRange = marker.getBufferRange()
         replacementText = null
-        if @useRegex
-          replacementPattern = escapeHelper.unescapeEscapeSequence(replacementPattern)
+        if @findOptions.useRegex
+          replacePattern = escapeHelper.unescapeEscapeSequence(replacePattern)
           textToReplace = @editor.getTextInBufferRange(bufferRange)
-          replacementText = textToReplace.replace(@getRegex(), replacementPattern)
-        @editor.setTextInBufferRange(bufferRange, replacementText ? replacementPattern)
+          replacementText = textToReplace.replace(@getFindPatternRegex(), replacePattern)
+        @editor.setTextInBufferRange(bufferRange, replacementText ? replacePattern)
 
         marker.destroy()
         @markers.splice(@markers.indexOf(marker), 1)
         delete @decorationsByMarkerId[marker.id]
 
     @emitter.emit 'did-update', @markers.slice()
-
-  serialize: ->
-    {@useRegex, @inCurrentSelection, @caseSensitive, @wholeWord}
 
   destroy: ->
     @subscriptions?.dispose()
@@ -97,13 +93,13 @@ class BufferSearch
 
   createMarkers: (start, end) ->
     newMarkers = []
-    if @pattern and @editor
-      if @inCurrentSelection
+    if @findOptions.findPattern and @editor
+      if @findOptions.inCurrentSelection
         selectedRange = @editor.getSelectedBufferRange()
         start = Point.max(start, selectedRange.start)
         end = Point.min(end, selectedRange.end)
 
-      if regex = @getRegex()
+      if regex = @getFindPatternRegex()
         @editor.scanInBufferRange regex, Range(start, end), ({range}) =>
           newMarkers.push(@createMarker(range))
       else
@@ -219,19 +215,9 @@ class BufferSearch
       newText
     )
 
-  getRegex: ->
-    flags = 'g'
-    flags += 'i' unless @caseSensitive
-
-    if @useRegex
-      expression = @pattern
-    else
-      expression = _.escapeRegExp(@pattern)
-
-    expression = "\\b#{expression}\\b" if @wholeWord
-
+  getFindPatternRegex: ->
     try
-      new RegExp(expression, flags)
+      @findOptions.getFindPatternRegex()
     catch e
       @emitter.emit 'did-error', e
       null
