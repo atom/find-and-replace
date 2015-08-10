@@ -1,5 +1,5 @@
 {$} = require 'atom-space-pen-views'
-{CompositeDisposable, TextEditor} = require 'atom'
+{CompositeDisposable, TextBuffer} = require 'atom'
 
 SelectNext = require './select-next'
 {History, HistoryCycler} = require './history'
@@ -135,9 +135,9 @@ module.exports =
   createViews: ->
     return if @findView?
 
-    findBuffer = new TextEditor(mini: true).getBuffer()
-    replaceBuffer = new TextEditor(mini: true).getBuffer()
-    pathsBuffer = new TextEditor(mini: true).getBuffer()
+    findBuffer = new TextBuffer
+    replaceBuffer = new TextBuffer
+    pathsBuffer = new TextBuffer
 
     findHistoryCycler = new HistoryCycler(findBuffer, @findHistory)
     replaceHistoryCycler = new HistoryCycler(replaceBuffer, @replaceHistory)
