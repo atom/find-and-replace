@@ -1,12 +1,27 @@
 _ = require 'underscore-plus'
 {$$$, View, TextEditorView} = require 'atom-space-pen-views'
-{CompositeDisposable} = require 'atom'
-{HistoryCycler} = require './history'
+{CompositeDisposable, TextEditor} = require 'atom'
 Util = require './project/util'
 
 module.exports =
 class FindView extends View
-  @content: ->
+  @content: (model, {findBuffer, replaceBuffer}) ->
+    findEditor = new TextEditor
+      mini: true
+      tabLength: 2
+      softTabs: true
+      softWrapped: false
+      buffer: findBuffer
+      placeholderText: 'Find in current buffer'
+
+    replaceEditor = new TextEditor
+      mini: true
+      tabLength: 2
+      softTabs: true
+      softWrapped: false
+      buffer: replaceBuffer
+      placeholderText: 'Replace in current buffer'
+
     @div tabIndex: -1, class: 'find-and-replace', =>
       @header class: 'header', =>
         @span outlet: 'descriptionLabel', class: 'header-item description', 'Find in Current Buffer'
@@ -16,7 +31,7 @@ class FindView extends View
 
       @section class: 'input-block find-container', =>
         @div class: 'input-block-item input-block-item--flex editor-container', =>
-          @subview 'findEditor', new TextEditorView(mini: true, placeholderText: 'Find in current buffer')
+          @subview 'findEditor', new TextEditorView(editor: findEditor)
           @div class: 'find-meta-container', =>
             @span outlet: 'resultCounter', class: 'text-subtle result-counter', ''
 
@@ -35,7 +50,7 @@ class FindView extends View
 
       @section class: 'input-block replace-container', =>
         @div class: 'input-block-item input-block-item--flex editor-container', =>
-          @subview 'replaceEditor', new TextEditorView(mini: true, placeholderText: 'Replace in current buffer')
+          @subview 'replaceEditor', new TextEditorView(editor: replaceEditor)
 
         @div class: 'input-block-item', =>
           @div class: 'btn-group btn-group-replace', =>
@@ -75,10 +90,12 @@ class FindView extends View
         </symbol>
       </svg>'
 
-  initialize: (@model, {findHistory, replaceHistory}) ->
+  initialize: (@model, {@findHistoryCycler, @replaceHistoryCycler}) ->
     @subscriptions = new CompositeDisposable
-    @findHistory = new HistoryCycler(@findEditor, findHistory)
-    @replaceHistory = new HistoryCycler(@replaceEditor, replaceHistory)
+
+    @findHistoryCycler.addEditorElement(@findEditor.element)
+    @replaceHistoryCycler.addEditorElement(@replaceEditor.element)
+
     @handleEvents()
 
     @clearMessage()
@@ -242,7 +259,7 @@ class FindView extends View
 
   findAndSelectResult: (selectFunction, {focusEditorAfter, fieldToFocus}) =>
     @search()
-    @findHistory.store()
+    @findHistoryCycler.store()
 
     if @markers?.length > 0
       selectFunction()
@@ -264,8 +281,8 @@ class FindView extends View
 
   replace: (nextOrPreviousFn, nextIndexFn) ->
     @search()
-    @findHistory.store()
-    @replaceHistory.store()
+    @findHistoryCycler.store()
+    @replaceHistoryCycler.store()
 
     if @markers?.length > 0
       unless currentMarker = @model.currentResultMarker
@@ -280,8 +297,8 @@ class FindView extends View
   replaceAll: =>
     @search()
     if @markers?.length
-      @replaceHistory.store()
-      @findHistory.store()
+      @findHistoryCycler.store()
+      @replaceHistoryCycler.store()
       @model.replace(@markers, @replaceEditor.getText())
     else
       atom.beep()

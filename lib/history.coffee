@@ -28,24 +28,25 @@ class History
 # Adds the ability to cycle through history
 class HistoryCycler
 
-  # * `miniEditor` an {Editor} instance to attach the cycler to
+  # * `buffer` an {Editor} instance to attach the cycler to
   # * `history` a {History} object
-  constructor: (@miniEditor, @history) ->
+  constructor: (@buffer, @history) ->
     @index = @history.length
-    atom.commands.add @miniEditor.element,
+    @history.onDidAddItem (text) =>
+      @buffer.setText(text) if text isnt @buffer.getText()
+
+  addEditorElement: (editorElement) ->
+    atom.commands.add editorElement,
       'core:move-up': => @previous()
       'core:move-down': => @next()
 
-    @history.onDidAddItem (text) =>
-      @miniEditor.setText(text) if text isnt @miniEditor.getText()
-
   previous: ->
-    if @history.length is 0 or (@atLastItem() and @miniEditor.getText() isnt @history.getLast())
-      @scratch = @miniEditor.getText()
+    if @history.length is 0 or (@atLastItem() and @buffer.getText() isnt @history.getLast())
+      @scratch = @buffer.getText()
     else if @index > 0
       @index--
 
-    @miniEditor.setText @history.getAtIndex(@index) ? ''
+    @buffer.setText @history.getAtIndex(@index) ? ''
 
   next: ->
     if @index < @history.length - 1
@@ -56,13 +57,13 @@ class HistoryCycler
     else
       item = ''
 
-    @miniEditor.setText item
+    @buffer.setText item
 
   atLastItem: ->
     @index is @history.length - 1
 
   store: ->
-    text = @miniEditor.getText()
+    text = @buffer.getText()
     return if not text or text is @history.getLast()
     @scratch = null
     @history.add(text)
