@@ -158,15 +158,15 @@ module.exports =
     ResultsPaneView ?= require './project/results-pane'
     {HistoryCycler} = require './history'
 
-    findBuffer = new TextBuffer(@findOptions.findPattern or '')
-    replaceBuffer = new TextBuffer(@findOptions.replacePattern or '')
-    pathsBuffer = new TextBuffer(@findOptions.pathsPattern or '')
+    @findBuffer = new TextBuffer(@findOptions.findPattern or '')
+    @replaceBuffer = new TextBuffer(@findOptions.replacePattern or '')
+    @pathsBuffer = new TextBuffer(@findOptions.pathsPattern or '')
 
-    findHistoryCycler = new HistoryCycler(findBuffer, @findHistory)
-    replaceHistoryCycler = new HistoryCycler(replaceBuffer, @replaceHistory)
-    pathsHistoryCycler = new HistoryCycler(pathsBuffer, @pathsHistory)
+    findHistoryCycler = new HistoryCycler(@findBuffer, @findHistory)
+    replaceHistoryCycler = new HistoryCycler(@replaceBuffer, @replaceHistory)
+    pathsHistoryCycler = new HistoryCycler(@pathsBuffer, @pathsHistory)
 
-    options = {findBuffer, replaceBuffer, pathsBuffer, findHistoryCycler, replaceHistoryCycler, pathsHistoryCycler}
+    options = {@findBuffer, @replaceBuffer, @pathsBuffer, findHistoryCycler, replaceHistoryCycler, pathsHistoryCycler}
 
     @findView = new FindView(@findModel, options)
     @projectFindView = new ProjectFindView(@resultsModel, options)
@@ -210,6 +210,12 @@ module.exports =
     @subscriptions = null
 
   serialize: ->
+    if @findBuffer?
+      @findOptions.set
+        findPattern: @findBuffer.getText()
+        replacePattern: @replaceBuffer.getText()
+        pathsPattern: @pathsBuffer.getText()
+
     visiblePanel = if @findPanel.isVisible()
       'find'
     else if @projectFindPanel.isVisible()
