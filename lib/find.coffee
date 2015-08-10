@@ -1,14 +1,5 @@
-{$} = require 'atom-space-pen-views'
-{CompositeDisposable, TextBuffer} = require 'atom'
-
-SelectNext = require './select-next'
-{History, HistoryCycler} = require './history'
-FindOptions = require './find-options'
-BufferSearch = require './buffer-search'
-FindView = require './find-view'
-ProjectFindView = require './project-find-view'
-ResultsModel = require './project/results-model'
-ResultsPaneView = require './project/results-pane'
+{CompositeDisposable} = require 'atom'
+ResultsPaneView = null
 
 module.exports =
   config:
@@ -29,20 +20,10 @@ module.exports =
       minimum: 0
       description: 'When you type in the buffer find box, you must type this many characters to automatically search'
 
-  activate: ({findOptions, findHistory, replaceHistory, pathsHistory}={}) ->
-    atom.workspace.addOpener (filePath) ->
-      new ResultsPaneView() if filePath is ResultsPaneView.URI
-
+  activate: (@state) ->
     @subscriptions = new CompositeDisposable
-    @findHistory = new History(findHistory)
-    @replaceHistory = new History(replaceHistory)
-    @pathsHistory = new History(pathsHistory)
-
-    @findOptions = new FindOptions(findOptions)
-    @findModel = new BufferSearch(@findOptions)
-    @resultsModel = new ResultsModel(@findOptions)
-
     @subscriptions.add atom.workspace.observeActivePaneItem (paneItem) =>
+      @createModels()
       if paneItem?.getBuffer?()
         @findModel.setEditor(paneItem)
       else
@@ -114,10 +95,12 @@ module.exports =
       'core:close': handleEditorCancel
 
     selectNextObjectForEditorElement = (editorElement) =>
+      @createModels()
       @selectNextObjects ?= new WeakMap()
       editor = editorElement.getModel()
       selectNext = @selectNextObjects.get(editor)
       unless selectNext?
+        SelectNext = require './select-next'
         selectNext = new SelectNext(editor, {@findOptions})
         @selectNextObjects.set(editor, selectNext)
       selectNext
@@ -132,8 +115,38 @@ module.exports =
       'find-and-replace:select-skip': (event) ->
         selectNextObjectForEditorElement(this).skipCurrentSelection()
 
+  createModels: ->
+    return if @findModel?
+
+    {CompositeDisposable} = require 'atom'
+    FindOptions = require './find-options'
+    BufferSearch = require './buffer-search'
+    ResultsModel = require './project/results-model'
+    {History} = require './history'
+
+    {findOptions, findHistory, replaceHistory, pathsHistory} = @state
+
+    @findHistory = new History(findHistory)
+    @replaceHistory = new History(replaceHistory)
+    @pathsHistory = new History(pathsHistory)
+
+    @findOptions = new FindOptions(findOptions)
+    @findModel = new BufferSearch(@findOptions)
+    @resultsModel = new ResultsModel(@findOptions)
+
   createViews: ->
     return if @findView?
+    @createModels()
+
+    atom.workspace.addOpener (filePath) ->
+      ResultsPaneView ?= require './project/results-pane'
+      new ResultsPaneView() if filePath is ResultsPaneView.URI
+
+    {TextBuffer} = require 'atom'
+    FindView = require './find-view'
+    ProjectFindView = require './project-find-view'
+    ResultsPaneView ?= require './project/results-pane'
+    {HistoryCycler} = require './history'
 
     findBuffer = new TextBuffer
     replaceBuffer = new TextBuffer
