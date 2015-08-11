@@ -1243,3 +1243,26 @@ describe 'FindView', ->
       atom.commands.dispatch findView.replaceEditor.element, 'find-and-replace:focus-next'
       expect(findView.findEditor).toHaveClass('is-focused')
       expect(findView.replaceEditor).not.toHaveClass('is-focused')
+
+  describe "when language-javascript is also active", ->
+    beforeEach ->
+      waitsForPromise ->
+        atom.packages.activatePackage("language-javascript")
+
+      atom.commands.dispatch editorView, 'find-and-replace:show'
+      waitsForPromise -> activationPromise
+
+    it "does not use regexp grammar when in non-regex mode", ->
+      expect(findView.model.getFindOptions().useRegex).not.toBe true
+      expect(findView.findEditor.getModel().getGrammar().scopeName).toBe 'text.plain.null-grammar'
+
+    it "uses regexp grammar when in regex mode and clears the regexp grammar when regex is disabled", ->
+      atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
+
+      expect(findView.model.getFindOptions().useRegex).toBe true
+      expect(findView.findEditor.getModel().getGrammar().scopeName).toBe 'source.js.regexp'
+
+      atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
+
+      expect(findView.model.getFindOptions().useRegex).not.toBe true
+      expect(findView.findEditor.getModel().getGrammar().scopeName).toBe 'text.plain.null-grammar'
