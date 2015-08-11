@@ -6,7 +6,7 @@ module.exports =
     @escapeNode.innerText = str
     @escapeNode.innerHTML
 
-  escapeRegex: (str) =>
+  escapeRegex: (str) ->
     str.replace /[.?*+^$[\]\\(){}|-]/g, (match) ->
       "\\" + match
 
