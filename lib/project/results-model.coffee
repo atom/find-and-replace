@@ -1,6 +1,7 @@
 _ = require 'underscore-plus'
 {Emitter} = require 'atom'
 escapeHelper = require '../escape-helper'
+binarySearch = require 'binarysearch'
 
 class Result
   @create: (result) ->
@@ -192,16 +193,17 @@ class ResultsModel
       @removeResult(filePath)
 
   addResult: (filePath, result) ->
+    filePathInsertedIndex = null
     if @results[filePath]
       @matchCount -= @results[filePath].matches.length
     else
       @pathCount++
-      @paths.push(filePath)
+      filePathInsertedIndex = binarySearch.insert(@paths, filePath, stringCompare)
 
     @matchCount += result.matches.length
 
     @results[filePath] = result
-    @emitter.emit 'did-add-result', {filePath, result}
+    @emitter.emit 'did-add-result', {filePath, result, filePathInsertedIndex}
 
   removeResult: (filePath) ->
     if @results[filePath]
@@ -226,3 +228,5 @@ class ResultsModel
 
   pathsArrayFromPathsPattern: (pathsPattern) ->
     (inputPath.trim() for inputPath in pathsPattern.trim().split(',') when inputPath)
+
+stringCompare = (a, b) -> a.localeCompare(b)
