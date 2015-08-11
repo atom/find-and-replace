@@ -1291,3 +1291,26 @@ describe 'ProjectFindView', ->
 
         runs ->
           expect(workspaceElement.querySelectorAll('.preview-pane').length).toBe(1)
+
+  describe "when language-javascript is also active", ->
+    beforeEach ->
+      waitsForPromise ->
+        atom.packages.activatePackage("language-javascript")
+
+      atom.commands.dispatch(workspaceElement, 'project-find:show')
+      waitsForPromise -> activationPromise
+
+    it "does not use regexp grammar when in non-regex mode", ->
+      expect(projectFindView.model.getFindOptions().useRegex).not.toBe true
+      expect(projectFindView.findEditor.getModel().getGrammar().scopeName).toBe 'text.plain.null-grammar'
+
+    it "uses regexp grammar when in regex mode and clears the regexp grammar when regex is disabled", ->
+      atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option')
+
+      expect(projectFindView.model.getFindOptions().useRegex).toBe true
+      expect(projectFindView.findEditor.getModel().getGrammar().scopeName).toBe 'source.js.regexp'
+
+      atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option')
+
+      expect(projectFindView.model.getFindOptions().useRegex).not.toBe true
+      expect(projectFindView.findEditor.getModel().getGrammar().scopeName).toBe 'text.plain.null-grammar'
