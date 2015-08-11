@@ -1,7 +1,7 @@
 path = require 'path'
 SelectNext = require '../lib/select-next'
 
-fdescribe "SelectNext", ->
+describe "SelectNext", ->
   [workspaceElement, editorElement, editor, promise, findOptions] = []
 
   beforeEach ->
