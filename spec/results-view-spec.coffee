@@ -272,12 +272,9 @@ describe 'ResultsView', ->
         atom.commands.dispatch resultsView.element, 'core:move-to-bottom'
         expect(resultsView.find("li").length).toBe resultsView.getPathCount() + resultsView.getMatchCount()
 
-  describe "arrowing through the list", ->
-    resultsView = null
-
-    it "opens the correct file containing the result when 'core:confirm' is called", ->
-      openHandler = null
-
+  describe "opening results", ->
+    openHandler = null
+    beforeEach ->
       waitsForPromise ->
         atom.workspace.open('sample.js')
 
@@ -293,11 +290,13 @@ describe 'ResultsView', ->
       runs ->
         resultsView = getResultsView()
         resultsView.selectFirstResult()
-
-        # open something in sample.coffee
-        _.times 3, -> atom.commands.dispatch resultsView.element, 'core:move-down'
         openHandler.reset()
-        atom.commands.dispatch resultsView.element, 'core:confirm'
+
+    it "opens the correct file containing the result when 'core:confirm' is called", ->
+      # open something in sample.coffee
+      _.times 3, -> atom.commands.dispatch resultsView.element, 'core:move-down'
+      openHandler.reset()
+      atom.commands.dispatch resultsView.element, 'core:confirm'
 
       waitsFor ->
         openHandler.callCount is 1
@@ -317,6 +316,27 @@ describe 'ResultsView', ->
       runs ->
         expect(atom.workspace.getActivePaneItem().getPath()).toContain('sample.')
 
+    describe "when `openProjectFindResultsInRightPane` option is true", ->
+      beforeEach ->
+        atom.config.set('find-and-replace.openProjectFindResultsInRightPane', true)
+
+      it "always opens the file in the left pane", ->
+        spyOn(atom.workspace, 'open').andCallThrough()
+        atom.commands.dispatch resultsView.element, 'core:move-down'
+        atom.commands.dispatch resultsView.element, 'core:confirm'
+        expect(atom.workspace.open.mostRecentCall.args[1].split).toBe 'left'
+
+    describe "when `openProjectFindResultsInRightPane` option is false", ->
+      beforeEach ->
+        atom.config.set('find-and-replace.openProjectFindResultsInRightPane', false)
+
+      it "does not specify a pane to split", ->
+        spyOn(atom.workspace, 'open').andCallThrough()
+        atom.commands.dispatch resultsView.element, 'core:move-down'
+        atom.commands.dispatch resultsView.element, 'core:confirm'
+        expect(atom.workspace.open.mostRecentCall.args[1]).toEqual {}
+
+  describe "arrowing through the list", ->
     it "arrows through the entire list without selecting paths and overshooting the boundaries", ->
       waitsForPromise ->
         atom.workspace.open('sample.js')
