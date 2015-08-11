@@ -48,7 +48,7 @@ module.exports =
       else
         @findModel.setEditor(null)
 
-    @subscriptions.add atom.commands.add '.find-and-replace, .project-find', 'window:focus-next-pane', =>
+    @subscriptions.add atom.commands.add '.find-and-replace, .project-find', 'window:focus-next-pane', ->
       atom.views.getView(atom.workspace).focus()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'project-find:show', =>
@@ -118,7 +118,7 @@ module.exports =
       editor = editorElement.getModel()
       selectNext = @selectNextObjects.get(editor)
       unless selectNext?
-        selectNext = new SelectNext(editor)
+        selectNext = new SelectNext(editor, {@findOptions})
         @selectNextObjects.set(editor, selectNext)
       selectNext
 
