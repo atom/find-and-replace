@@ -1292,25 +1292,37 @@ describe 'ProjectFindView', ->
         runs ->
           expect(workspaceElement.querySelectorAll('.preview-pane').length).toBe(1)
 
-  describe "when language-javascript is also active", ->
+  describe "when language-javascript is active", ->
     beforeEach ->
       waitsForPromise ->
         atom.packages.activatePackage("language-javascript")
 
+    it "uses the regexp grammar when regex-mode is loaded from configuration", ->
+      atom.config.set('find-and-replace.useRegex', true)
       atom.commands.dispatch(workspaceElement, 'project-find:show')
-      waitsForPromise -> activationPromise
+      waitsForPromise ->
+        activationPromise
 
-    it "does not use regexp grammar when in non-regex mode", ->
-      expect(projectFindView.model.getFindOptions().useRegex).not.toBe true
-      expect(projectFindView.findEditor.getModel().getGrammar().scopeName).toBe 'text.plain.null-grammar'
+      runs ->
+        expect(projectFindView.model.getFindOptions().useRegex).toBe true
+        expect(projectFindView.findEditor.getModel().getGrammar().scopeName).toBe 'source.js.regexp'
 
-    it "uses regexp grammar when in regex mode and clears the regexp grammar when regex is disabled", ->
-      atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option')
+    describe "when panel is active", ->
+      beforeEach ->
+        atom.commands.dispatch(workspaceElement, 'project-find:show')
+        waitsForPromise -> activationPromise
 
-      expect(projectFindView.model.getFindOptions().useRegex).toBe true
-      expect(projectFindView.findEditor.getModel().getGrammar().scopeName).toBe 'source.js.regexp'
+      it "does not use regexp grammar when in non-regex mode", ->
+        expect(projectFindView.model.getFindOptions().useRegex).not.toBe true
+        expect(projectFindView.findEditor.getModel().getGrammar().scopeName).toBe 'text.plain.null-grammar'
 
-      atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option')
+      it "uses regexp grammar when in regex mode and clears the regexp grammar when regex is disabled", ->
+        atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option')
 
-      expect(projectFindView.model.getFindOptions().useRegex).not.toBe true
-      expect(projectFindView.findEditor.getModel().getGrammar().scopeName).toBe 'text.plain.null-grammar'
+        expect(projectFindView.model.getFindOptions().useRegex).toBe true
+        expect(projectFindView.findEditor.getModel().getGrammar().scopeName).toBe 'source.js.regexp'
+
+        atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option')
+
+        expect(projectFindView.model.getFindOptions().useRegex).not.toBe true
+        expect(projectFindView.findEditor.getModel().getGrammar().scopeName).toBe 'text.plain.null-grammar'
