@@ -34,6 +34,66 @@ describe 'ResultsView', ->
     waitsForPromise ->
       promise
 
+  describe "result sorting", ->
+    beforeEach ->
+      projectFindView.findEditor.setText('i')
+      atom.commands.dispatch projectFindView.element, 'core:confirm'
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        resultsView = getResultsView()
+
+    describe "when shouldRenderMoreResults is true", ->
+      beforeEach ->
+        spyOn(resultsView, 'shouldRenderMoreResults').andReturn(true)
+
+      it "displays the results in sorted order", ->
+        pathNames = (el.textContent for el in resultsView.find(".path-name"))
+        expect(pathNames).toHaveLength 3
+        expect(pathNames[0]).toContain 'one-long-line.coffee'
+        expect(pathNames[1]).toContain 'sample.coffee'
+        expect(pathNames[2]).toContain 'sample.js'
+
+        # at the beginning
+        projectFindView.model.addResult('/a', matches: [])
+        expect(resultsView.find(".path-name")[0].textContent).toContain '/a'
+
+        # at the end
+        projectFindView.model.addResult('/z', matches: [])
+        expect(resultsView.find(".path-name")[4].textContent).toContain '/z'
+
+        # in the middle
+        projectFindView.model.addResult('/x', matches: [])
+        expect(resultsView.find(".path-name")[4].textContent).toContain '/x'
+
+    describe "when shouldRenderMoreResults is false", ->
+      beforeEach ->
+        spyOn(resultsView, 'shouldRenderMoreResults').andReturn(false)
+
+      it "only renders new items within the currently displayed results", ->
+        dirname = path.dirname(projectFindView.model.getPaths()[0])
+        pathNames = (el.textContent for el in resultsView.find(".path-name"))
+        expect(pathNames).toHaveLength 3
+        expect(pathNames[0]).toContain 'one-long-line.coffee'
+        expect(pathNames[1]).toContain 'sample.coffee'
+        expect(pathNames[2]).toContain 'sample.js'
+
+        # nope, not at the end
+        projectFindView.model.addResult('/z', matches: [])
+        expect(resultsView.find(".path-name")).toHaveLength 3
+
+        # yes, at the beginning
+        projectFindView.model.addResult('/a', matches: [])
+        expect(resultsView.find(".path-name")).toHaveLength 4
+        expect(resultsView.find(".path-name")[0].textContent).toContain '/a'
+
+        # yes, in the middle
+        projectFindView.model.addResult("#{dirname}/ppppp", matches: [])
+        expect(resultsView.find(".path-name")).toHaveLength 5
+        expect(resultsView.find(".path-name")[2].textContent).toContain 'ppppp'
+
   describe "when the result is for a long line", ->
     it "renders the context around the match", ->
       projectFindView.findEditor.setText('ghijkl')

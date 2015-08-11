@@ -52,14 +52,24 @@ class ResultsView extends ScrollView
   hasResults: ->
     @model.getResultCount() > 0
 
-  addResult: ({filePath, result}) =>
+  addResult: ({filePath, result, filePathInsertedIndex}) =>
     resultView = @getResultView(filePath)
+    return resultView.renderResult(result) if resultView
 
-    if resultView
-      resultView.renderResult(result)
-    else
-      @renderResults()
-      @selectFirstResult() if @getPathCount() is 1
+    if filePathInsertedIndex? and (filePathInsertedIndex < @lastRenderedResultIndex or @shouldRenderMoreResults())
+      children = @children()
+      resultView = new ResultView(@model, filePath, result)
+
+      if children.length is 0 or filePathInsertedIndex is children.length
+        @append(resultView)
+      else if filePathInsertedIndex is 0
+        @prepend(resultView)
+      else
+        @element.insertBefore(resultView.element, children[filePathInsertedIndex])
+
+      @lastRenderedResultIndex++
+
+    @selectFirstResult() if @getPathCount() is 1
 
   removeResult: ({filePath}) =>
     resultView = @getResultView(filePath)
