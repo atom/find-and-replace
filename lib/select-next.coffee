@@ -8,7 +8,7 @@ module.exports =
 class SelectNext
   selectionRanges: null
 
-  constructor: (@editor) ->
+  constructor: (@editor, {@findOptions}) ->
     @selectionRanges = []
 
   findAndSelectNext: ->
@@ -117,7 +117,7 @@ class SelectNext
     @isNonWordCharacter(@editor.getTextInBufferRange(range))
 
   isWordSelected: (selection) ->
-    if selection.getBufferRange().isSingleLine()
+    if @findOptions.wholeWord and selection.getBufferRange().isSingleLine()
       selectionRange = selection.getBufferRange()
       lineRange = @editor.bufferRangeForBufferRow(selectionRange.start.row)
       nonWordCharacterToTheLeft = _.isEqual(selectionRange.start, lineRange.start) or
