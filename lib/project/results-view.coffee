@@ -72,10 +72,10 @@ class ResultsView extends ScrollView
       result = @model.getResult(filePath)
       listItems = @children()
       insertPoint = listItems.length
-      listItems.each (index, item) ->
-        if (item.dataset.path).localeCompare(filePath) >= 0
+      for item, index in listItems
+        if item.dataset.path.localeCompare(filePath) >= 0
           insertPoint = index
-          false
+          break
 
       if @foldFilledAt is 0 and not @shouldRenderMoreResults()
         @foldFilledAt = listItems.length
