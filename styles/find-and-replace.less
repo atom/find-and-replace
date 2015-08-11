@@ -261,3 +261,25 @@ atom-workspace.find-visible {
     }
   }
 }
+
+.find-container atom-text-editor::shadow {
+  // Styles for regular expression highlighting
+  .regexp {
+    .escape {
+      color: @text-color-info;
+    }
+    .range, .character-class, .wildcard {
+      color: @text-color-success;
+    }
+    .wildcard {
+      font-weight: bold;
+    }
+    .set {
+      color: inherit;
+    }
+    .keyword, .punctuation {
+      color: @text-color-error;
+      font-weight: normal;
+    }
+  }
+}

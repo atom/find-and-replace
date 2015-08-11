@@ -325,6 +325,14 @@ class ProjectFindView extends View
   updateOptionViews: =>
     @updateOptionButtons()
     @updateOptionsLabel()
+    @updateSyntaxHighlighting()
+
+  updateSyntaxHighlighting: ->
+    if @model.getFindOptions().useRegex
+      grammar = atom.grammars.grammarForScopeName('source.js.regexp')
+      @findEditor.getModel().setGrammar(grammar)
+    else
+      @findEditor.getModel().setGrammar(atom.grammars.nullGrammar)
 
   updateOptionsLabel: ->
     label = []
