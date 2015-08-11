@@ -403,7 +403,7 @@ class FindView extends View
 
   setSelectionAsFindPattern: =>
     editor = @model.getEditor()
-    if editor?
+    if editor?.getSelectedText?
       findPattern = editor.getSelectedText() or editor.getWordUnderCursor()
       findPattern = Util.escapeRegex(findPattern) if @model.getFindOptions().useRegex
       @search(findPattern) if findPattern
