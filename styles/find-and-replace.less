@@ -264,7 +264,7 @@ atom-workspace.find-visible {
   }
 }
 
-.find-container atom-text-editor::shadow {
+.find-container atom-text-editor::shadow, .replace-container atom-text-editor::shadow {
   // Styles for regular expression highlighting
   .regexp {
     .escape {
@@ -282,6 +282,10 @@ atom-workspace.find-visible {
     .keyword, .punctuation {
       color: @text-color-error;
       font-weight: normal;
+    }
+
+    .replacement.variable {
+      color: @text-color-warning;
     }
   }
 }

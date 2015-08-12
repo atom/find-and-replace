@@ -334,8 +334,11 @@ class ProjectFindView extends View
     if @model.getFindOptions().useRegex
       grammar = atom.grammars.grammarForScopeName('source.js.regexp')
       @findEditor.getModel().setGrammar(grammar)
+      replacement_grammar = atom.grammars.grammarForScopeName('source.js.regexp.replacement')
+      @replaceEditor.getModel().setGrammar(replacement_grammar)
     else
       @findEditor.getModel().setGrammar(atom.grammars.nullGrammar)
+      @replaceEditor.getModel().setGrammar(atom.grammars.nullGrammar)
 
   updateOptionsLabel: ->
     label = []
