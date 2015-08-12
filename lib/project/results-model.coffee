@@ -1,7 +1,6 @@
 _ = require 'underscore-plus'
 {Emitter} = require 'atom'
 escapeHelper = require '../escape-helper'
-binarySearch = require 'binarysearch'
 
 class Result
   @create: (result) ->
@@ -198,7 +197,8 @@ class ResultsModel
       @matchCount -= @results[filePath].matches.length
     else
       @pathCount++
-      filePathInsertedIndex = binarySearch.insert(@paths, filePath, stringCompare)
+      filePathInsertedIndex = binaryIndex(@paths, filePath, stringCompare)
+      @paths.splice(filePathInsertedIndex, 0, filePath)
 
     @matchCount += result.matches.length
 
@@ -230,3 +230,15 @@ class ResultsModel
     (inputPath.trim() for inputPath in pathsPattern.trim().split(',') when inputPath)
 
 stringCompare = (a, b) -> a.localeCompare(b)
+
+binaryIndex = (array, value, comparator) ->
+  # Lifted from underscore's _.sortedIndex ; adds a flexible comparator
+  low = 0
+  high = array.length
+  while low < high
+    mid = Math.floor((low + high) / 2)
+    if comparator(array[mid], value) < 0
+      low = mid + 1
+    else
+      high = mid
+  low

@@ -29,7 +29,6 @@
   },
   "dependencies": {
     "atom-space-pen-views": "^2.1.0",
-    "binarysearch": "^0.2.4",
     "fs-plus": "2.x",
     "temp": "0.8.1",
     "underscore-plus": "1.x"
