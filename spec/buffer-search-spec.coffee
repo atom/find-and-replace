@@ -81,6 +81,18 @@ describe "BufferSearch", ->
       [[0, 0], [Infinity, Infinity]]
     ]
 
+  it "ignores 0 length matches", ->
+    editor.setText('ABCD\n')
+    model.search "\\w*",
+      caseSensitive: false
+      useRegex: true
+      wholeWord: false
+
+    expect(model.markers).toHaveLength 1
+    expect(getHighlightedRanges()).toEqual [
+      [[0, 0], [0, 4]]
+    ]
+
   describe "when the buffer changes", ->
     beforeEach ->
       markersListener.reset()
