@@ -141,6 +141,9 @@ class ProjectFindView extends View
       'project-find:toggle-whole-word-option': => @toggleWholeWordOption()
       'project-find:replace-all': => @replaceAll()
 
+    updateInterfaceForSearching = =>
+      @setInfoMessage('Searching...')
+
     updateInterfaceForResults = (results) =>
       if results.matchCount is 0 and results.findPattern is ''
         @clearMessages()
@@ -154,6 +157,7 @@ class ProjectFindView extends View
 
     @subscriptions.add @model.onDidClear(resetInterface)
     @subscriptions.add @model.onDidClearReplacementState(updateInterfaceForResults)
+    @subscriptions.add @model.onDidStartSearching(updateInterfaceForSearching)
     @subscriptions.add @model.onDidFinishSearching(updateInterfaceForResults)
     @subscriptions.add @model.getFindOptions().onDidChange @updateOptionViews
 
@@ -224,14 +228,13 @@ class ProjectFindView extends View
     # We always want to set the options passed in, even if we dont end up doing the search
     @model.getFindOptions().set(options)
 
-    {onlyRunIfActive, onlyRunIfChanged} = options
-    return Promise.resolve() if onlyRunIfActive and not @model.active
-
     findPattern = @findEditor.getText()
     pathsPattern = @pathsEditor.getText()
     replacePattern = @replaceEditor.getText()
 
-    @clearMessages()
+    {onlyRunIfActive, onlyRunIfChanged} = options
+    return Promise.resolve() if (onlyRunIfActive and not @model.active) or not findPattern
+
     @showResultPane().then =>
       try
         @model.search(findPattern, pathsPattern, replacePattern, options)
