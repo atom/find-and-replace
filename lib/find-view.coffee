@@ -426,10 +426,8 @@ class FindView extends View
 
   updateSyntaxHighlighting: ->
     if @model.getFindOptions().useRegex
-      grammar = atom.grammars.grammarForScopeName('source.js.regexp')
-      @findEditor.getModel().setGrammar(grammar)
-      replacement_grammar = atom.grammars.grammarForScopeName('source.js.regexp.replacement')
-      @replaceEditor.getModel().setGrammar(replacement_grammar)
+      @findEditor.getModel().setGrammar(atom.grammars.grammarForScopeName('source.js.regexp'))
+      @replaceEditor.getModel().setGrammar(atom.grammars.grammarForScopeName('source.js.regexp.replacement'))
     else
       @findEditor.getModel().setGrammar(atom.grammars.nullGrammar)
       @replaceEditor.getModel().setGrammar(atom.grammars.nullGrammar)
