@@ -221,6 +221,9 @@ class FindView extends View
     @findEditor.getModel().selectAll()
 
   focusReplaceEditor: =>
+    selectedText = atom.workspace.getActiveTextEditor()?.getSelectedText?()
+    if selectedText and selectedText.indexOf('\n') < 0
+      @replaceEditor.setText(selectedText)
     @replaceEditor.focus()
     @replaceEditor.getModel().selectAll()
 

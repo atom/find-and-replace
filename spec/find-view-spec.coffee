@@ -133,16 +133,38 @@ describe 'FindView', ->
       atom.commands.dispatch(findView.findEditor.element, 'window:focus-next-pane')
       expect(workspaceElement.querySelector('.find-and-replace')).not.toHaveFocus()
 
-  describe "when FindView's replace editor is visible", ->
-    it "keeps the replace editor visible when find-and-replace:show is triggered", ->
+  describe "find-and-replace:show-replace", ->
+    it "focuses the replace editor", ->
       atom.commands.dispatch editorView, 'find-and-replace:show-replace'
 
       waitsForPromise ->
         activationPromise
 
       runs ->
-        atom.commands.dispatch editorView, 'find-and-replace:show'
-        expect(findView.replaceEditor).toBeVisible()
+        expect(findView.replaceEditor).toHaveFocus()
+
+    it "places the current selection in the replace editor", ->
+      editor.setSelectedBufferRange([[0, 16], [0, 27]])
+      atom.commands.dispatch editorView, 'find-and-replace:show-replace'
+
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        expect(findView.replaceEditor.getText()).toBe 'function ()'
+
+    it "does not escape the text when the regex option is enabled", ->
+      # it doesnt need to!
+      editor.setSelectedBufferRange([[0, 16], [0, 27]])
+      atom.commands.dispatch editorView, 'find-and-replace:show'
+      atom.commands.dispatch editorView, 'find-and-replace:toggle-regex-option'
+      atom.commands.dispatch editorView, 'find-and-replace:show-replace'
+
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        expect(findView.replaceEditor.getText()).toBe 'function ()'
 
   describe "core:cancel", ->
     beforeEach ->
