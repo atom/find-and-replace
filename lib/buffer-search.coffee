@@ -94,8 +94,7 @@ class BufferSearch
   createMarkers: (start, end) ->
     newMarkers = []
     if @findOptions.findPattern and @editor
-      if @findOptions.inCurrentSelection
-        selectedRange = @editor.getSelectedBufferRange()
+      if @findOptions.inCurrentSelection and not (selectedRange = @editor.getSelectedBufferRange()).isEmpty()
         start = Point.max(start, selectedRange.start)
         end = Point.min(end, selectedRange.end)
 

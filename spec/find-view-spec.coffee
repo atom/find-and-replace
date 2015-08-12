@@ -738,7 +738,7 @@ describe 'FindView', ->
         editor.insertText("blah blah")
         expect(atom.beep).not.toHaveBeenCalled()
 
-    describe "when finding within a selection", ->
+    describe "when in current selection is toggled", ->
       beforeEach ->
         editor.setSelectedBufferRange [[2, 0], [4, 0]]
 
@@ -753,6 +753,16 @@ describe 'FindView', ->
         findView.selectionOptionButton.click()
         expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 13]]
         expect(findView.resultCounter.text()).toEqual('1 of 3')
+
+      describe "when there is no selection", ->
+        beforeEach ->
+          editor.setSelectedBufferRange [[0, 0], [0, 0]]
+
+        it "toggles find within a selction via and event and only finds matches within the selection", ->
+          findView.findEditor.setText 'items'
+          atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-selection-option')
+          expect(editor.getSelectedBufferRange()).toEqual [[1, 22], [1, 27]]
+          expect(findView.resultCounter.text()).toEqual('1 of 6')
 
     describe "when regex is toggled", ->
       it "toggles regex via an event and finds text matching the pattern", ->
@@ -1254,7 +1264,7 @@ describe 'FindView', ->
       atom.commands.dispatch editorView, 'find-and-replace:show'
       waitsForPromise ->
         activationPromise
-      
+
       runs ->
         expect(findView.model.getFindOptions().useRegex).toBe true
         expect(findView.findEditor.getModel().getGrammar().scopeName).toBe 'source.js.regexp'
