@@ -143,6 +143,29 @@ describe 'FindView', ->
       runs ->
         expect(findView.replaceEditor).toHaveFocus()
 
+    it "places the current selection in the replace editor", ->
+      editor.setSelectedBufferRange([[0, 16], [0, 27]])
+      atom.commands.dispatch editorView, 'find-and-replace:show-replace'
+
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        expect(findView.replaceEditor.getText()).toBe 'function ()'
+
+    it "does not escape the text when the regex option is enabled", ->
+      # it doesnt need to!
+      editor.setSelectedBufferRange([[0, 16], [0, 27]])
+      atom.commands.dispatch editorView, 'find-and-replace:show'
+      atom.commands.dispatch editorView, 'find-and-replace:toggle-regex-option'
+      atom.commands.dispatch editorView, 'find-and-replace:show-replace'
+
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        expect(findView.replaceEditor.getText()).toBe 'function ()'
+
   describe "core:cancel", ->
     beforeEach ->
       atom.commands.dispatch editorView, 'find-and-replace:show'
