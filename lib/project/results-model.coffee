@@ -217,7 +217,7 @@ class ResultsModel
       @emitter.emit 'did-remove-result', {filePath}
 
   onContentsModified: (editor) =>
-    return unless @active
+    return unless @active and @regex
     return unless editor.getPath()
 
     matches = []
