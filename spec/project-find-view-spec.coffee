@@ -401,12 +401,31 @@ describe 'ProjectFindView', ->
     describe "description label", ->
       beforeEach ->
         atom.commands.dispatch editorView, 'project-find:show'
-        atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option')
-        spyOn(atom.workspace, 'scan').andReturn(Promise.resolve())
+
+      it "indicates that it's searching, then shows the results", ->
+        projectFindView.findEditor.setText('item')
+        atom.commands.dispatch(projectFindView[0], 'core:confirm')
+
+        waitsForPromise ->
+          projectFindView.showResultPane()
+
+        runs ->
+          expect(projectFindView.descriptionLabel.text()).toContain 'Searching...'
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          expect(projectFindView.descriptionLabel.text()).toContain '13 results found in 2 files'
+          atom.commands.dispatch(projectFindView[0], 'core:confirm')
+          expect(projectFindView.descriptionLabel.text()).toContain '13 results found in 2 files'
 
       it "shows an error when the pattern is invalid and clears when no error", ->
+        spyOn(atom.workspace, 'scan').andReturn Promise.resolve()
+        atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option')
         projectFindView.findEditor.setText('[')
         atom.commands.dispatch(projectFindView[0], 'core:confirm')
+        resolve()
 
         waitsForPromise ->
           searchPromise
