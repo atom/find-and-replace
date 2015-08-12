@@ -133,16 +133,15 @@ describe 'FindView', ->
       atom.commands.dispatch(findView.findEditor.element, 'window:focus-next-pane')
       expect(workspaceElement.querySelector('.find-and-replace')).not.toHaveFocus()
 
-  describe "when FindView's replace editor is visible", ->
-    it "keeps the replace editor visible when find-and-replace:show is triggered", ->
+  describe "find-and-replace:show-replace", ->
+    it "focuses the replace editor", ->
       atom.commands.dispatch editorView, 'find-and-replace:show-replace'
 
       waitsForPromise ->
         activationPromise
 
       runs ->
-        atom.commands.dispatch editorView, 'find-and-replace:show'
-        expect(findView.replaceEditor).toBeVisible()
+        expect(findView.replaceEditor).toHaveFocus()
 
   describe "core:cancel", ->
     beforeEach ->
