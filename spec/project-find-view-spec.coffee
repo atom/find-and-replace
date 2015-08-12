@@ -826,6 +826,19 @@ describe 'ProjectFindView', ->
             resultDecorations.push decoration if decoration.getProperties().class is className
         resultDecorations
 
+      it "setting the find text does not interfere with the project replace state", ->
+        {findView} = mainModule
+        spyOn(atom.workspace, 'scan')
+
+        projectFindView.findEditor.setText('findme')
+        advanceClock(findView.findEditor.getModel().getBuffer().stoppedChangingDelay + 1)
+
+        waitsForPromise ->
+          projectFindView.search(onlyRunIfActive: false, onlyRunIfChanged: true)
+
+        runs ->
+          expect(atom.workspace.scan).toHaveBeenCalled()
+
       it "shares the buffers and history cyclers between both buffer and project views", ->
         {findView} = mainModule
 

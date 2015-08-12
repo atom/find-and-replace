@@ -90,7 +90,7 @@ class ResultsModel
 
   search: (findPattern, pathsPattern, replacePattern, options={}) ->
     {onlyRunIfChanged, keepReplacementState} = options
-    if onlyRunIfChanged and findPattern? and pathsPattern? and findPattern is @findOptions.findPattern and pathsPattern is @findOptions.pathsPattern
+    if onlyRunIfChanged and findPattern? and pathsPattern? and findPattern is @lastFindPattern and pathsPattern is @lastPathsPattern
       return Promise.resolve()
 
     if keepReplacementState
@@ -98,6 +98,8 @@ class ResultsModel
     else
       @clear()
 
+    @lastFindPattern = findPattern
+    @lastPathsPattern = pathsPattern
     @findOptions.set(_.extend({findPattern, replacePattern, pathsPattern}, options))
     @regex = @findOptions.getFindPatternRegex()
 
