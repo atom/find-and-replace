@@ -141,6 +141,9 @@ class ProjectFindView extends View
       'project-find:toggle-whole-word-option': => @toggleWholeWordOption()
       'project-find:replace-all': => @replaceAll()
 
+    updateInterfaceForSearching = =>
+      @setInfoMessage('Searching...')
+
     updateInterfaceForResults = (results) =>
       if results.matchCount is 0 and results.findPattern is ''
         @clearMessages()
@@ -154,6 +157,7 @@ class ProjectFindView extends View
 
     @subscriptions.add @model.onDidClear(resetInterface)
     @subscriptions.add @model.onDidClearReplacementState(updateInterfaceForResults)
+    @subscriptions.add @model.onDidStartSearching(updateInterfaceForSearching)
     @subscriptions.add @model.onDidFinishSearching(updateInterfaceForResults)
     @subscriptions.add @model.getFindOptions().onDidChange @updateOptionViews
 
@@ -231,7 +235,6 @@ class ProjectFindView extends View
     pathsPattern = @pathsEditor.getText()
     replacePattern = @replaceEditor.getText()
 
-    @clearMessages()
     @showResultPane().then =>
       try
         @model.search(findPattern, pathsPattern, replacePattern, options)
