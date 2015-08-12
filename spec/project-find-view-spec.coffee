@@ -425,7 +425,6 @@ describe 'ProjectFindView', ->
         atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option')
         projectFindView.findEditor.setText('[')
         atom.commands.dispatch(projectFindView[0], 'core:confirm')
-        resolve()
 
         waitsForPromise ->
           searchPromise
@@ -846,11 +845,13 @@ describe 'ProjectFindView', ->
         resultDecorations
 
       it "setting the find text does not interfere with the project replace state", ->
-        {findView} = mainModule
+        # Not sure why I need to advance the clock before setting the text. If
+        # this advanceClock doesnt happen, the text will be ''. wtf.
+        advanceClock(projectFindView.findEditor.getModel().getBuffer().stoppedChangingDelay + 1)
         spyOn(atom.workspace, 'scan')
 
         projectFindView.findEditor.setText('findme')
-        advanceClock(findView.findEditor.getModel().getBuffer().stoppedChangingDelay + 1)
+        advanceClock(projectFindView.findEditor.getModel().getBuffer().stoppedChangingDelay + 1)
 
         waitsForPromise ->
           projectFindView.search(onlyRunIfActive: false, onlyRunIfChanged: true)

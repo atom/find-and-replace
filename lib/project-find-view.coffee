@@ -228,14 +228,12 @@ class ProjectFindView extends View
     # We always want to set the options passed in, even if we dont end up doing the search
     @model.getFindOptions().set(options)
 
-    {onlyRunIfActive, onlyRunIfChanged} = options
-    return Promise.resolve() if onlyRunIfActive and not @model.active
-
     findPattern = @findEditor.getText()
     pathsPattern = @pathsEditor.getText()
     replacePattern = @replaceEditor.getText()
 
-    return unless findPattern
+    {onlyRunIfActive, onlyRunIfChanged} = options
+    return Promise.resolve() if (onlyRunIfActive and not @model.active) or not findPattern
 
     @showResultPane().then =>
       try
