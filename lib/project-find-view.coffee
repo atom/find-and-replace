@@ -235,6 +235,8 @@ class ProjectFindView extends View
     pathsPattern = @pathsEditor.getText()
     replacePattern = @replaceEditor.getText()
 
+    return unless findPattern
+
     @showResultPane().then =>
       try
         @model.search(findPattern, pathsPattern, replacePattern, options)
