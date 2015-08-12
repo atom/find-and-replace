@@ -50,23 +50,34 @@ describe 'ResultsView', ->
         spyOn(resultsView, 'shouldRenderMoreResults').andReturn(true)
 
       it "displays the results in sorted order", ->
+        match =
+          range: [[0, 0], [0, 3]]
+          lineText: 'abcdef'
+          lineTextOffset: 0
+          matchText: 'abc'
+
         pathNames = (el.textContent for el in resultsView.find(".path-name"))
         expect(pathNames).toHaveLength 3
         expect(pathNames[0]).toContain 'one-long-line.coffee'
         expect(pathNames[1]).toContain 'sample.coffee'
         expect(pathNames[2]).toContain 'sample.js'
 
+        expect(resultsView.find('.search-result:first')).toHaveClass 'selected'
+
         # at the beginning
-        projectFindView.model.addResult('/a', matches: [])
+        projectFindView.model.addResult('/a', matches: [match])
         expect(resultsView.find(".path-name")[0].textContent).toContain '/a'
+        expect(resultsView.find('.search-result:first')).toHaveClass 'selected'
 
         # at the end
-        projectFindView.model.addResult('/z', matches: [])
+        projectFindView.model.addResult('/z', matches: [match])
         expect(resultsView.find(".path-name")[4].textContent).toContain '/z'
+        expect(resultsView.find('.search-result:first')).toHaveClass 'selected'
 
         # in the middle
-        projectFindView.model.addResult('/x', matches: [])
+        projectFindView.model.addResult('/x', matches: [match])
         expect(resultsView.find(".path-name")[4].textContent).toContain '/x'
+        expect(resultsView.find('.search-result:first')).toHaveClass 'selected'
 
     describe "when shouldRenderMoreResults is false", ->
       beforeEach ->

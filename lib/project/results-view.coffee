@@ -28,8 +28,12 @@ class ResultsView extends ScrollView
   attached: ->
     @subscriptions = new CompositeDisposable
     @subscriptions.add atom.commands.add @element,
-      'core:move-down': => @selectNextResult()
-      'core:move-up': => @selectPreviousResult()
+      'core:move-down': =>
+        @userMovedSelection = true
+        @selectNextResult()
+      'core:move-up': =>
+        @userMovedSelection = true
+        @selectPreviousResult()
       'core:move-left': => @collapseResult()
       'core:move-right': => @expandResult()
       'core:confirm': =>
@@ -69,7 +73,7 @@ class ResultsView extends ScrollView
 
       @lastRenderedResultIndex++
 
-    @selectFirstResult() if @getPathCount() is 1
+    @selectFirstResult() if not @userMovedSelection or @getPathCount() is 1
 
   removeResult: ({filePath}) =>
     resultView = @getResultView(filePath)
@@ -152,6 +156,7 @@ class ResultsView extends ScrollView
     @model.getMatchCount()
 
   clear: =>
+    @userMovedSelection = false
     @lastRenderedResultIndex = 0
     @empty()
 
