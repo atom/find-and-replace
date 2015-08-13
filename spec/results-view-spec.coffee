@@ -267,6 +267,63 @@ describe 'ResultsView', ->
 
         expect(resultsView.find(".path-details").length).toBe 3
 
+    describe "core:page-up and core:page-down", ->
+      beforeEach ->
+        workspaceElement.style.height = '300px'
+        projectFindView.findEditor.setText(' ')
+        projectFindView.confirm()
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          resultsView = getResultsView()
+          expect(resultsView.prop('scrollTop')).toBe 0
+          expect(resultsView.prop('scrollHeight')).toBeGreaterThan resultsView.height()
+
+      it "selects the first result on the next page when core:page-down is triggered", ->
+        itemHeight = resultsView.find('.selected').outerHeight()
+        pageHeight = Math.round(resultsView.innerHeight() / itemHeight) * itemHeight
+        expect(resultsView.find("li").length).toBeLessThan resultsView.getPathCount() + resultsView.getMatchCount()
+
+        atom.commands.dispatch resultsView.element, 'core:page-down'
+        expect(resultsView.find("li:eq(1)")).not.toHaveClass 'selected'
+        expect(resultsView.find("li:eq(5)")).toHaveClass 'selected'
+        expect(resultsView.prop('scrollTop')).toBe pageHeight
+
+        atom.commands.dispatch resultsView.element, 'core:page-down'
+        expect(resultsView.find("li:eq(5)")).not.toHaveClass 'selected'
+        expect(resultsView.find("li:eq(9)")).toHaveClass 'selected'
+        expect(resultsView.prop('scrollTop')).toBe pageHeight * 2
+
+        _.times 60, ->
+          atom.commands.dispatch resultsView.element, 'core:page-down'
+
+        expect(resultsView.find("li:last")).toHaveClass 'selected'
+
+      it "selects the first result on the next page when core:page-up is triggered", ->
+        atom.commands.dispatch resultsView.element, 'core:move-to-bottom'
+        expect(resultsView.find("li:last")).toHaveClass 'selected'
+
+        itemHeight = resultsView.find('.selected').outerHeight()
+        pageHeight = Math.round(resultsView.innerHeight() / itemHeight) * itemHeight
+        initialScrollTop = resultsView.scrollTop()
+
+        atom.commands.dispatch resultsView.element, 'core:page-up'
+        expect(resultsView.find("li:last")).not.toHaveClass 'selected'
+        expect(resultsView.find("li:eq(215)")).toHaveClass 'selected'
+        expect(resultsView.prop('scrollTop')).toBe initialScrollTop - pageHeight
+
+        atom.commands.dispatch resultsView.element, 'core:page-up'
+        expect(resultsView.find("li:eq(215)")).not.toHaveClass 'selected'
+        expect(resultsView.find("li:eq(210)")).toHaveClass 'selected'
+        expect(resultsView.prop('scrollTop')).toBe initialScrollTop - pageHeight * 2
+
+        _.times 60, ->
+          atom.commands.dispatch resultsView.element, 'core:page-up'
+
+        expect(resultsView.find("li:eq(1)")).toHaveClass 'selected'
+
     describe "core:move-to-top and core:move-to-bottom", ->
       beforeEach ->
         workspaceElement.style.height = '200px'
