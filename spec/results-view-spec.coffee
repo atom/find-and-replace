@@ -279,7 +279,6 @@ describe 'ResultsView', ->
         runs ->
           resultsView = getResultsView()
 
-
       it "renders all results and selects the last item when core:move-to-bottom is triggered; selects the first item when core:move-to-top is triggered", ->
         expect(resultsView.find("li").length).toBeLessThan resultsView.getPathCount() + resultsView.getMatchCount()
 
