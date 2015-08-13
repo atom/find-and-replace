@@ -282,9 +282,6 @@ describe 'ResultsView', ->
       it "renders all results and selects the last item when core:move-to-bottom is triggered; selects the first item when core:move-to-top is triggered", ->
         expect(resultsView.find("li").length).toBeLessThan resultsView.getPathCount() + resultsView.getMatchCount()
 
-        expect(resultsView.prop('scrollTop')).toBe 0
-        expect(resultsView.prop('scrollHeight')).toBeGreaterThan resultsView.height()
-        previousScrollHeight = resultsView.prop('scrollHeight')
         atom.commands.dispatch resultsView.element, 'core:move-to-bottom'
         expect(resultsView.find("li").length).toBe resultsView.getPathCount() + resultsView.getMatchCount()
         expect(resultsView.find("li:eq(1)")).not.toHaveClass 'selected'
