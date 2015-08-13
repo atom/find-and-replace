@@ -276,8 +276,11 @@ describe 'ResultsView', ->
         waitsForPromise ->
           searchPromise
 
+        runs ->
+          resultsView = getResultsView()
+
+
       it "renders all results and selects the last item when core:move-to-bottom is triggered; selects the first item when core:move-to-top is triggered", ->
-        resultsView = getResultsView()
         expect(resultsView.find("li").length).toBeLessThan resultsView.getPathCount() + resultsView.getMatchCount()
 
         expect(resultsView.prop('scrollTop')).toBe 0
@@ -294,8 +297,6 @@ describe 'ResultsView', ->
         expect(resultsView.prop('scrollTop')).toBe 0
 
       it "selects the path when when core:move-to-bottom is triggered and last item is collapsed", ->
-        resultsView = getResultsView()
-
         atom.commands.dispatch resultsView.element, 'core:move-to-bottom'
         atom.commands.dispatch resultsView.element, 'core:move-left'
         atom.commands.dispatch resultsView.element, 'core:move-to-bottom'
@@ -303,8 +304,6 @@ describe 'ResultsView', ->
         expect(resultsView.find("li:last").closest('.path')).toHaveClass 'selected'
 
       it "selects the path when when core:move-to-bottom is triggered and last item is collapsed", ->
-        resultsView = getResultsView()
-
         atom.commands.dispatch resultsView.element, 'core:move-to-top'
         atom.commands.dispatch resultsView.element, 'core:move-left'
         atom.commands.dispatch resultsView.element, 'core:move-to-top'
