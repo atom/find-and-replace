@@ -268,7 +268,7 @@ describe 'ResultsView', ->
         expect(resultsView.find(".path-details").length).toBe 3
 
     it "renders all results when core:move-to-bottom is triggered", ->
-      workspaceElement.style.height = '300px'
+      workspaceElement.style.height = '200px'
       projectFindView.findEditor.setText('so')
       projectFindView.confirm()
 
@@ -277,11 +277,13 @@ describe 'ResultsView', ->
 
       runs ->
         resultsView = getResultsView()
+        expect(resultsView.find("li").length).toBeLessThan resultsView.getPathCount() + resultsView.getMatchCount()
 
         expect(resultsView.prop('scrollHeight')).toBeGreaterThan resultsView.height()
         previousScrollHeight = resultsView.prop('scrollHeight')
         atom.commands.dispatch resultsView.element, 'core:move-to-bottom'
         expect(resultsView.find("li").length).toBe resultsView.getPathCount() + resultsView.getMatchCount()
+        expect(resultsView.find("li:last")).toHaveClass 'selected'
 
   describe "opening results", ->
     openHandler = null
