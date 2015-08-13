@@ -286,15 +286,25 @@ describe 'ResultsView', ->
         pageHeight = Math.round(resultsView.innerHeight() / itemHeight) * itemHeight
         expect(resultsView.find("li").length).toBeLessThan resultsView.getPathCount() + resultsView.getMatchCount()
 
-        atom.commands.dispatch resultsView.element, 'core:page-down'
-        expect(resultsView.find("li:eq(1)")).not.toHaveClass 'selected'
-        expect(resultsView.find("li:eq(5)")).toHaveClass 'selected'
-        expect(resultsView.prop('scrollTop')).toBe pageHeight
+        resultLis = resultsView.find("li")
+        getSelectedIndex = ->
+          resultLis.index(resultsView.find('.selected'))
 
+        initialIndex = getSelectedIndex()
         atom.commands.dispatch resultsView.element, 'core:page-down'
-        expect(resultsView.find("li:eq(5)")).not.toHaveClass 'selected'
-        expect(resultsView.find("li:eq(9)")).toHaveClass 'selected'
+        newIndex = getSelectedIndex()
+        expect(resultsView.find("li:eq(#{initialIndex})")).not.toHaveClass 'selected'
+        expect(resultsView.find("li:eq(#{newIndex})")).toHaveClass 'selected'
+        expect(resultsView.prop('scrollTop')).toBe pageHeight
+        expect(newIndex).toBeGreaterThan initialIndex
+
+        initialIndex = getSelectedIndex()
+        atom.commands.dispatch resultsView.element, 'core:page-down'
+        newIndex = getSelectedIndex()
+        expect(resultsView.find("li:eq(#{initialIndex})")).not.toHaveClass 'selected'
+        expect(resultsView.find("li:eq(#{newIndex})")).toHaveClass 'selected'
         expect(resultsView.prop('scrollTop')).toBe pageHeight * 2
+        expect(newIndex).toBeGreaterThan initialIndex
 
         _.times 60, ->
           atom.commands.dispatch resultsView.element, 'core:page-down'
