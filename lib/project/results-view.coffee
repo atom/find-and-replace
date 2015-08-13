@@ -36,6 +36,8 @@ class ResultsView extends ScrollView
         @selectPreviousResult()
       'core:move-left': => @collapseResult()
       'core:move-right': => @expandResult()
+      'core:page-up': => @selectPreviousPage()
+      'core:page-down': => @selectNextPage()
       'core:move-to-top': =>
         @selectFirstResult()
       'core:move-to-bottom': =>
@@ -83,13 +85,18 @@ class ResultsView extends ScrollView
   removeResult: ({filePath}) =>
     @getResultView(filePath)?.remove()
 
-  renderResults: ({renderAll}={}) ->
-    return unless renderAll or @shouldRenderMoreResults()
+  renderResults: ({renderAll, renderNext}={}) ->
+    return unless renderAll or renderNext or @shouldRenderMoreResults()
+
+    initialIndex = @lastRenderedResultIndex
 
     paths = @model.getPaths()
     for filePath in paths[@lastRenderedResultIndex..]
       result = @model.getResult(filePath)
-      break if not renderAll and not @shouldRenderMoreResults()
+      if not renderAll and not renderNext and not @shouldRenderMoreResults()
+        break
+      else if renderNext is @lastRenderedResultIndex - @lastRenderedResultIndex
+        break
       resultView = new ResultView(@model, filePath, result)
       @append(resultView)
       @lastRenderedResultIndex++
@@ -100,26 +107,52 @@ class ResultsView extends ScrollView
     @prop('scrollHeight') <= @height() + @pixelOverdraw or @prop('scrollHeight') <= @scrollBottom() + @pixelOverdraw
 
   selectFirstResult: ->
-    @find('.selected').removeClass('selected')
-
-    lastView = @find('.search-result:first')
-    parentView = lastView.closest('.path')
-    if parentView.hasClass('collapsed')
-      parentView.addClass('selected')
-    else
-      lastView.addClass('selected')
-
-    @scrollTop(0)
+    @selectResult(@find('.search-result:first'))
+    @scrollToTop()
 
   selectLastResult: ->
-    @find('.selected').removeClass('selected')
+    @selectResult(@find('.search-result:last'))
+    @scrollToBottom()
 
-    lastView = @find('.search-result:last')
-    parentView = lastView.closest('.path')
-    if parentView.hasClass('collapsed')
-      @scrollTo(parentView.addClass('selected'))
-    else
-      @scrollTo(lastView.addClass('selected'))
+  selectPreviousPage: ->
+    selectedView = @find('.selected').view()
+    return @selectFirstResult() unless selectedView
+
+    itemHeight = selectedView.outerHeight()
+    pageHeight = @innerHeight()
+    resultsPerPage = Math.round(pageHeight / itemHeight)
+    pageHeight = resultsPerPage * itemHeight # so it's divisible by the number of items
+
+    visibleItems = @find('li:visible')
+    index = visibleItems.index(selectedView)
+
+    previousIndex = Math.max(index - resultsPerPage , 0)
+    previousView = $(visibleItems[previousIndex])
+
+    @selectResult(previousView)
+    @scrollTop(@scrollTop() - pageHeight)
+    @scrollTo(previousView) # just in case the scrolltop misses the mark
+
+  selectNextPage: ->
+    selectedView = @find('.selected').view()
+    return @selectFirstResult() unless selectedView
+
+    itemHeight = selectedView.outerHeight()
+    pageHeight = @innerHeight()
+    resultsPerPage = Math.round(pageHeight / itemHeight)
+    pageHeight = resultsPerPage * itemHeight # so it's divisible by the number of items
+
+    @renderResults(renderNext: resultsPerPage + 1)
+
+    visibleItems = @find('li:visible')
+    index = visibleItems.index(selectedView)
+
+    nextIndex = Math.min(index + resultsPerPage, visibleItems.length - 1)
+    nextView = $(visibleItems[nextIndex])
+
+    @selectResult(nextView)
+    @scrollTop(@scrollTop() + pageHeight)
+    @scrollTo(nextView) # just in case the scrolltop misses the mark
 
   selectNextResult: ->
     selectedView = @find('.selected').view()
@@ -162,6 +195,18 @@ class ResultsView extends ScrollView
       prevView.addClass('selected')
       @scrollTo(prevView)
 
+  selectResult: (resultView) ->
+    @find('.selected').removeClass('selected')
+
+    isPath = resultView.hasClass('path')
+    if isPath and not resultView.hasClass('collapsed')
+      resultView = resultView.find('.search-result:first')
+    else if not isPath
+      parentView = resultView.closest('.path')
+      resultView = parentView if parentView.hasClass('collapsed')
+
+    resultView.addClass('selected')
+
   collapseResult: ->
     parent = @find('.selected').closest('.path').view()
     parent.expand(false) if parent instanceof ResultView
@@ -192,18 +237,10 @@ class ResultsView extends ScrollView
 
   scrollToBottom: ->
     @renderResults(renderAll: true)
-
     super()
-
-    @find('.selected').removeClass('selected')
-    lastPath = @find('.path:last')
-    lastPath.find('.search-result:last').addClass('selected')
 
   scrollToTop: ->
     super()
-
-    @find('.selected').removeClass('selected')
-    @find('.path:first').addClass('selected')
 
   getResultView: (filePath) ->
     el = @find("[data-path=\"#{_.escapeAttribute(filePath)}\"]")
