@@ -36,6 +36,8 @@ class ResultsView extends ScrollView
         @selectPreviousResult()
       'core:move-left': => @collapseResult()
       'core:move-right': => @expandResult()
+      'core:move-to-top': =>
+        @selectFirstResult()
       'core:move-to-bottom': =>
         @renderResults(renderAll: true)
         @selectLastResult()
@@ -98,10 +100,26 @@ class ResultsView extends ScrollView
     @prop('scrollHeight') <= @height() + @pixelOverdraw or @prop('scrollHeight') <= @scrollBottom() + @pixelOverdraw
 
   selectFirstResult: ->
-    @find('.search-result:first').addClass('selected')
+    @find('.selected').removeClass('selected')
+
+    lastView = @find('.search-result:first')
+    parentView = lastView.closest('.path')
+    if parentView.hasClass('collapsed')
+      parentView.addClass('selected')
+    else
+      lastView.addClass('selected')
+
+    @scrollTop(0)
 
   selectLastResult: ->
-    @find('.search-result:last').addClass('selected')
+    @find('.selected').removeClass('selected')
+
+    lastView = @find('.search-result:last')
+    parentView = lastView.closest('.path')
+    if parentView.hasClass('collapsed')
+      @scrollTo(parentView.addClass('selected'))
+    else
+      @scrollTo(lastView.addClass('selected'))
 
   selectNextResult: ->
     selectedView = @find('.selected').view()
