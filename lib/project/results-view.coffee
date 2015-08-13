@@ -36,6 +36,9 @@ class ResultsView extends ScrollView
         @selectPreviousResult()
       'core:move-left': => @collapseResult()
       'core:move-right': => @expandResult()
+      'core:move-to-bottom': =>
+        @renderResults(renderAll: true)
+        @selectLastResult()
       'core:confirm': =>
         @find('.selected').view()?.confirm?()
         false
@@ -96,6 +99,9 @@ class ResultsView extends ScrollView
 
   selectFirstResult: ->
     @find('.search-result:first').addClass('selected')
+
+  selectLastResult: ->
+    @find('.search-result:last').addClass('selected')
 
   selectNextResult: ->
     selectedView = @find('.selected').view()
