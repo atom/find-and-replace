@@ -159,43 +159,33 @@ class ResultsView extends ScrollView
     return @selectFirstResult() unless selectedView
 
     if selectedView.isExpanded
-      nextView = selectedView.find('.search-result:first').view()
+      nextView = selectedView.find('.search-result:first')
     else
-      nextView = selectedView.next().view()
+      nextView = selectedView.next()
+      nextView = selectedView.closest('.path').next() unless nextView?.length
 
-      unless nextView?
-        nextParent = selectedView.closest('.path').next()
-        nextView = if (not nextParent.hasClass('collapsed')) then nextParent.find('.search-result:first').view() else nextParent.view()
-      else if nextView.isExpanded
-        nextView = nextView.find('.search-result:first').view()
-
-    # only select the next view if we found something
-    if nextView?
-      selectedView.removeClass('selected')
-      nextView.addClass('selected')
-      @scrollTo(nextView)
+    @selectResult(nextView)
+    @scrollTo(nextView)
 
   selectPreviousResult: ->
     selectedView = @find('.selected').view()
     return @selectFirstResult() unless selectedView
 
     if selectedView.isExpanded
-      prevView = selectedView.find('.search-result:last').view()
+      prevView = selectedView.find('.search-result:last')
     else
-      prevView = selectedView.prev().view()
-      unless prevView?
+      prevView = selectedView.prev()
+      if not prevView?.length
         prevParent = selectedView.closest('.path').prev()
-        prevView = if (not prevParent.hasClass('collapsed')) then prevParent.find('.search-result:last').view() else prevParent.view()
-      else if prevView.isExpanded
-        prevView = prevView.find('.search-result:last').view()
+        prevView = prevParent.find('.search-result:last')
+      else if prevView.hasClass('path')
+        prevView = prevView.find('.search-result:last')
 
-    # only select the prev view if we found something
-    if prevView?
-      selectedView.removeClass('selected')
-      prevView.addClass('selected')
-      @scrollTo(prevView)
+    @selectResult(prevView)
+    @scrollTo(prevView)
 
   selectResult: (resultView) ->
+    return unless resultView?.length
     @find('.selected').removeClass('selected')
 
     isPath = resultView.hasClass('path')
@@ -229,6 +219,7 @@ class ResultsView extends ScrollView
     @empty()
 
   scrollTo: (element) ->
+    return unless element?.length
     top = @scrollTop() + element.offset().top - @offset().top
     bottom = top + element.outerHeight()
 
