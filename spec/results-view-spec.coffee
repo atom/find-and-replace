@@ -267,23 +267,49 @@ describe 'ResultsView', ->
 
         expect(resultsView.find(".path-details").length).toBe 3
 
-    it "renders all results when core:move-to-bottom is triggered", ->
-      workspaceElement.style.height = '200px'
-      projectFindView.findEditor.setText('so')
-      projectFindView.confirm()
+    describe "core:move-to-top and core:move-to-bottom", ->
+      beforeEach ->
+        workspaceElement.style.height = '200px'
+        projectFindView.findEditor.setText('so')
+        projectFindView.confirm()
 
-      waitsForPromise ->
-        searchPromise
+        waitsForPromise ->
+          searchPromise
 
-      runs ->
+      it "renders all results and selects the last item when core:move-to-bottom is triggered; selects the first item when core:move-to-top is triggered", ->
         resultsView = getResultsView()
         expect(resultsView.find("li").length).toBeLessThan resultsView.getPathCount() + resultsView.getMatchCount()
 
+        expect(resultsView.prop('scrollTop')).toBe 0
         expect(resultsView.prop('scrollHeight')).toBeGreaterThan resultsView.height()
         previousScrollHeight = resultsView.prop('scrollHeight')
         atom.commands.dispatch resultsView.element, 'core:move-to-bottom'
         expect(resultsView.find("li").length).toBe resultsView.getPathCount() + resultsView.getMatchCount()
+        expect(resultsView.find("li:eq(1)")).not.toHaveClass 'selected'
         expect(resultsView.find("li:last")).toHaveClass 'selected'
+        expect(resultsView.prop('scrollTop')).not.toBe 0
+
+        atom.commands.dispatch resultsView.element, 'core:move-to-top'
+        expect(resultsView.find("li:eq(1)")).toHaveClass 'selected'
+        expect(resultsView.prop('scrollTop')).toBe 0
+
+      it "selects the path when when core:move-to-bottom is triggered and last item is collapsed", ->
+        resultsView = getResultsView()
+
+        atom.commands.dispatch resultsView.element, 'core:move-to-bottom'
+        atom.commands.dispatch resultsView.element, 'core:move-left'
+        atom.commands.dispatch resultsView.element, 'core:move-to-bottom'
+
+        expect(resultsView.find("li:last").closest('.path')).toHaveClass 'selected'
+
+      it "selects the path when when core:move-to-bottom is triggered and last item is collapsed", ->
+        resultsView = getResultsView()
+
+        atom.commands.dispatch resultsView.element, 'core:move-to-top'
+        atom.commands.dispatch resultsView.element, 'core:move-left'
+        atom.commands.dispatch resultsView.element, 'core:move-to-top'
+
+        expect(resultsView.find("li:first").closest('.path')).toHaveClass 'selected'
 
   describe "opening results", ->
     openHandler = null
