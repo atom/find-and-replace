@@ -645,6 +645,19 @@ describe 'ResultsView', ->
       atom.commands.dispatch resultsView.element, 'core:copy'
       expect(atom.clipboard.read()).toBe '    return items if items.length <= 1'
 
+  # Keep. Useful for debugging.
+  logSelectedIndex = ->
+    paths = resultsView.find('.path')
+    selectedView = resultsView.find('.selected')
+
+    if selectedView.hasClass('path')
+      console.log 'PATH', paths.index(selectedView)
+    else
+      for pathElement, pathIndex in paths
+        index = $(pathElement).find('.search-result').index(selectedView)
+        console.log pathIndex, index if index > -1
+        break
+
 buildMouseEvent = (type, properties...) ->
   properties = _.extend({bubbles: true, cancelable: true}, properties...)
   properties.detail ?= 1
