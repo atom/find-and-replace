@@ -118,7 +118,10 @@ class ResultsView extends ScrollView
     selectedView = @find('.selected').view()
     return @selectFirstResult() unless selectedView
 
-    itemHeight = selectedView.outerHeight()
+    if selectedView.hasClass('path')
+      itemHeight = selectedView.find('.path-details').outerHeight()
+    else
+      itemHeight = selectedView.outerHeight()
     pageHeight = @innerHeight()
     resultsPerPage = Math.round(pageHeight / itemHeight)
     pageHeight = resultsPerPage * itemHeight # so it's divisible by the number of items
@@ -137,7 +140,10 @@ class ResultsView extends ScrollView
     selectedView = @find('.selected').view()
     return @selectFirstResult() unless selectedView
 
-    itemHeight = selectedView.outerHeight()
+    if selectedView.hasClass('path')
+      itemHeight = selectedView.find('.path-details').outerHeight()
+    else
+      itemHeight = selectedView.outerHeight()
     pageHeight = @innerHeight()
     resultsPerPage = Math.round(pageHeight / itemHeight)
     pageHeight = resultsPerPage * itemHeight # so it's divisible by the number of items
@@ -158,11 +164,7 @@ class ResultsView extends ScrollView
     selectedView = @find('.selected').view()
     return @selectFirstResult() unless selectedView
 
-    if selectedView.isExpanded
-      nextView = selectedView.find('.search-result:first')
-    else
-      nextView = selectedView.next()
-      nextView = selectedView.closest('.path').next() unless nextView?.length
+    nextView = @getNextVisible(selectedView)
 
     @selectResult(nextView)
     @scrollTo(nextView)
@@ -171,27 +173,28 @@ class ResultsView extends ScrollView
     selectedView = @find('.selected').view()
     return @selectFirstResult() unless selectedView
 
-    if selectedView.isExpanded
-      prevView = selectedView.find('.search-result:last')
-    else
-      prevView = selectedView.prev()
-      if not prevView?.length
-        prevParent = selectedView.closest('.path').prev()
-        prevView = prevParent.find('.search-result:last')
-      else if prevView.hasClass('path')
-        prevView = prevView.find('.search-result:last')
+    prevView = @getPreviousVisible(selectedView)
 
     @selectResult(prevView)
     @scrollTo(prevView)
+
+  getNextVisible: (element) ->
+    return unless element?.length
+    visibleItems = @find('li:visible')
+    itemIndex = visibleItems.index(element)
+    $(visibleItems[Math.min(itemIndex + 1, visibleItems.length - 1)])
+
+  getPreviousVisible: (element) ->
+    return unless element?.length
+    visibleItems = @find('li:visible')
+    itemIndex = visibleItems.index(element)
+    $(visibleItems[Math.max(itemIndex - 1, 0)])
 
   selectResult: (resultView) ->
     return unless resultView?.length
     @find('.selected').removeClass('selected')
 
-    isPath = resultView.hasClass('path')
-    if isPath and not resultView.hasClass('collapsed')
-      resultView = resultView.find('.search-result:first')
-    else if not isPath
+    unless resultView.hasClass('path')
       parentView = resultView.closest('.path')
       resultView = parentView if parentView.hasClass('collapsed')
 

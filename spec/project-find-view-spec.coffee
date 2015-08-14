@@ -683,14 +683,14 @@ describe 'ProjectFindView', ->
             resultsView.selectFirstResult()
             _.times 7, -> resultsView.selectNextResult()
 
-            expect(resultsView.find("li > ul:eq(1) > li:eq(0)")).toHaveClass 'selected'
+            expect(resultsView.find(".path:eq(1)")).toHaveClass 'selected'
 
             buffer.setText('there is one "items" in this file')
             advanceClock(buffer.stoppedChangingDelay)
 
             expect(resultsView.find("li > ul > li")).toHaveLength(8)
             expect(resultsPaneView.previewCount.text()).toBe "8 results found in 2 files for items"
-            expect(resultsView.find("li > ul:eq(1) > li:eq(0)")).toHaveClass 'selected'
+            expect(resultsView.find(".path:eq(1)")).toHaveClass 'selected'
 
             buffer.setText('no matches in this file')
             advanceClock(buffer.stoppedChangingDelay)
