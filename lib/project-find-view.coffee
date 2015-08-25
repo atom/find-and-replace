@@ -53,8 +53,6 @@ class ProjectFindView extends View
           @div class: 'btn-group btn-group-find', =>
             @button outlet: 'findAllButton', class: 'btn', 'Find'
 
-
-
         @div class: 'input-block-item', =>
           @div class: 'btn-group btn-toggle btn-group-options', =>
             @button outlet: 'regexOptionButton', class: 'btn option-regex', =>
