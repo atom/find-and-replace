@@ -52,7 +52,6 @@ class ProjectFindView extends View
         @div class: 'input-block-item', =>
           @div class: 'btn-group btn-group-find', =>
             @button outlet: 'findAllButton', class: 'btn', 'Find'
-
         @div class: 'input-block-item', =>
           @div class: 'btn-group btn-toggle btn-group-options', =>
             @button outlet: 'regexOptionButton', class: 'btn option-regex', =>
@@ -233,7 +232,6 @@ class ProjectFindView extends View
     searchPromise = @search({@onlyRunIfChanged})
     @onlyRunIfChanged = true
     searchPromise
-
 
   search: (options={}) ->
     # We always want to set the options passed in, even if we dont end up doing the search
