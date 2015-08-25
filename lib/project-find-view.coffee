@@ -374,4 +374,4 @@ class ProjectFindView extends View
     @search(onlyRunIfActive: true, caseSensitive: not @model.getFindOptions().caseSensitive)
 
   toggleWholeWordOption: ->
-    @search(onlyRunIfActive: true, wholeWord: not @model.getFindOptions().wholeWord)
+    @search(onlyRunIfActive: true, wholeWord: not @model.getFindOptions().wholeWord) 
