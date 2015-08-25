@@ -50,6 +50,12 @@ class ProjectFindView extends View
         @div class: 'input-block-item input-block-item--flex editor-container', =>
           @subview 'findEditor', new TextEditorView(editor: findEditor)
         @div class: 'input-block-item', =>
+          @div class: 'btn-group btn-group-find', =>
+            @button outlet: 'findAllButton', class: 'btn', 'Find'
+
+
+
+        @div class: 'input-block-item', =>
           @div class: 'btn-group btn-toggle btn-group-options', =>
             @button outlet: 'regexOptionButton', class: 'btn option-regex', =>
               @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-regex" /></svg>'
@@ -115,6 +121,11 @@ class ProjectFindView extends View
       keyBindingCommand: 'project-find:replace-all',
       keyBindingTarget: @replaceEditor.element
 
+    subs.add atom.tooltips.add @findAllButton,
+      title: "Find All",
+      keyBindingCommand: 'find-and-replace:search',
+      keyBindingTarget: @findEditor.element
+
   didHide: ->
     @hideAllTooltips()
     workspaceElement = atom.views.getView(atom.workspace)
@@ -166,6 +177,7 @@ class ProjectFindView extends View
     @caseOptionButton.click => @toggleCaseOption()
     @wholeWordOptionButton.click => @toggleWholeWordOption()
     @replaceAllButton.on 'click', => @replaceAll()
+    @findAllButton.on 'click', => @search()
 
     focusCallback = => @onlyRunIfChanged = false
     $(window).on 'focus', focusCallback
@@ -223,6 +235,7 @@ class ProjectFindView extends View
     searchPromise = @search({@onlyRunIfChanged})
     @onlyRunIfChanged = true
     searchPromise
+
 
   search: (options={}) ->
     # We always want to set the options passed in, even if we dont end up doing the search
