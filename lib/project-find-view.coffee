@@ -52,7 +52,6 @@ class ProjectFindView extends View
         @div class: 'input-block-item', =>
           @div class: 'btn-group btn-group-find', =>
             @button outlet: 'findAllButton', class: 'btn', 'Find'
-
           @div class: 'btn-group btn-toggle btn-group-options', =>
             @button outlet: 'regexOptionButton', class: 'btn option-regex', =>
               @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-regex" /></svg>'
