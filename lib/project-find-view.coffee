@@ -35,7 +35,7 @@ class ProjectFindView extends View
       buffer: pathsBuffer
       placeholderText: 'File/directory pattern. eg. `src` to search in the "src" directory or `*.js` to search all javascript files.'
 
-    @div tabIndex: -1, class: 'project-find padded', =>
+    @div tabIndex: -1, class: 'find-and-replace', =>
       @header class: 'header', =>
         @span outlet: 'descriptionLabel', class: 'header-item description'
         @span class: 'header-item options-label pull-right', =>
@@ -52,7 +52,7 @@ class ProjectFindView extends View
         @div class: 'input-block-item', =>
           @div class: 'btn-group btn-group-find', =>
             @button outlet: 'findAllButton', class: 'btn', 'Find'
-        @div class: 'input-block-item', =>
+
           @div class: 'btn-group btn-toggle btn-group-options', =>
             @button outlet: 'regexOptionButton', class: 'btn option-regex', =>
               @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-regex" /></svg>'
