@@ -35,7 +35,7 @@ class ProjectFindView extends View
       buffer: pathsBuffer
       placeholderText: 'File/directory pattern. eg. `src` to search in the "src" directory or `*.js` to search all javascript files.'
 
-    @div tabIndex: -1, class: 'find-and-replace', =>
+    @div tabIndex: -1, class: 'project-find padded', =>
       @header class: 'header', =>
         @span outlet: 'descriptionLabel', class: 'header-item description'
         @span class: 'header-item options-label pull-right', =>
