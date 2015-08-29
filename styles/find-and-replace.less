@@ -171,13 +171,17 @@ atom-workspace.find-visible {
 // Project find and replace
 .project-find {
   @project-input-width: 260px;
-  @project-button-width: 120px;
+  @project-block-width: 220px;
 
   .input-block-item {
-    flex: 1 1 @project-button-width;
+    flex: 1 1 @project-block-width;
   }
   .input-block-item--flex {
     flex: 100 1 @project-input-width;
+  }
+
+  .btn-group-find {
+    flex: .6;
   }
 
   .loading,
@@ -185,14 +189,6 @@ atom-workspace.find-visible {
   .error-messages,
   .filter-container {
     display: none;
-  }
-
-  .btn-group-options {
-    width: @project-button-width;
-  }
-
-  .btn-group-replace-all {
-    width: @project-button-width;
   }
 }
 
