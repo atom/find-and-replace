@@ -474,3 +474,9 @@ class FindView extends View
     canReplace = @markers?.length > 0
     @replaceAllButton[0].disabled = not canReplace
     @replaceNextButton[0].disabled = not canReplace
+
+    if @tooltipSubscriptions?
+      if not canReplace
+        @didHide()
+    else
+      @didShow()
