@@ -32,8 +32,8 @@ describe 'ProjectFindView', ->
       mainModule = options.mainModule
       mainModule.createViews()
       {projectFindView} = mainModule
-      spy = spyOn(projectFindView, 'confirm').andCallFake ->
-        searchPromise = spy.originalValue.call(projectFindView)
+      spy = spyOn(projectFindView, 'search').andCallFake ->
+        searchPromise = spy.originalValue.apply(projectFindView, arguments)
         resultsPane = $(workspaceElement).find('.preview-pane').view()
         searchPromise
 
