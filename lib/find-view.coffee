@@ -175,20 +175,27 @@ class FindView extends View
     workspaceElement.classList.remove('find-visible')
 
   hideAllTooltips: ->
-    @tooltipSubscriptionReplaceAll.dispose()
-    @tooltipSubscriptionReplaceAll = null
-    @tooltipSubscriptionUseRegex.dispose()
-    @tooltipSubscriptionUseRegex = null
-    @tooltipSubscriptionMatchCase.dispose()
-    @tooltipSubscriptionMatchCase = null
-    @tooltipSubscriptionOnlyInSelection.dispose()
-    @tooltipSubscriptionOnlyInSelection = null
-    @tooltipSubscriptionWholeWord.dispose()
-    @tooltipSubscriptionWholeWord = null
-    @tooltipSubscriptionNextButton.dispose()
-    @tooltipSubscriptionNextButton = null
-    @tooltipSubscriptionReplaceNextButton.dispose()
-    @tooltipSubscriptionReplaceNextButton = null
+    if @tooltipSubscriptionReplaceAll?
+      @tooltipSubscriptionReplaceAll.dispose()
+      @tooltipSubscriptionReplaceAll = null
+    if @tooltipSubscriptionUseRegex?
+      @tooltipSubscriptionUseRegex.dispose()
+      @tooltipSubscriptionUseRegex = null
+    if @tooltipSubscriptionMatchCase?
+      @tooltipSubscriptionMatchCase.dispose()
+      @tooltipSubscriptionMatchCase = null
+    if @tooltipSubscriptionOnlyInSelection?
+      @tooltipSubscriptionOnlyInSelection.dispose()
+      @tooltipSubscriptionOnlyInSelection = null
+    if @tooltipSubscriptionWholeWord?
+      @tooltipSubscriptionWholeWord.dispose()
+      @tooltipSubscriptionWholeWord = null
+    if @tooltipSubscriptionNextButton?
+      @tooltipSubscriptionNextButton.dispose()
+      @tooltipSubscriptionNextButton = null
+    if @tooltipSubscriptionReplaceNextButton?
+      @tooltipSubscriptionReplaceNextButton.dispose()
+      @tooltipSubscriptionReplaceNextButton = null
 
   handleEvents: ->
     @handleFindEvents()
