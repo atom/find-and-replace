@@ -76,8 +76,7 @@ class ResultsView extends ScrollView
     @selectFirstResult() if not @userMovedSelection or @getPathCount() is 1
 
   removeResult: ({filePath}) =>
-    resultView = @getResultView(filePath)
-    resultView.renderResult(null) if resultView
+    @getResultView(filePath)?.remove()
 
   renderResults: ({renderAll}={}) ->
     return unless renderAll or @shouldRenderMoreResults()
