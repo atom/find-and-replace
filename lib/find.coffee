@@ -90,6 +90,11 @@ module.exports =
         @findPanel.show()
         @findView.focusFindEditor()
 
+    @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:hide-all', =>
+      @createViews()
+      @projectFindPanel.hide()
+      @findPanel.hide()
+
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:show', =>
       @createViews()
       @projectFindPanel.hide()
