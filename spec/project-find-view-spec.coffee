@@ -312,6 +312,17 @@ describe 'ProjectFindView', ->
         atom.commands.dispatch(document.activeElement, 'core:cancel')
         expect(getAtomPanel()).not.toBeVisible()
 
+    describe "when close option is true", ->
+      beforeEach ->
+        atom.config.set('find-and-replace.closeFindPanelAfterSearch', true)
+        atom.commands.dispatch(projectFindView[0], 'core:confirm')
+
+      it "close the panel after search", ->
+        waitsForPromise ->
+          searchPromise
+        runs ->
+          expect(getAtomPanel()).not.toBeVisible()
+
     describe "splitting into a second pane", ->
       beforeEach ->
         workspaceElement.style.height = '1000px'
