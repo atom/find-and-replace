@@ -912,7 +912,8 @@ describe 'FindView', ->
 
       it "scrolls to the first match if the settings scrollToResultOnLiveSearch is true", ->
         atom.config.set('find-and-replace.scrollToResultOnLiveSearch', true)
-        editor.setHeight(3)
+        editorView.style.height = "3px"
+        editorView.component.measureDimensions()
         editor.moveToTop()
         originalScrollPosition = editor.getScrollTop()
         findView.findEditor.setText 'Array'
@@ -923,7 +924,8 @@ describe 'FindView', ->
 
       it "doesn't scroll to the first match if the settings scrollToResultOnLiveSearch is false", ->
         atom.config.set('find-and-replace.scrollToResultOnLiveSearch', false)
-        editor.setHeight(3)
+        editorView.style.height = "3px"
+        editorView.component.measureDimensions()
         editor.moveToTop()
         originalScrollPosition = editor.getScrollTop()
         findView.findEditor.setText 'Array'
