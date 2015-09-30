@@ -3,6 +3,8 @@ _ = require 'underscore-plus'
 
 path = require 'path'
 
+# TODO: Remove references to logical display buffer when it gets released.
+
 describe 'FindView', ->
   [workspaceElement, editorView, editor, findView, activationPromise] = []
 
@@ -912,23 +914,41 @@ describe 'FindView', ->
 
       it "scrolls to the first match if the settings scrollToResultOnLiveSearch is true", ->
         atom.config.set('find-and-replace.scrollToResultOnLiveSearch', true)
-        editorView.setHeight(3)
+        if editorView.logicalDisplayBuffer
+          editorView.setHeight(3)
+        else
+          editor.setHeight(3)
         editor.moveToTop()
-        originalScrollPosition = editorView.getScrollTop()
+        if editorView.logicalDisplayBuffer
+          originalScrollPosition = editorView.getScrollTop()
+        else
+          originalScrollPosition = editor.getScrollTop()
         findView.findEditor.setText 'Array'
         advance()
-        expect(editorView.getScrollTop()).not.toEqual originalScrollPosition
+        if editorView.logicalDisplayBuffer
+          expect(editorView.getScrollTop()).not.toEqual originalScrollPosition
+        else
+          expect(editor.getScrollTop()).not.toEqual originalScrollPosition
         expect(editor.getSelectedBufferRange()).toEqual [[11, 14], [11, 19]]
         expect(findView.findEditor).toHaveFocus()
 
       it "doesn't scroll to the first match if the settings scrollToResultOnLiveSearch is false", ->
         atom.config.set('find-and-replace.scrollToResultOnLiveSearch', false)
-        editorView.setHeight(3)
+        if editorView.logicalDisplayBuffer
+          editorView.setHeight(3)
+        else
+          editor.setHeight()
         editor.moveToTop()
-        originalScrollPosition = editorView.getScrollTop()
+        if editorView.logicalDisplayBuffer
+          originalScrollPosition = editorView.getScrollTop()
+        else
+          originalScrollPosition = editor.getScrollTop()
         findView.findEditor.setText 'Array'
         advance()
-        expect(editorView.getScrollTop()).toEqual originalScrollPosition
+        if editorView.logicalDisplayBuffer
+          expect(editorView.getScrollTop()).toEqual originalScrollPosition
+        else
+          expect(editor.getScrollTop()).toEqual originalScrollPosition
         expect(editor.getSelectedBufferRange()).toEqual []
         expect(findView.findEditor).toHaveFocus()
 
