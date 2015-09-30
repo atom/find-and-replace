@@ -87,7 +87,7 @@ class SelectNext
       nonWordCharacters = atom.config.get('editor.nonWordCharacters')
       text = "(^|[ \t#{_.escapeRegExp(nonWordCharacters)}]+)#{text}(?=$|[\\s#{_.escapeRegExp(nonWordCharacters)}]+)"
 
-    @editor.scanInBufferRange new RegExp(text, 'g'), range, (result) ->
+    @editor.scanInBufferRange new RegExp(text, (if @findOptions.caseSensitive then 'g' else 'gi')), range, (result) ->
       if prefix = result.match[1]
         result.range = result.range.translate([0, prefix.length], [0, 0])
       callback(result)
