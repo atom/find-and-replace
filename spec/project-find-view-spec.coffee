@@ -1376,6 +1376,7 @@ describe 'ProjectFindView', ->
       runs ->
         expect(projectFindView.model.getFindOptions().useRegex).toBe true
         expect(projectFindView.findEditor.getModel().getGrammar().scopeName).toBe 'source.js.regexp'
+        expect(projectFindView.replaceEditor.getModel().getGrammar().scopeName).toBe 'source.js.regexp.replacement'
 
     describe "when panel is active", ->
       beforeEach ->
@@ -1385,14 +1386,17 @@ describe 'ProjectFindView', ->
       it "does not use regexp grammar when in non-regex mode", ->
         expect(projectFindView.model.getFindOptions().useRegex).not.toBe true
         expect(projectFindView.findEditor.getModel().getGrammar().scopeName).toBe 'text.plain.null-grammar'
+        expect(projectFindView.replaceEditor.getModel().getGrammar().scopeName).toBe 'text.plain.null-grammar'
 
       it "uses regexp grammar when in regex mode and clears the regexp grammar when regex is disabled", ->
         atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option')
 
         expect(projectFindView.model.getFindOptions().useRegex).toBe true
         expect(projectFindView.findEditor.getModel().getGrammar().scopeName).toBe 'source.js.regexp'
+        expect(projectFindView.replaceEditor.getModel().getGrammar().scopeName).toBe 'source.js.regexp.replacement'
 
         atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option')
 
         expect(projectFindView.model.getFindOptions().useRegex).not.toBe true
         expect(projectFindView.findEditor.getModel().getGrammar().scopeName).toBe 'text.plain.null-grammar'
+        expect(projectFindView.replaceEditor.getModel().getGrammar().scopeName).toBe 'text.plain.null-grammar'
