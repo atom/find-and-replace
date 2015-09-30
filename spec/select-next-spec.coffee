@@ -32,7 +32,7 @@ describe "SelectNext", ->
     describe "when a word is selected", ->
       describe "when findOptions.wholeWord is false", ->
         beforeEach ->
-          findOptions.set(wholeWord: false, caseSensitive:true)
+          findOptions.set(wholeWord: false, caseSensitive: true)
 
         it "selects the next occurrence of the selected word skipping any non-word matches", ->
           editor.setText """
@@ -83,7 +83,7 @@ describe "SelectNext", ->
 
       describe "when findOptions.wholeWord is true", ->
         beforeEach ->
-          findOptions.set(wholeWord: true, caseSensitive:true)
+          findOptions.set(wholeWord: true, caseSensitive: true)
 
         it "selects the next occurrence of the selected word skipping any non-word matches", ->
           editor.setText """
@@ -131,7 +131,6 @@ describe "SelectNext", ->
           ]
 
       describe "When buffer text is of mixed case", ->
-
         beforeEach ->
           editor.setText """
             FooBar
@@ -146,8 +145,7 @@ describe "SelectNext", ->
 
         describe "When findOptions.wholeWord is true and findOptions.caseSensitive is true", ->
           it "does not select partial words or wrong case", ->
-
-            findOptions.set(wholeWord: true, caseSensitive:true)
+            findOptions.set(wholeWord: true, caseSensitive: true)
 
             editor.setSelectedBufferRange([[0, 0], [0, 6]]) #First FooBar
             atom.commands.dispatch editorElement, 'find-and-replace:select-next'
@@ -165,8 +163,7 @@ describe "SelectNext", ->
 
         describe "When findOptions.wholeWord is true and findOptions.caseSensitive is false", ->
           it "does not select partial words but allows case insensitive match", ->
-
-            findOptions.set(wholeWord: true, caseSensitive:false)
+            findOptions.set(wholeWord: true, caseSensitive: false)
 
             editor.setSelectedBufferRange([[0, 0], [0, 6]]) #First FooBar
             atom.commands.dispatch editorElement, 'find-and-replace:select-next'
@@ -182,8 +179,7 @@ describe "SelectNext", ->
 
         describe "When findOptions.wholeWord is false and findOptions.caseSensitive is true", ->
           it "selects partial words but require case sensitive match", ->
-
-            findOptions.set(wholeWord: false, caseSensitive:true)
+            findOptions.set(wholeWord: false, caseSensitive: true)
 
             editor.setSelectedBufferRange([[0, 0], [0, 6]]) #First FooBar
             atom.commands.dispatch editorElement, 'find-and-replace:select-next'
@@ -199,8 +195,7 @@ describe "SelectNext", ->
 
         describe "When findOptions.wholeWord is false and findOptions.caseSensitive is false", ->
           it "selects case insensitive partial words", ->
-
-            findOptions.set(wholeWord: false, caseSensitive:false)
+            findOptions.set(wholeWord: false, caseSensitive: false)
 
             editor.setSelectedBufferRange([[0, 0], [0, 6]]) #First FooBar
             atom.commands.dispatch editorElement, 'find-and-replace:select-next'
@@ -225,7 +220,7 @@ describe "SelectNext", ->
     describe "when part of a word is selected", ->
       describe "when findOptions.wholeWord is false", ->
         beforeEach ->
-          findOptions.set(wholeWord: false, caseSensitive:true)
+          findOptions.set(wholeWord: false, caseSensitive: true)
 
         it "selects the next occurrence of the selected text", ->
           editor.setText """
@@ -254,7 +249,7 @@ describe "SelectNext", ->
 
       describe "when findOptions.wholeWord is true", ->
         beforeEach ->
-          findOptions.set(wholeWord: true, caseSensitive:true)
+          findOptions.set(wholeWord: true, caseSensitive: true)
 
         it "selects the next occurrence of the selected text", ->
           editor.setText """
@@ -350,7 +345,7 @@ describe "SelectNext", ->
     describe "when there is no selection", ->
       describe "when findOptions.wholeWord is false", ->
         beforeEach ->
-          findOptions.set(wholeWord: false, caseSensitive:true)
+          findOptions.set(wholeWord: false, caseSensitive: true)
 
         it "find and selects all occurrences of the word under the cursor", ->
           editor.setText """
@@ -374,7 +369,7 @@ describe "SelectNext", ->
 
       describe "when findOptions.wholeWord is true", ->
         beforeEach ->
-          findOptions.set(wholeWord: true, caseSensitive:true)
+          findOptions.set(wholeWord: true, caseSensitive: true)
 
         it "find and selects all occurrences of the word under the cursor", ->
           editor.setText """
@@ -402,7 +397,7 @@ describe "SelectNext", ->
 
     describe "when a word is selected", ->
       it "find and selects all occurrences", ->
-        findOptions.set(wholeWord: true, caseSensitive:true)
+        findOptions.set(wholeWord: true, caseSensitive: true)
 
         editor.setText """
           for
@@ -503,10 +498,9 @@ describe "SelectNext", ->
 
     describe "when three words are selected", ->
       beforeEach ->
-        findOptions.set(wholeWord: true, caseSensitive:true)
+        findOptions.set(wholeWord: true, caseSensitive: true)
 
       it "unselects words in order", ->
-
         editor.setText """
           for
           information
@@ -533,7 +527,7 @@ describe "SelectNext", ->
 
     describe "when starting at the bottom word", ->
       beforeEach ->
-        findOptions.set(wholeWord: true, caseSensitive:true)
+        findOptions.set(wholeWord: true, caseSensitive: true)
 
       it "unselects words in order", ->
         editor.setText """
@@ -578,7 +572,7 @@ describe "SelectNext", ->
 
   describe "find-and-replace:select-skip", ->
     beforeEach ->
-      findOptions.set(wholeWord: true, caseSensitive:true)
+      findOptions.set(wholeWord: true, caseSensitive: true)
 
     describe "when there is no selection", ->
       it "does nothing", ->
