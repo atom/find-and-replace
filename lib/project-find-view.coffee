@@ -145,6 +145,7 @@ class ProjectFindView extends View
       @setInfoMessage('Searching...')
 
     updateInterfaceForResults = (results) =>
+      return @panel?.hide() if atom.config.get('find-and-replace.closeFindPanelAfterSearch')
       if results.matchCount is 0 and results.findPattern is ''
         @clearMessages()
       else
