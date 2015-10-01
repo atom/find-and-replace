@@ -65,7 +65,7 @@ class ProjectFindView extends View
           @subview 'replaceEditor', new TextEditorView(editor: replaceEditor)
         @div class: 'input-block-item', =>
           @div class: 'btn-group btn-group-replace-all', =>
-            @button outlet: 'replaceAllButton', class: 'btn', disabled: 'disabled', 'Replace All'
+            @button outlet: 'replaceAllButton', class: 'btn disabled', 'Replace All'
 
       @section class: 'input-block paths-container', =>
         @div class: 'input-block-item editor-container', =>
@@ -325,7 +325,10 @@ class ProjectFindView extends View
 
   updateReplaceAllButtonEnablement: (results) ->
     canReplace = results?.matchCount and results?.findPattern is @findEditor.getText()
-    @replaceAllButton[0].disabled = not canReplace
+    if canReplace
+      @replaceAllButton[0].classList.remove('disabled')
+    else
+      @replaceAllButton[0].classList.add('disabled')
 
   setSelectionAsFindPattern: =>
     editor = atom.workspace.getActivePaneItem()

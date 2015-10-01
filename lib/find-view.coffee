@@ -473,5 +473,9 @@ class FindView extends View
 
   updateReplaceEnablement: ->
     canReplace = @markers?.length > 0
-    @replaceAllButton[0].disabled = not canReplace
-    @replaceNextButton[0].disabled = not canReplace
+    if canReplace
+      @replaceAllButton[0].classList.remove('disabled')
+      @replaceNextButton[0].classList.remove('disabled')
+    else
+      @replaceAllButton[0].classList.add('disabled')
+      @replaceNextButton[0].classList.add('disabled')

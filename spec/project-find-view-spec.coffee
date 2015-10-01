@@ -1066,7 +1066,7 @@ describe 'ProjectFindView', ->
 
     describe "replace all button enablement", ->
       it "is disabled initially", ->
-        expect(projectFindView.replaceAllButton[0].disabled).toBe true
+        expect(projectFindView.replaceAllButton).toHaveClass 'disabled'
 
       it "is enabled when a search has results and disabled when there are no results", ->
         projectFindView.findEditor.setText('items')
@@ -1076,27 +1076,27 @@ describe 'ProjectFindView', ->
           searchPromise
 
         runs ->
-          expect(projectFindView.replaceAllButton[0].disabled).toBe false
+          expect(projectFindView.replaceAllButton).not.toHaveClass 'disabled'
 
           projectFindView.findEditor.setText('nopenotinthefile')
           atom.commands.dispatch(projectFindView[0], 'project-find:confirm')
 
           projectFindView.findEditor.setText('itemss')
-          expect(projectFindView.replaceAllButton[0].disabled).toBe true
+          expect(projectFindView.replaceAllButton).toHaveClass 'disabled'
 
           projectFindView.findEditor.setText('items')
-          expect(projectFindView.replaceAllButton[0].disabled).toBe false
+          expect(projectFindView.replaceAllButton).not.toHaveClass 'disabled'
 
         waitsForPromise ->
           searchPromise
 
         runs ->
-          expect(projectFindView.replaceAllButton[0].disabled).toBe true
+          expect(projectFindView.replaceAllButton).toHaveClass 'disabled'
 
           projectFindView.findEditor.setText('')
           atom.commands.dispatch(projectFindView[0], 'project-find:confirm')
 
-          expect(projectFindView.replaceAllButton[0].disabled).toBe true
+          expect(projectFindView.replaceAllButton).toHaveClass 'disabled'
 
     describe "when the replace button is pressed", ->
       beforeEach ->
