@@ -1,5 +1,6 @@
 path = require 'path'
 _ = require 'underscore-plus'
+{$} = require 'atom-space-pen-views'
 temp = require "temp"
 
 ResultsPaneView = require '../lib/project/results-pane'
@@ -267,21 +268,111 @@ describe 'ResultsView', ->
 
         expect(resultsView.find(".path-details").length).toBe 3
 
-    it "renders all results when core:move-to-bottom is triggered", ->
-      workspaceElement.style.height = '300px'
-      projectFindView.findEditor.setText('so')
-      projectFindView.confirm()
+    describe "core:page-up and core:page-down", ->
+      beforeEach ->
+        workspaceElement.style.height = '300px'
+        projectFindView.findEditor.setText(' ')
+        projectFindView.confirm()
 
-      waitsForPromise ->
-        searchPromise
+        waitsForPromise ->
+          searchPromise
 
-      runs ->
-        resultsView = getResultsView()
+        runs ->
+          resultsView = getResultsView()
+          expect(resultsView.prop('scrollTop')).toBe 0
+          expect(resultsView.prop('scrollHeight')).toBeGreaterThan resultsView.height()
 
-        expect(resultsView.prop('scrollHeight')).toBeGreaterThan resultsView.height()
-        previousScrollHeight = resultsView.prop('scrollHeight')
+      it "selects the first result on the next page when core:page-down is triggered", ->
+        itemHeight = resultsView.find('.selected').outerHeight()
+        pageHeight = Math.round(resultsView.innerHeight() / itemHeight) * itemHeight
+        expect(resultsView.find("li").length).toBeLessThan resultsView.getPathCount() + resultsView.getMatchCount()
+
+        resultLis = resultsView.find("li")
+        getSelectedIndex = ->
+          resultLis.index(resultsView.find('.selected'))
+
+        initialIndex = getSelectedIndex()
+        atom.commands.dispatch resultsView.element, 'core:page-down'
+        newIndex = getSelectedIndex()
+        expect(resultsView.find("li:eq(#{initialIndex})")).not.toHaveClass 'selected'
+        expect(resultsView.find("li:eq(#{newIndex})")).toHaveClass 'selected'
+        expect(resultsView.prop('scrollTop')).toBe pageHeight
+        expect(newIndex).toBeGreaterThan initialIndex
+
+        initialIndex = getSelectedIndex()
+        atom.commands.dispatch resultsView.element, 'core:page-down'
+        newIndex = getSelectedIndex()
+        expect(resultsView.find("li:eq(#{initialIndex})")).not.toHaveClass 'selected'
+        expect(resultsView.find("li:eq(#{newIndex})")).toHaveClass 'selected'
+        expect(resultsView.prop('scrollTop')).toBe pageHeight * 2
+        expect(newIndex).toBeGreaterThan initialIndex
+
+        _.times 60, ->
+          atom.commands.dispatch resultsView.element, 'core:page-down'
+
+        expect(resultsView.find("li:last")).toHaveClass 'selected'
+
+      it "selects the first result on the next page when core:page-up is triggered", ->
+        atom.commands.dispatch resultsView.element, 'core:move-to-bottom'
+        expect(resultsView.find("li:last")).toHaveClass 'selected'
+
+        itemHeight = resultsView.find('.selected').outerHeight()
+        pageHeight = Math.round(resultsView.innerHeight() / itemHeight) * itemHeight
+        initialScrollTop = resultsView.scrollTop()
+
+        atom.commands.dispatch resultsView.element, 'core:page-up'
+        expect(resultsView.find("li:last")).not.toHaveClass 'selected'
+        expect(resultsView.find("li:eq(215)")).toHaveClass 'selected'
+        expect(resultsView.prop('scrollTop')).toBe initialScrollTop - pageHeight
+
+        atom.commands.dispatch resultsView.element, 'core:page-up'
+        expect(resultsView.find("li:eq(215)")).not.toHaveClass 'selected'
+        expect(resultsView.find("li:eq(210)")).toHaveClass 'selected'
+        expect(resultsView.prop('scrollTop')).toBe initialScrollTop - pageHeight * 2
+
+        _.times 60, ->
+          atom.commands.dispatch resultsView.element, 'core:page-up'
+
+        expect(resultsView.find("li:eq(0)")).toHaveClass 'selected'
+
+    describe "core:move-to-top and core:move-to-bottom", ->
+      beforeEach ->
+        workspaceElement.style.height = '200px'
+        projectFindView.findEditor.setText('so')
+        projectFindView.confirm()
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          resultsView = getResultsView()
+
+      it "renders all results and selects the last item when core:move-to-bottom is triggered; selects the first item when core:move-to-top is triggered", ->
+        expect(resultsView.find("li").length).toBeLessThan resultsView.getPathCount() + resultsView.getMatchCount()
+
         atom.commands.dispatch resultsView.element, 'core:move-to-bottom'
         expect(resultsView.find("li").length).toBe resultsView.getPathCount() + resultsView.getMatchCount()
+        expect(resultsView.find("li:eq(1)")).not.toHaveClass 'selected'
+        expect(resultsView.find("li:last")).toHaveClass 'selected'
+        expect(resultsView.prop('scrollTop')).not.toBe 0
+
+        atom.commands.dispatch resultsView.element, 'core:move-to-top'
+        expect(resultsView.find("li:eq(1)")).toHaveClass 'selected'
+        expect(resultsView.prop('scrollTop')).toBe 0
+
+      it "selects the path when when core:move-to-bottom is triggered and last item is collapsed", ->
+        atom.commands.dispatch resultsView.element, 'core:move-to-bottom'
+        atom.commands.dispatch resultsView.element, 'core:move-left'
+        atom.commands.dispatch resultsView.element, 'core:move-to-bottom'
+
+        expect(resultsView.find("li:last").closest('.path')).toHaveClass 'selected'
+
+      it "selects the path when when core:move-to-bottom is triggered and last item is collapsed", ->
+        atom.commands.dispatch resultsView.element, 'core:move-to-top'
+        atom.commands.dispatch resultsView.element, 'core:move-left'
+        atom.commands.dispatch resultsView.element, 'core:move-to-top'
+
+        expect(resultsView.find("li:first").closest('.path')).toHaveClass 'selected'
 
   describe "opening results", ->
     openHandler = null
@@ -369,46 +460,90 @@ describe 'ResultsView', ->
 
         resultsView.selectFirstResult()
 
-        # moves down for 13 results
-        _.times length - 1, ->
-          atom.commands.dispatch resultsView.element, 'core:move-down'
+        # moves down for 13 results + 2 files
+        _.times length + 1, -> atom.commands.dispatch resultsView.element, 'core:move-down'
+        selectedItem = resultsView.find('.selected')
+        expect(selectedItem).toHaveClass('search-result')
+        expect(selectedItem[0]).not.toBe lastSelectedItem
 
-          selectedItem = resultsView.find('.selected')
-
-          expect(selectedItem).toHaveClass('search-result')
-          expect(selectedItem[0]).not.toBe lastSelectedItem
-
-          lastSelectedItem = selectedItem[0]
+        lastSelectedItem = selectedItem[0]
 
         # stays at the bottom
-        _.times 2, ->
-          atom.commands.dispatch resultsView.element, 'core:move-down'
+        _.times 2, -> atom.commands.dispatch resultsView.element, 'core:move-down'
+        selectedItem = resultsView.find('.selected')
+        expect(selectedItem[0]).toBe lastSelectedItem
 
-          selectedItem = resultsView.find('.selected')
-          expect(selectedItem[0]).toBe lastSelectedItem
-
-          lastSelectedItem = selectedItem[0]
+        lastSelectedItem = selectedItem[0]
 
         # moves up to the top
-        _.times length - 1, ->
-          atom.commands.dispatch resultsView.element, 'core:move-up'
+        _.times length + 1, -> atom.commands.dispatch resultsView.element, 'core:move-up'
+        selectedItem = resultsView.find('.selected')
+        expect(selectedItem).toHaveClass('path')
+        expect(selectedItem[0]).not.toBe lastSelectedItem
 
-          selectedItem = resultsView.find('.selected')
-
-          expect(selectedItem).toHaveClass('search-result')
-          expect(selectedItem[0]).not.toBe lastSelectedItem
-
-          lastSelectedItem = selectedItem[0]
+        lastSelectedItem = selectedItem[0]
 
         # stays at the top
-        _.times 2, ->
-          atom.commands.dispatch resultsView.element, 'core:move-up'
+        _.times 2, -> atom.commands.dispatch resultsView.element, 'core:move-up'
+        selectedItem = resultsView.find('.selected')
+        expect(selectedItem[0]).toBe lastSelectedItem
 
-          selectedItem = resultsView.find('.selected')
+    describe "when there are hidden .path elements", ->
+      beforeEach ->
+        projectFindView.findEditor.setText('i')
+        atom.commands.dispatch projectFindView.element, 'core:confirm'
+        waitsForPromise -> searchPromise
+        runs -> resultsView = getResultsView()
 
-          expect(selectedItem[0]).toBe lastSelectedItem
+      it "ignores the invisible path elements", ->
+        resultsView.find('.path:eq(1)').hide()
 
-          lastSelectedItem = selectedItem[0]
+        atom.commands.dispatch resultsView.element, 'core:move-down'
+        expect(resultsView.find('.path:eq(0) .search-result:eq(1)')).toHaveClass 'selected'
+
+        atom.commands.dispatch resultsView.element, 'core:move-down'
+        expect(resultsView.find('.path:eq(2)')).toHaveClass 'selected'
+
+        atom.commands.dispatch resultsView.element, 'core:move-down'
+        expect(resultsView.find('.path:eq(2) .search-result:eq(0)')).toHaveClass 'selected'
+
+        atom.commands.dispatch resultsView.element, 'core:move-down'
+        expect(resultsView.find('.path:eq(2) .search-result:eq(1)')).toHaveClass 'selected'
+
+        atom.commands.dispatch resultsView.element, 'core:move-up'
+        expect(resultsView.find('.path:eq(2) .search-result:eq(0)')).toHaveClass 'selected'
+
+        atom.commands.dispatch resultsView.element, 'core:move-up'
+        expect(resultsView.find('.path:eq(2)')).toHaveClass 'selected'
+
+        atom.commands.dispatch resultsView.element, 'core:move-up'
+        expect(resultsView.find('.path:eq(0) .search-result:eq(1)')).toHaveClass 'selected'
+
+        atom.commands.dispatch resultsView.element, 'core:move-down'
+        atom.commands.dispatch resultsView.element, 'core:move-left'
+        expect(resultsView.find('.path:eq(2)')).toHaveClass 'selected'
+
+        atom.commands.dispatch resultsView.element, 'core:move-up'
+        expect(resultsView.find('.path:eq(0) .search-result:eq(1)')).toHaveClass 'selected'
+
+        atom.commands.dispatch resultsView.element, 'core:move-down'
+        expect(resultsView.find('.path:eq(2)')).toHaveClass 'selected'
+
+        atom.commands.dispatch resultsView.element, 'core:move-up'
+        atom.commands.dispatch resultsView.element, 'core:move-left'
+        expect(resultsView.find('.path:eq(0)')).toHaveClass 'selected'
+
+        atom.commands.dispatch resultsView.element, 'core:move-down'
+        expect(resultsView.find('.path:eq(2)')).toHaveClass 'selected'
+
+        atom.commands.dispatch resultsView.element, 'core:move-down'
+        expect(resultsView.find('.path:eq(2)')).toHaveClass 'selected'
+
+        atom.commands.dispatch resultsView.element, 'core:move-up'
+        expect(resultsView.find('.path:eq(0)')).toHaveClass 'selected'
+
+        atom.commands.dispatch resultsView.element, 'core:move-up'
+        expect(resultsView.find('.path:eq(0)')).toHaveClass 'selected'
 
     describe "when there are a list of items", ->
       beforeEach ->
@@ -470,10 +605,10 @@ describe 'ResultsView', ->
           resultsView.find('.path:eq(0)').view().expand(false)
 
           atom.commands.dispatch resultsView.element, 'core:move-up'
+          expect(resultsView.find('.path:eq(1)')).toHaveClass 'selected'
 
-          selectedItem = resultsView.find('.selected')
-          expect(selectedItem).toHaveClass('path')
-          expect(selectedItem[0]).toBe resultsView.find('.path:eq(0)')[0]
+          atom.commands.dispatch resultsView.element, 'core:move-up'
+          expect(resultsView.find('.path:eq(0)')).toHaveClass 'selected'
 
   describe "when the results view is empty", ->
     it "ignores core:confirm events", ->
@@ -509,6 +644,19 @@ describe 'ResultsView', ->
       _.times 2, -> atom.commands.dispatch resultsView.element, 'core:move-down'
       atom.commands.dispatch resultsView.element, 'core:copy'
       expect(atom.clipboard.read()).toBe '    return items if items.length <= 1'
+
+  # Keep. Useful for debugging.
+  logSelectedIndex = ->
+    paths = resultsView.find('.path')
+    selectedView = resultsView.find('.selected')
+
+    if selectedView.hasClass('path')
+      console.log 'PATH', paths.index(selectedView)
+    else
+      for pathElement, pathIndex in paths
+        index = $(pathElement).find('.search-result').index(selectedView)
+        console.log pathIndex, index if index > -1
+        break
 
 buildMouseEvent = (type, properties...) ->
   properties = _.extend({bubbles: true, cancelable: true}, properties...)
