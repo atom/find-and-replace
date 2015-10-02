@@ -167,8 +167,10 @@ class ResultsModel
 
   getFindOptions: -> @findOptions
 
+  getLastFindPattern: -> @lastFindPattern
+
   getResultsSummary: ->
-    findPattern = @findOptions.findPattern
+    findPattern = @lastFindPattern ? @findOptions.findPattern
     replacePattern = @findOptions.replacePattern
     {
       findPattern

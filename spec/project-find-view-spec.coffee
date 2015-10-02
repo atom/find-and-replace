@@ -12,7 +12,7 @@ ResultsPaneView = require '../lib/project/results-pane'
 waitsForPromise = (fn) -> window.waitsForPromise timeout: 30000, fn
 
 describe 'ProjectFindView', ->
-  [activationPromise, editor, editorView, projectFindView, searchPromise, resultsPane, workspaceElement, mainModule] = []
+  [activationPromise, editor, editorView, projectFindView, searchPromise, resultsPane, workspaceElement, mainModule, stoppedChangingDelay] = []
 
   getAtomPanel = ->
     workspaceElement.querySelector('.project-find').parentNode
@@ -32,6 +32,7 @@ describe 'ProjectFindView', ->
       mainModule = options.mainModule
       mainModule.createViews()
       {projectFindView} = mainModule
+      stoppedChangingDelay = projectFindView.findEditor.getModel().getBuffer().stoppedChangingDelay
       spy = spyOn(projectFindView, 'search').andCallFake ->
         searchPromise = spy.originalValue.apply(projectFindView, arguments)
         resultsPane = $(workspaceElement).find('.preview-pane').view()
@@ -1069,38 +1070,54 @@ describe 'ProjectFindView', ->
       it "is disabled initially", ->
         expect(projectFindView.replaceAllButton).toHaveClass 'disabled'
 
-      it "is enabled when a search has results and disabled when there are no results", ->
+      it "is disabled when a search returns no results", ->
         projectFindView.findEditor.setText('items')
         atom.commands.dispatch(projectFindView[0], 'project-find:confirm')
-
 
         waitsForPromise ->
           searchPromise
 
         runs ->
-          disposable = projectFindView.replaceTooltipSubscriptions
-          spyOn(disposable, 'dispose')
-
           expect(projectFindView.replaceAllButton).not.toHaveClass 'disabled'
 
           projectFindView.findEditor.setText('nopenotinthefile')
           atom.commands.dispatch(projectFindView[0], 'project-find:confirm')
 
-          projectFindView.findEditor.setText('itemss')
-          expect(projectFindView.replaceAllButton).toHaveClass 'disabled'
-          expect(disposable.dispose).toHaveBeenCalled()
-
-          disposable = projectFindView.replaceTooltipSubscriptions
-          spyOn(disposable, 'dispose')
-          projectFindView.findEditor.setText('items')
-          expect(projectFindView.replaceAllButton).not.toHaveClass 'disabled'
-
         waitsForPromise ->
           searchPromise
 
         runs ->
           expect(projectFindView.replaceAllButton).toHaveClass 'disabled'
+
+      it "is enabled when a search has results and disabled when there are no results", ->
+        projectFindView.findEditor.setText('items')
+        atom.commands.dispatch(projectFindView[0], 'project-find:confirm')
+
+        waitsForPromise ->
+          searchPromise
+
+        runs ->
+          disposable = projectFindView.replaceTooltipSubscriptions
+          spyOn(disposable, 'dispose')
+
+          expect(projectFindView.replaceAllButton).not.toHaveClass 'disabled'
+
+          # The replace all button should still be disabled as the text has been changed and a new search has not been run
+          projectFindView.findEditor.setText('itemss')
+          advanceClock(stoppedChangingDelay)
+          expect(projectFindView.replaceAllButton).toHaveClass 'disabled'
           expect(disposable.dispose).toHaveBeenCalled()
+
+          # The button should still be disabled because the search and search pattern are out of sync
+          projectFindView.replaceEditor.setText('omgomg')
+          advanceClock(stoppedChangingDelay)
+          expect(projectFindView.replaceAllButton).toHaveClass 'disabled'
+
+          disposable = projectFindView.replaceTooltipSubscriptions
+          spyOn(disposable, 'dispose')
+          projectFindView.findEditor.setText('items')
+          advanceClock(stoppedChangingDelay)
+          expect(projectFindView.replaceAllButton).not.toHaveClass 'disabled'
 
           projectFindView.findEditor.setText('')
           atom.commands.dispatch(projectFindView[0], 'project-find:confirm')
@@ -1219,11 +1236,14 @@ describe 'ProjectFindView', ->
           projectFindView.findEditor.setText('sort')
           projectFindView.replaceEditor.setText('ok')
 
-          atom.commands.dispatch(projectFindView[0], 'project-find:replace-all')
+          advanceClock(stoppedChangingDelay)
+          runs ->
+            atom.commands.dispatch(projectFindView[0], 'project-find:replace-all')
 
-          expect(atom.confirm).toHaveBeenCalled()
-          expect(replacePromise).toBeUndefined()
-          expect(atom.workspace.scan).not.toHaveBeenCalled()
+            expect(replacePromise).toBeUndefined()
+            expect(atom.workspace.scan).not.toHaveBeenCalled()
+            expect(atom.confirm).toHaveBeenCalled()
+            expect(atom.confirm.mostRecentCall.args[0].message).toContain 'was changed to'
 
         it "replaces all the matches and updates the results view", ->
           spyOn(atom, 'confirm').andReturn 0

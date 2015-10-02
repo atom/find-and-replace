@@ -248,9 +248,9 @@ class ProjectFindView extends View
 
   replaceAll: ->
     return atom.beep() unless @model.matchCount
-    findPattern = @model.getFindOptions().findPattern
+    findPattern = @model.getLastFindPattern()
     currentPattern = @findEditor.getText()
-    if findPattern isnt currentPattern
+    if findPattern and findPattern isnt currentPattern
       atom.confirm
         message: "The searched pattern '#{findPattern}' was changed to '#{currentPattern}'"
         detailedMessage: "Please run the search with the new pattern '#{currentPattern}' before running a replace-all"
