@@ -335,7 +335,7 @@ class ProjectFindView extends View
     else
       @replaceAllButton[0].classList.add('disabled')
       @replaceTooltipSubscriptions.add atom.tooltips.add @replaceAllButton,
-        title: "Search to enable replacement"
+        title: "Replace All [run a search to enable]"
 
   setSelectionAsFindPattern: =>
     editor = atom.workspace.getActivePaneItem()

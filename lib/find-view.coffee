@@ -486,6 +486,6 @@ class FindView extends View
       @replaceNextButton[0].classList.add('disabled')
 
       @replaceTooltipSubscriptions.add atom.tooltips.add @replaceNextButton,
-        title: "Search to enable replacement"
+        title: "Replace Next [when there are results]"
       @replaceTooltipSubscriptions.add atom.tooltips.add @replaceAllButton,
-        title: "Search to enable replacement"
+        title: "Replace All [when there are results]"
