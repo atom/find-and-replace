@@ -1065,6 +1065,7 @@ describe 'ProjectFindView', ->
             expect(fileContent).toBe("\\t\nb\n\\t")
 
     describe "replace all button enablement", ->
+      disposable = null
       it "is disabled initially", ->
         expect(projectFindView.replaceAllButton).toHaveClass 'disabled'
 
@@ -1072,10 +1073,14 @@ describe 'ProjectFindView', ->
         projectFindView.findEditor.setText('items')
         atom.commands.dispatch(projectFindView[0], 'project-find:confirm')
 
+
         waitsForPromise ->
           searchPromise
 
         runs ->
+          disposable = projectFindView.replaceTooltipSubscriptions
+          spyOn(disposable, 'dispose')
+
           expect(projectFindView.replaceAllButton).not.toHaveClass 'disabled'
 
           projectFindView.findEditor.setText('nopenotinthefile')
@@ -1083,7 +1088,10 @@ describe 'ProjectFindView', ->
 
           projectFindView.findEditor.setText('itemss')
           expect(projectFindView.replaceAllButton).toHaveClass 'disabled'
+          expect(disposable.dispose).toHaveBeenCalled()
 
+          disposable = projectFindView.replaceTooltipSubscriptions
+          spyOn(disposable, 'dispose')
           projectFindView.findEditor.setText('items')
           expect(projectFindView.replaceAllButton).not.toHaveClass 'disabled'
 
@@ -1092,6 +1100,7 @@ describe 'ProjectFindView', ->
 
         runs ->
           expect(projectFindView.replaceAllButton).toHaveClass 'disabled'
+          expect(disposable.dispose).toHaveBeenCalled()
 
           projectFindView.findEditor.setText('')
           atom.commands.dispatch(projectFindView[0], 'project-find:confirm')
