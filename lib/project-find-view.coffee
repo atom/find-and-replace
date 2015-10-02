@@ -65,7 +65,7 @@ class ProjectFindView extends View
           @subview 'replaceEditor', new TextEditorView(editor: replaceEditor)
         @div class: 'input-block-item', =>
           @div class: 'btn-group btn-group-replace-all', =>
-            @button outlet: 'replaceAllButton', class: 'btn', disabled: 'disabled', 'Replace All'
+            @button outlet: 'replaceAllButton', class: 'btn disabled', 'Replace All'
 
       @section class: 'input-block paths-container', =>
         @div class: 'input-block-item editor-container', =>
@@ -96,6 +96,7 @@ class ProjectFindView extends View
     atom.views.getView(atom.workspace).classList.add('find-visible')
     return if @tooltipSubscriptions?
 
+    @updateReplaceAllButtonEnablement()
     @tooltipSubscriptions = subs = new CompositeDisposable
     subs.add atom.tooltips.add @regexOptionButton,
       title: "Use Regex"
@@ -111,11 +112,6 @@ class ProjectFindView extends View
       title: "Whole Word",
       keyBindingCommand: 'project-find:toggle-whole-word-option',
       keyBindingTarget: @findEditor.element
-
-    subs.add atom.tooltips.add @replaceAllButton,
-      title: "Replace All",
-      keyBindingCommand: 'project-find:replace-all',
-      keyBindingTarget: @replaceEditor.element
 
     subs.add atom.tooltips.add @findAllButton,
       title: "Find All",
@@ -252,9 +248,9 @@ class ProjectFindView extends View
 
   replaceAll: ->
     return atom.beep() unless @model.matchCount
-    findPattern = @model.getFindOptions().findPattern
+    findPattern = @model.getLastFindPattern()
     currentPattern = @findEditor.getText()
-    if findPattern isnt currentPattern
+    if findPattern and findPattern isnt currentPattern
       atom.confirm
         message: "The searched pattern '#{findPattern}' was changed to '#{currentPattern}'"
         detailedMessage: "Please run the search with the new pattern '#{currentPattern}' before running a replace-all"
@@ -325,7 +321,21 @@ class ProjectFindView extends View
 
   updateReplaceAllButtonEnablement: (results) ->
     canReplace = results?.matchCount and results?.findPattern is @findEditor.getText()
-    @replaceAllButton[0].disabled = not canReplace
+    return if canReplace and not @replaceAllButton[0].classList.contains('disabled')
+
+    @replaceTooltipSubscriptions?.dispose()
+    @replaceTooltipSubscriptions = new CompositeDisposable
+
+    if canReplace
+      @replaceAllButton[0].classList.remove('disabled')
+      @replaceTooltipSubscriptions.add atom.tooltips.add @replaceAllButton,
+        title: "Replace All",
+        keyBindingCommand: 'project-find:replace-all',
+        keyBindingTarget: @replaceEditor.element
+    else
+      @replaceAllButton[0].classList.add('disabled')
+      @replaceTooltipSubscriptions.add atom.tooltips.add @replaceAllButton,
+        title: "Replace All [run a search to enable]"
 
   setSelectionAsFindPattern: =>
     editor = atom.workspace.getActivePaneItem()

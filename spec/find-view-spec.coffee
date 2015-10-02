@@ -408,23 +408,33 @@ describe 'FindView', ->
       it "enables the replace buttons when are search results", ->
         findView.findEditor.setText 'item'
         atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
-        expect(findView.replaceAllButton[0].disabled).toBe false
-        expect(findView.replaceNextButton[0].disabled).toBe false
+        expect(findView.replaceAllButton).not.toHaveClass 'disabled'
+        expect(findView.replaceNextButton).not.toHaveClass 'disabled'
+
+        disposable = findView.replaceTooltipSubscriptions
+        spyOn(disposable, 'dispose')
+
+        findView.findEditor.setText 'it'
+        atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
+        expect(findView.replaceAllButton).not.toHaveClass 'disabled'
+        expect(findView.replaceNextButton).not.toHaveClass 'disabled'
+        expect(disposable.dispose).not.toHaveBeenCalled()
 
         findView.findEditor.setText 'nopenotinthefile'
         atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
-        expect(findView.replaceAllButton[0].disabled).toBe true
-        expect(findView.replaceNextButton[0].disabled).toBe true
+        expect(findView.replaceAllButton).toHaveClass 'disabled'
+        expect(findView.replaceNextButton).toHaveClass 'disabled'
+        expect(disposable.dispose).toHaveBeenCalled()
 
         findView.findEditor.setText 'i'
         atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
-        expect(findView.replaceAllButton[0].disabled).toBe false
-        expect(findView.replaceNextButton[0].disabled).toBe false
+        expect(findView.replaceAllButton).not.toHaveClass 'disabled'
+        expect(findView.replaceNextButton).not.toHaveClass 'disabled'
 
         findView.findEditor.setText ''
         atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
-        expect(findView.replaceAllButton[0].disabled).toBe true
-        expect(findView.replaceNextButton[0].disabled).toBe true
+        expect(findView.replaceAllButton).toHaveClass 'disabled'
+        expect(findView.replaceNextButton).toHaveClass 'disabled'
 
     describe "updating the descriptionLabel", ->
       it "properly updates the info message", ->
