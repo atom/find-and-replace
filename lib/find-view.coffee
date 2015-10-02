@@ -318,7 +318,7 @@ class FindView extends View
     @setErrorMessage(error.message)
 
   updateResultCounter: =>
-    if @model.currentResultMarker and (index = @markers.indexOf(@model.currentResultMarker)) > -1
+    if @model.currentResultMarker and (index = @markers?.indexOf(@model.currentResultMarker)) > -1
       text = "#{ index + 1} of #{@markers.length}"
     else
       if not @markers? or @markers.length is 0
