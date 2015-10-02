@@ -96,6 +96,7 @@ class ProjectFindView extends View
     atom.views.getView(atom.workspace).classList.add('find-visible')
     return if @tooltipSubscriptions?
 
+    @updateReplaceAllButtonEnablement()
     @tooltipSubscriptions = subs = new CompositeDisposable
     subs.add atom.tooltips.add @regexOptionButton,
       title: "Use Regex"
@@ -111,11 +112,6 @@ class ProjectFindView extends View
       title: "Whole Word",
       keyBindingCommand: 'project-find:toggle-whole-word-option',
       keyBindingTarget: @findEditor.element
-
-    subs.add atom.tooltips.add @replaceAllButton,
-      title: "Replace All",
-      keyBindingCommand: 'project-find:replace-all',
-      keyBindingTarget: @replaceEditor.element
 
     subs.add atom.tooltips.add @findAllButton,
       title: "Find All",
@@ -325,10 +321,21 @@ class ProjectFindView extends View
 
   updateReplaceAllButtonEnablement: (results) ->
     canReplace = results?.matchCount and results?.findPattern is @findEditor.getText()
+    return if canReplace and not @replaceAllButton[0].classList.contains('disabled')
+
+    @replaceTooltipSubscriptions?.dispose()
+    @replaceTooltipSubscriptions = new CompositeDisposable
+
     if canReplace
       @replaceAllButton[0].classList.remove('disabled')
+      @replaceTooltipSubscriptions.add atom.tooltips.add @replaceAllButton,
+        title: "Replace All",
+        keyBindingCommand: 'project-find:replace-all',
+        keyBindingTarget: @replaceEditor.element
     else
       @replaceAllButton[0].classList.add('disabled')
+      @replaceTooltipSubscriptions.add atom.tooltips.add @replaceAllButton,
+        title: "Search to enable replacement"
 
   setSelectionAsFindPattern: =>
     editor = atom.workspace.getActivePaneItem()
