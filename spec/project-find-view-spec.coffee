@@ -138,6 +138,18 @@ describe 'ProjectFindView', ->
         atom.commands.dispatch(workspaceElement, 'project-find:toggle')
         expect(getAtomPanel()).not.toBeVisible()
 
+  describe "find-and-replace:hide-all is triggered", ->
+    it "hides the ProjectFindView", ->
+      atom.commands.dispatch(workspaceElement, 'project-find:show')
+
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        expect(getAtomPanel()).toBeVisible()
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:hide-all')
+        expect(getAtomPanel()).not.toBeVisible()
+
   describe "when project-find:show-in-current-directory is triggered", ->
     [nested, tree, projectPath] = []
 

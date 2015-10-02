@@ -125,6 +125,18 @@ describe 'FindView', ->
         atom.commands.dispatch workspaceElement, 'find-and-replace:toggle'
         expect(getFindAtomPanel()).not.toBeVisible()
 
+  describe "find-and-replace:hide-all is triggered", ->
+    it "hides the FindView", ->
+      atom.commands.dispatch workspaceElement, 'find-and-replace:show'
+
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        expect(getFindAtomPanel()).toBeVisible()
+        atom.commands.dispatch workspaceElement, 'find-and-replace:hide-all'
+        expect(getFindAtomPanel()).not.toBeVisible()
+
   describe "when the find-view is focused and window:focus-next-pane is triggered", ->
     beforeEach ->
       atom.commands.dispatch editorView, 'find-and-replace:show'
