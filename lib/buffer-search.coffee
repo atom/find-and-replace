@@ -35,7 +35,7 @@ class BufferSearch
 
   setEditor: (@editor) ->
     @subscriptions?.dispose()
-    if @editor?
+    if @editor?.buffer?
       @subscriptions = new CompositeDisposable
       @subscriptions.add @editor.buffer.onDidChange(@bufferChanged.bind(this))
       @subscriptions.add @editor.buffer.onDidStopChanging(@bufferStoppedChanging.bind(this))
