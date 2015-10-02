@@ -137,15 +137,6 @@ class FindView extends View
       keyBindingCommand: 'find-and-replace:find-next',
       keyBindingTarget: @findEditor.element
 
-    subs.add atom.tooltips.add @replaceNextButton,
-      title: "Replace Next",
-      keyBindingCommand: 'find-and-replace:replace-next',
-      keyBindingTarget: @replaceEditor.element
-    subs.add atom.tooltips.add @replaceAllButton,
-      title: "Replace All",
-      keyBindingCommand: 'find-and-replace:replace-all',
-      keyBindingTarget: @replaceEditor.element
-
   didHide: ->
     @hideAllTooltips()
     workspaceElement = atom.views.getView(atom.workspace)
@@ -473,9 +464,28 @@ class FindView extends View
 
   updateReplaceEnablement: ->
     canReplace = @markers?.length > 0
+    return if canReplace and not @replaceAllButton[0].classList.contains('disabled')
+
+    @replaceTooltipSubscriptions?.dispose()
+    @replaceTooltipSubscriptions = new CompositeDisposable
+
     if canReplace
       @replaceAllButton[0].classList.remove('disabled')
       @replaceNextButton[0].classList.remove('disabled')
+
+      @replaceTooltipSubscriptions.add atom.tooltips.add @replaceNextButton,
+        title: "Replace Next"
+        keyBindingCommand: 'find-and-replace:replace-next'
+        keyBindingTarget: @replaceEditor.element
+      @replaceTooltipSubscriptions.add atom.tooltips.add @replaceAllButton,
+        title: "Replace All"
+        keyBindingCommand: 'find-and-replace:replace-all'
+        keyBindingTarget: @replaceEditor.element
     else
       @replaceAllButton[0].classList.add('disabled')
       @replaceNextButton[0].classList.add('disabled')
+
+      @replaceTooltipSubscriptions.add atom.tooltips.add @replaceNextButton,
+        title: "Search to enable replacement"
+      @replaceTooltipSubscriptions.add atom.tooltips.add @replaceAllButton,
+        title: "Search to enable replacement"
