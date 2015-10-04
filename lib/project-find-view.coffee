@@ -297,6 +297,17 @@ class ProjectFindView extends View
       @findEditor.focus()
       @findEditor.getModel().selectAll()
 
+  findInParentDirectory: () ->
+    if textEditor = atom.workspace.getActiveTextEditor()
+      filePath = textEditor.getPath()
+      absPath = path.dirname(filePath)
+      [rootPath, relPath] = atom.project.relativizePath(absPath)
+      if rootPath? and atom.project.getDirectories().length > 1
+        relPath = path.join(path.basename(rootPath), relPath)
+        @pathsEditor.setText(relPath)
+        @findEditor.focus()
+        @findEditor.getModel().selectAll()
+
   showResultPane: ->
     options = {searchAllPanes: true}
     options.split = 'right' if atom.config.get('find-and-replace.openProjectFindResultsInRightPane')

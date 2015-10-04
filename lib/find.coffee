@@ -79,6 +79,13 @@ module.exports =
       @projectFindPanel.show()
       @projectFindView.findInCurrentlySelectedDirectory(target)
 
+    @subscriptions.add atom.commands.add 'atom-workspace', 'project-find:show-in-parent-directory', ({target}) =>
+      @createViews()
+      @findPanel.hide()
+      @projectFindPanel.show()
+      @projectFindView.focusFindElement()
+      @projectFindView.findInParentDirectory(target)
+
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:use-selection-as-find-pattern', =>
       return if @projectFindPanel?.isVisible() or @findPanel?.isVisible()
 

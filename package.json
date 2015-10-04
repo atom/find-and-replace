@@ -8,6 +8,7 @@
     "atom-workspace": [
       "project-find:show",
       "project-find:toggle",
+      "project-find:show-in-parent-directory",
       "project-find:show-in-current-directory",
       "find-and-replace:show",
       "find-and-replace:toggle",
