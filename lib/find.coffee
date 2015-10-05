@@ -1,14 +1,5 @@
-{$} = require 'atom-space-pen-views'
-{CompositeDisposable, TextBuffer} = require 'atom'
-
-SelectNext = require './select-next'
-{History, HistoryCycler} = require './history'
-FindOptions = require './find-options'
-BufferSearch = require './buffer-search'
-FindView = require './find-view'
-ProjectFindView = require './project-find-view'
-ResultsModel = require './project/results-model'
-ResultsPaneView = require './project/results-pane'
+{CompositeDisposable} = require 'atom'
+ResultsPaneView = null
 
 module.exports =
   config:
@@ -32,20 +23,20 @@ module.exports =
       minimum: 0
       description: 'When you type in the buffer find box, you must type this many characters to automatically search'
 
-  activate: ({findOptions, findHistory, replaceHistory, pathsHistory}={}) ->
-    atom.workspace.addOpener (filePath) ->
-      new ResultsPaneView() if filePath is ResultsPaneView.URI
+  activate: (@state) ->
+    {visiblePanel} = @state
+
+    if visiblePanel?
+      setImmediate =>
+        @createViews()
+        if visiblePanel is 'find'
+          @findPanel.show()
+        else if visiblePanel is 'project-find'
+          @projectFindPanel.show()
 
     @subscriptions = new CompositeDisposable
-    @findHistory = new History(findHistory)
-    @replaceHistory = new History(replaceHistory)
-    @pathsHistory = new History(pathsHistory)
-
-    @findOptions = new FindOptions(findOptions)
-    @findModel = new BufferSearch(@findOptions)
-    @resultsModel = new ResultsModel(@findOptions)
-
     @subscriptions.add atom.workspace.observeActivePaneItem (paneItem) =>
+      @createModels()
       if paneItem?.getBuffer?()
         @findModel.setEditor(paneItem)
       else
@@ -117,10 +108,12 @@ module.exports =
       'core:close': handleEditorCancel
 
     selectNextObjectForEditorElement = (editorElement) =>
+      @createModels()
       @selectNextObjects ?= new WeakMap()
       editor = editorElement.getModel()
       selectNext = @selectNextObjects.get(editor)
       unless selectNext?
+        SelectNext = require './select-next'
         selectNext = new SelectNext(editor, {@findOptions})
         @selectNextObjects.set(editor, selectNext)
       selectNext
@@ -135,18 +128,48 @@ module.exports =
       'find-and-replace:select-skip': (event) ->
         selectNextObjectForEditorElement(this).skipCurrentSelection()
 
+  createModels: ->
+    return if @findModel?
+
+    {CompositeDisposable} = require 'atom'
+    FindOptions = require './find-options'
+    BufferSearch = require './buffer-search'
+    ResultsModel = require './project/results-model'
+    {History} = require './history'
+
+    {findOptions, findHistory, replaceHistory, pathsHistory} = @state
+
+    @findHistory = new History(findHistory)
+    @replaceHistory = new History(replaceHistory)
+    @pathsHistory = new History(pathsHistory)
+
+    @findOptions = new FindOptions(findOptions)
+    @findModel = new BufferSearch(@findOptions)
+    @resultsModel = new ResultsModel(@findOptions)
+
   createViews: ->
     return if @findView?
+    @createModels()
 
-    findBuffer = new TextBuffer
-    replaceBuffer = new TextBuffer
-    pathsBuffer = new TextBuffer
+    atom.workspace.addOpener (filePath) ->
+      ResultsPaneView ?= require './project/results-pane'
+      new ResultsPaneView() if filePath is ResultsPaneView.URI
 
-    findHistoryCycler = new HistoryCycler(findBuffer, @findHistory)
-    replaceHistoryCycler = new HistoryCycler(replaceBuffer, @replaceHistory)
-    pathsHistoryCycler = new HistoryCycler(pathsBuffer, @pathsHistory)
+    {TextBuffer} = require 'atom'
+    FindView = require './find-view'
+    ProjectFindView = require './project-find-view'
+    ResultsPaneView ?= require './project/results-pane'
+    {HistoryCycler} = require './history'
 
-    options = {findBuffer, replaceBuffer, pathsBuffer, findHistoryCycler, replaceHistoryCycler, pathsHistoryCycler}
+    @findBuffer = new TextBuffer(@findOptions.findPattern or '')
+    @replaceBuffer = new TextBuffer(@findOptions.replacePattern or '')
+    @pathsBuffer = new TextBuffer(@findOptions.pathsPattern or '')
+
+    findHistoryCycler = new HistoryCycler(@findBuffer, @findHistory)
+    replaceHistoryCycler = new HistoryCycler(@replaceBuffer, @replaceHistory)
+    pathsHistoryCycler = new HistoryCycler(@pathsBuffer, @pathsHistory)
+
+    options = {@findBuffer, @replaceBuffer, @pathsBuffer, findHistoryCycler, replaceHistoryCycler, pathsHistoryCycler}
 
     @findView = new FindView(@findModel, options)
     @projectFindView = new ProjectFindView(@resultsModel, options)
@@ -190,7 +213,23 @@ module.exports =
     @subscriptions = null
 
   serialize: ->
-    findOptions: @findOptions.serialize()
-    findHistory: @findHistory.serialize()
-    replaceHistory: @replaceHistory.serialize()
-    pathsHistory: @replaceHistory.serialize()
+    if @findBuffer?
+      @findOptions.set
+        findPattern: @findBuffer.getText()
+        replacePattern: @replaceBuffer.getText()
+        pathsPattern: @pathsBuffer.getText()
+
+    visiblePanel = if @findPanel.isVisible()
+      'find'
+    else if @projectFindPanel.isVisible()
+      'project-find'
+    else
+      null
+
+    {
+      findOptions: @findOptions.serialize()
+      findHistory: @findHistory.serialize()
+      replaceHistory: @replaceHistory.serialize()
+      pathsHistory: @replaceHistory.serialize()
+      visiblePanel: visiblePanel
+    }
