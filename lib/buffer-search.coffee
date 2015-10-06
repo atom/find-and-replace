@@ -99,8 +99,12 @@ class BufferSearch
         end = Point.min(end, selectedRange.end)
 
       if regex = @getFindPatternRegex()
-        @editor.scanInBufferRange regex, Range(start, end), ({range}) =>
-          newMarkers.push(@createMarker(range)) unless range.isEmpty()
+        try
+          @editor.scanInBufferRange regex, Range(start, end), ({range}) =>
+            newMarkers.push(@createMarker(range)) unless range.isEmpty()
+        catch e
+          @emitter.emit 'did-error', e
+          null
       else
         return false
     newMarkers
