@@ -282,6 +282,9 @@ class ProjectFindView extends View
         elementPath = element.dataset.path
         break if elementPath
         element = element.parentElement
+      # Use the active editor path if all elements don't have a path
+      unless elementPath
+        elementPath = atom.workspace.getActiveTextEditor().getPath()
 
     if fs.isFileSync(elementPath)
       require('path').dirname(elementPath)
@@ -296,17 +299,6 @@ class ProjectFindView extends View
       @pathsEditor.setText(relPath)
       @findEditor.focus()
       @findEditor.getModel().selectAll()
-
-  findInParentDirectory: () ->
-    if textEditor = atom.workspace.getActiveTextEditor()
-      filePath = textEditor.getPath()
-      absPath = path.dirname(filePath)
-      [rootPath, relPath] = atom.project.relativizePath(absPath)
-      if rootPath? and atom.project.getDirectories().length > 1
-        relPath = path.join(path.basename(rootPath), relPath)
-        @pathsEditor.setText(relPath)
-        @findEditor.focus()
-        @findEditor.getModel().selectAll()
 
   showResultPane: ->
     options = {searchAllPanes: true}
