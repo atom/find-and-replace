@@ -193,4 +193,4 @@ module.exports =
     findOptions: @findOptions.serialize()
     findHistory: @findHistory.serialize()
     replaceHistory: @replaceHistory.serialize()
-    pathsHistory: @replaceHistory.serialize()
+    pathsHistory: @pathsHistory.serialize()
