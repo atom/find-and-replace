@@ -6,7 +6,7 @@ describe "BufferSearch", ->
   [model, editor, markersListener, currentResultListener] = []
 
   beforeEach ->
-    editor = new TextEditor
+    editor = atom.workspace.buildTextEditor()
     spyOn(editor, 'scanInBufferRange').andCallThrough()
 
     editor.setText """

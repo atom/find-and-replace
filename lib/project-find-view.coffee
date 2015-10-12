@@ -11,7 +11,7 @@ ResultsPaneView = require './project/results-pane'
 module.exports =
 class ProjectFindView extends View
   @content: (model, {findBuffer, replaceBuffer, pathsBuffer}) ->
-    findEditor = new TextEditor
+    findEditor = atom.workspace.buildTextEditor
       mini: true
       tabLength: 2
       softTabs: true
@@ -19,7 +19,7 @@ class ProjectFindView extends View
       buffer: findBuffer
       placeholderText: 'Find in project'
 
-    replaceEditor = new TextEditor
+    replaceEditor = atom.workspace.buildTextEditor
       mini: true
       tabLength: 2
       softTabs: true
@@ -27,7 +27,7 @@ class ProjectFindView extends View
       buffer: replaceBuffer
       placeholderText: 'Replace in project'
 
-    pathsEditor = new TextEditor
+    pathsEditor = atom.workspace.buildTextEditor
       mini: true
       tabLength: 2
       softTabs: true

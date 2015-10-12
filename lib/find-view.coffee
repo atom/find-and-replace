@@ -6,7 +6,7 @@ Util = require './project/util'
 module.exports =
 class FindView extends View
   @content: (model, {findBuffer, replaceBuffer}) ->
-    findEditor = new TextEditor
+    findEditor = atom.workspace.buildTextEditor
       mini: true
       tabLength: 2
       softTabs: true
@@ -14,7 +14,7 @@ class FindView extends View
       buffer: findBuffer
       placeholderText: 'Find in current buffer'
 
-    replaceEditor = new TextEditor
+    replaceEditor = atom.workspace.buildTextEditor
       mini: true
       tabLength: 2
       softTabs: true
