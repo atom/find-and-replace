@@ -1,12 +1,12 @@
-{TextEditor} = require 'atom'
 BufferSearch = require '../lib/buffer-search'
 FindOptions = require '../lib/find-options'
+buildTextEditor = require '../lib/build-text-editor'
 
 describe "BufferSearch", ->
   [model, editor, markersListener, currentResultListener] = []
 
   beforeEach ->
-    editor = atom.workspace.buildTextEditor()
+    editor = buildTextEditor()
     spyOn(editor, 'scanInBufferRange').andCallThrough()
 
     editor.setText """

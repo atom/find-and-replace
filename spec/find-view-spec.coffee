@@ -704,7 +704,13 @@ describe 'FindView', ->
           newEditor = null
 
           waitsForPromise ->
-            atom.workspace.open('sample.coffee', activateItem: false).then (o) -> newEditor = o
+            opener =
+              if atom.workspace.buildTextEditor?
+                atom.workspace.open('sample.coffee', activateItem: false)
+              else
+                atom.project.open('sample.coffee')
+
+            opener.then (o) -> newEditor = o
 
           runs ->
             newEditor = atom.workspace.paneForItem(editor).splitRight(items: [newEditor]).getActiveItem()
