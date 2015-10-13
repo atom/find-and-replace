@@ -1,5 +1,5 @@
 TextEditor = null
-module.exports = ->
+module.exports = (params) ->
   if atom.workspace.buildTextEditor?
     atom.workspace.buildTextEditor(params)
   else
