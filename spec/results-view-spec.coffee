@@ -319,15 +319,17 @@ describe 'ResultsView', ->
         itemHeight = resultsView.find('.selected').outerHeight()
         pageHeight = Math.round(resultsView.innerHeight() / itemHeight) * itemHeight
         initialScrollTop = resultsView.scrollTop()
+        itemsPerPage = Math.floor(pageHeight / itemHeight)
+        originalItemIndex = Math.floor(initialScrollTop / itemHeight) + itemsPerPage
 
         atom.commands.dispatch resultsView.element, 'core:page-up'
         expect(resultsView.find("li:last")).not.toHaveClass 'selected'
-        expect(resultsView.find("li:eq(215)")).toHaveClass 'selected'
+        expect(resultsView.find("li:eq(#{originalItemIndex - itemsPerPage})")).toHaveClass 'selected'
         expect(resultsView.prop('scrollTop')).toBe initialScrollTop - pageHeight
 
         atom.commands.dispatch resultsView.element, 'core:page-up'
-        expect(resultsView.find("li:eq(215)")).not.toHaveClass 'selected'
-        expect(resultsView.find("li:eq(210)")).toHaveClass 'selected'
+        expect(resultsView.find("li:eq(#{originalItemIndex - itemsPerPage})")).not.toHaveClass 'selected'
+        expect(resultsView.find("li:eq(#{originalItemIndex - itemsPerPage * 2})")).toHaveClass 'selected'
         expect(resultsView.prop('scrollTop')).toBe initialScrollTop - pageHeight * 2
 
         _.times 60, ->
