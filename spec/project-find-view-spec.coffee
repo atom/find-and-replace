@@ -631,7 +631,7 @@ describe 'ProjectFindView', ->
         runs ->
           expect(atom.workspace.scan).not.toHaveBeenCalled()
           atom.workspace.scan.reset()
-          $(window).triggerHandler 'focus'
+          window.dispatchEvent(new FocusEvent("focus"))
           atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
         waitsForPromise ->
