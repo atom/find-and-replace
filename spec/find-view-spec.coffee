@@ -494,6 +494,13 @@ describe 'FindView', ->
       expect(findView.resultCounter.text()).toEqual('3 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[2, 34], [2, 39]]
 
+    it "selects the previous match when the next match button is pressed while holding shift", ->
+      shiftClick = $.Event('click')
+      shiftClick.shiftKey = true
+      findView.nextButton.trigger shiftClick
+      expect(findView.resultCounter.text()).toEqual('1 of 6')
+      expect(editor.getSelectedBufferRange()).toEqual [[1, 22], [1, 27]]
+
     it "selects the next match when the 'find-and-replace:find-next' event is triggered and correctly focuses the editor", ->
       expect(findView).toHaveFocus()
       atom.commands.dispatch editorView, 'find-and-replace:find-next'
