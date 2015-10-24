@@ -574,6 +574,20 @@ describe 'FindView', ->
       editor.setSelectedBufferRange([[2, 34], [2, 39]])
       expect(findView.resultCounter.text()).toEqual('3 of 6')
 
+    it "shows an icon when search wraps around", ->
+      atom.commands.dispatch editorView, 'find-and-replace:find-previous'
+      expect(findView.wrapIcon).not.toBeVisible()
+
+      atom.commands.dispatch editorView, 'find-and-replace:find-previous'
+      expect(findView.resultCounter.text()).toEqual('6 of 6')
+      expect(findView.wrapIcon).toBeVisible()
+      expect(findView.wrapIcon).toHaveClass 'icon-arrow-down'
+
+      atom.commands.dispatch editorView, 'find-and-replace:find-next'
+      expect(findView.resultCounter.text()).toEqual('1 of 6')
+      expect(findView.wrapIcon).toBeVisible()
+      expect(findView.wrapIcon).toHaveClass 'icon-arrow-up'
+
     describe "when find-and-replace:use-selection-as-find-pattern is triggered", ->
       it "places the selected text into the find editor", ->
         editor.setSelectedBufferRange([[1, 6], [1, 10]])

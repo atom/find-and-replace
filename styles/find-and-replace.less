@@ -166,6 +166,25 @@ atom-workspace.find-visible {
       margin-right: @component-padding;
     }
   }
+
+  .wrap-icon {
+    @wrap-size: 96px;
+
+    display: none;
+    position: absolute;
+    left: 50%;
+    top: @wrap-size * -1.5;
+    margin-left: @wrap-size * -0.5;
+    background: rgba(136,136,136, 0.2);
+    border-radius: 10px;
+    text-align: center;
+    pointer-events: none;
+    &:before {
+      font-size: @wrap-size;
+      height: @wrap-size;
+      width: @wrap-size;
+    }
+  }
 }
 
 // Project find and replace
