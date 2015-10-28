@@ -35,12 +35,20 @@ class BufferSearch
 
   setEditor: (@editor) ->
     @subscriptions?.dispose()
-    if @editor?.buffer?
+    @resultsMarkerLayer?.destroy()
+    @resultsMarkerLayerDecoration?.destroy()
+
+    if buffer = @editor?.getBuffer()
       @subscriptions = new CompositeDisposable
-      @subscriptions.add @editor.buffer.onDidChange(@bufferChanged.bind(this))
-      @subscriptions.add @editor.buffer.onDidStopChanging(@bufferStoppedChanging.bind(this))
-      @subscriptions.add @editor.onDidAddSelection(@setCurrentMarkerFromSelection.bind(this))
-      @subscriptions.add @editor.onDidChangeSelectionRange(@setCurrentMarkerFromSelection.bind(this))
+      @subscriptions.add @editor.onDidAddSelection(@setCurrentResultMarkerFromSelection.bind(this))
+      @subscriptions.add @editor.onDidChangeSelectionRange(@setCurrentResultMarkerFromSelection.bind(this))
+      @subscriptions.add buffer.onDidChange(@bufferChanged.bind(this))
+      @subscriptions.add buffer.onDidStopChanging(@bufferStoppedChanging.bind(this))
+      @resultsMarkerLayer = buffer.addMarkerLayer()
+      @resultsMarkerLayerDecoration = @editor.decorateMarkerLayer(@resultsMarkerLayer, {
+        type: 'highlight',
+        class: @constructor.markerClass
+      })
     @recreateMarkers()
 
   getEditor: -> @editor
@@ -62,7 +70,7 @@ class BufferSearch
 
     @editor.transact =>
       for marker in markers
-        bufferRange = marker.getBufferRange()
+        bufferRange = marker.getRange()
         replacementText = null
         if @findOptions.useRegex
           replacePattern = escapeHelper.unescapeEscapeSequence(replacePattern)
@@ -72,11 +80,11 @@ class BufferSearch
 
         marker.destroy()
         @markers.splice(@markers.indexOf(marker), 1)
-        delete @decorationsByMarkerId[marker.id]
 
     @emitter.emit 'did-update', @markers.slice()
 
   destroy: ->
+    @resultsMarkerLayer?.destroy()
     @subscriptions?.dispose()
 
   ###
@@ -86,7 +94,6 @@ class BufferSearch
   recreateMarkers: ->
     @markers.forEach (marker) -> marker.destroy()
     @markers.length = 0
-    @decorationsByMarkerId = {}
     if markers = @createMarkers(Point.ZERO, Point.INFINITY)
       @markers = markers
       @emitter.emit "did-update", @markers.slice()
@@ -119,7 +126,7 @@ class BufferSearch
       precedingMarkerIndex = -1
       while marker = @markers[markerIndex]
         if marker.isValid()
-          break if marker.getBufferRange().end.isGreaterThan(changeStart)
+          break if marker.getRange().end.isGreaterThan(changeStart)
           precedingMarkerIndex = markerIndex
         else
           @markers[markerIndex] = @recreateMarker(marker)
@@ -129,21 +136,21 @@ class BufferSearch
       while marker = @markers[markerIndex]
         if marker.isValid()
           followingMarkerIndex = markerIndex
-          break if marker.getBufferRange().start.isGreaterThanOrEqual(changeEnd)
+          break if marker.getRange().start.isGreaterThanOrEqual(changeEnd)
         else
           @markers[markerIndex] = @recreateMarker(marker)
         markerIndex++
 
       if precedingMarkerIndex >= 0
         spliceStart = precedingMarkerIndex
-        scanStart = @markers[precedingMarkerIndex].getBufferRange().start
+        scanStart = @markers[precedingMarkerIndex].getRange().start
       else
         spliceStart = 0
         scanStart = Point.ZERO
 
       if followingMarkerIndex >= 0
         spliceEnd = followingMarkerIndex
-        scanEnd = @markers[followingMarkerIndex].getBufferRange().end
+        scanEnd = @markers[followingMarkerIndex].getRange().end
       else
         spliceEnd = Infinity
         scanEnd = Point.INFINITY
@@ -152,7 +159,6 @@ class BufferSearch
       oldMarkers = @markers.splice(spliceStart, spliceEnd - spliceStart + 1, newMarkers...)
       for oldMarker in oldMarkers
         oldMarker.destroy()
-        delete @decorationsByMarkerId[oldMarker.id]
       markerIndex += newMarkers.length - oldMarkers.length
 
     while marker = @markers[++markerIndex]
@@ -162,49 +168,35 @@ class BufferSearch
     @emitter.emit "did-update", @markers.slice()
     @patch.clear()
     @currentResultMarker = null
-    @setCurrentMarkerFromSelection()
+    @setCurrentResultMarkerFromSelection()
 
-  setCurrentMarkerFromSelection: ->
-    marker = null
-    marker = @findMarker(@editor.getSelectedBufferRange()) if @editor?
+  setCurrentResultMarkerFromSelection: ->
+    {start, end} = @editor.getSelectedBufferRange()
+    marker = @resultsMarkerLayer.findMarkers(startPosition: start, endPosition: end)[0] if @editor?
 
     return if marker is @currentResultMarker
 
     if @currentResultMarker?
-      @decorationsByMarkerId[@currentResultMarker.id]?.setProperties(type: 'highlight', class: @constructor.markerClass)
+      @resultsMarkerLayerDecoration.setPropertiesForMarker(@currentResultMarker, null)
       @currentResultMarker = null
 
-    if marker and not marker.isDestroyed()
-      @decorationsByMarkerId[marker.id]?.setProperties(type: 'highlight', class: 'current-result')
+    if marker?
+      @resultsMarkerLayerDecoration.setPropertiesForMarker(marker, {type: 'highlight', class: 'current-result'})
       @currentResultMarker = marker
 
     @emitter.emit 'did-change-current-result', @currentResultMarker
 
-  findMarker: (range) ->
-    if @markers?.length > 0
-      @editor.findMarkers(
-        class: @constructor.markerClass,
-        startPosition: range.start,
-        endPosition: range.end
-      )[0]
-
   recreateMarker: (marker) ->
-    delete @decorationsByMarkerId[marker.id]
     marker.destroy()
-    @createMarker(marker.getBufferRange())
+    @createMarker(marker.getRange())
 
   createMarker: (range) ->
-    marker = @editor.markBufferRange(range,
+    @resultsMarkerLayer.markRange(range,
       invalidate: 'inside'
       class: @constructor.markerClass
       persistent: false
       maintainHistory: false
     )
-    @decorationsByMarkerId[marker.id] = @editor.decorateMarker(marker,
-      type: 'highlight',
-      class: @constructor.markerClass
-    )
-    marker
 
   bufferChanged: ({oldRange, newRange, newText}) ->
     @patch.splice(
