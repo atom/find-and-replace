@@ -100,7 +100,7 @@ class BufferSearch
 
       if regex = @getFindPatternRegex()
         @editor.scanInBufferRange regex, Range(start, end), ({range}) =>
-          newMarkers.push(@createMarker(range)) unless range.isEmpty()
+          newMarkers.push(@createMarker(range))
       else
         return false
     newMarkers
