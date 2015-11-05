@@ -849,12 +849,13 @@ describe 'ProjectFindView', ->
 
     describe "buffer search sharing of the find options", ->
       getResultDecorations = (className) ->
-        markerIdForDecorations = editor.decorationsForScreenRowRange(0, editor.getLineCount())
-        resultDecorations = []
-        for markerId, decorations of markerIdForDecorations
-          for decoration in decorations
-            resultDecorations.push decoration if decoration.getProperties().class is className
-        resultDecorations
+        decorationPropertiesById = editor.decorationsStateForScreenRowRange(0, editor.getLineCount())
+        results = []
+        for markerId, decorationProperties of decorationPropertiesById
+          if decorationProperties.properties.class is className
+            results.push decorationProperties
+
+        results
 
       it "setting the find text does not interfere with the project replace state", ->
         # Not sure why I need to advance the clock before setting the text. If

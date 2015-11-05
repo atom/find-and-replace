@@ -357,7 +357,7 @@ class FindView extends View
     start = end if selection.isReversed()
 
     for marker, index in @markers
-      markerStartPosition = marker.bufferMarker.getStartPosition()
+      markerStartPosition = marker.getStartPosition()
       return index if markerStartPosition.isEqual(start) and indexIncluded
       return index if markerStartPosition.isGreaterThan(start)
     0
@@ -375,25 +375,25 @@ class FindView extends View
     start = end if selection.isReversed()
 
     for marker, index in @markers by -1
-      markerEndPosition = marker.bufferMarker.getEndPosition()
+      markerEndPosition = marker.getEndPosition()
       return index if markerEndPosition.isLessThan(start)
 
     @markers.length - 1
 
   selectAllMarkers: =>
     return unless @markers?.length > 0
-    ranges = (marker.getBufferRange() for marker in @markers)
+    ranges = (marker.getRange() for marker in @markers)
     scrollMarker = @markers[@firstMarkerIndexAfterCursor()]
     editor = @model.getEditor()
     editor.setSelectedBufferRanges(ranges, flash: true)
-    editor.scrollToBufferPosition(scrollMarker.getStartBufferPosition(), center: true)
+    editor.scrollToBufferPosition(scrollMarker.getStartPosition(), center: true)
 
   selectMarkerAtIndex: (markerIndex) ->
     return unless @markers?.length > 0
 
     if marker = @markers[markerIndex]
       editor = @model.getEditor()
-      editor.setSelectedBufferRange(marker.getBufferRange(), flash: true)
+      editor.setSelectedBufferRange(marker.getRange(), flash: true)
       editor.scrollToCursorPosition(center: true)
 
   setSelectionAsFindPattern: =>

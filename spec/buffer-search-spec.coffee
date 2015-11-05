@@ -44,10 +44,11 @@ describe "BufferSearch", ->
 
   getHighlightedRanges = ->
     ranges = []
-    for decoration in editor.getDecorations(type: 'highlight')
-      marker = decoration.getMarker()
-      if marker.isValid() and decoration.getProperties()['class'] in ['find-result', 'current-result']
-        ranges.push(marker.getBufferRange())
+    state = editor.decorationsStateForScreenRowRange(0, editor.getLineCount())
+    for id, {properties, screenRange} of state
+      if properties.class in ['find-result', 'current-result']
+        ranges.push(screenRange)
+
     ranges
       .sort (a, b) -> a.compare(b)
       .map (range) -> range.serialize()
@@ -56,7 +57,7 @@ describe "BufferSearch", ->
     expect(markersListener.callCount).toBe 1
     emittedMarkerRanges = markersListener
       .mostRecentCall.args[0]
-      .map (marker) -> marker.getBufferRange().serialize()
+      .map (marker) -> marker.getRange().serialize()
     expect(emittedMarkerRanges).toEqual(getHighlightedRanges())
     markersListener.reset()
 
@@ -376,8 +377,9 @@ describe "BufferSearch", ->
       markers = markersListener.mostRecentCall.args[0]
       markersListener.reset()
 
-      editor.setSelectedBufferRange(markers[1].getBufferRange())
-      expect(currentResultListener).toHaveBeenCalledWith(markers[1])
+      editor.setSelectedBufferRange(markers[1].getRange())
+      expect(model.currentResultMarker.getRange()).toEqual markers[1].getRange()
+      expect(currentResultListener).toHaveBeenCalled()
       currentResultListener.reset()
 
       model.replace([markers[1]], "new-text")
@@ -403,8 +405,9 @@ describe "BufferSearch", ->
         [[7, 8], [7, 11]]
       ]
 
-      editor.setSelectedBufferRange(markers[2].getBufferRange())
-      expect(currentResultListener).toHaveBeenCalledWith(markers[2])
+      editor.setSelectedBufferRange(markers[2].getRange())
+      expect(model.currentResultMarker.getRange()).toEqual markers[2].getRange()
+      expect(currentResultListener).toHaveBeenCalled()
       currentResultListener.reset()
 
       advanceClock(editor.buffer.stoppedChangingDelay)
@@ -422,5 +425,5 @@ describe "BufferSearch", ->
       ]
 
       expect(currentResultListener).toHaveBeenCalled()
-      expect(currentResultListener.mostRecentCall.args[0].getBufferRange()).toEqual markers[2].getBufferRange()
+      expect(currentResultListener.mostRecentCall.args[0].getRange()).toEqual markers[2].getRange()
       expect(currentResultListener.mostRecentCall.args[0].isDestroyed()).toBe false
