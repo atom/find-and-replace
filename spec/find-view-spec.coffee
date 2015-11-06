@@ -12,11 +12,17 @@ describe 'FindView', ->
     workspaceElement.querySelector('.find-and-replace').parentNode
 
   getResultDecorations = (editor, clazz) ->
-    markerIdForDecorations = editor.decorationsForScreenRowRange(0, editor.getLineCount())
-    resultDecorations = []
-    for markerId, decorations of markerIdForDecorations
-      for decoration in decorations
-        resultDecorations.push decoration if decoration.getProperties().class is clazz
+    if editor.decorationsStateForScreenRowRange?
+      resultDecorations = []
+      for id, decoration of editor.decorationsStateForScreenRowRange(0, editor.getLineCount())
+        if decoration.properties.class is clazz
+          resultDecorations.push(decoration)
+    else
+      markerIdForDecorations = editor.decorationsForScreenRowRange(0, editor.getLineCount())
+      resultDecorations = []
+      for markerId, decorations of markerIdForDecorations
+        for decoration in decorations
+          resultDecorations.push decoration if decoration.getProperties().class is clazz
     resultDecorations
 
   beforeEach ->
@@ -887,8 +893,8 @@ describe 'FindView', ->
         expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 5]]
 
     describe "highlighting search results", ->
-      getResultDecorationMarker = (clazz) ->
-        getResultDecorations(editor, clazz)[0]?.getMarker()
+      getResultDecoration = (clazz) ->
+        getResultDecorations(editor, clazz)[0]
 
       it "only highlights matches", ->
         expect(getResultDecorations(editor, 'find-result')).toHaveLength 5
@@ -900,31 +906,31 @@ describe 'FindView', ->
           expect(getResultDecorations(editor, 'find-result')).toHaveLength 0
 
       it "adds a class to the current match indicating it is the current match", ->
-        firstResultMarker = getResultDecorationMarker('current-result')
+        firstResultMarker = getResultDecoration('current-result')
         expect(getResultDecorations(editor, 'find-result')).toHaveLength 5
 
         atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
         atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
 
-        nextResultMarker = getResultDecorationMarker('current-result')
+        nextResultMarker = getResultDecoration('current-result')
         expect(nextResultMarker).not.toEqual firstResultMarker
 
         atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:find-previous')
         atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:find-previous')
 
-        originalResultMarker = getResultDecorationMarker('current-result')
+        originalResultMarker = getResultDecoration('current-result')
         expect(originalResultMarker).toEqual firstResultMarker
 
       it "adds a class to the result when the current selection equals the result's range", ->
-        originalResultMarker = getResultDecorationMarker('current-result')
+        originalResultMarker = getResultDecoration('current-result')
         expect(originalResultMarker).toBeDefined()
 
         editor.setSelectedBufferRange([[5, 16], [5, 20]])
 
-        expect(getResultDecorationMarker('current-result')).toBeUndefined()
+        expect(getResultDecoration('current-result')).toBeUndefined()
         editor.setSelectedBufferRange([[5, 16], [5, 21]])
 
-        newResultMarker = getResultDecorationMarker('current-result')
+        newResultMarker = getResultDecoration('current-result')
         expect(newResultMarker).toBeDefined()
         expect(newResultMarker).not.toBe originalResultMarker
 
@@ -1039,12 +1045,13 @@ describe 'FindView', ->
       it "clears existing markers for another search", ->
         findView.findEditor.setText('notinthefile')
         atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
-        expect(editor.getMarkers().length).toEqual 1
+        expect(getResultDecorations(editor, 'find-result')).toHaveLength 0
+
 
       it "clears existing markers for an empty search", ->
         findView.findEditor.setText('')
         atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
-        expect(editor.getMarkers().length).toEqual 1
+        expect(getResultDecorations(editor, 'find-result')).toHaveLength 0
 
   describe "replacing", ->
     beforeEach ->

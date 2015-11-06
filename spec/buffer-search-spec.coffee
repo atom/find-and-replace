@@ -44,10 +44,17 @@ describe "BufferSearch", ->
 
   getHighlightedRanges = ->
     ranges = []
-    for decoration in editor.getDecorations(type: 'highlight')
-      marker = decoration.getMarker()
-      if marker.isValid() and decoration.getProperties()['class'] in ['find-result', 'current-result']
-        ranges.push(marker.getBufferRange())
+
+    if editor.decorationsStateForScreenRowRange?
+      for id, decoration of editor.decorationsStateForScreenRowRange(0, editor.getLineCount())
+        if decoration.properties.class in ['find-result', 'current-result']
+          ranges.push(decoration.screenRange)
+    else
+      for decoration in editor.getDecorations(type: 'highlight')
+        marker = decoration.getMarker()
+        if marker.isValid() and decoration.getProperties()['class'] in ['find-result', 'current-result']
+          ranges.push(marker.getBufferRange())
+
     ranges
       .sort (a, b) -> a.compare(b)
       .map (range) -> range.serialize()
