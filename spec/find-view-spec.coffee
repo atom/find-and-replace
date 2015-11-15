@@ -581,12 +581,12 @@ describe 'FindView', ->
       atom.commands.dispatch editorView, 'find-and-replace:find-previous'
       expect(findView.resultCounter.text()).toEqual('6 of 6')
       expect(findView.wrapIcon).toBeVisible()
-      expect(findView.wrapIcon).toHaveClass 'icon-arrow-down'
+      expect(findView.wrapIcon).toHaveClass 'icon-move-down'
 
       atom.commands.dispatch editorView, 'find-and-replace:find-next'
       expect(findView.resultCounter.text()).toEqual('1 of 6')
       expect(findView.wrapIcon).toBeVisible()
-      expect(findView.wrapIcon).toHaveClass 'icon-arrow-up'
+      expect(findView.wrapIcon).toHaveClass 'icon-move-up'
 
     describe "when find-and-replace:use-selection-as-find-pattern is triggered", ->
       it "places the selected text into the find editor", ->

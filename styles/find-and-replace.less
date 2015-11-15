@@ -168,7 +168,7 @@ atom-workspace.find-visible {
   }
 
   .wrap-icon {
-    @wrap-size: 96px;
+    @wrap-size: @font-size * 10;
 
     display: none;
     position: absolute;
@@ -176,11 +176,13 @@ atom-workspace.find-visible {
     top: @wrap-size * -1.5;
     margin-left: @wrap-size * -0.5;
     background: rgba(136,136,136, 0.2);
-    border-radius: 10px;
+    border-radius: @component-border-radius * 5;
     text-align: center;
     pointer-events: none;
     &:before {
-      font-size: @wrap-size;
+      // Octicons look best in sizes that are multiples of 16px
+      font-size: @wrap-size - mod(@wrap-size, 16px) - 16px;
+      line-height: @wrap-size;
       height: @wrap-size;
       width: @wrap-size;
     }

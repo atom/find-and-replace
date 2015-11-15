@@ -363,7 +363,7 @@ class FindView extends View
       return index if markerStartPosition.isEqual(start) and indexIncluded
       return index if markerStartPosition.isGreaterThan(start)
 
-    @showWrapIcon('icon-arrow-up')
+    @showWrapIcon('icon-move-up')
     0
 
   selectFirstMarkerBeforeCursor: =>
@@ -382,7 +382,7 @@ class FindView extends View
       markerEndPosition = marker.bufferMarker.getEndPosition()
       return index if markerEndPosition.isLessThan(start)
 
-    @showWrapIcon('icon-arrow-down')
+    @showWrapIcon('icon-move-down')
     @markers.length - 1
 
   selectAllMarkers: =>
