@@ -445,25 +445,35 @@ describe 'ResultsView', ->
           expect(editor.isPending()).toBe false
           expect(atom.views.getView(editor)).toHaveFocus()
 
-    describe "when `openProjectFindResultsInRightPane` option is true", ->
+    describe "when `openProjectFindResultsInANewPane` option is no", ->
       beforeEach ->
-        atom.config.set('find-and-replace.openProjectFindResultsInRightPane', true)
+        atom.config.set('find-and-replace.openProjectFindResultsInANewPane', 'no')
 
       it "always opens the file in the left pane", ->
         spyOn(atom.workspace, 'open').andCallThrough()
         atom.commands.dispatch resultsView.element, 'core:move-down'
         atom.commands.dispatch resultsView.element, 'core:confirm'
-        expect(atom.workspace.open.mostRecentCall.args[1].split).toBe 'left'
+        expect(atom.workspace.open.mostRecentCall.args[1]).toEqual {}
 
-    describe "when `openProjectFindResultsInRightPane` option is false", ->
+    describe "when `openProjectFindResultsInANewPane` option is right pane", ->
       beforeEach ->
-        atom.config.set('find-and-replace.openProjectFindResultsInRightPane', false)
+        atom.config.set('find-and-replace.openProjectFindResultsInANewPane', 'right pane')
 
       it "does not specify a pane to split", ->
         spyOn(atom.workspace, 'open').andCallThrough()
         atom.commands.dispatch resultsView.element, 'core:move-down'
         atom.commands.dispatch resultsView.element, 'core:confirm'
-        expect(atom.workspace.open.mostRecentCall.args[1]).toEqual {}
+        expect(atom.workspace.open.mostRecentCall.args[1].split).toBe 'left'
+
+    describe "when `openProjectFindResultsInANewPane` option is bottom pane", ->
+      beforeEach ->
+        atom.config.set('find-and-replace.openProjectFindResultsInANewPane', 'bottom pane')
+
+      it "does not specify a pane to split", ->
+        spyOn(atom.workspace, 'open').andCallThrough()
+        atom.commands.dispatch resultsView.element, 'core:move-down'
+        atom.commands.dispatch resultsView.element, 'core:confirm'
+        expect(atom.workspace.open.mostRecentCall.args[1].split).toBe 'up'
 
   describe "arrowing through the list", ->
     it "arrows through the entire list without selecting paths and overshooting the boundaries", ->
