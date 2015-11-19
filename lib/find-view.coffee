@@ -447,21 +447,30 @@ class FindView extends View
     else
       optionButton.removeClass 'selected'
 
+  anySelectionsMatchFindPattern: =>
+    editor = @model.getEditor()
+    selections = editor?.getSelections() || []
+    _.any selections, (selection) =>
+      selectionMatchesFindPattern = false
+      editor.scanInBufferRange @model.getFindPatternRegex(), selection.getBufferRange(), ({range}) =>
+        selectionMatchesFindPattern = selectionMatchesFindPattern || _.isEqual(range, selection.getBufferRange())
+      selectionMatchesFindPattern
+
   toggleRegexOption: =>
     @search(useRegex: not @model.getFindOptions().useRegex)
-    @selectFirstMarkerAfterCursor()
+    @selectFirstMarkerAfterCursor() unless @anySelectionsMatchFindPattern()
 
   toggleCaseOption: =>
     @search(caseSensitive: not @model.getFindOptions().caseSensitive)
-    @selectFirstMarkerAfterCursor()
+    @selectFirstMarkerAfterCursor() unless @anySelectionsMatchFindPattern()
 
   toggleSelectionOption: =>
     @search(inCurrentSelection: not @model.getFindOptions().inCurrentSelection)
-    @selectFirstMarkerAfterCursor()
+    @selectFirstMarkerAfterCursor() unless @anySelectionsMatchFindPattern()
 
   toggleWholeWordOption: =>
     @search(@findEditor.getText(), wholeWord: not @model.getFindOptions().wholeWord)
-    @selectFirstMarkerAfterCursor()
+    @selectFirstMarkerAfterCursor() unless @anySelectionsMatchFindPattern()
 
   updateReplaceEnablement: ->
     canReplace = @markers?.length > 0

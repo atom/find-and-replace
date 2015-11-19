@@ -844,6 +844,37 @@ describe 'FindView', ->
           atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
           expect(findView.descriptionLabel).toHaveClass 'text-error'
 
+      describe "when there are existing selections", ->
+        describe "when any existing selections match the pattern", ->
+          it "shouldn't jump to the next match when toggled on", ->
+            findView.model.setFindOptions useRegex: false
+            findView.findEditor.setText 'items.length'
+            editor.setSelectedBufferRange [[2, 8], [2, 20]]
+            findView.regexOptionButton.click()
+            expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 20]]
+
+          it "shouldn't jump to the next match when toggled off", ->
+            findView.model.setFindOptions useRegex: true
+            findView.findEditor.setText 'items.length'
+            editor.setSelectedBufferRange [[2, 8], [2, 20]]
+            findView.regexOptionButton.click()
+            expect(editor.getSelectedBufferRange()).toEqual [[2, 8], [2, 20]]
+
+        describe "when no existing selections match the pattern", ->
+          it "should jump to the next match when toggled on", ->
+            findView.model.setFindOptions useRegex: false
+            findView.findEditor.setText 'pivot ?'
+            editor.setSelectedBufferRange [[6, 16], [6, 23]]
+            findView.regexOptionButton.click()
+            expect(editor.getSelectedBufferRange()).toEqual [[8, 29], [8, 34]]
+
+          it "should jump to the next match when toggled off", ->
+            findView.model.setFindOptions useRegex: true
+            findView.findEditor.setText 'pivot ?'
+            editor.setSelectedBufferRange [[8, 29], [8, 34]]
+            findView.regexOptionButton.click()
+            expect(editor.getSelectedBufferRange()).toEqual [[6, 16], [6, 23]]
+
     describe "when whole-word is toggled", ->
       it "toggles whole-word via an event and finds text matching the pattern", ->
         editor.setCursorBufferPosition([0, 0])
@@ -869,6 +900,39 @@ describe 'FindView', ->
         atom.commands.dispatch findView.findEditor.element, 'find-and-replace:toggle-whole-word-option'
         expect(editor.getSelectedBufferRange()).toEqual [[11, 20], [11, 25]]
 
+      describe "when there are existing selections", ->
+        describe "when any existing selections match the pattern", ->
+          it "shouldn't jump to the next match when toggled on", ->
+            findView.model.setFindOptions wholeWord: false
+            findView.findEditor.setText 'sort'
+            editor.setSelectedBufferRange [[1, 6], [1, 10]]
+            findView.wholeWordOptionButton.click()
+            expect(editor.getSelectedBufferRange()).toEqual [[1, 6], [1, 10]]
+
+          it "shouldn't jump to the next match when toggled off", ->
+            findView.model.setFindOptions wholeWord: true
+            findView.findEditor.setText 'sort'
+            editor.setSelectedBufferRange [[1, 6], [1, 10]]
+            findView.wholeWordOptionButton.click()
+            expect(editor.getSelectedBufferRange()).toEqual [[1, 6], [1, 10]]
+
+        describe "when no existing selections match the pattern", ->
+          it "should jump to the next match when toggled on", ->
+            findView.model.setFindOptions wholeWord: false
+            findView.findEditor.setText 'sort'
+            editor.setSelectedBufferRange [[0, 9], [0, 13]]
+            findView.wholeWordOptionButton.click()
+            expect(editor.getSelectedBufferRange()).toEqual [[1, 6], [1, 10]]
+
+          it "should jump to the next match when toggled off", ->
+            # It's impossible to create a test where `wholeWord: true` matches but `wholeWord: false` doesn't.
+            # Instead we'll create a generic selection and ensure that it jumps to the next match.
+            findView.model.setFindOptions wholeWord: true
+            findView.findEditor.setText 'sort'
+            editor.setSelectedBufferRange [[0, 0], [0, 5]]
+            findView.wholeWordOptionButton.click()
+            expect(editor.getSelectedBufferRange()).toEqual [[0, 9], [0, 13]]
+
     describe "when case sensitivity is toggled", ->
       beforeEach ->
         editor.setText "-----\nwords\nWORDs\n"
@@ -891,6 +955,39 @@ describe 'FindView', ->
         editor.setCursorBufferPosition([0, 0])
         findView.caseOptionButton.click()
         expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 5]]
+
+      describe "when there are existing selections", ->
+        describe "when any existing selections match the pattern", ->
+          it "shouldn't jump to the next match when toggled on", ->
+            findView.model.setFindOptions caseSensitive: false
+            findView.findEditor.setText 'WORDs'
+            editor.setSelectedBufferRange [[2, 0], [2, 5]]
+            findView.caseOptionButton.click()
+            expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 5]]
+
+          it "shouldn't jump to the next match when toggled off", ->
+            findView.model.setFindOptions caseSensitive: true
+            findView.findEditor.setText 'WORDs'
+            editor.setSelectedBufferRange [[2, 0], [2, 5]]
+            findView.caseOptionButton.click()
+            expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 5]]
+
+        describe "when no existing selections match the pattern", ->
+          it "should jump to the next match when toggled on", ->
+            findView.model.setFindOptions caseSensitive: false
+            findView.findEditor.setText 'WORDs'
+            editor.setSelectedBufferRange [[1, 0], [1, 5]]
+            findView.caseOptionButton.click()
+            expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 5]]
+
+          it "should jump to the next match when toggled off", ->
+            # It's impossible to create a test where `caseSensitive: true` matches but `caseSensitive: false` doesn't.
+            # Instead we'll create a generic selection and ensure that it jumps to the next match.
+            findView.model.setFindOptions caseSensitive: true
+            findView.findEditor.setText 'WORDs'
+            editor.setSelectedBufferRange [[0, 0], [0, 5]]
+            findView.caseOptionButton.click()
+            expect(editor.getSelectedBufferRange()).toEqual [[1, 0], [1, 5]]
 
     describe "highlighting search results", ->
       getResultDecoration = (clazz) ->
