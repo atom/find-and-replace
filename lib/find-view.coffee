@@ -449,11 +449,11 @@ class FindView extends View
 
   anySelectionsMatchFindPattern: =>
     editor = @model.getEditor()
-    selections = editor?.getSelections() || []
+    selections = editor?.getSelections() or []
     _.any selections, (selection) =>
       selectionMatchesFindPattern = false
-      editor.scanInBufferRange @model.getFindPatternRegex(), selection.getBufferRange(), ({range}) =>
-        selectionMatchesFindPattern = selectionMatchesFindPattern || _.isEqual(range, selection.getBufferRange())
+      editor.scanInBufferRange @model.getFindPatternRegex(), selection.getBufferRange(), ({range}) ->
+        selectionMatchesFindPattern = selectionMatchesFindPattern or _.isEqual(range, selection.getBufferRange())
       selectionMatchesFindPattern
 
   toggleRegexOption: =>
