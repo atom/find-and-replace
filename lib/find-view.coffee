@@ -447,30 +447,27 @@ class FindView extends View
     else
       optionButton.removeClass 'selected'
 
-  anySelectionsMatchFindPattern: =>
-    editor = @model.getEditor()
-    selections = editor?.getSelections() or []
+  anyMarkersAreSelected: =>
+    selections = @model.getEditor()?.getSelections() or []
     _.any selections, (selection) =>
-      selectionMatchesFindPattern = false
-      editor.scanInBufferRange @model.getFindPatternRegex(), selection.getBufferRange(), ({range}) ->
-        selectionMatchesFindPattern = selectionMatchesFindPattern or _.isEqual(range, selection.getBufferRange())
-      selectionMatchesFindPattern
+      _.any @model.markers or [], (marker) =>
+        _.isEqual(marker.getBufferRange(), selection.getBufferRange())
 
   toggleRegexOption: =>
     @search(useRegex: not @model.getFindOptions().useRegex)
-    @selectFirstMarkerAfterCursor() unless @anySelectionsMatchFindPattern()
+    @selectFirstMarkerAfterCursor() unless @anyMarkersAreSelected()
 
   toggleCaseOption: =>
     @search(caseSensitive: not @model.getFindOptions().caseSensitive)
-    @selectFirstMarkerAfterCursor() unless @anySelectionsMatchFindPattern()
+    @selectFirstMarkerAfterCursor() unless @anyMarkersAreSelected()
 
   toggleSelectionOption: =>
     @search(inCurrentSelection: not @model.getFindOptions().inCurrentSelection)
-    @selectFirstMarkerAfterCursor() unless @anySelectionsMatchFindPattern()
+    @selectFirstMarkerAfterCursor() unless @anyMarkersAreSelected()
 
   toggleWholeWordOption: =>
     @search(@findEditor.getText(), wholeWord: not @model.getFindOptions().wholeWord)
-    @selectFirstMarkerAfterCursor() unless @anySelectionsMatchFindPattern()
+    @selectFirstMarkerAfterCursor() unless @anyMarkersAreSelected()
 
   updateReplaceEnablement: ->
     canReplace = @markers?.length > 0
