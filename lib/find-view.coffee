@@ -269,7 +269,7 @@ class FindView extends View
       atom.beep()
 
   replaceNext: =>
-    @replace('findNext', => @firstMarkerIndexAfterCursor(true))
+    @replace('findNext', 'firstMarkerIndexFromCursor')
 
   replacePrevious: =>
     @replace('findPrevious', 'firstMarkerIndexBeforeCursor')
@@ -281,7 +281,7 @@ class FindView extends View
 
     if @markers?.length > 0
       unless currentMarker = @model.currentResultMarker
-        markerIndex = if _.isFunction(nextIndexFn) then nextIndexFn() else @[nextIndexFn]()
+        markerIndex = @[nextIndexFn]()
         currentMarker = @markers[markerIndex]
 
       @model.replace([currentMarker], @replaceEditor.getText())
@@ -361,6 +361,9 @@ class FindView extends View
       return index if markerStartPosition.isEqual(start) and indexIncluded
       return index if markerStartPosition.isGreaterThan(start)
     0
+
+  firstMarkerIndexFromCursor: =>
+    @firstMarkerIndexAfterCursor(true)
 
   selectFirstMarkerBeforeCursor: =>
     markerIndex = @firstMarkerIndexBeforeCursor()
