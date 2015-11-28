@@ -54,7 +54,7 @@ class SelectNext
     lastSelection = @editor.getLastSelection()
     if @wordSelected = @isWordSelected(lastSelection)
       disposables = new CompositeDisposable
-      clearWordSelected = () =>
+      clearWordSelected = =>
         @wordSelected = null
         disposables.dispose()
       disposables.add lastSelection.onDidChangeRange clearWordSelected
