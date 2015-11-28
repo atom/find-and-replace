@@ -1128,6 +1128,16 @@ describe 'FindView', ->
           expect(editor.lineTextForBufferRow(2)).toBe "    if (cats.length <= 1) return cats;"
           expect(editor.getSelectedBufferRange()).toEqual [[3, 16], [3, 21]]
 
+        it "replaces the _current_ match and selects the next match", ->
+          editor.setText "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s"
+          editor.setSelectedBufferRange([[0, 0], [0, 5]])
+          findView.findEditor.setText('Lorem')
+          findView.replaceEditor.setText('replacement')
+
+          atom.commands.dispatch(findView.replaceEditor.element, 'core:confirm')
+          expect(editor.lineTextForBufferRow(0)).toBe "replacement Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s"
+          expect(editor.getSelectedBufferRange()).toEqual [[0, 81], [0, 86]]
+
       describe "when the replace next button is pressed", ->
         it "replaces the match after the cursor and selects the next match", ->
           $('.find-and-replace .btn-next').click()
