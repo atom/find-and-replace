@@ -1,5 +1,5 @@
 _ = require 'underscore-plus'
-{Range} = require 'atom'
+{CompositeDisposable, Range} = require 'atom'
 
 # Find and select the next occurrence of the currently selected text.
 #
@@ -8,7 +8,7 @@ module.exports =
 class SelectNext
   selectionRanges: null
 
-  constructor: (@editor, {@findOptions}) ->
+  constructor: (@editor) ->
     @selectionRanges = []
 
   findAndSelectNext: ->
@@ -51,7 +51,14 @@ class SelectNext
 
   selectWord: ->
     @editor.selectWordsContainingCursors()
-    @wordSelected = @isWordSelected(@editor.getLastSelection())
+    lastSelection = @editor.getLastSelection()
+    if @wordSelected = @isWordSelected(lastSelection)
+      disposables = new CompositeDisposable
+      clearWordSelected = () =>
+        @wordSelected = null
+        disposables.dispose()
+      disposables.add lastSelection.onDidChangeRange clearWordSelected
+      disposables.add lastSelection.onDidDestroy clearWordSelected
 
   selectAllOccurrences: ->
     range = [[0, 0], @editor.getEofBufferPosition()]
@@ -74,20 +81,16 @@ class SelectNext
   addSelection: (range) ->
     selection = @editor.addSelectionForBufferRange(range)
     @updateSavedSelections selection
-    disposable = selection.onDidDestroy =>
-      @wordSelected = null
-      disposable.dispose()
 
   scanForNextOccurrence: (range, callback) ->
     selection = @editor.getLastSelection()
     text = _.escapeRegExp(selection.getText())
 
-    @wordSelected ?= @isWordSelected(selection)
     if @wordSelected
       nonWordCharacters = atom.config.get('editor.nonWordCharacters')
       text = "(^|[ \t#{_.escapeRegExp(nonWordCharacters)}]+)#{text}(?=$|[\\s#{_.escapeRegExp(nonWordCharacters)}]+)"
 
-    @editor.scanInBufferRange new RegExp(text, (if @findOptions.caseSensitive then 'g' else 'gi')), range, (result) ->
+    @editor.scanInBufferRange new RegExp(text, 'g'), range, (result) ->
       if prefix = result.match[1]
         result.range = result.range.translate([0, prefix.length], [0, 0])
       callback(result)
@@ -117,7 +120,7 @@ class SelectNext
     @isNonWordCharacter(@editor.getTextInBufferRange(range))
 
   isWordSelected: (selection) ->
-    if @findOptions.wholeWord and selection.getBufferRange().isSingleLine()
+    if selection.getBufferRange().isSingleLine()
       selectionRange = selection.getBufferRange()
       lineRange = @editor.bufferRangeForBufferRow(selectionRange.start.row)
       nonWordCharacterToTheLeft = _.isEqual(selectionRange.start, lineRange.start) or

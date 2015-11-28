@@ -125,7 +125,7 @@ module.exports =
       editor = editorElement.getModel()
       selectNext = @selectNextObjects.get(editor)
       unless selectNext?
-        selectNext = new SelectNext(editor, {@findOptions})
+        selectNext = new SelectNext(editor)
         @selectNextObjects.set(editor, selectNext)
       selectNext
 
