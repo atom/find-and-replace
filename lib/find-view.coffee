@@ -269,7 +269,7 @@ class FindView extends View
       atom.beep()
 
   replaceNext: =>
-    @replace('findNext', 'firstMarkerIndexAfterCursor')
+    @replace('findNext', 'firstMarkerIndexStartingFromCursor')
 
   replacePrevious: =>
     @replace('findPrevious', 'firstMarkerIndexBeforeCursor')
@@ -361,6 +361,9 @@ class FindView extends View
       return index if markerStartPosition.isEqual(start) and indexIncluded
       return index if markerStartPosition.isGreaterThan(start)
     0
+
+  firstMarkerIndexStartingFromCursor: =>
+    @firstMarkerIndexAfterCursor(true)
 
   selectFirstMarkerBeforeCursor: =>
     markerIndex = @firstMarkerIndexBeforeCursor()
