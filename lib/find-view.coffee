@@ -24,8 +24,6 @@ class FindView extends View
       placeholderText: 'Replace in current buffer'
 
     @div tabIndex: -1, class: 'find-and-replace', =>
-      @div outlet: 'wrapIcon', class: 'wrap-icon'
-
       @header class: 'header', =>
         @span outlet: 'descriptionLabel', class: 'header-item description', 'Find in Current Buffer'
         @span class: 'header-item options-label pull-right', =>
