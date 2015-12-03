@@ -24,6 +24,8 @@ class FindView extends View
       placeholderText: 'Replace in current buffer'
 
     @div tabIndex: -1, class: 'find-and-replace', =>
+      @div outlet: 'wrapIcon', class: 'wrap-icon'
+
       @header class: 'header', =>
         @span outlet: 'descriptionLabel', class: 'header-item description', 'Find in Current Buffer'
         @span class: 'header-item options-label pull-right', =>
@@ -360,6 +362,8 @@ class FindView extends View
       markerStartPosition = marker.bufferMarker.getStartPosition()
       return index if markerStartPosition.isEqual(start) and indexIncluded
       return index if markerStartPosition.isGreaterThan(start)
+
+    @showWrapIcon('icon-move-up')
     0
 
   firstMarkerIndexStartingFromCursor: =>
@@ -381,6 +385,7 @@ class FindView extends View
       markerEndPosition = marker.bufferMarker.getEndPosition()
       return index if markerEndPosition.isLessThan(start)
 
+    @showWrapIcon('icon-move-down')
     @markers.length - 1
 
   selectAllMarkers: =>
@@ -493,3 +498,8 @@ class FindView extends View
         title: "Replace Next [when there are results]"
       @replaceTooltipSubscriptions.add atom.tooltips.add @replaceAllButton,
         title: "Replace All [when there are results]"
+
+  showWrapIcon: (icon) ->
+    @wrapIcon.attr('class', "wrap-icon #{icon}").fadeIn()
+    clearTimeout(@wrapTimeout)
+    @wrapTimeout = setTimeout (=> @wrapIcon.fadeOut()), 1000

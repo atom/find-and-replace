@@ -166,6 +166,27 @@ atom-workspace.find-visible {
       margin-right: @component-padding;
     }
   }
+
+  .wrap-icon {
+    @wrap-size: @font-size * 10;
+
+    display: none;
+    position: absolute;
+    left: 50%;
+    top: @wrap-size * -1.5;
+    margin-left: @wrap-size * -0.5;
+    background: rgba(136,136,136, 0.2);
+    border-radius: @component-border-radius * 5;
+    text-align: center;
+    pointer-events: none;
+    &:before {
+      // Octicons look best in sizes that are multiples of 16px
+      font-size: @wrap-size - mod(@wrap-size, 16px) - 16px;
+      line-height: @wrap-size;
+      height: @wrap-size;
+      width: @wrap-size;
+    }
+  }
 }
 
 // Project find and replace
