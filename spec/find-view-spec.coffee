@@ -574,6 +574,20 @@ describe 'FindView', ->
       editor.setSelectedBufferRange([[2, 34], [2, 39]])
       expect(findView.resultCounter.text()).toEqual('3 of 6')
 
+    it "shows an icon when search wraps around", ->
+      atom.commands.dispatch editorView, 'find-and-replace:find-previous'
+      expect(findView.wrapIcon).not.toBeVisible()
+
+      atom.commands.dispatch editorView, 'find-and-replace:find-previous'
+      expect(findView.resultCounter.text()).toEqual('6 of 6')
+      expect(findView.wrapIcon).toBeVisible()
+      expect(findView.wrapIcon).toHaveClass 'icon-move-down'
+
+      atom.commands.dispatch editorView, 'find-and-replace:find-next'
+      expect(findView.resultCounter.text()).toEqual('1 of 6')
+      expect(findView.wrapIcon).toBeVisible()
+      expect(findView.wrapIcon).toHaveClass 'icon-move-up'
+
     describe "when find-and-replace:use-selection-as-find-pattern is triggered", ->
       it "places the selected text into the find editor", ->
         editor.setSelectedBufferRange([[1, 6], [1, 10]])
@@ -1200,6 +1214,16 @@ describe 'FindView', ->
           expect(findView.resultCounter.text()).toEqual('2 of 4')
           expect(editor.lineTextForBufferRow(2)).toBe "    if (cats.length <= 1) return cats;"
           expect(editor.getSelectedBufferRange()).toEqual [[3, 16], [3, 21]]
+
+        it "replaces the _current_ match and selects the next match", ->
+          editor.setText "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s"
+          editor.setSelectedBufferRange([[0, 0], [0, 5]])
+          findView.findEditor.setText('Lorem')
+          findView.replaceEditor.setText('replacement')
+
+          atom.commands.dispatch(findView.replaceEditor.element, 'core:confirm')
+          expect(editor.lineTextForBufferRow(0)).toBe "replacement Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s"
+          expect(editor.getSelectedBufferRange()).toEqual [[0, 81], [0, 86]]
 
       describe "when the replace next button is pressed", ->
         it "replaces the match after the cursor and selects the next match", ->

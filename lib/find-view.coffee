@@ -1,5 +1,5 @@
 _ = require 'underscore-plus'
-{$$$, View, TextEditorView} = require 'atom-space-pen-views'
+{$, $$$, View, TextEditorView} = require 'atom-space-pen-views'
 {CompositeDisposable} = require 'atom'
 Util = require './project/util'
 buildTextEditor = require './build-text-editor'
@@ -102,6 +102,7 @@ class FindView extends View
     @clearMessage()
     @updateOptionViews()
     @updateReplaceEnablement()
+    @createWrapIcon()
 
   destroy: ->
     @subscriptions?.dispose()
@@ -269,7 +270,7 @@ class FindView extends View
       atom.beep()
 
   replaceNext: =>
-    @replace('findNext', 'firstMarkerIndexAfterCursor')
+    @replace('findNext', 'firstMarkerIndexStartingFromCursor')
 
   replacePrevious: =>
     @replace('findPrevious', 'firstMarkerIndexBeforeCursor')
@@ -360,7 +361,12 @@ class FindView extends View
       markerStartPosition = marker.bufferMarker.getStartPosition()
       return index if markerStartPosition.isEqual(start) and indexIncluded
       return index if markerStartPosition.isGreaterThan(start)
+
+    @showWrapIcon('icon-move-up')
     0
+
+  firstMarkerIndexStartingFromCursor: =>
+    @firstMarkerIndexAfterCursor(true)
 
   selectFirstMarkerBeforeCursor: =>
     markerIndex = @firstMarkerIndexBeforeCursor()
@@ -378,6 +384,7 @@ class FindView extends View
       markerEndPosition = marker.bufferMarker.getEndPosition()
       return index if markerEndPosition.isLessThan(start)
 
+    @showWrapIcon('icon-move-down')
     @markers.length - 1
 
   selectAllMarkers: =>
@@ -494,3 +501,25 @@ class FindView extends View
         title: "Replace Next [when there are results]"
       @replaceTooltipSubscriptions.add atom.tooltips.add @replaceAllButton,
         title: "Replace All [when there are results]"
+
+  # FIXME: The wrap icon should probably be its own view responding to events
+  # when the search wraps.
+  createWrapIcon: ->
+    wrapIcon = document.createElement('div')
+    wrapIcon.classList.add('find-wrap-icon')
+    @wrapIcon = $(wrapIcon)
+
+  showWrapIcon: (icon) ->
+    editor = @model.getEditor()
+    return unless editor?
+    editorView = atom.views.getView(editor)
+    return unless editorView?.parentNode?
+
+    # Attach to the parent of the active editor, that way we can position it
+    # correctly over the active editor.
+    editorView.parentNode.appendChild(@wrapIcon[0])
+
+    # FIXME: This animation should be in CSS
+    @wrapIcon.attr('class', "find-wrap-icon #{icon}").fadeIn()
+    clearTimeout(@wrapTimeout)
+    @wrapTimeout = setTimeout (=> @wrapIcon.fadeOut()), 1000
