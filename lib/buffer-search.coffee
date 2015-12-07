@@ -58,7 +58,7 @@ class BufferSearch
 
   resultsMarkerLayerForTextEditor: (editor) ->
     unless layer = ResultsMarkerLayersByEditor.get(editor)
-      layer = editor.addMarkerLayer()
+      layer = editor.addMarkerLayer?()
       ResultsMarkerLayersByEditor.set(editor, layer)
     layer
 

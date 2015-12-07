@@ -436,6 +436,8 @@ describe "BufferSearch", ->
     it "creates or retrieves the results marker layer for the given editor", ->
       layer1 = model.resultsMarkerLayerForTextEditor(editor)
 
+      return unless layer1 # remove this guard after 1.3.0 hits stable channel
+
       # basic check that this is the expected results layer
       expect(layer1.findMarkers().length).toBeGreaterThan(0)
       for marker in layer1.findMarkers()
