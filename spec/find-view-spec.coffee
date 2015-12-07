@@ -574,19 +574,53 @@ describe 'FindView', ->
       editor.setSelectedBufferRange([[2, 34], [2, 39]])
       expect(findView.resultCounter.text()).toEqual('3 of 6')
 
-    it "shows an icon when search wraps around", ->
+    it "shows an icon when search wraps around and the editor scrolls", ->
+      editorView.style.height = "80px"
+      atom.views.performDocumentPoll()
+      expect(editor.getVisibleRowRange()).toEqual [0, 3]
+
+      expect(findView.resultCounter.text()).toEqual('2 of 6')
+      expect(findView.wrapIcon).not.toBeVisible()
+
       atom.commands.dispatch editorView, 'find-and-replace:find-previous'
+      expect(findView.resultCounter.text()).toEqual('1 of 6')
+      expect(editor.getVisibleRowRange()).toEqual [0, 3]
+
       expect(findView.wrapIcon).not.toBeVisible()
 
       atom.commands.dispatch editorView, 'find-and-replace:find-previous'
       expect(findView.resultCounter.text()).toEqual('6 of 6')
+      expect(editor.getVisibleRowRange()).toEqual [4, 7]
+
       expect(findView.wrapIcon).toBeVisible()
       expect(findView.wrapIcon).toHaveClass 'icon-move-down'
 
       atom.commands.dispatch editorView, 'find-and-replace:find-next'
       expect(findView.resultCounter.text()).toEqual('1 of 6')
+      expect(editor.getVisibleRowRange()).toEqual [0, 3]
+
       expect(findView.wrapIcon).toBeVisible()
       expect(findView.wrapIcon).toHaveClass 'icon-move-up'
+
+    it "does not nshow the wrap icon when the editor does not scroll", ->
+      editorView.style.height = "400px"
+      atom.views.performDocumentPoll()
+      expect(editor.getVisibleRowRange()).toEqual [0, 12]
+
+      atom.commands.dispatch editorView, 'find-and-replace:find-previous'
+      expect(findView.resultCounter.text()).toEqual('1 of 6')
+
+      atom.commands.dispatch editorView, 'find-and-replace:find-previous'
+      expect(findView.resultCounter.text()).toEqual('6 of 6')
+      expect(editor.getVisibleRowRange()).toEqual [0, 12]
+
+      expect(findView.wrapIcon).not.toBeVisible()
+
+      atom.commands.dispatch editorView, 'find-and-replace:find-next'
+      expect(findView.resultCounter.text()).toEqual('1 of 6')
+      expect(editor.getVisibleRowRange()).toEqual [0, 12]
+
+      expect(findView.wrapIcon).not.toBeVisible()
 
     describe "when find-and-replace:use-selection-as-find-pattern is triggered", ->
       it "places the selected text into the find editor", ->
