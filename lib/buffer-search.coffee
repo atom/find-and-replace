@@ -3,6 +3,8 @@ _ = require 'underscore-plus'
 {Patch} = TextBuffer
 escapeHelper = require './escape-helper'
 
+ResultMarkerLayersByEditor = new WeakMap
+
 module.exports =
 class BufferSearch
   @markerClass: 'find-result'
@@ -43,7 +45,10 @@ class BufferSearch
       @subscriptions.add @editor.onDidAddSelection(@setCurrentMarkerFromSelection.bind(this))
       @subscriptions.add @editor.onDidChangeSelectionRange(@setCurrentMarkerFromSelection.bind(this))
       if @useMarkerLayers = @editor.addMarkerLayer?
-        @resultsMarkerLayer = @editor.addMarkerLayer()
+        unless @resultsMarkerLayer = ResultMarkerLayersByEditor.get(@editor)
+          @resultsMarkerLayer = @editor.addMarkerLayer()
+          ResultMarkerLayersByEditor.set(@editor, @resultsMarkerLayer)
+        @resultsLayerDecoration?.destroy()
         @resultsLayerDecoration = @editor.decorateMarkerLayer(@resultsMarkerLayer, {type: 'highlight', class: @constructor.markerClass})
     @recreateMarkers()
 
