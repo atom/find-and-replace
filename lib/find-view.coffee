@@ -448,10 +448,8 @@ class FindView extends View
       optionButton.removeClass 'selected'
 
   anyMarkersAreSelected: =>
-    selections = @model.getEditor()?.getSelections() or []
-    _.any selections, (selection) =>
-      _.any @model.markers or [], (marker) =>
-        _.isEqual(marker.getBufferRange(), selection.getBufferRange())
+    @model.getEditor().getSelectedBufferRanges().some (selectedRange) =>
+      @model.findMarker(selectedRange)
 
   toggleRegexOption: =>
     @search(useRegex: not @model.getFindOptions().useRegex)
