@@ -35,5 +35,13 @@
   },
   "devDependencies": {
     "coffeelint": "^1.9.7"
+  },
+  "providedServices": {
+    "find-and-replace": {
+      "description": "Atom's bundled find-and-replace package",
+      "versions": {
+        "0.0.1": "provideService"
+      }
+    }
   }
 }
