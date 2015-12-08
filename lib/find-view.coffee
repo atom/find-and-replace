@@ -208,8 +208,12 @@ class FindView extends View
   focusFindEditor: =>
     selectedText = atom.workspace.getActiveTextEditor()?.getSelectedText?()
     if selectedText and selectedText.indexOf('\n') < 0
+      @deactivateSelectionOption()
       selectedText = Util.escapeRegex(selectedText) if @model.getFindOptions().useRegex
       @findEditor.setText(selectedText)
+    else if selectedText and selectedText.indexOf('\n') > 0
+      @activateSelectionOption()
+      @findEditor.setText("")
     @findEditor.focus()
     @findEditor.getModel().selectAll()
 
@@ -472,6 +476,16 @@ class FindView extends View
 
   toggleWholeWordOption: =>
     @search(@findEditor.getText(), wholeWord: not @model.getFindOptions().wholeWord)
+    @selectFirstMarkerAfterCursor() unless @anyMarkersAreSelected()
+
+  activateSelectionOption: =>
+    @search(@findEditor.getText(),inCurrentSelection: true)
+    @model.getFindOptions().inCurrentSelection=true
+    @selectFirstMarkerAfterCursor() unless @anyMarkersAreSelected()
+
+  deactivateSelectionOption: =>
+    @search(@findEditor.getText(),inCurrentSelection: false)
+    @model.getFindOptions().inCurrentSelection=false
     @selectFirstMarkerAfterCursor() unless @anyMarkersAreSelected()
 
   updateReplaceEnablement: ->
