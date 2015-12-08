@@ -431,3 +431,31 @@ describe "BufferSearch", ->
       expect(currentResultListener).toHaveBeenCalled()
       expect(currentResultListener.mostRecentCall.args[0].getBufferRange()).toEqual markers[2].getBufferRange()
       expect(currentResultListener.mostRecentCall.args[0].isDestroyed()).toBe false
+
+  describe ".prototype.resultsMarkerLayerForTextEditor(editor)", ->
+    it "creates or retrieves the results marker layer for the given editor", ->
+      layer1 = model.resultsMarkerLayerForTextEditor(editor)
+
+      return unless layer1 # remove this guard after 1.3.0 hits stable channel
+
+      # basic check that this is the expected results layer
+      expect(layer1.findMarkers().length).toBeGreaterThan(0)
+      for marker in layer1.findMarkers()
+        expect(editor.getTextInBufferRange(marker.getBufferRange())).toMatch /a+/
+
+      editor2 = buildTextEditor()
+      model.setEditor(editor2)
+      layer2 = model.resultsMarkerLayerForTextEditor(editor2)
+
+      model.setEditor(editor)
+      expect(model.resultsMarkerLayerForTextEditor(editor)).toBe layer1
+      expect(model.resultsMarkerLayerForTextEditor(editor2)).toBe layer2
+
+      model.search "c+",
+        caseSensitive: false
+        useRegex: true
+        wholeWord: false
+
+      expect(layer1.findMarkers().length).toBeGreaterThan(0)
+      for marker in layer1.findMarkers()
+        expect(editor.getTextInBufferRange(marker.getBufferRange())).toMatch /c+/

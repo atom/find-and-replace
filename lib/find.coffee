@@ -139,6 +139,9 @@ module.exports =
       'find-and-replace:select-skip': (event) ->
         selectNextObjectForEditorElement(this).skipCurrentSelection()
 
+  provideService: ->
+    resultsMarkerLayerForTextEditor: @findModel.resultsMarkerLayerForTextEditor.bind(@findModel)
+
   createViews: ->
     return if @findView?
 
