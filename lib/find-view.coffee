@@ -479,12 +479,12 @@ class FindView extends View
     @selectFirstMarkerAfterCursor() unless @anyMarkersAreSelected()
 
   activateSelectionOption: =>
-    @search(@findEditor.getText(),inCurrentSelection: true)
+    @search(@findEditor.getText(), inCurrentSelection: true)
     @model.getFindOptions().inCurrentSelection=true
     @selectFirstMarkerAfterCursor() unless @anyMarkersAreSelected()
 
   deactivateSelectionOption: =>
-    @search(@findEditor.getText(),inCurrentSelection: false)
+    @search(@findEditor.getText(), inCurrentSelection: false)
     @model.getFindOptions().inCurrentSelection=false
     @selectFirstMarkerAfterCursor() unless @anyMarkersAreSelected()
 
