@@ -479,15 +479,13 @@ class FindView extends View
     @selectFirstMarkerAfterCursor() unless @anyMarkersAreSelected()
 
   activateSelectionOption: =>
-    @search(@findEditor.getText(), inCurrentSelection: true)
-    @model.getFindOptions().inCurrentSelection=true
-    @selectFirstMarkerAfterCursor() unless @anyMarkersAreSelected()
+    if !@model.getFindOptions().inCurrentSelection
+      @toggleSelectionOption()
 
   deactivateSelectionOption: =>
-    @search(@findEditor.getText(), inCurrentSelection: false)
-    @model.getFindOptions().inCurrentSelection=false
-    @selectFirstMarkerAfterCursor() unless @anyMarkersAreSelected()
-
+    if @model.getFindOptions().inCurrentSelection
+      @toggleSelectionOption()
+      
   updateReplaceEnablement: ->
     canReplace = @markers?.length > 0
     return if canReplace and not @replaceAllButton[0].classList.contains('disabled')
