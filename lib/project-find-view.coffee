@@ -285,7 +285,7 @@ class ProjectFindView extends View
         element = element.parentElement
       # Use the active editor path if all elements don't have a path
       unless elementPath
-        elementPath = atom.workspace.getActiveTextEditor().getPath()
+        elementPath = atom.workspace.getActiveTextEditor()?.getPath()
 
     if fs.isFileSync(elementPath)
       require('path').dirname(elementPath)
