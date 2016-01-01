@@ -522,6 +522,7 @@ class FindView extends View
     @wrapIcon = $(wrapIcon)
 
   showWrapIcon: (icon) ->
+    return unless atom.config.get('find-and-replace.showSearchWrapIcon')
     editor = @model.getEditor()
     return unless editor?
     editorView = atom.views.getView(editor)

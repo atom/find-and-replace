@@ -30,6 +30,11 @@ module.exports =
       default: false
       title: 'Scroll To Result On Live-Search (incremental find in buffer)'
       description: 'Scroll to and select the closest match while typing in the buffer find box.'
+    showSearchWrapIcon:
+      type: 'boolean'
+      default: true
+      title: 'Show Search Wrap Icon'
+      description: 'Display a visual cue over the editor when looping through search results.'
     liveSearchMinimumCharacters:
       type: 'integer'
       default: 3
