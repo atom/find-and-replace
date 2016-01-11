@@ -18,7 +18,7 @@ module.exports =
       description: 'Focus the editor and select the next match when a file search is executed. If no matches are found, the editor will not be focused.'
     openProjectFindResultsInRightPane:
       type: 'boolean'
-      default: false
+      default: true
       description: 'When a project-wide search is executed, open the results in a split pane instead of a tab in the same pane.'
     closeFindPanelAfterSearch:
       type: 'boolean'
