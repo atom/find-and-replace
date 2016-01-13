@@ -42,12 +42,13 @@ class MatchView extends View
       @replacementText.text('').hide()
       @matchText.removeClass('highlight-error').addClass('highlight-info')
 
-  confirm: ->
+  confirm: (options = {}) ->
     openInRightPane = atom.config.get('find-and-replace.openProjectFindResultsInRightPane')
-    options = {}
-    options = {split: 'left'} if openInRightPane
-    atom.workspace.open(@filePath, options).then (editor) =>
+    options.split = 'left' if openInRightPane
+    editorPromise = atom.workspace.open(@filePath, options)
+    editorPromise.then (editor) =>
       editor.setSelectedBufferRange(@match.range, autoscroll: true)
+    editorPromise
 
   copy: ->
     atom.clipboard.write(@match.lineText)
