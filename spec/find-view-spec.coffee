@@ -174,6 +174,29 @@ describe 'FindView', ->
       runs ->
         expect(findView.replaceEditor.getText()).toBe 'function ()'
 
+  describe "when find-and-replace:clear-history is triggered", ->
+    it "clears the find and replace histories", ->
+      atom.commands.dispatch editorView, 'find-and-replace:show'
+
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        findView.findEditor.setText("items")
+        findView.replaceEditor.setText("cat")
+        findView.replaceAll()
+
+        findView.findEditor.setText("sort")
+        findView.replaceEditor.setText("dog")
+        findView.replaceNext()
+
+        atom.commands.dispatch editorView, 'find-and-replace:clear-history'
+
+        atom.commands.dispatch(findView.findEditor.element, 'core:move-up')
+        expect(findView.findEditor.getText()).toBe ''
+        atom.commands.dispatch(findView.replaceEditor.element, 'core:move-up')
+        expect(findView.replaceEditor.getText()).toBe ''
+
   describe "core:cancel", ->
     beforeEach ->
       atom.commands.dispatch editorView, 'find-and-replace:show'

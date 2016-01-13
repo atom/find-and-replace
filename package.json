@@ -20,7 +20,8 @@
       "find-and-replace:replace-next",
       "find-and-replace:replace-all",
       "find-and-replace:select-next",
-      "find-and-replace:select-all"
+      "find-and-replace:select-all",
+      "find-and-replace:clear-history"
     ]
   },
   "repository": "https://github.com/atom/find-and-replace",
