@@ -72,6 +72,7 @@ module.exports =
         @projectFindPanel.hide()
       else
         @projectFindPanel.show()
+        @projectFindView.focusFindElement()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'project-find:show-in-current-directory', ({target}) =>
       @createViews()
