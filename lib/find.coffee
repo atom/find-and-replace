@@ -60,7 +60,7 @@ module.exports =
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'project-find:show', =>
       @createViews()
-      showPanel @projectFindPanel, @findPanel, @projectFindView.focusFindElement 
+      showPanel @projectFindPanel, @findPanel, @projectFindView.focusFindElement
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'project-find:toggle', =>
       @createViews()
