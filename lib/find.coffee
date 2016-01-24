@@ -59,13 +59,11 @@ module.exports =
       atom.views.getView(atom.workspace).focus()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'project-find:show', =>
-      @createViews()
       @findPanel.hide()
       @projectFindPanel.show()
       @projectFindView.focusFindElement()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'project-find:toggle', =>
-      @createViews()
       @findPanel.hide()
 
       if @projectFindPanel.isVisible()
@@ -74,7 +72,6 @@ module.exports =
         @projectFindPanel.show()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'project-find:show-in-current-directory', ({target}) =>
-      @createViews()
       @findPanel.hide()
       @projectFindPanel.show()
       @projectFindView.findInCurrentlySelectedDirectory(target)
@@ -82,13 +79,11 @@ module.exports =
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:use-selection-as-find-pattern', =>
       return if @projectFindPanel?.isVisible() or @findPanel?.isVisible()
 
-      @createViews()
       @projectFindPanel.hide()
       @findPanel.show()
       @findView.focusFindEditor()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:toggle', =>
-      @createViews()
       @projectFindPanel.hide()
 
       if @findPanel.isVisible()
@@ -98,13 +93,11 @@ module.exports =
         @findView.focusFindEditor()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:show', =>
-      @createViews()
       @projectFindPanel.hide()
       @findPanel.show()
       @findView.focusFindEditor()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:show-replace', =>
-      @createViews()
       @projectFindPanel?.hide()
       @findPanel.show()
       @findView.focusReplaceEditor()
@@ -138,6 +131,7 @@ module.exports =
         selectNextObjectForEditorElement(this).undoLastSelection()
       'find-and-replace:select-skip': (event) ->
         selectNextObjectForEditorElement(this).skipCurrentSelection()
+    @createViews()
 
   provideService: ->
     resultsMarkerLayerForTextEditor: @findModel.resultsMarkerLayerForTextEditor.bind(@findModel)
