@@ -1,12 +1,12 @@
-{TextEditor} = require 'atom'
 BufferSearch = require '../lib/buffer-search'
 FindOptions = require '../lib/find-options'
+buildTextEditor = require '../lib/build-text-editor'
 
 describe "BufferSearch", ->
   [model, editor, markersListener, currentResultListener] = []
 
   beforeEach ->
-    editor = new TextEditor
+    editor = buildTextEditor()
     spyOn(editor, 'scanInBufferRange').andCallThrough()
 
     editor.setText """
@@ -44,10 +44,17 @@ describe "BufferSearch", ->
 
   getHighlightedRanges = ->
     ranges = []
-    for decoration in editor.getDecorations(type: 'highlight')
-      marker = decoration.getMarker()
-      if marker.isValid() and decoration.getProperties()['class'] in ['find-result', 'current-result']
-        ranges.push(marker.getBufferRange())
+
+    if editor.decorationsStateForScreenRowRange?
+      for id, decoration of editor.decorationsStateForScreenRowRange(0, editor.getLineCount())
+        if decoration.properties.class in ['find-result', 'current-result']
+          ranges.push(decoration.screenRange)
+    else
+      for decoration in editor.getDecorations(type: 'highlight')
+        marker = decoration.getMarker()
+        if marker.isValid() and decoration.getProperties()['class'] in ['find-result', 'current-result']
+          ranges.push(marker.getBufferRange())
+
     ranges
       .sort (a, b) -> a.compare(b)
       .map (range) -> range.serialize()
@@ -79,18 +86,6 @@ describe "BufferSearch", ->
 
     expect(scannedRanges()).toEqual [
       [[0, 0], [Infinity, Infinity]]
-    ]
-
-  it "ignores 0 length matches", ->
-    editor.setText('ABCD\n')
-    model.search "\\w*",
-      caseSensitive: false
-      useRegex: true
-      wholeWord: false
-
-    expect(model.markers).toHaveLength 1
-    expect(getHighlightedRanges()).toEqual [
-      [[0, 0], [0, 4]]
     ]
 
   describe "when the buffer changes", ->
@@ -436,3 +431,31 @@ describe "BufferSearch", ->
       expect(currentResultListener).toHaveBeenCalled()
       expect(currentResultListener.mostRecentCall.args[0].getBufferRange()).toEqual markers[2].getBufferRange()
       expect(currentResultListener.mostRecentCall.args[0].isDestroyed()).toBe false
+
+  describe ".prototype.resultsMarkerLayerForTextEditor(editor)", ->
+    it "creates or retrieves the results marker layer for the given editor", ->
+      layer1 = model.resultsMarkerLayerForTextEditor(editor)
+
+      return unless layer1 # remove this guard after 1.3.0 hits stable channel
+
+      # basic check that this is the expected results layer
+      expect(layer1.findMarkers().length).toBeGreaterThan(0)
+      for marker in layer1.findMarkers()
+        expect(editor.getTextInBufferRange(marker.getBufferRange())).toMatch /a+/
+
+      editor2 = buildTextEditor()
+      model.setEditor(editor2)
+      layer2 = model.resultsMarkerLayerForTextEditor(editor2)
+
+      model.setEditor(editor)
+      expect(model.resultsMarkerLayerForTextEditor(editor)).toBe layer1
+      expect(model.resultsMarkerLayerForTextEditor(editor2)).toBe layer2
+
+      model.search "c+",
+        caseSensitive: false
+        useRegex: true
+        wholeWord: false
+
+      expect(layer1.findMarkers().length).toBeGreaterThan(0)
+      for marker in layer1.findMarkers()
+        expect(editor.getTextInBufferRange(marker.getBufferRange())).toMatch /c+/

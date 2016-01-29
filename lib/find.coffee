@@ -15,22 +15,26 @@ module.exports =
     focusEditorAfterSearch:
       type: 'boolean'
       default: false
+      description: 'Focus the editor and select the next match when a file search is executed. If no matches are found, the editor will not be focused.'
     openProjectFindResultsInRightPane:
       type: 'boolean'
       default: false
+      description: 'When a project-wide search is executed, open the results in a split pane instead of a tab in the same pane.'
     closeFindPanelAfterSearch:
       type: 'boolean'
       default: false
+      title: 'Close Project Find Panel After Search'
+      description: 'Close the find panel after executing a project-wide search.'
     scrollToResultOnLiveSearch:
       type: 'boolean'
       default: false
       title: 'Scroll To Result On Live-Search (incremental find in buffer)'
-      description: 'When you type in the buffer find box, the closest match will be selected and made visible in the editor.'
+      description: 'Scroll to and select the closest match while typing in the buffer find box.'
     liveSearchMinimumCharacters:
       type: 'integer'
       default: 3
       minimum: 0
-      description: 'When you type in the buffer find box, you must type this many characters to automatically search'
+      description: 'The minimum number of characters which need to be typed into the buffer find box before search starts matching and highlighting matches as you type.'
 
   activate: ({findOptions, findHistory, replaceHistory, pathsHistory}={}) ->
     atom.workspace.addOpener (filePath) ->
@@ -121,7 +125,7 @@ module.exports =
       editor = editorElement.getModel()
       selectNext = @selectNextObjects.get(editor)
       unless selectNext?
-        selectNext = new SelectNext(editor, {@findOptions})
+        selectNext = new SelectNext(editor)
         @selectNextObjects.set(editor, selectNext)
       selectNext
 
@@ -134,6 +138,9 @@ module.exports =
         selectNextObjectForEditorElement(this).undoLastSelection()
       'find-and-replace:select-skip': (event) ->
         selectNextObjectForEditorElement(this).skipCurrentSelection()
+
+  provideService: ->
+    resultsMarkerLayerForTextEditor: @findModel.resultsMarkerLayerForTextEditor.bind(@findModel)
 
   createViews: ->
     return if @findView?
@@ -193,4 +200,4 @@ module.exports =
     findOptions: @findOptions.serialize()
     findHistory: @findHistory.serialize()
     replaceHistory: @replaceHistory.serialize()
-    pathsHistory: @replaceHistory.serialize()
+    pathsHistory: @pathsHistory.serialize()

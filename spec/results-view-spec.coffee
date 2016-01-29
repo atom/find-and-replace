@@ -314,20 +314,23 @@ describe 'ResultsView', ->
 
       it "selects the first result on the next page when core:page-up is triggered", ->
         atom.commands.dispatch resultsView.element, 'core:move-to-bottom'
-        expect(resultsView.find("li:last")).toHaveClass 'selected'
 
         itemHeight = resultsView.find('.selected').outerHeight()
         pageHeight = Math.round(resultsView.innerHeight() / itemHeight) * itemHeight
         initialScrollTop = resultsView.scrollTop()
+        itemsPerPage = Math.floor(pageHeight / itemHeight)
+
+        initiallySelectedIndex = Math.floor(initialScrollTop / itemHeight) + itemsPerPage
+        expect(resultsView.find("li:eq(#{initiallySelectedIndex})")).toHaveClass 'selected'
 
         atom.commands.dispatch resultsView.element, 'core:page-up'
-        expect(resultsView.find("li:last")).not.toHaveClass 'selected'
-        expect(resultsView.find("li:eq(215)")).toHaveClass 'selected'
+        expect(resultsView.find("li:eq(#{initiallySelectedIndex})")).not.toHaveClass 'selected'
+        expect(resultsView.find("li:eq(#{initiallySelectedIndex - itemsPerPage})")).toHaveClass 'selected'
         expect(resultsView.prop('scrollTop')).toBe initialScrollTop - pageHeight
 
         atom.commands.dispatch resultsView.element, 'core:page-up'
-        expect(resultsView.find("li:eq(215)")).not.toHaveClass 'selected'
-        expect(resultsView.find("li:eq(210)")).toHaveClass 'selected'
+        expect(resultsView.find("li:eq(#{initiallySelectedIndex - itemsPerPage})")).not.toHaveClass 'selected'
+        expect(resultsView.find("li:eq(#{initiallySelectedIndex - itemsPerPage * 2})")).toHaveClass 'selected'
         expect(resultsView.prop('scrollTop')).toBe initialScrollTop - pageHeight * 2
 
         _.times 60, ->
@@ -417,6 +420,30 @@ describe 'ResultsView', ->
 
       runs ->
         expect(atom.workspace.getActivePaneItem().getPath()).toContain('sample.')
+
+    if atom.workspace.buildTextEditor().isPending?
+      it "opens the file containing the result in pending state when the search result is single-clicked", ->
+        pathNode = resultsView.find(".search-result")[0]
+        pathNode.dispatchEvent(buildMouseEvent('mousedown', target: pathNode, which: 1))
+        editor = null
+        waitsFor ->
+          editor = atom.workspace.getActiveTextEditor()
+
+        runs ->
+          expect(editor.isPending()).toBe true
+          expect(atom.views.getView(editor)).toHaveFocus()
+
+      it "opens the file containing the result in non-pending state when the search result is double-clicked", ->
+        pathNode = resultsView.find(".search-result")[0]
+        pathNode.dispatchEvent(buildMouseEvent('mousedown', target: pathNode, detail: 1))
+        pathNode.dispatchEvent(buildMouseEvent('mousedown', target: pathNode, detail: 2))
+        editor = null
+        waitsFor ->
+          editor = atom.workspace.getActiveTextEditor()
+
+        runs ->
+          expect(editor.isPending()).toBe false
+          expect(atom.views.getView(editor)).toHaveFocus()
 
     describe "when `openProjectFindResultsInRightPane` option is true", ->
       beforeEach ->

@@ -3,6 +3,8 @@ _ = require 'underscore-plus'
 {Patch} = TextBuffer
 escapeHelper = require './escape-helper'
 
+ResultsMarkerLayersByEditor = new WeakMap
+
 module.exports =
 class BufferSearch
   @markerClass: 'find-result'
@@ -13,6 +15,7 @@ class BufferSearch
     @subscriptions = null
     @markers = []
     @editor = null
+    @useMarkerLayers = false
 
     recreateMarkers = @recreateMarkers.bind(this)
     @findOptions.onDidChange (changedParams) =>
@@ -41,6 +44,10 @@ class BufferSearch
       @subscriptions.add @editor.buffer.onDidStopChanging(@bufferStoppedChanging.bind(this))
       @subscriptions.add @editor.onDidAddSelection(@setCurrentMarkerFromSelection.bind(this))
       @subscriptions.add @editor.onDidChangeSelectionRange(@setCurrentMarkerFromSelection.bind(this))
+      if @useMarkerLayers = @editor.addMarkerLayer?
+        @resultsMarkerLayer = @resultsMarkerLayerForTextEditor(@editor)
+        @resultsLayerDecoration?.destroy()
+        @resultsLayerDecoration = @editor.decorateMarkerLayer(@resultsMarkerLayer, {type: 'highlight', class: @constructor.markerClass})
     @recreateMarkers()
 
   getEditor: -> @editor
@@ -48,6 +55,12 @@ class BufferSearch
   setFindOptions: (newParams) -> @findOptions.set(newParams)
 
   getFindOptions: -> @findOptions
+
+  resultsMarkerLayerForTextEditor: (editor) ->
+    unless layer = ResultsMarkerLayersByEditor.get(editor)
+      layer = editor.addMarkerLayer?()
+      ResultsMarkerLayersByEditor.set(editor, layer)
+    layer
 
   search: (findPattern, otherOptions) ->
     options = {findPattern}
@@ -72,7 +85,7 @@ class BufferSearch
 
         marker.destroy()
         @markers.splice(@markers.indexOf(marker), 1)
-        delete @decorationsByMarkerId[marker.id]
+        delete @decorationsByMarkerId[marker.id] unless @useMarkerLayers
 
     @emitter.emit 'did-update', @markers.slice()
 
@@ -86,7 +99,8 @@ class BufferSearch
   recreateMarkers: ->
     @markers.forEach (marker) -> marker.destroy()
     @markers.length = 0
-    @decorationsByMarkerId = {}
+    @decorationsByMarkerId = {} unless @useMarkerLayers
+
     if markers = @createMarkers(Point.ZERO, Point.INFINITY)
       @markers = markers
       @emitter.emit "did-update", @markers.slice()
@@ -156,7 +170,7 @@ class BufferSearch
       oldMarkers = @markers.splice(spliceStart, spliceEnd - spliceStart + 1, newMarkers...)
       for oldMarker in oldMarkers
         oldMarker.destroy()
-        delete @decorationsByMarkerId[oldMarker.id]
+        delete @decorationsByMarkerId[oldMarker.id] unless @useMarkerLayers
       markerIndex += newMarkers.length - oldMarkers.length
 
     while marker = @markers[++markerIndex]
@@ -175,39 +189,46 @@ class BufferSearch
     return if marker is @currentResultMarker
 
     if @currentResultMarker?
-      @decorationsByMarkerId[@currentResultMarker.id]?.setProperties(type: 'highlight', class: @constructor.markerClass)
+      if @useMarkerLayers
+        @resultsLayerDecoration.setPropertiesForMarker(@currentResultMarker, null)
+      else
+        @decorationsByMarkerId[@currentResultMarker.id]?.setProperties(type: 'highlight', class: @constructor.markerClass)
       @currentResultMarker = null
 
     if marker and not marker.isDestroyed()
-      @decorationsByMarkerId[marker.id]?.setProperties(type: 'highlight', class: 'current-result')
+      if @useMarkerLayers
+        @resultsLayerDecoration.setPropertiesForMarker(marker, type: 'highlight', class: 'current-result')
+      else
+        @decorationsByMarkerId[marker.id]?.setProperties(type: 'highlight', class: 'current-result')
       @currentResultMarker = marker
 
     @emitter.emit 'did-change-current-result', @currentResultMarker
 
   findMarker: (range) ->
     if @markers?.length > 0
-      @editor.findMarkers(
+      (@resultsMarkerLayer ? @editor).findMarkers(
         class: @constructor.markerClass,
         startPosition: range.start,
         endPosition: range.end
       )[0]
 
   recreateMarker: (marker) ->
-    delete @decorationsByMarkerId[marker.id]
+    delete @decorationsByMarkerId[marker.id] unless @useMarkerLayers
     marker.destroy()
     @createMarker(marker.getBufferRange())
 
   createMarker: (range) ->
-    marker = @editor.markBufferRange(range,
+    marker = (@resultsMarkerLayer ? @editor).markBufferRange(range,
       invalidate: 'inside'
       class: @constructor.markerClass
       persistent: false
       maintainHistory: false
     )
-    @decorationsByMarkerId[marker.id] = @editor.decorateMarker(marker,
-      type: 'highlight',
-      class: @constructor.markerClass
-    )
+    unless @useMarkerLayers
+      @decorationsByMarkerId[marker.id] = @editor.decorateMarker(marker,
+        type: 'highlight',
+        class: @constructor.markerClass
+      )
     marker
 
   bufferChanged: ({oldRange, newRange, newText}) ->

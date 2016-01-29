@@ -631,7 +631,7 @@ describe 'ProjectFindView', ->
         runs ->
           expect(atom.workspace.scan).not.toHaveBeenCalled()
           atom.workspace.scan.reset()
-          $(window).triggerHandler 'focus'
+          window.dispatchEvent(new FocusEvent("focus"))
           atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
         waitsForPromise ->
@@ -848,12 +848,18 @@ describe 'ProjectFindView', ->
           expect(errorList.find("li:eq(1)").text()).toBe 'Broken'
 
     describe "buffer search sharing of the find options", ->
-      getResultDecorations = (className) ->
-        markerIdForDecorations = editor.decorationsForScreenRowRange(0, editor.getLineCount())
-        resultDecorations = []
-        for markerId, decorations of markerIdForDecorations
-          for decoration in decorations
-            resultDecorations.push decoration if decoration.getProperties().class is className
+      getResultDecorations = (clazz) ->
+        if editor.decorationsStateForScreenRowRange?
+          resultDecorations = []
+          for id, decoration of editor.decorationsStateForScreenRowRange(0, editor.getLineCount())
+            if decoration.properties.class is clazz
+              resultDecorations.push(decoration)
+        else
+          markerIdForDecorations = editor.decorationsForScreenRowRange(0, editor.getLineCount())
+          resultDecorations = []
+          for markerId, decorations of markerIdForDecorations
+            for decoration in decorations
+              resultDecorations.push decoration if decoration.getProperties().class is clazz
         resultDecorations
 
       it "setting the find text does not interfere with the project replace state", ->
