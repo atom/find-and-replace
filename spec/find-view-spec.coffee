@@ -1495,3 +1495,10 @@ describe 'FindView', ->
         expect(findView.model.getFindOptions().useRegex).not.toBe true
         expect(findView.findEditor.getModel().getGrammar().scopeName).toBe 'text.plain.null-grammar'
         expect(findView.replaceEditor.getModel().getGrammar().scopeName).toBe 'text.plain.null-grammar'
+  describe "when there isn't any editor", ->
+    it "try to toogle regex", ->
+      atom.commands.dispatch(editorView, 'setting-view:open')
+      expect(findView.anyMarkersAreSelected()).toEqual(false)
+      expect(findView.selectFirstMarkerAfterCursor()).toEqual(undefined)
+      expect(findView.selectFirstMarkerStartingFromCursor()).toEqual(undefined)
+      expect(findView.selectFirstMarkerBeforeCursor()).toEqual(undefined)

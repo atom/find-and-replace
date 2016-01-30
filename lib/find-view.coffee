@@ -474,7 +474,7 @@ class FindView extends View
 
   anyMarkersAreSelected: =>
     editor = @model.getEditor()
-    return unless editor
+    return false unless editor
     editor.getSelectedBufferRanges().some (selectedRange) =>
       @model.findMarker(selectedRange)
 
