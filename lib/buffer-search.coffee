@@ -118,7 +118,7 @@ class BufferSearch
             newMarkers.push(@createMarker(range)) unless range.isEmpty()
         catch e
           @emitter.emit 'did-error', e
-          null
+          return false
       else
         return false
     newMarkers
