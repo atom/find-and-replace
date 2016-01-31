@@ -484,7 +484,7 @@ describe 'FindView', ->
             expect(findView.descriptionLabel).not.toHaveClass 'text-error'
             expect(findView.descriptionLabel.text()).toContain "6 results"
 
-        fdescribe "when the search string is too large", ->
+        describe "when the search string is too large", ->
           beforeEach ->
             largeText = "abcdefghijklmnopqrstuvwxyz"
             largeText += "abcdefghijklmnopqrstuvwxyz" for num in [0...2000]
