@@ -115,7 +115,7 @@ class BufferSearch
       if regex = @getFindPatternRegex()
         try
           @editor.scanInBufferRange regex, Range(start, end), ({range}) =>
-            newMarkers.push(@createMarker(range)) unless range.isEmpty()
+            newMarkers.push(@createMarker(range))
         catch error
           error.message = "Search string is too large" if /RegExp too big$/.test(error.message)
           @emitter.emit 'did-error', error
