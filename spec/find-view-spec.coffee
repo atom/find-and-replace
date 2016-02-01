@@ -484,10 +484,9 @@ describe 'FindView', ->
             expect(findView.descriptionLabel).not.toHaveClass 'text-error'
             expect(findView.descriptionLabel.text()).toContain "6 results"
 
-        describe "when the search string is too large", ->
+        fdescribe "when the search string is too large", ->
           beforeEach ->
-            largeText = "abcdefghijklmnopqrstuvwxyz"
-            largeText += "abcdefghijklmnopqrstuvwxyz" for num in [0...2000]
+            largeText = "x".repeat(50000)
             findView.findEditor.setText largeText
             atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
 
