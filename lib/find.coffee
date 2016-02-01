@@ -60,11 +60,11 @@ module.exports =
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'project-find:show', =>
       @createViews()
-      showPanel @projectFindPanel, @findPanel, @projectFindView.focusFindElement
+      showPanel @projectFindPanel, @findPanel, => @projectFindView.focusFindElement()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'project-find:toggle', =>
       @createViews()
-      togglePanel @projectFindPanel, @findPanel, @projectFindView.focusFindElement
+      togglePanel @projectFindPanel, @findPanel, => @projectFindView.focusFindElement()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'project-find:show-in-current-directory', ({target}) =>
       @createViews()
@@ -82,15 +82,15 @@ module.exports =
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:toggle', =>
       @createViews()
-      togglePanel @findPanel, @projectFindPanel, @findView.focusFindEditor
+      togglePanel @findPanel, @projectFindPanel, => @findView.focusFindEditor()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:show', =>
       @createViews()
-      showPanel @findPanel, @projectFindPanel, @findView.focusFindEditor
+      showPanel @findPanel, @projectFindPanel, => @findView.focusFindEditor()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:show-replace', =>
       @createViews()
-      showPanel @findPanel, @projectFindPanel, @findView.focusReplaceEditor
+      showPanel @findPanel, @projectFindPanel, => @findView.focusReplaceEditor()
 
     # Handling cancel in the workspace + code editors
     handleEditorCancel = ({target}) =>
@@ -112,19 +112,19 @@ module.exports =
         @selectNextObjects.set(editor, selectNext)
       selectNext
 
-    showPanel = (panelToShow, panelToHide, action) ->
+    showPanel = (panelToShow, panelToHide, postShowAction) ->
       panelToHide.hide()
       panelToShow.show()
-      if action then action()
+      postShowAction?()
 
-    togglePanel = (panelToToggle, panelToHide, action) ->
+    togglePanel = (panelToToggle, panelToHide, postToggleAction) ->
       panelToHide.hide()
 
       if panelToToggle.isVisible()
         panelToToggle.hide()
       else
         panelToToggle.show()
-        if action then action()
+        postToggleAction?()
 
     atom.commands.add '.editor:not(.mini)',
       'find-and-replace:select-next': (event) ->

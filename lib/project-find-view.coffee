@@ -199,7 +199,7 @@ class ProjectFindView extends View
 
     @subscriptions.add @model.onDidFinishReplacing (result) => @onFinishedReplacing(result)
 
-  focusNextElement: (direction) =>
+  focusNextElement: (direction) ->
     elements = [@findEditor, @replaceEditor, @pathsEditor]
     focusedElement = _.find elements, (el) -> el.hasClass('is-focused')
     focusedIndex = elements.indexOf focusedElement
@@ -210,7 +210,7 @@ class ProjectFindView extends View
     elements[focusedIndex].focus()
     elements[focusedIndex].getModel?().selectAll()
 
-  focusFindElement: =>
+  focusFindElement: ->
     selectedText = atom.workspace.getActiveTextEditor()?.getSelectedText?()
     if selectedText and selectedText.indexOf('\n') < 0
       selectedText = Util.escapeRegex(selectedText) if @model.getFindOptions().useRegex
