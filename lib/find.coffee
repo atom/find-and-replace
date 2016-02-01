@@ -97,6 +97,10 @@ module.exports =
       @createViews()
       showPanel @findPanel, @projectFindPanel, => @findView.focusReplaceEditor()
 
+    @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:clear-history', =>
+      @findHistory.clear()
+      @replaceHistory.clear()
+
     # Handling cancel in the workspace + code editors
     handleEditorCancel = ({target}) =>
       isMiniEditor = target.tagName is 'ATOM-TEXT-EDITOR' and target.hasAttribute('mini')
