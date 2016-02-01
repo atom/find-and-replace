@@ -484,7 +484,7 @@ describe 'FindView', ->
             expect(findView.descriptionLabel).not.toHaveClass 'text-error'
             expect(findView.descriptionLabel.text()).toContain "6 results"
 
-        fdescribe "when the search string is too large", ->
+        describe "when the search string is too large", ->
           beforeEach ->
             largeText = "x".repeat(50000)
             findView.findEditor.setText largeText
