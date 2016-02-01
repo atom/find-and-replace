@@ -509,8 +509,7 @@ describe 'FindView', ->
 
         describe "when the search string is too large", ->
           beforeEach ->
-            largeText = "x".repeat(50000)
-            findView.findEditor.setText largeText
+            findView.findEditor.setText "x".repeat(50000)
             atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
 
           it "displays the error", ->
