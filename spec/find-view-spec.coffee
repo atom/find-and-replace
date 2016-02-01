@@ -460,31 +460,50 @@ describe 'FindView', ->
         atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
         expect(findView.descriptionLabel.text()).toContain "Find in Current Buffer"
 
-      describe "when there is a find-error", ->
-        beforeEach ->
-          editor.setCursorBufferPosition([2, 0])
-          atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
+      describe "when there is an error", ->
+        describe "when the regex search string is invalid", ->
+          beforeEach ->
+            atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
+            findView.findEditor.setText 'i[t'
+            atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
 
-        it "displays the error", ->
-          findView.findEditor.setText 'i[t'
-          atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
-          expect(findView.descriptionLabel).toHaveClass 'text-error'
-          expect(findView.descriptionLabel.text()).toContain 'Invalid regular expression'
+          it "displays the error", ->
+            expect(findView.descriptionLabel).toHaveClass 'text-error'
+            expect(findView.descriptionLabel.text()).toContain 'Invalid regular expression'
 
-        it "will be reset when there is no longer an error", ->
-          findView.findEditor.setText 'i[t'
-          atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
-          expect(findView.descriptionLabel).toHaveClass 'text-error'
+          it "will be reset when there is no longer an error", ->
+            expect(findView.descriptionLabel).toHaveClass 'text-error'
 
-          findView.findEditor.setText ''
-          atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
-          expect(findView.descriptionLabel).not.toHaveClass 'text-error'
-          expect(findView.descriptionLabel.text()).toContain "Find in Current Buffer"
+            findView.findEditor.setText ''
+            atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
+            expect(findView.descriptionLabel).not.toHaveClass 'text-error'
+            expect(findView.descriptionLabel.text()).toContain "Find in Current Buffer"
 
-          findView.findEditor.setText 'item'
-          atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
-          expect(findView.descriptionLabel).not.toHaveClass 'text-error'
-          expect(findView.descriptionLabel.text()).toContain "6 results"
+            findView.findEditor.setText 'item'
+            atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
+            expect(findView.descriptionLabel).not.toHaveClass 'text-error'
+            expect(findView.descriptionLabel.text()).toContain "6 results"
+
+        describe "when the search string is too large", ->
+          beforeEach ->
+            largeText = "x".repeat(50000)
+            findView.findEditor.setText largeText
+            atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
+
+          it "displays the error", ->
+            expect(findView.descriptionLabel).toHaveClass 'text-error'
+            expect(findView.descriptionLabel.text()).toContain 'Search string is too large'
+
+          it "will be reset when there is no longer an error", ->
+            findView.findEditor.setText ''
+            atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
+            expect(findView.descriptionLabel).not.toHaveClass 'text-error'
+            expect(findView.descriptionLabel.text()).toContain "Find in Current Buffer"
+
+            findView.findEditor.setText 'item'
+            atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
+            expect(findView.descriptionLabel).not.toHaveClass 'text-error'
+            expect(findView.descriptionLabel.text()).toContain "6 results"
 
     it "selects the first match following the cursor", ->
       expect(findView.resultCounter.text()).toEqual('2 of 6')
