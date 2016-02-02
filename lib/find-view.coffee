@@ -1,5 +1,5 @@
 _ = require 'underscore-plus'
-{$$$, View, TextEditorView} = require 'atom-space-pen-views'
+{$, $$$, View, TextEditorView} = require 'atom-space-pen-views'
 {CompositeDisposable} = require 'atom'
 Util = require './project/util'
 buildTextEditor = require './build-text-editor'
@@ -102,6 +102,7 @@ class FindView extends View
     @clearMessage()
     @updateOptionViews()
     @updateReplaceEnablement()
+    @createWrapIcon()
 
   destroy: ->
     @subscriptions?.dispose()
@@ -269,7 +270,7 @@ class FindView extends View
       atom.beep()
 
   replaceNext: =>
-    @replace('findNext', 'firstMarkerIndexAfterCursor')
+    @replace('findNext', 'firstMarkerIndexStartingFromCursor')
 
   replacePrevious: =>
     @replace('findPrevious', 'firstMarkerIndexBeforeCursor')
@@ -281,8 +282,8 @@ class FindView extends View
 
     if @markers?.length > 0
       unless currentMarker = @model.currentResultMarker
-        markerIndex = @[nextIndexFn]()
-        currentMarker = @markers[markerIndex]
+        if position = @[nextIndexFn]()
+          currentMarker = @markers[position.index]
 
       @model.replace([currentMarker], @replaceEditor.getText())
       @[nextOrPreviousFn](fieldToFocus: @replaceEditor)
@@ -341,16 +342,29 @@ class FindView extends View
     @descriptionLabel.html('Find in Current Buffer <span class="subtle-info-message">Close this panel with the <span class="highlight">esc</span> key</span>').removeClass('text-error')
 
   selectFirstMarkerAfterCursor: =>
-    markerIndex = @firstMarkerIndexAfterCursor()
-    @selectMarkerAtIndex(markerIndex)
+    marker = @firstMarkerIndexAfterCursor()
+    return unless marker
+    {index, wrapped} = marker
+    @selectMarkerAtIndex(index, wrapped)
 
   selectFirstMarkerStartingFromCursor: =>
-    markerIndex = @firstMarkerIndexAfterCursor(true)
-    @selectMarkerAtIndex(markerIndex)
+    marker = @firstMarkerIndexAfterCursor(true)
+    return unless marker
+    {index, wrapped} = marker
+    @selectMarkerAtIndex(index, wrapped)
+
+  selectFirstMarkerBeforeCursor: =>
+    marker = @firstMarkerIndexBeforeCursor()
+    return unless marker
+    {index, wrapped} = marker
+    @selectMarkerAtIndex(index, wrapped)
+
+  firstMarkerIndexStartingFromCursor: =>
+    @firstMarkerIndexAfterCursor(true)
 
   firstMarkerIndexAfterCursor: (indexIncluded=false) ->
     editor = @model.getEditor()
-    return -1 unless editor
+    return null unless editor
 
     selection = editor.getLastSelection()
     {start, end} = selection.getBufferRange()
@@ -358,17 +372,16 @@ class FindView extends View
 
     for marker, index in @markers
       markerStartPosition = marker.bufferMarker.getStartPosition()
-      return index if markerStartPosition.isEqual(start) and indexIncluded
-      return index if markerStartPosition.isGreaterThan(start)
-    0
+      switch markerStartPosition.compare(start)
+        when -1 then continue
+        when 0 then continue unless indexIncluded
+      return {index, wrapped: null}
 
-  selectFirstMarkerBeforeCursor: =>
-    markerIndex = @firstMarkerIndexBeforeCursor()
-    @selectMarkerAtIndex(markerIndex)
+    {index: 0, wrapped: 'up'}
 
   firstMarkerIndexBeforeCursor: ->
     editor = @model.getEditor()
-    return -1 unless editor
+    return null unless editor
 
     selection = @model.getEditor().getLastSelection()
     {start, end} = selection.getBufferRange()
@@ -376,24 +389,36 @@ class FindView extends View
 
     for marker, index in @markers by -1
       markerEndPosition = marker.bufferMarker.getEndPosition()
-      return index if markerEndPosition.isLessThan(start)
+      return {index, wrapped: null} if markerEndPosition.isLessThan(start)
 
-    @markers.length - 1
+    {index: @markers.length - 1, wrapped: 'down'}
 
   selectAllMarkers: =>
     return unless @markers?.length > 0
     ranges = (marker.getBufferRange() for marker in @markers)
-    scrollMarker = @markers[@firstMarkerIndexAfterCursor()]
+    scrollMarker = @markers[@firstMarkerIndexAfterCursor().index]
     editor = @model.getEditor()
     editor.setSelectedBufferRanges(ranges, flash: true)
     editor.scrollToBufferPosition(scrollMarker.getStartBufferPosition(), center: true)
 
-  selectMarkerAtIndex: (markerIndex) ->
+  selectMarkerAtIndex: (markerIndex, wrapped) ->
     return unless @markers?.length > 0
 
     if marker = @markers[markerIndex]
       editor = @model.getEditor()
-      editor.setSelectedBufferRange(marker.getBufferRange(), flash: true)
+      screenRange = marker.getScreenRange()
+
+      if (
+        screenRange.start.row < editor.getFirstVisibleScreenRow() or
+        screenRange.end.row > editor.getLastVisibleScreenRow()
+      )
+        switch wrapped
+          when 'up'
+            @showWrapIcon('icon-move-up')
+          when 'down'
+            @showWrapIcon('icon-move-down')
+
+      editor.setSelectedScreenRange(screenRange, flash: true)
       editor.scrollToCursorPosition(center: true)
 
   setSelectionAsFindPattern: =>
@@ -447,21 +472,27 @@ class FindView extends View
     else
       optionButton.removeClass 'selected'
 
+  anyMarkersAreSelected: =>
+    editor = @model.getEditor()
+    return false unless editor
+    editor.getSelectedBufferRanges().some (selectedRange) =>
+      @model.findMarker(selectedRange)
+
   toggleRegexOption: =>
     @search(useRegex: not @model.getFindOptions().useRegex)
-    @selectFirstMarkerAfterCursor()
+    @selectFirstMarkerAfterCursor() unless @anyMarkersAreSelected()
 
   toggleCaseOption: =>
     @search(caseSensitive: not @model.getFindOptions().caseSensitive)
-    @selectFirstMarkerAfterCursor()
+    @selectFirstMarkerAfterCursor() unless @anyMarkersAreSelected()
 
   toggleSelectionOption: =>
     @search(inCurrentSelection: not @model.getFindOptions().inCurrentSelection)
-    @selectFirstMarkerAfterCursor()
+    @selectFirstMarkerAfterCursor() unless @anyMarkersAreSelected()
 
   toggleWholeWordOption: =>
     @search(@findEditor.getText(), wholeWord: not @model.getFindOptions().wholeWord)
-    @selectFirstMarkerAfterCursor()
+    @selectFirstMarkerAfterCursor() unless @anyMarkersAreSelected()
 
   updateReplaceEnablement: ->
     canReplace = @markers?.length > 0
@@ -490,3 +521,26 @@ class FindView extends View
         title: "Replace Next [when there are results]"
       @replaceTooltipSubscriptions.add atom.tooltips.add @replaceAllButton,
         title: "Replace All [when there are results]"
+
+  # FIXME: The wrap icon should probably be its own view responding to events
+  # when the search wraps.
+  createWrapIcon: ->
+    wrapIcon = document.createElement('div')
+    wrapIcon.classList.add('find-wrap-icon')
+    @wrapIcon = $(wrapIcon)
+
+  showWrapIcon: (icon) ->
+    return unless atom.config.get('find-and-replace.showSearchWrapIcon')
+    editor = @model.getEditor()
+    return unless editor?
+    editorView = atom.views.getView(editor)
+    return unless editorView?.parentNode?
+
+    # Attach to the parent of the active editor, that way we can position it
+    # correctly over the active editor.
+    editorView.parentNode.appendChild(@wrapIcon[0])
+
+    # FIXME: This animation should be in CSS
+    @wrapIcon.attr('class', "find-wrap-icon #{icon}").fadeIn()
+    clearTimeout(@wrapTimeout)
+    @wrapTimeout = setTimeout (=> @wrapIcon.fadeOut()), 1000

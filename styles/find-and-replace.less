@@ -168,6 +168,37 @@ atom-workspace.find-visible {
   }
 }
 
+.find-wrap-icon {
+  @wrap-size: @font-size * 10;
+
+  display: none;
+  position: absolute;
+
+  // These are getting placed in the DOM as a pane item, so override the pane
+  // item positioning styles. :/
+  top: 50% !important;
+  left: 50% !important;
+  right: initial !important;
+  bottom: initial !important;
+
+  margin-top: @wrap-size * -0.5;
+  margin-left: @wrap-size * -0.5;
+
+  background: fadeout(darken(@syntax-background-color, 4%), 55%);
+  border-radius: @component-border-radius * 2;
+  text-align: center;
+  pointer-events: none;
+  &:before {
+    // Octicons look best in sizes that are multiples of 16px
+    font-size: @wrap-size - mod(@wrap-size, 16px) - 32px;
+    line-height: @wrap-size;
+    height: @wrap-size;
+    width: @wrap-size;
+    color: @syntax-text-color;
+    opacity: .5;
+  }
+}
+
 // Project find and replace
 .project-find {
   @project-input-width: 260px;

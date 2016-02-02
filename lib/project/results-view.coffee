@@ -15,11 +15,17 @@ class ResultsView extends ScrollView
     @pixelOverdraw = 100
     @lastRenderedResultIndex = 0
 
-    @on 'mousedown', '.match-result, .path', ({target, which, ctrlKey}) =>
+    @on 'mousedown', '.match-result, .path', (e) =>
       @find('.selected').removeClass('selected')
-      view = $(target).view()
+      view = $(e.target).view()
       view.addClass('selected')
-      view.confirm() if which is 1 and not ctrlKey
+      if not e.ctrlKey
+        if e.originalEvent?.detail is 1
+          @editorPromise = view.confirm(pending: true)
+        else if e.originalEvent?.detail is 2
+          @editorPromise?.then (editor) =>
+            editor.terminatePendingState?()
+        e.preventDefault()
       @renderResults()
 
     @on 'scroll', => @renderResults()
