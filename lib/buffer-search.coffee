@@ -3,13 +3,11 @@ _ = require 'underscore-plus'
 {Patch} = TextBuffer
 escapeHelper = require './escape-helper'
 
-ResultsMarkerLayersByEditor = new WeakMap
-
 module.exports =
 class BufferSearch
   @markerClass: 'find-result'
 
-  constructor: (@findOptions) ->
+  constructor: (@findOptions, @resultMarkerLayerIds) ->
     @emitter = new Emitter
     @patch = new Patch
     @subscriptions = null
@@ -56,11 +54,16 @@ class BufferSearch
 
   getFindOptions: -> @findOptions
 
+  getResultMarkerLayerIds: ->
+    @resultMarkerLayerIds
+
   resultsMarkerLayerForTextEditor: (editor) ->
-    unless layer = ResultsMarkerLayersByEditor.get(editor)
+    if layerId = @resultMarkerLayerIds[editor.id]
+      editor.getMarkerLayer(layerId)
+    else
       layer = editor.addMarkerLayer?()
-      ResultsMarkerLayersByEditor.set(editor, layer)
-    layer
+      @resultMarkerLayerIds[editor.id] = layer.id
+      layer
 
   search: (findPattern, otherOptions) ->
     options = {findPattern}

@@ -22,7 +22,7 @@ describe "BufferSearch", ->
     """
 
     findOptions = new FindOptions
-    model = new BufferSearch(findOptions)
+    model = new BufferSearch(findOptions, {})
 
     markersListener = jasmine.createSpy('markersListener')
     model.onDidUpdate(markersListener)
@@ -431,6 +431,15 @@ describe "BufferSearch", ->
       expect(currentResultListener).toHaveBeenCalled()
       expect(currentResultListener.mostRecentCall.args[0].getBufferRange()).toEqual markers[2].getBufferRange()
       expect(currentResultListener.mostRecentCall.args[0].isDestroyed()).toBe false
+
+  describe "when there is already a search results marker layer for the given editor", ->
+    it "creates markers in that layer, rather than creating a new layer", ->
+      resultMarkerLayerIds = model.getResultMarkerLayerIds()
+      newModel = new BufferSearch(new FindOptions, resultMarkerLayerIds)
+
+      expect(newModel.resultsMarkerLayerForTextEditor(editor)).toBe(
+        model.resultsMarkerLayerForTextEditor(editor)
+      )
 
   describe ".prototype.resultsMarkerLayerForTextEditor(editor)", ->
     it "creates or retrieves the results marker layer for the given editor", ->
