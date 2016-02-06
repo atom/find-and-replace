@@ -41,7 +41,7 @@ module.exports =
       minimum: 0
       description: 'The minimum number of characters which need to be typed into the buffer find box before search starts matching and highlighting matches as you type.'
 
-  activate: ({findOptions, findHistory, replaceHistory, pathsHistory}={}) ->
+  activate: ({findOptions, findHistory, replaceHistory, pathsHistory, resultMarkerLayerIds}={}) ->
     atom.workspace.addOpener (filePath) ->
       new ResultsPaneView() if filePath is ResultsPaneView.URI
 
@@ -51,7 +51,7 @@ module.exports =
     @pathsHistory = new History(pathsHistory)
 
     @findOptions = new FindOptions(findOptions)
-    @findModel = new BufferSearch(@findOptions)
+    @findModel = new BufferSearch(@findOptions, resultMarkerLayerIds ? {})
     @resultsModel = new ResultsModel(@findOptions)
 
     @subscriptions.add atom.workspace.observeActivePaneItem (paneItem) =>
@@ -207,3 +207,4 @@ module.exports =
     findHistory: @findHistory.serialize()
     replaceHistory: @replaceHistory.serialize()
     pathsHistory: @pathsHistory.serialize()
+    resultMarkerLayerIds: @findModel.getResultMarkerLayerIds()
