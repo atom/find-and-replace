@@ -174,6 +174,29 @@ describe 'FindView', ->
       runs ->
         expect(findView.replaceEditor.getText()).toBe 'function ()'
 
+  describe "when find-and-replace:clear-history is triggered", ->
+    it "clears the find and replace histories", ->
+      atom.commands.dispatch editorView, 'find-and-replace:show'
+
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        findView.findEditor.setText("items")
+        findView.replaceEditor.setText("cat")
+        findView.replaceAll()
+
+        findView.findEditor.setText("sort")
+        findView.replaceEditor.setText("dog")
+        findView.replaceNext()
+
+        atom.commands.dispatch editorView, 'find-and-replace:clear-history'
+
+        atom.commands.dispatch(findView.findEditor.element, 'core:move-up')
+        expect(findView.findEditor.getText()).toBe ''
+        atom.commands.dispatch(findView.replaceEditor.element, 'core:move-up')
+        expect(findView.replaceEditor.getText()).toBe ''
+
   describe "core:cancel", ->
     beforeEach ->
       atom.commands.dispatch editorView, 'find-and-replace:show'
@@ -460,31 +483,49 @@ describe 'FindView', ->
         atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
         expect(findView.descriptionLabel.text()).toContain "Find in Current Buffer"
 
-      describe "when there is a find-error", ->
-        beforeEach ->
-          editor.setCursorBufferPosition([2, 0])
-          atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
+      describe "when there is an error", ->
+        describe "when the regex search string is invalid", ->
+          beforeEach ->
+            atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
+            findView.findEditor.setText 'i[t'
+            atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
 
-        it "displays the error", ->
-          findView.findEditor.setText 'i[t'
-          atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
-          expect(findView.descriptionLabel).toHaveClass 'text-error'
-          expect(findView.descriptionLabel.text()).toContain 'Invalid regular expression'
+          it "displays the error", ->
+            expect(findView.descriptionLabel).toHaveClass 'text-error'
+            expect(findView.descriptionLabel.text()).toContain 'Invalid regular expression'
 
-        it "will be reset when there is no longer an error", ->
-          findView.findEditor.setText 'i[t'
-          atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
-          expect(findView.descriptionLabel).toHaveClass 'text-error'
+          it "will be reset when there is no longer an error", ->
+            expect(findView.descriptionLabel).toHaveClass 'text-error'
 
-          findView.findEditor.setText ''
-          atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
-          expect(findView.descriptionLabel).not.toHaveClass 'text-error'
-          expect(findView.descriptionLabel.text()).toContain "Find in Current Buffer"
+            findView.findEditor.setText ''
+            atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
+            expect(findView.descriptionLabel).not.toHaveClass 'text-error'
+            expect(findView.descriptionLabel.text()).toContain "Find in Current Buffer"
 
-          findView.findEditor.setText 'item'
-          atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
-          expect(findView.descriptionLabel).not.toHaveClass 'text-error'
-          expect(findView.descriptionLabel.text()).toContain "6 results"
+            findView.findEditor.setText 'item'
+            atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
+            expect(findView.descriptionLabel).not.toHaveClass 'text-error'
+            expect(findView.descriptionLabel.text()).toContain "6 results"
+
+        describe "when the search string is too large", ->
+          beforeEach ->
+            findView.findEditor.setText "x".repeat(50000)
+            atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
+
+          it "displays the error", ->
+            expect(findView.descriptionLabel).toHaveClass 'text-error'
+            expect(findView.descriptionLabel.text()).toContain 'Search string is too large'
+
+          it "will be reset when there is no longer an error", ->
+            findView.findEditor.setText ''
+            atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
+            expect(findView.descriptionLabel).not.toHaveClass 'text-error'
+            expect(findView.descriptionLabel.text()).toContain "Find in Current Buffer"
+
+            findView.findEditor.setText 'item'
+            atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
+            expect(findView.descriptionLabel).not.toHaveClass 'text-error'
+            expect(findView.descriptionLabel.text()).toContain "6 results"
 
     it "selects the first match following the cursor", ->
       expect(findView.resultCounter.text()).toEqual('2 of 6')
@@ -574,19 +615,53 @@ describe 'FindView', ->
       editor.setSelectedBufferRange([[2, 34], [2, 39]])
       expect(findView.resultCounter.text()).toEqual('3 of 6')
 
-    it "shows an icon when search wraps around", ->
+    it "shows an icon when search wraps around and the editor scrolls", ->
+      editorView.style.height = "80px"
+      atom.views.performDocumentPoll()
+      expect(editor.getVisibleRowRange()).toEqual [0, 3]
+
+      expect(findView.resultCounter.text()).toEqual('2 of 6')
+      expect(findView.wrapIcon).not.toBeVisible()
+
       atom.commands.dispatch editorView, 'find-and-replace:find-previous'
+      expect(findView.resultCounter.text()).toEqual('1 of 6')
+      expect(editor.getVisibleRowRange()).toEqual [0, 3]
+
       expect(findView.wrapIcon).not.toBeVisible()
 
       atom.commands.dispatch editorView, 'find-and-replace:find-previous'
       expect(findView.resultCounter.text()).toEqual('6 of 6')
+      expect(editor.getVisibleRowRange()).toEqual [4, 7]
+
       expect(findView.wrapIcon).toBeVisible()
       expect(findView.wrapIcon).toHaveClass 'icon-move-down'
 
       atom.commands.dispatch editorView, 'find-and-replace:find-next'
       expect(findView.resultCounter.text()).toEqual('1 of 6')
+      expect(editor.getVisibleRowRange()).toEqual [0, 3]
+
       expect(findView.wrapIcon).toBeVisible()
       expect(findView.wrapIcon).toHaveClass 'icon-move-up'
+
+    it "does not nshow the wrap icon when the editor does not scroll", ->
+      editorView.style.height = "400px"
+      atom.views.performDocumentPoll()
+      expect(editor.getVisibleRowRange()).toEqual [0, 12]
+
+      atom.commands.dispatch editorView, 'find-and-replace:find-previous'
+      expect(findView.resultCounter.text()).toEqual('1 of 6')
+
+      atom.commands.dispatch editorView, 'find-and-replace:find-previous'
+      expect(findView.resultCounter.text()).toEqual('6 of 6')
+      expect(editor.getVisibleRowRange()).toEqual [0, 12]
+
+      expect(findView.wrapIcon).not.toBeVisible()
+
+      atom.commands.dispatch editorView, 'find-and-replace:find-next'
+      expect(findView.resultCounter.text()).toEqual('1 of 6')
+      expect(editor.getVisibleRowRange()).toEqual [0, 12]
+
+      expect(findView.wrapIcon).not.toBeVisible()
 
     describe "when find-and-replace:use-selection-as-find-pattern is triggered", ->
       it "places the selected text into the find editor", ->
@@ -1461,3 +1536,16 @@ describe 'FindView', ->
         expect(findView.model.getFindOptions().useRegex).not.toBe true
         expect(findView.findEditor.getModel().getGrammar().scopeName).toBe 'text.plain.null-grammar'
         expect(findView.replaceEditor.getModel().getGrammar().scopeName).toBe 'text.plain.null-grammar'
+
+  describe "when no buffer is open", ->
+    it "toggles regex via an event and finds text matching the pattern", ->
+      atom.commands.dispatch editorView, 'find-and-replace:show'
+      editor.destroy()
+
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        findView.findEditor.setText 'items'
+        atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
+        expect(findView.descriptionLabel.text()).toContain "No results"
