@@ -421,7 +421,7 @@ describe 'ResultsView', ->
       runs ->
         expect(atom.workspace.getActivePaneItem().getPath()).toContain('sample.')
 
-    if atom.workspace.buildTextEditor().isPending?
+    if atom.workspace.getActivePane().getPendingItem?
       it "opens the file containing the result in pending state when the search result is single-clicked", ->
         pathNode = resultsView.find(".search-result")[0]
         pathNode.dispatchEvent(buildMouseEvent('mousedown', target: pathNode, which: 1))
@@ -430,7 +430,7 @@ describe 'ResultsView', ->
           editor = atom.workspace.getActiveTextEditor()
 
         runs ->
-          expect(editor.isPending()).toBe true
+          expect(atom.workspace.getActivePane().getPendingItem()).toBe editor
           expect(atom.views.getView(editor)).toHaveFocus()
 
       it "opens the file containing the result in non-pending state when the search result is double-clicked", ->
@@ -442,7 +442,7 @@ describe 'ResultsView', ->
           editor = atom.workspace.getActiveTextEditor()
 
         runs ->
-          expect(editor.isPending()).toBe false
+          expect(atom.workspace.getActivePane().getPendingItem()).toBe null
           expect(atom.views.getView(editor)).toHaveFocus()
 
     describe "when `openProjectFindResultsInRightPane` option is true", ->
