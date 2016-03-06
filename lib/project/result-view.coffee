@@ -80,3 +80,4 @@ class ResultView extends View
 
   confirm: ->
     @expand(not @isExpanded)
+    null
