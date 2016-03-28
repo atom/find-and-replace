@@ -139,7 +139,7 @@ class ResultsModel
     if @findOptions.useRegex
       replacePattern = escapeHelper.unescapeEscapeSequence(replacePattern)
     else
-      replacePattern = replacePattern.replace("$","$$$$");
+      replacePattern = replacePattern.replace("$", "$$$$")
 
     @active = false # not active until the search is finished
     @replacedPathCount = 0
