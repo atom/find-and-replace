@@ -136,7 +136,10 @@ class ResultsModel
 
     @findOptions.set({replacePattern, pathsPattern})
 
-    replacePattern = escapeHelper.unescapeEscapeSequence(replacePattern) if @findOptions.useRegex
+    if @findOptions.useRegex
+      replacePattern = escapeHelper.unescapeEscapeSequence(replacePattern)
+    else
+      replacePattern = replacePattern.replace("$","$$$$");
 
     @active = false # not active until the search is finished
     @replacedPathCount = 0
