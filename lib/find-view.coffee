@@ -26,6 +26,7 @@ class FindView extends View
     @div tabIndex: -1, class: 'find-and-replace', =>
       @header class: 'header', =>
         @span outlet: 'descriptionLabel', class: 'header-item description', 'Find in Current Buffer'
+        @a outlet: 'closeButton', class: 'icon icon-x pull-right octicons'
         @span class: 'header-item options-label pull-right', =>
           @span 'Finding with Options: '
           @span outlet: 'optionsLabel', class: 'options'
@@ -186,6 +187,8 @@ class FindView extends View
     @find('button').on 'click', ->
       workspaceElement = atom.views.getView(atom.workspace)
       workspaceElement.focus()
+
+    @closeButton.on 'click', (e) => @panel?.hide()
 
   handleFindEvents: ->
     @findEditor.getModel().onDidStopChanging => @liveSearch()

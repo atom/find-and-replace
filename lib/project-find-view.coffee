@@ -40,6 +40,7 @@ class ProjectFindView extends View
     @div tabIndex: -1, class: 'project-find padded', =>
       @header class: 'header', =>
         @span outlet: 'descriptionLabel', class: 'header-item description'
+        @a outlet: 'closeButton', class: 'icon icon-x pull-right octicons'
         @span class: 'header-item options-label pull-right', =>
           @span 'Finding with Options: '
           @span outlet: 'optionsLabel', class: 'options'
@@ -173,6 +174,7 @@ class ProjectFindView extends View
     @wholeWordOptionButton.click => @toggleWholeWordOption()
     @replaceAllButton.on 'click', => @replaceAll()
     @findAllButton.on 'click', => @search()
+    @closeButton.on 'click', (e) => @panel?.hide()
 
     focusCallback = => @onlyRunIfChanged = false
     $(window).on 'focus', focusCallback
