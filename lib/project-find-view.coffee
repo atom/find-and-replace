@@ -40,10 +40,10 @@ class ProjectFindView extends View
     @div tabIndex: -1, class: 'project-find padded', =>
       @header class: 'header', =>
         @span outlet: 'descriptionLabel', class: 'header-item description'
-        @a outlet: 'closeButton', class: 'icon icon-x pull-right octicons'
-        @span class: 'header-item options-label pull-right', =>
-          @span 'Finding with Options: '
+        @span class: 'header-item options-label', =>
+          @span 'With Options: '
           @span outlet: 'optionsLabel', class: 'options'
+        @a outlet: 'closeButton', class: 'icon icon-x pull-right octicons'
 
       @section outlet: 'replacmentInfoBlock', class: 'input-block', =>
         @progress outlet: 'replacementProgress', class: 'inline-block'
@@ -119,6 +119,11 @@ class ProjectFindView extends View
     subs.add atom.tooltips.add @findAllButton,
       title: "Find All",
       keyBindingCommand: 'find-and-replace:search',
+      keyBindingTarget: @findEditor.element
+
+    subs.add atom.tooltips.add @closeButton,
+      title: "Close this panel",
+      keyBindingCommand: 'core:cancel',
       keyBindingTarget: @findEditor.element
 
   didHide: ->
@@ -314,7 +319,7 @@ class ProjectFindView extends View
     @setInfoMessage(message)
 
   clearMessages: ->
-    @setInfoMessage('Find in Project <span class="subtle-info-message">Close this panel with the <span class="highlight">esc</span> key</span>').removeClass('text-error')
+    @setInfoMessage('Find in Project').removeClass('text-error')
     @replacmentInfoBlock.hide()
 
   setInfoMessage: (infoMessage) ->
