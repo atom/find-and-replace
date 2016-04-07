@@ -54,7 +54,7 @@ class BufferSearch
 
   resultsMarkerLayerForTextEditor: (editor) ->
     unless layer = ResultsMarkerLayersByEditor.get(editor)
-      layer = editor.addMarkerLayer?()
+      layer = editor.addMarkerLayer({maintainHistory: false})
       ResultsMarkerLayersByEditor.set(editor, layer)
     layer
 
@@ -201,11 +201,7 @@ class BufferSearch
     @createMarker(marker.getBufferRange())
 
   createMarker: (range) ->
-    marker = @resultsMarkerLayer.markBufferRange(range,
-      invalidate: 'inside'
-      persistent: false
-      maintainHistory: false
-    )
+    marker = @resultsMarkerLayer.markBufferRange(range, {invalidate: 'inside'})
     marker
 
   bufferChanged: ({oldRange, newRange, newText}) ->
