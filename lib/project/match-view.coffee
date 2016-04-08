@@ -12,14 +12,28 @@ class MatchView extends View
     matchEnd = range.end.column - match.lineTextOffset
     prefix = removeLeadingWhitespace(match.lineText[0...matchStart])
     suffix = match.lineText[matchEnd..]
+    lines = atom.project.findBufferForPath(filePath)?.lines
 
-    @li class: 'search-result list-item', =>
-      @span range.start.row + 1, class: 'line-number text-subtle'
-      @span class: 'preview', outlet: 'preview', =>
-        @span prefix
-        @span match.matchText, class: 'match highlight-info', outlet: 'matchText'
-        @span match.matchText, class: 'replacement highlight-success', outlet: 'replacementText'
-        @span suffix
+    prefixLines = lines.slice(range.start.row - 2, range.start.row)
+    suffixLines = lines.slice(range.end.row + 1, range.end.row + 2 + 1)
+    @div =>
+      for line, index in prefixLines
+        @li class: 'search-result list-item', =>
+          @span range.start.row - prefixLines.length + index, class: 'line-number text-subtle'
+          @span class: 'preview', outlet: 'preview', =>
+            @span line
+      @li class: 'search-result list-item', =>
+        @span range.start.row + 1, class: 'line-number text-subtle'
+        @span class: 'preview', outlet: 'preview', =>
+          @span prefix
+          @span match.matchText, class: 'match highlight-info', outlet: 'matchText'
+          @span match.matchText, class: 'replacement highlight-success', outlet: 'replacementText'
+          @span suffix
+      for line, index in suffixLines
+        @li class: 'search-result list-item', =>
+          @span range.end.row + 1 + index, class: 'line-number text-subtle'
+          @span class: 'preview', outlet: 'preview', =>
+            @span line
 
   initialize: (@model, {@filePath, @match}) ->
     @render()
