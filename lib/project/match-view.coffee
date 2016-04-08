@@ -15,7 +15,7 @@ class MatchView extends View
     lines = atom.project.findBufferForPath(filePath)?.lines
     prefixLines = []
     suffixLines = []
-    if lines.length
+    if lines
       prefixLines = lines?.slice(range.start.row - 2, range.start.row)
       suffixLines = lines?.slice(range.end.row + 1, range.end.row + 2 + 1)
     @div =>
