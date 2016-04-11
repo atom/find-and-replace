@@ -210,10 +210,12 @@ class ResultsModel
       filePathInsertedIndex = binaryIndex(@paths, filePath, stringCompare)
       @paths.splice(filePathInsertedIndex, 0, filePath)
 
-    @matchCount += result.matches.length
-
-    @results[filePath] = result
-    @emitter.emit 'did-add-result', {filePath, result, filePathInsertedIndex}
+    bufferPromise = atom.project.buildBuffer(filePath)
+    bufferPromise.then (buffer) =>
+      result.lines = buffer.lines
+      @matchCount += result.matches.length
+      @results[filePath] = result
+      @emitter.emit 'did-add-result', {filePath, result, filePathInsertedIndex}
 
   removeResult: (filePath) ->
     if @results[filePath]
