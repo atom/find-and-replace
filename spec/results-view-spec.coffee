@@ -440,9 +440,10 @@ describe 'ResultsView', ->
         editor = null
         waitsFor ->
           editor = atom.workspace.getActiveTextEditor()
+        waitsFor ->
+          atom.workspace.getActivePane().getPendingItem() is null
 
         runs ->
-          expect(atom.workspace.getActivePane().getPendingItem()).toBe null
           expect(atom.views.getView(editor)).toHaveFocus()
 
     describe "when `openProjectFindResultsInRightPane` option is true", ->

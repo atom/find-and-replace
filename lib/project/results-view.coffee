@@ -21,13 +21,9 @@ class ResultsView extends ScrollView
       view.addClass('selected')
       if not e.ctrlKey
         if e.originalEvent?.detail is 1
-          @editorPromise = view.confirm(pending: true)
+          view.confirm(pending: true)
         else if e.originalEvent?.detail is 2
-          @editorPromise?.then? (editor) =>
-            if atom.workspace.getActivePane().getPendingItem?
-              atom.workspace.getActivePane().clearPendingItem() if atom.workspace.getActivePane().getPendingItem() is editor
-            else if editor.terminatePendingState?
-              editor.terminatePendingState()
+          view.confirm()
         e.preventDefault()
       @renderResults()
 
