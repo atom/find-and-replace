@@ -15,19 +15,16 @@ class ResultsView extends ScrollView
     @pixelOverdraw = 100
     @lastRenderedResultIndex = 0
 
-    @on 'mousedown', '.match-result, .path', (e) =>
+    @on 'mousedown', '.path', (e) =>
       @find('.selected').removeClass('selected')
       view = $(e.target).view()
       view.addClass('selected')
       if not e.ctrlKey
         if e.originalEvent?.detail is 1
-          @editorPromise = view.confirm(pending: true)
+          if view instanceof ResultView or atom.config.get('find-and-replace.openProjectFindResultsInRightPane')
+            view.confirm(pending: true)
         else if e.originalEvent?.detail is 2
-          @editorPromise?.then? (editor) =>
-            if atom.workspace.getActivePane().getPendingItem?
-              atom.workspace.getActivePane().clearPendingItem() if atom.workspace.getActivePane().getPendingItem() is editor
-            else if editor.terminatePendingState?
-              editor.terminatePendingState()
+          view.confirm() unless view instanceof ResultView
         e.preventDefault()
       @renderResults()
 
