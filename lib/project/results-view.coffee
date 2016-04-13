@@ -21,8 +21,7 @@ class ResultsView extends ScrollView
       view.addClass('selected')
       if not e.ctrlKey
         if e.originalEvent?.detail is 1
-          if view instanceof ResultView or atom.config.get('find-and-replace.openProjectFindResultsInRightPane')
-            view.confirm(pending: true)
+          view.confirm(pending: true)
         else if e.originalEvent?.detail is 2
           view.confirm() unless view instanceof ResultView
         e.preventDefault()

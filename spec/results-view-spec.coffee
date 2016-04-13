@@ -467,12 +467,6 @@ describe 'ResultsView', ->
         atom.commands.dispatch resultsView.element, 'core:confirm'
         expect(atom.workspace.open.mostRecentCall.args[1]).toEqual {}
 
-      describe "when a search result is single-clicked", ->
-        it "does not open the file containing the result and keeps the result view focused", ->
-          pathNode = resultsView.find(".search-result")[0]
-          pathNode.dispatchEvent(buildMouseEvent('mousedown', target: pathNode, which: 1))
-          expect(resultsView).toHaveFocus()
-
   describe "arrowing through the list", ->
     it "arrows through the entire list without selecting paths and overshooting the boundaries", ->
       waitsForPromise ->
