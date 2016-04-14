@@ -1,5 +1,5 @@
 _ = require 'underscore-plus'
-{Emitter} = require 'atom'
+{Emitter, Range} = require 'atom'
 escapeHelper = require '../escape-helper'
 
 class Result
@@ -212,7 +212,9 @@ class ResultsModel
 
     bufferPromise = atom.project.buildBuffer(filePath)
     bufferPromise.then (buffer) =>
-      result.lines = buffer.lines
+      for match in result.matches
+        range = Range.fromObject(match.range)
+        match.lines = buffer.lines.slice(range.start.row, range.start.row+2+1+2)
       @matchCount += result.matches.length
       @results[filePath] = result
       @emitter.emit 'did-add-result', {filePath, result, filePathInsertedIndex}

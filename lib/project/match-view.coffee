@@ -12,12 +12,9 @@ class MatchView extends View
     matchEnd = range.end.column - match.lineTextOffset
     prefix = removeLeadingWhitespace(match.lineText[0...matchStart])
     suffix = match.lineText[matchEnd..]
-    lines = model.results[filePath].lines
-    prefixLines = []
-    suffixLines = []
-    if lines
-      prefixLines = lines?.slice(range.start.row - 2, range.start.row)
-      suffixLines = lines?.slice(range.end.row + 1, range.end.row + 2 + 1)
+    lines = match.lines
+    prefixLines = lines.slice(0, 2)
+    suffixLines = lines.slice(2+1)
     @pre =>
       for line, index in prefixLines
         @li class: 'search-result list-item', =>
