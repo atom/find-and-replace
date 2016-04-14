@@ -13,8 +13,9 @@ class MatchView extends View
     prefix = removeLeadingWhitespace(match.lineText[0...matchStart])
     suffix = match.lineText[matchEnd..]
     lines = match.lines
-    prefixLines = lines.slice(0, 2)
-    suffixLines = lines.slice(2+1)
+    contextLines = atom.config.get('find-and-replace.searchContextExtraLines')
+    prefixLines = lines.slice(0, contextLines)
+    suffixLines = lines.slice(contextLines+1)
     @pre =>
       for line, index in prefixLines
         @li class: 'search-result list-item', =>
