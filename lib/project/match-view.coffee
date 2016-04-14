@@ -15,7 +15,7 @@ class MatchView extends View
     lines = match.lines
     contextLines = atom.config.get('find-and-replace.searchContextExtraLines')
     prefixLines = lines.slice(0, contextLines)
-    suffixLines = lines.slice(contextLines+1)
+    suffixLines = lines.slice(contextLines + 1)
     @pre =>
       for line, index in prefixLines
         @li class: 'search-result list-item', =>

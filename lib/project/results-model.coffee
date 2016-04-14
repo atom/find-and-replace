@@ -215,7 +215,7 @@ class ResultsModel
       for match in result.matches
         range = Range.fromObject(match.range)
         linesAmount = atom.config.get('find-and-replace.searchContextExtraLines')
-        match.lines = buffer.lines.slice(range.start.row, range.start.row+linesAmount*2+1)
+        match.lines = buffer.lines.slice(range.start.row-linesAmount, range.end.row+linesAmount+1)
       @matchCount += result.matches.length
       @results[filePath] = result
       @emitter.emit 'did-add-result', {filePath, result, filePathInsertedIndex}
