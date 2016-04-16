@@ -1,6 +1,7 @@
 _ = require 'underscore-plus'
 {Emitter} = require 'atom'
 escapeHelper = require '../escape-helper'
+{watch} = require 'pathwatcher'
 
 class Result
   @create: (result) ->
@@ -202,6 +203,8 @@ class ResultsModel
       @removeResult(filePath)
 
   addResult: (filePath, result) ->
+    watch filePath, (eventType) =>
+      @removeResult(filePath) if eventType is 'delete'
     filePathInsertedIndex = null
     if @results[filePath]
       @matchCount -= @results[filePath].matches.length
