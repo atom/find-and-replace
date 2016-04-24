@@ -72,6 +72,7 @@ class ResultsModel
     @matchCount = 0
     @regex = null
     @results = {}
+    @watchSubscriptions[path].close() for path of @watchSubscriptions
     @watchSubscriptions = {}
     @paths = []
     @active = false
