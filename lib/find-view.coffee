@@ -196,6 +196,7 @@ class FindView extends View
       'find-and-replace:find-next-selected': @findNextSelected
       'find-and-replace:find-previous-selected': @findPreviousSelected
       'find-and-replace:use-selection-as-find-pattern': @setSelectionAsFindPattern
+      'find-and-replace:use-selection-as-replace-pattern': @setSelectionAsReplacePattern
 
   handleReplaceEvents: ->
     @replaceNextButton.on 'click', @replaceNext
@@ -427,6 +428,16 @@ class FindView extends View
       findPattern = editor.getSelectedText() or editor.getWordUnderCursor()
       findPattern = Util.escapeRegex(findPattern) if @model.getFindOptions().useRegex
       @search(findPattern) if findPattern
+
+  setSelectionAsReplacePattern: =>
+    editor = @model.getEditor()
+    if editor?.getSelectedText?
+      replacePattern = editor.getSelectedText() or editor.getWordUnderCursor()
+      replacePattern = Util.escapeRegex(replacePattern) if @model.getFindOptions().useRegex
+      if replacePattern
+        @replaceEditor.setText(replacePattern)
+        @replaceEditor.focus()
+        @replaceEditor.getModel().selectAll()
 
   findNextSelected: =>
     @setSelectionAsFindPattern()
