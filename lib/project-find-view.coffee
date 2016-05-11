@@ -134,6 +134,10 @@ class ProjectFindView extends View
     @subscriptions.add atom.commands.add 'atom-workspace',
       'find-and-replace:use-selection-as-find-pattern': @setSelectionAsFindPattern
 
+  handleEvents: ->
+    @subscriptions.add atom.commands.add 'atom-workspace',
+      'find-and-replace:use-selection-as-replace-pattern': @setSelectionAsReplacePattern
+
     @subscriptions.add atom.commands.add @element,
       'find-and-replace:focus-next': => @focusNextElement(1)
       'find-and-replace:focus-previous': => @focusNextElement(-1)
@@ -345,6 +349,13 @@ class ProjectFindView extends View
       pattern = editor.getSelectedText() or editor.getWordUnderCursor()
       pattern = Util.escapeRegex(pattern) if @model.getFindOptions().useRegex
       @findEditor.setText(pattern) if pattern
+
+  setSelectionAsReplacePattern: =>
+    editor = atom.workspace.getActivePaneItem()
+    if editor?.getSelectedText?
+      pattern = editor.getSelectedText() or editor.getWordUnderCursor()
+      pattern = Util.escapeRegex(pattern) if @model.getFindOptions().useRegex
+      @replaceEditor.setText(pattern) if pattern
 
   updateOptionViews: =>
     @updateOptionButtons()
