@@ -49,11 +49,7 @@ module.exports =
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:use-selection-as-find-pattern', =>
       return if @projectFindPanel?.isVisible() or @findPanel?.isVisible()
-
-      @createViews()
-      @projectFindPanel.hide()
-      @findPanel.show()
-      @findView.focusFindEditor()
+      showPanel @findPanel, @projectFindPanel, => @findView.focusReplaceEditor()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:use-selection-as-replace-pattern', =>
       return if @projectFindPanel?.isVisible() or @findPanel?.isVisible()
