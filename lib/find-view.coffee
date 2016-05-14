@@ -188,7 +188,8 @@ class FindView extends View
       workspaceElement.focus()
 
   handleFindEvents: ->
-    @findEditor.getModel().onDidStopChanging => @liveSearch()
+    changeEventListener = if atom.config.get('find-and-replace.instantSearch') then 'onDidChange' else 'onDidStopChanging'
+    @findEditor.getModel()[changeEventListener] => @liveSearch()
     @nextButton.on 'click', (e) => if e.shiftKey then @findPrevious(focusEditorAfter: true) else @findNext(focusEditorAfter: true)
     @subscriptions.add atom.commands.add 'atom-workspace',
       'find-and-replace:find-next': => @findNext(focusEditorAfter: true)
