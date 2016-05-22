@@ -83,7 +83,7 @@
     "instantSearch": {
       "type": "boolean",
       "default": false,
-      "description": "Search as you type, instead of waiting until you stop typing. You need to restart Atom for changes to this setting to take effect."
+      "description": "Search as you type, instead of waiting until you stop typing."
     }
   }
 }
