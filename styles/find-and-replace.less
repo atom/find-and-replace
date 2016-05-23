@@ -225,11 +225,11 @@ atom-workspace.find-visible {
 
 .preview-pane {
   position: relative;
-  display: -webkit-flex;
-  -webkit-flex-direction: column;
+  display: flex;
+  flex-direction: column;
 
   .panel-heading {
-    -webkit-flex-shrink: 0;
+    flex-shrink: 0;
   }
 
   .loading-spinner-tiny,
@@ -249,7 +249,7 @@ atom-workspace.find-visible {
     overflow: auto;
     position: relative;
     padding: 0 @component-padding;
-    -webkit-flex: 1;
+    flex: 1;
 
     .search-result {
       padding-top: 2px;
