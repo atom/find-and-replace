@@ -219,8 +219,10 @@ class FindView extends View
       selectedText = Util.escapeRegex(selectedText) if @model.getFindOptions().useRegex
       @findEditor.setText(selectedText)
       @deactivateSelectionOption()
-    else
+    else if selectedText
       @activateSelectionOption()
+    else
+      @deactivateSelectionOption()
 
     @findEditor.focus()
     @findEditor.getModel().selectAll()
@@ -230,8 +232,10 @@ class FindView extends View
     if selectedText and selectedText.indexOf('\n') < 0
       @replaceEditor.setText(selectedText)
       @deactivateSelectionOption()
-    else:
+    else if selectedText
       @activateSelectionOption()
+    else
+      @deactivateSelectionOption()
     @replaceEditor.focus()
     @replaceEditor.getModel().selectAll()
 
