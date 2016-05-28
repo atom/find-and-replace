@@ -206,7 +206,7 @@ class FindView extends View
       'find-and-replace:replace-all': @replaceAll
 
   activateSelectionOption: =>
-    # This forces search the selection again if selection is changed.
+    # This forces search the selection again in case selection is changed.
     @search(inCurrentSelection: false)
     @search(inCurrentSelection: true)
 
