@@ -106,7 +106,7 @@ describe 'FindView', ->
       runs ->
         expect(findView.caseOptionButton).toHaveClass 'selected'
         expect(findView.regexOptionButton).toHaveClass 'selected'
-        expect(findView.selectionOptionButton).toHaveClass 'selected'
+        expect(findView.selectionOptionButton).not.toHaveClass 'selected'
 
     it "places selected text into the find editor and escapes it when Regex is enabled", ->
       atom.config.set('find-and-replace.useRegex', true)
@@ -323,7 +323,7 @@ describe 'FindView', ->
       runs ->
         expect(findView.caseOptionButton).toHaveClass 'selected'
         expect(findView.regexOptionButton).toHaveClass 'selected'
-        expect(findView.selectionOptionButton).toHaveClass 'selected'
+        expect(findView.selectionOptionButton).not.toHaveClass 'selected'
         expect(findView.wholeWordOptionButton).toHaveClass 'selected'
 
   describe "finding", ->
