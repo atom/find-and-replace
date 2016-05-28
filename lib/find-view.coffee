@@ -205,11 +205,23 @@ class FindView extends View
       'find-and-replace:replace-next': @replaceNext
       'find-and-replace:replace-all': @replaceAll
 
+  activateSelectionOption: =>
+    # This forces search the selection again if selection is changed.
+    @search(inCurrentSelection: false)
+    @search(inCurrentSelection: true)
+
+  deactivateSelectionOption: =>
+    @search(inCurrentSelection: false)
+
   focusFindEditor: =>
     selectedText = atom.workspace.getActiveTextEditor()?.getSelectedText?()
     if selectedText and selectedText.indexOf('\n') < 0
       selectedText = Util.escapeRegex(selectedText) if @model.getFindOptions().useRegex
       @findEditor.setText(selectedText)
+      @deactivateSelectionOption()
+    else
+      @activateSelectionOption()
+
     @findEditor.focus()
     @findEditor.getModel().selectAll()
 
@@ -217,6 +229,9 @@ class FindView extends View
     selectedText = atom.workspace.getActiveTextEditor()?.getSelectedText?()
     if selectedText and selectedText.indexOf('\n') < 0
       @replaceEditor.setText(selectedText)
+      @deactivateSelectionOption()
+    else:
+      @activateSelectionOption()
     @replaceEditor.focus()
     @replaceEditor.getModel().selectAll()
 
