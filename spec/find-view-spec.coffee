@@ -354,7 +354,7 @@ describe 'FindView', ->
         editor.setText("\t\n\\t\\\\")
         editor.setCursorBufferPosition([0, 0])
 
-      describe "when regex seach is enabled", ->
+      describe "when regex search is enabled", ->
         beforeEach ->
           atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
 
@@ -415,7 +415,7 @@ describe 'FindView', ->
         atom.commands.dispatch findView.findEditor.element, 'core:confirm'
         expect(editor.getSelectedBufferRange()).toEqual [[2, 6], [2, 10]]
 
-      it "doesn't highlights the search inside words", ->
+      it "doesn't highlight the search inside words", ->
         findView.findEditor.setText('word')
         atom.commands.dispatch findView.findEditor.element, 'core:confirm'
         expect(getResultDecorations(editor, 'find-result')).toHaveLength 1
@@ -643,7 +643,7 @@ describe 'FindView', ->
       expect(findView.wrapIcon).toBeVisible()
       expect(findView.wrapIcon).toHaveClass 'icon-move-up'
 
-    it "does not nshow the wrap icon when the editor does not scroll", ->
+    it "does not show the wrap icon when the editor does not scroll", ->
       editorView.style.height = "400px"
       atom.views.performDocumentPoll()
       expect(editor.getVisibleRowRange()).toEqual [0, 12]
@@ -1238,18 +1238,18 @@ describe 'FindView', ->
         beforeEach ->
           atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
 
-        it "inserts tabs and newlines", ->
-          findView.replaceEditor.setText('\\t\\n')
+        it "inserts newlines and tabs", ->
+          findView.replaceEditor.setText('\\n\\t')
           atom.commands.dispatch(findView.replaceEditor.element, 'core:confirm')
-          expect(editor.getText()).toMatch(/\t\n/)
+          expect(editor.getText()).toMatch(/\n\t/)
 
-        it "doesn't insert a escaped char if there are multiple backslashs in front of the char", ->
+        it "doesn't insert a escaped char if there are multiple backslashes in front of the char", ->
           findView.replaceEditor.setText('\\\\t\\\t')
           atom.commands.dispatch(findView.replaceEditor.element, 'core:confirm')
           expect(editor.getText()).toMatch(/\\t\\\t/)
 
       describe "when in normal mode", ->
-        it "inserts backslach n and t", ->
+        it "inserts backslash n and t", ->
           findView.replaceEditor.setText('\\t\\n')
           atom.commands.dispatch(findView.replaceEditor.element, 'core:confirm')
           expect(editor.getText()).toMatch(/\\t\\n/)
