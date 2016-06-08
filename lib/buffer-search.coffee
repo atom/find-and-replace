@@ -70,11 +70,11 @@ class BufferSearch
     @findOptions.set({replacePattern})
 
     @editor.transact =>
+      replacePattern = escapeHelper.unescapeEscapeSequence(replacePattern) if @findOptions.useRegex
       for marker in markers
         bufferRange = marker.getBufferRange()
         replacementText = null
         if @findOptions.useRegex
-          replacePattern = escapeHelper.unescapeEscapeSequence(replacePattern)
           textToReplace = @editor.getTextInBufferRange(bufferRange)
           replacementText = textToReplace.replace(@getFindPatternRegex(), replacePattern)
         @editor.setTextInBufferRange(bufferRange, replacementText ? replacePattern)
