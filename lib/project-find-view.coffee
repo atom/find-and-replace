@@ -274,7 +274,8 @@ class ProjectFindView extends View
         @model.replace(pathsPattern, replacePattern, @model.getPaths())
 
   directoryPathForElement: (element) ->
-    elementPath = element?.dataset.path ? element?.querySelector('[data-path]')?.dataset.path
+    if element?.dataset.path
+      elementPath = element?.querySelector('[data-path]')?.dataset.path
 
     # Traverse up the DOM if the element and its children don't have a path
     unless elementPath
@@ -282,6 +283,9 @@ class ProjectFindView extends View
         elementPath = element.dataset.path
         break if elementPath
         element = element.parentElement
+      # Use the active editor path if all elements don't have a path
+      unless elementPath
+        elementPath = atom.workspace.getActiveTextEditor()?.getPath()
 
     if fs.isFileSync(elementPath)
       require('path').dirname(elementPath)
