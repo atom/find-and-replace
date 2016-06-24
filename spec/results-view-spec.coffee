@@ -272,7 +272,7 @@ describe 'ResultsView', ->
 
         expect(resultsView.find(".path-details").length).toBe 3
 
-    fdescribe "core:page-up and core:page-down", ->
+    describe "core:page-up and core:page-down", ->
       beforeEach ->
         workspaceElement.style.height = '300px'
         projectFindView.findEditor.setText(' ')
@@ -316,14 +316,13 @@ describe 'ResultsView', ->
 
         expect(resultsView.find("li:last")).toHaveClass 'selected'
 
-      fit "selects the first result on the next page when core:page-up is triggered", ->
+      it "selects the first result on the next page when core:page-up is triggered", ->
         atom.commands.dispatch resultsView.element, 'core:move-to-bottom'
 
         itemHeight = resultsView.find('.selected').outerHeight()
         pageHeight = Math.round(resultsView.innerHeight() / itemHeight) * itemHeight
         initialScrollTop = resultsView.scrollTop()
         itemsPerPage = Math.floor(pageHeight / itemHeight)
-        console.log("#{itemHeight} #{pageHeight} #{initialScrollTop} #{itemsPerPage} #{resultsView.innerHeight()}")
 
         initiallySelectedIndex = Math.floor(initialScrollTop / itemHeight) + itemsPerPage
         expect(resultsView.find("li:eq(#{initiallySelectedIndex})")).toHaveClass 'selected'
