@@ -275,6 +275,7 @@ describe 'ResultsView', ->
     describe "core:page-up and core:page-down", ->
       beforeEach ->
         workspaceElement.style.height = '300px'
+        workspaceElement.style.width = '1024px'
         projectFindView.findEditor.setText(' ')
         projectFindView.confirm()
 
