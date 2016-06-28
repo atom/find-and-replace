@@ -66,18 +66,21 @@ describe 'ResultsView', ->
         expect(resultsView.find('.search-result:first')).toHaveClass 'selected'
 
         # at the beginning
-        projectFindView.model.addResult('/a', matches: [match])
-        expect(resultsView.find(".path-name")[0].textContent).toContain '/a'
+        firstResult = path.resolve('/a')
+        projectFindView.model.addResult(firstResult, matches: [match])
+        expect(resultsView.find(".path-name")[0].textContent).toContain firstResult
         expect(resultsView.find('.search-result:first')).toHaveClass 'selected'
 
         # at the end
-        projectFindView.model.addResult('/z', matches: [match])
-        expect(resultsView.find(".path-name")[4].textContent).toContain '/z'
+        lastResult = path.resolve('/z')
+        projectFindView.model.addResult(lastResult, matches: [match])
+        expect(resultsView.find(".path-name")[4].textContent).toContain lastResult
         expect(resultsView.find('.search-result:first')).toHaveClass 'selected'
 
-        # in the middle
-        projectFindView.model.addResult('/x', matches: [match])
-        expect(resultsView.find(".path-name")[4].textContent).toContain '/x'
+        # 2nd to last
+        almostLastResult = path.resolve('/x')
+        projectFindView.model.addResult(almostLastResult, matches: [match])
+        expect(resultsView.find(".path-name")[4].textContent).toContain almostLastResult
         expect(resultsView.find('.search-result:first')).toHaveClass 'selected'
 
     describe "when shouldRenderMoreResults is false", ->
@@ -93,16 +96,17 @@ describe 'ResultsView', ->
         expect(pathNames[2]).toContain 'sample.js'
 
         # nope, not at the end
-        projectFindView.model.addResult('/z', matches: [])
+        projectFindView.model.addResult(path.resolve('/z'), matches: [])
         expect(resultsView.find(".path-name")).toHaveLength 3
 
         # yes, at the beginning
-        projectFindView.model.addResult('/a', matches: [])
+        firstResult = path.resolve('/a')
+        projectFindView.model.addResult(firstResult, matches: [])
         expect(resultsView.find(".path-name")).toHaveLength 4
-        expect(resultsView.find(".path-name")[0].textContent).toContain '/a'
+        expect(resultsView.find(".path-name")[0].textContent).toContain firstResult
 
         # yes, in the middle
-        projectFindView.model.addResult("#{dirname}/ppppp", matches: [])
+        projectFindView.model.addResult(path.resolve("#{dirname}/ppppp"), matches: [])
         expect(resultsView.find(".path-name")).toHaveLength 5
         expect(resultsView.find(".path-name")[2].textContent).toContain 'ppppp'
 
@@ -421,6 +425,19 @@ describe 'ResultsView', ->
       runs ->
         expect(atom.workspace.getActivePaneItem().getPath()).toContain('sample.')
 
+    it "opens the file containing the result in non-pending state when the search result is double-clicked", ->
+      pathNode = resultsView.find(".search-result")[0]
+      pathNode.dispatchEvent(buildMouseEvent('mousedown', target: pathNode, detail: 1))
+      pathNode.dispatchEvent(buildMouseEvent('mousedown', target: pathNode, detail: 2))
+      editor = null
+      waitsFor ->
+        editor = atom.workspace.getActiveTextEditor()
+      waitsFor ->
+        atom.workspace.getActivePane().getPendingItem() is null
+
+      runs ->
+        expect(atom.views.getView(editor)).toHaveFocus()
+
     describe "when `openProjectFindResultsInRightPane` option is true", ->
       beforeEach ->
         atom.config.set('find-and-replace.openProjectFindResultsInRightPane', true)
@@ -430,6 +447,19 @@ describe 'ResultsView', ->
         atom.commands.dispatch resultsView.element, 'core:move-down'
         atom.commands.dispatch resultsView.element, 'core:confirm'
         expect(atom.workspace.open.mostRecentCall.args[1].split).toBe 'left'
+
+      describe "when a search result is single-clicked", ->
+        it "opens the file containing the result in pending state", ->
+          pathNode = resultsView.find(".search-result")[0]
+          pathNode.dispatchEvent(buildMouseEvent('mousedown', target: pathNode, which: 1))
+          editor = null
+          waitsFor ->
+            editor = atom.workspace.getActiveTextEditor()
+          waitsFor ->
+            atom.workspace.getActivePane().getPendingItem() is editor
+
+          runs ->
+            expect(atom.views.getView(editor)).toHaveFocus()
 
     describe "when `openProjectFindResultsInRightPane` option is false", ->
       beforeEach ->

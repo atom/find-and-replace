@@ -11,31 +11,6 @@ ResultsModel = require './project/results-model'
 ResultsPaneView = require './project/results-pane'
 
 module.exports =
-  config:
-    focusEditorAfterSearch:
-      type: 'boolean'
-      default: false
-      description: 'Focus the editor and select the next match when a file search is executed. If no matches are found, the editor will not be focused.'
-    openProjectFindResultsInRightPane:
-      type: 'boolean'
-      default: false
-      description: 'When a project-wide search is executed, open the results in a split pane instead of a tab in the same pane.'
-    closeFindPanelAfterSearch:
-      type: 'boolean'
-      default: false
-      title: 'Close Project Find Panel After Search'
-      description: 'Close the find panel after executing a project-wide search.'
-    scrollToResultOnLiveSearch:
-      type: 'boolean'
-      default: false
-      title: 'Scroll To Result On Live-Search (incremental find in buffer)'
-      description: 'Scroll to and select the closest match while typing in the buffer find box.'
-    liveSearchMinimumCharacters:
-      type: 'integer'
-      default: 3
-      minimum: 0
-      description: 'The minimum number of characters which need to be typed into the buffer find box before search starts matching and highlighting matches as you type.'
-
   activate: ({findOptions, findHistory, replaceHistory, pathsHistory}={}) ->
     atom.workspace.addOpener (filePath) ->
       new ResultsPaneView() if filePath is ResultsPaneView.URI
@@ -60,18 +35,11 @@ module.exports =
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'project-find:show', =>
       @createViews()
-      @findPanel.hide()
-      @projectFindPanel.show()
-      @projectFindView.focusFindElement()
+      showPanel @projectFindPanel, @findPanel, => @projectFindView.focusFindElement()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'project-find:toggle', =>
       @createViews()
-      @findPanel.hide()
-
-      if @projectFindPanel.isVisible()
-        @projectFindPanel.hide()
-      else
-        @projectFindPanel.show()
+      togglePanel @projectFindPanel, @findPanel, => @projectFindView.focusFindElement()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'project-find:show-in-current-directory', ({target}) =>
       @createViews()
@@ -82,33 +50,24 @@ module.exports =
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:use-selection-as-find-pattern', =>
       return if @projectFindPanel?.isVisible() or @findPanel?.isVisible()
-
       @createViews()
-      @projectFindPanel.hide()
-      @findPanel.show()
-      @findView.focusFindEditor()
+      showPanel @findPanel, @projectFindPanel, => @findView.focusFindEditor()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:toggle', =>
       @createViews()
-      @projectFindPanel.hide()
-
-      if @findPanel.isVisible()
-        @findPanel.hide()
-      else
-        @findPanel.show()
-        @findView.focusFindEditor()
+      togglePanel @findPanel, @projectFindPanel, => @findView.focusFindEditor()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:show', =>
       @createViews()
-      @projectFindPanel.hide()
-      @findPanel.show()
-      @findView.focusFindEditor()
+      showPanel @findPanel, @projectFindPanel, => @findView.focusFindEditor()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:show-replace', =>
       @createViews()
-      @projectFindPanel?.hide()
-      @findPanel.show()
-      @findView.focusReplaceEditor()
+      showPanel @findPanel, @projectFindPanel, => @findView.focusReplaceEditor()
+
+    @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:clear-history', =>
+      @findHistory.clear()
+      @replaceHistory.clear()
 
     # Handling cancel in the workspace + code editors
     handleEditorCancel = ({target}) =>
@@ -129,6 +88,20 @@ module.exports =
         selectNext = new SelectNext(editor)
         @selectNextObjects.set(editor, selectNext)
       selectNext
+
+    showPanel = (panelToShow, panelToHide, postShowAction) ->
+      panelToHide.hide()
+      panelToShow.show()
+      postShowAction?()
+
+    togglePanel = (panelToToggle, panelToHide, postToggleAction) ->
+      panelToHide.hide()
+
+      if panelToToggle.isVisible()
+        panelToToggle.hide()
+      else
+        panelToToggle.show()
+        postToggleAction?()
 
     atom.commands.add '.editor:not(.mini)',
       'find-and-replace:select-next': (event) ->

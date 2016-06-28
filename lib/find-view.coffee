@@ -342,15 +342,21 @@ class FindView extends View
     @descriptionLabel.html('Find in Current Buffer <span class="subtle-info-message">Close this panel with the <span class="highlight">esc</span> key</span>').removeClass('text-error')
 
   selectFirstMarkerAfterCursor: =>
-    {index, wrapped} = @firstMarkerIndexAfterCursor()
+    marker = @firstMarkerIndexAfterCursor()
+    return unless marker
+    {index, wrapped} = marker
     @selectMarkerAtIndex(index, wrapped)
 
   selectFirstMarkerStartingFromCursor: =>
-    {index, wrapped} = @firstMarkerIndexAfterCursor(true)
+    marker = @firstMarkerIndexAfterCursor(true)
+    return unless marker
+    {index, wrapped} = marker
     @selectMarkerAtIndex(index, wrapped)
 
   selectFirstMarkerBeforeCursor: =>
-    {index, wrapped} = @firstMarkerIndexBeforeCursor()
+    marker = @firstMarkerIndexBeforeCursor()
+    return unless marker
+    {index, wrapped} = marker
     @selectMarkerAtIndex(index, wrapped)
 
   firstMarkerIndexStartingFromCursor: =>
@@ -467,7 +473,9 @@ class FindView extends View
       optionButton.removeClass 'selected'
 
   anyMarkersAreSelected: =>
-    @model.getEditor().getSelectedBufferRanges().some (selectedRange) =>
+    editor = @model.getEditor()
+    return false unless editor
+    editor.getSelectedBufferRanges().some (selectedRange) =>
       @model.findMarker(selectedRange)
 
   toggleRegexOption: =>
@@ -522,6 +530,7 @@ class FindView extends View
     @wrapIcon = $(wrapIcon)
 
   showWrapIcon: (icon) ->
+    return unless atom.config.get('find-and-replace.showSearchWrapIcon')
     editor = @model.getEditor()
     return unless editor?
     editorView = atom.views.getView(editor)

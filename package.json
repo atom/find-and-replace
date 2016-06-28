@@ -2,7 +2,7 @@
   "name": "find-and-replace",
   "main": "./lib/find",
   "description": "Find and replace within buffers and across the project.",
-  "version": "0.195.0",
+  "version": "0.200.0",
   "license": "MIT",
   "activationCommands": {
     "atom-workspace": [
@@ -20,7 +20,8 @@
       "find-and-replace:replace-next",
       "find-and-replace:replace-all",
       "find-and-replace:select-next",
-      "find-and-replace:select-all"
+      "find-and-replace:select-all",
+      "find-and-replace:clear-history"
     ]
   },
   "repository": "https://github.com/atom/find-and-replace",
@@ -42,6 +43,42 @@
       "versions": {
         "0.0.1": "provideService"
       }
+    }
+  },
+  "configSchema": {
+    "focusEditorAfterSearch": {
+      "type": "boolean",
+      "default": false,
+      "description": "Focus the editor and select the next match when a file search is executed. If no matches are found, the editor will not be focused."
+    },
+    "openProjectFindResultsInRightPane": {
+      "type": "boolean",
+      "default": false,
+      "description": "When a project-wide search is executed, open the results in a split pane instead of a tab in the same pane."
+    },
+    "closeFindPanelAfterSearch": {
+      "type": "boolean",
+      "default": false,
+      "title": "Close Project Find Panel After Search",
+      "description": "Close the find panel after executing a project-wide search."
+    },
+    "scrollToResultOnLiveSearch": {
+      "type": "boolean",
+      "default": false,
+      "title": "Scroll To Result On Live-Search (incremental find in buffer)",
+      "description": "Scroll to and select the closest match while typing in the buffer find box."
+    },
+    "liveSearchMinimumCharacters": {
+      "type": "integer",
+      "default": 3,
+      "minimum": 0,
+      "description": "The minimum number of characters which need to be typed into the buffer find box before search starts matching and highlighting matches as you type."
+    },
+    "showSearchWrapIcon": {
+      "type": "boolean",
+      "default": true,
+      "title": "Show Search Wrap Icon",
+      "description": "Display a visual cue over the editor when looping through search results."
     }
   }
 }

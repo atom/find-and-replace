@@ -7,15 +7,12 @@ ResultsMarkerLayersByEditor = new WeakMap
 
 module.exports =
 class BufferSearch
-  @markerClass: 'find-result'
-
   constructor: (@findOptions) ->
     @emitter = new Emitter
     @patch = new Patch
     @subscriptions = null
     @markers = []
     @editor = null
-    @useMarkerLayers = false
 
     recreateMarkers = @recreateMarkers.bind(this)
     @findOptions.onDidChange (changedParams) =>
@@ -44,10 +41,9 @@ class BufferSearch
       @subscriptions.add @editor.buffer.onDidStopChanging(@bufferStoppedChanging.bind(this))
       @subscriptions.add @editor.onDidAddSelection(@setCurrentMarkerFromSelection.bind(this))
       @subscriptions.add @editor.onDidChangeSelectionRange(@setCurrentMarkerFromSelection.bind(this))
-      if @useMarkerLayers = @editor.addMarkerLayer?
-        @resultsMarkerLayer = @resultsMarkerLayerForTextEditor(@editor)
-        @resultsLayerDecoration?.destroy()
-        @resultsLayerDecoration = @editor.decorateMarkerLayer(@resultsMarkerLayer, {type: 'highlight', class: @constructor.markerClass})
+      @resultsMarkerLayer = @resultsMarkerLayerForTextEditor(@editor)
+      @resultsLayerDecoration?.destroy()
+      @resultsLayerDecoration = @editor.decorateMarkerLayer(@resultsMarkerLayer, {type: 'highlight', class: 'find-result'})
     @recreateMarkers()
 
   getEditor: -> @editor
@@ -58,7 +54,7 @@ class BufferSearch
 
   resultsMarkerLayerForTextEditor: (editor) ->
     unless layer = ResultsMarkerLayersByEditor.get(editor)
-      layer = editor.addMarkerLayer?()
+      layer = editor.addMarkerLayer({maintainHistory: false})
       ResultsMarkerLayersByEditor.set(editor, layer)
     layer
 
@@ -74,18 +70,17 @@ class BufferSearch
     @findOptions.set({replacePattern})
 
     @editor.transact =>
+      replacePattern = escapeHelper.unescapeEscapeSequence(replacePattern) if @findOptions.useRegex
       for marker in markers
         bufferRange = marker.getBufferRange()
         replacementText = null
         if @findOptions.useRegex
-          replacePattern = escapeHelper.unescapeEscapeSequence(replacePattern)
           textToReplace = @editor.getTextInBufferRange(bufferRange)
           replacementText = textToReplace.replace(@getFindPatternRegex(), replacePattern)
         @editor.setTextInBufferRange(bufferRange, replacementText ? replacePattern)
 
         marker.destroy()
         @markers.splice(@markers.indexOf(marker), 1)
-        delete @decorationsByMarkerId[marker.id] unless @useMarkerLayers
 
     @emitter.emit 'did-update', @markers.slice()
 
@@ -99,7 +94,6 @@ class BufferSearch
   recreateMarkers: ->
     @markers.forEach (marker) -> marker.destroy()
     @markers.length = 0
-    @decorationsByMarkerId = {} unless @useMarkerLayers
 
     if markers = @createMarkers(Point.ZERO, Point.INFINITY)
       @markers = markers
@@ -113,8 +107,13 @@ class BufferSearch
         end = Point.min(end, selectedRange.end)
 
       if regex = @getFindPatternRegex()
-        @editor.scanInBufferRange regex, Range(start, end), ({range}) =>
-          newMarkers.push(@createMarker(range))
+        try
+          @editor.scanInBufferRange regex, Range(start, end), ({range}) =>
+            newMarkers.push(@createMarker(range))
+        catch error
+          error.message = "Search string is too large" if /RegExp too big$/.test(error.message)
+          @emitter.emit 'did-error', error
+          return false
       else
         return false
     newMarkers
@@ -166,7 +165,6 @@ class BufferSearch
       oldMarkers = @markers.splice(spliceStart, spliceEnd - spliceStart + 1, newMarkers...)
       for oldMarker in oldMarkers
         oldMarker.destroy()
-        delete @decorationsByMarkerId[oldMarker.id] unless @useMarkerLayers
       markerIndex += newMarkers.length - oldMarkers.length
 
     while marker = @markers[++markerIndex]
@@ -185,46 +183,25 @@ class BufferSearch
     return if marker is @currentResultMarker
 
     if @currentResultMarker?
-      if @useMarkerLayers
-        @resultsLayerDecoration.setPropertiesForMarker(@currentResultMarker, null)
-      else
-        @decorationsByMarkerId[@currentResultMarker.id]?.setProperties(type: 'highlight', class: @constructor.markerClass)
+      @resultsLayerDecoration.setPropertiesForMarker(@currentResultMarker, null)
       @currentResultMarker = null
 
     if marker and not marker.isDestroyed()
-      if @useMarkerLayers
-        @resultsLayerDecoration.setPropertiesForMarker(marker, type: 'highlight', class: 'current-result')
-      else
-        @decorationsByMarkerId[marker.id]?.setProperties(type: 'highlight', class: 'current-result')
+      @resultsLayerDecoration.setPropertiesForMarker(marker, type: 'highlight', class: 'current-result')
       @currentResultMarker = marker
 
     @emitter.emit 'did-change-current-result', @currentResultMarker
 
   findMarker: (range) ->
     if @markers?.length > 0
-      (@resultsMarkerLayer ? @editor).findMarkers(
-        class: @constructor.markerClass,
-        startPosition: range.start,
-        endPosition: range.end
-      )[0]
+      @resultsMarkerLayer.findMarkers({startPosition: range.start, endPosition: range.end})[0]
 
   recreateMarker: (marker) ->
-    delete @decorationsByMarkerId[marker.id] unless @useMarkerLayers
     marker.destroy()
     @createMarker(marker.getBufferRange())
 
   createMarker: (range) ->
-    marker = (@resultsMarkerLayer ? @editor).markBufferRange(range,
-      invalidate: 'inside'
-      class: @constructor.markerClass
-      persistent: false
-      maintainHistory: false
-    )
-    unless @useMarkerLayers
-      @decorationsByMarkerId[marker.id] = @editor.decorateMarker(marker,
-        type: 'highlight',
-        class: @constructor.markerClass
-      )
+    marker = @resultsMarkerLayer.markBufferRange(range, {invalidate: 'inside'})
     marker
 
   bufferChanged: ({oldRange, newRange, newText}) ->

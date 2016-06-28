@@ -25,6 +25,10 @@ class History
     @length = @items.length
     @emitter.emit 'did-add-item', text
 
+  clear: ->
+    @items = []
+    @length = 0
+
 # Adds the ability to cycle through history
 class HistoryCycler
 
