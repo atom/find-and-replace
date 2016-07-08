@@ -61,6 +61,8 @@ class ProjectFindView extends View
               @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-case" /></svg>'
             @button outlet: 'wholeWordOptionButton', class: 'btn option-whole-word', =>
               @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-word" /></svg>'
+            @button outlet: 'openFilesOptionButton', class: 'btn option-open-files', =>
+              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-files" /></svg>'
 
       @section class: 'input-block replace-container', =>
         @div class: 'input-block-item input-block-item--flex editor-container', =>
@@ -115,6 +117,11 @@ class ProjectFindView extends View
       keyBindingCommand: 'project-find:toggle-whole-word-option',
       keyBindingTarget: @findEditor.element
 
+    subs.add atom.tooltips.add @openFilesOptionButton,
+      title: "Open Files",
+      keyBindingCommand: 'project-find:toggle-open-files-option',
+      keyBindingTarget: @findEditor.element
+
     subs.add atom.tooltips.add @findAllButton,
       title: "Find All",
       keyBindingCommand: 'find-and-replace:search',
@@ -144,7 +151,18 @@ class ProjectFindView extends View
       'project-find:toggle-regex-option': => @toggleRegexOption()
       'project-find:toggle-case-option': => @toggleCaseOption()
       'project-find:toggle-whole-word-option': => @toggleWholeWordOption()
+      'project-find:toggle-open-files-option': => @toggleOpenFilesOption()
       'project-find:replace-all': => @replaceAll()
+
+    @subscriptions.add atom.workspace.onDidDestroyPaneItem =>
+      if @openFilesOptionButton? and atom.workspace.getTextEditors().length == 0
+        @openFilesOptionButton.disable()
+        @updateOptionsLabel()
+
+    @subscriptions.add atom.workspace.onDidAddTextEditor =>
+      if @openFilesOptionButton? and @openFilesOptionButton.isDisabled()
+        @openFilesOptionButton.enable()
+        @updateOptionsLabel()
 
     updateInterfaceForSearching = =>
       @setInfoMessage('Searching...')
@@ -171,6 +189,7 @@ class ProjectFindView extends View
     @regexOptionButton.click => @toggleRegexOption()
     @caseOptionButton.click => @toggleCaseOption()
     @wholeWordOptionButton.click => @toggleWholeWordOption()
+    @openFilesOptionButton.click => @toggleOpenFilesOption()
     @replaceAllButton.on 'click', => @replaceAll()
     @findAllButton.on 'click', => @search()
 
@@ -239,6 +258,11 @@ class ProjectFindView extends View
     pathsPattern = @pathsEditor.getText()
     replacePattern = @replaceEditor.getText()
 
+    if @model.getFindOptions().openFiles and not @openFilesOptionButton.isDisabled()
+      paths = @getOpenFilePaths()
+      paths.push pathsPattern if pathsPattern.trim()
+      pathsPattern = paths.join(',')
+
     {onlyRunIfActive, onlyRunIfChanged} = options
     return Promise.resolve() if (onlyRunIfActive and not @model.active) or not findPattern
 
@@ -290,6 +314,13 @@ class ProjectFindView extends View
       require('path').dirname(elementPath)
     else
       elementPath
+
+  relPathFromTextEditor: (editor) ->
+    [rootPath, relPath] = atom.project.relativizePath(editor.getPath())
+    if rootPath? and atom.project.getDirectories().length > 1
+      relPath = path.join(path.basename(rootPath), relPath)
+      relPath = relPath.substring(0, relPath.length-1) + '[' + relPath.slice(-1) + ']'
+    relPath
 
   findInCurrentlySelectedDirectory: (selectedElement) ->
     if absPath = @directoryPathForElement(selectedElement)
@@ -369,6 +400,7 @@ class ProjectFindView extends View
       label.push('Case Sensitive')
     else
       label.push('Case Insensitive')
+    label.push('Open Files') if @model.getFindOptions().openFiles and not @openFilesOptionButton.isDisabled()
     label.push('Whole Word') if @model.getFindOptions().wholeWord
     @optionsLabel.text(label.join(', '))
 
@@ -376,6 +408,7 @@ class ProjectFindView extends View
     @setOptionButtonState(@regexOptionButton, @model.getFindOptions().useRegex)
     @setOptionButtonState(@caseOptionButton, @model.getFindOptions().caseSensitive)
     @setOptionButtonState(@wholeWordOptionButton, @model.getFindOptions().wholeWord)
+    @setOptionButtonState(@openFilesOptionButton, @model.getFindOptions().openFiles)
 
   setOptionButtonState: (optionButton, selected) ->
     if selected
@@ -391,3 +424,9 @@ class ProjectFindView extends View
 
   toggleWholeWordOption: ->
     @search(onlyRunIfActive: true, wholeWord: not @model.getFindOptions().wholeWord)
+
+  toggleOpenFilesOption: ->
+    @search(onlyRunIfActive: true, openFiles: not @model.getFindOptions().openFiles)
+
+  getOpenFilePaths: ->
+    paths = @relPathFromTextEditor(e) for e in atom.workspace.getTextEditors()

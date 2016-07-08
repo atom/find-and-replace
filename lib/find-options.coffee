@@ -9,6 +9,7 @@ Params = [
   'wholeWord'
   'caseSensitive'
   'inCurrentSelection'
+  'openFiles'
 ]
 
 module.exports =
@@ -23,6 +24,7 @@ class FindOptions
     @caseSensitive = state.caseSensitive ? atom.config.get('find-and-replace.caseSensitive') ? false
     @wholeWord = state.wholeWord ? atom.config.get('find-and-replace.wholeWord') ? false
     @inCurrentSelection = state.inCurrentSelection ? atom.config.get('find-and-replace.inCurrentSelection') ? false
+    @openFiles = state.openFiles ? atom.config.get('find-and-replace.openFiles') ? false
 
   onDidChange: (callback) ->
     @emitter.on('did-change', callback)

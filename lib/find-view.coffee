@@ -89,6 +89,11 @@ class FindView extends View
           <path d="M4,10.5 L4,12.5 L4,13 L5,13 L5,12.5 L5,10.5 L5,10 L4,10 L4,10.5 L4,10.5 Z"></path>
           <path d="M15,10.5 L15,12.5 L15,13 L16,13 L16,12.5 L16,10.5 L16,10 L15,10 L15,10.5 L15,10.5 Z"></path>
         </symbol>
+
+        <symbol id="find-and-replace-icon-files" viewBox="0 0 12 16" stroke="none" fill-rule="evenodd">
+          <path d="M6 5H2V4h4v1zM2 8h7V7H2v1zm0 2h7V9H2v1zm0 2h7v-1H2v1zm10-7.5V14c0 .55-.45 1-1 1H1c-.55 0-1-.45-1-1V2c0-.55.45-1 1-1h7.5L12 4.5zM11 5L8 2H1v12h10V5z"/>
+          </svg>
+        </symbol>
       </svg>'
 
   initialize: (@model, {@findHistoryCycler, @replaceHistoryCycler}) ->

@@ -55,12 +55,14 @@
   'cmd-enter': 'project-find:confirm'
   'cmd-alt-/': 'project-find:toggle-regex-option'
   'cmd-alt-c': 'project-find:toggle-case-option'
+  'cmd-alt-o': 'project-find:toggle-open-files-option'
   'cmd-alt-w': 'project-find:toggle-whole-word-option'
 
 '.platform-win32 .project-find, .platform-linux .project-find':
   'ctrl-enter': 'project-find:confirm'
   'ctrl-alt-/': 'project-find:toggle-regex-option'
   'ctrl-alt-c': 'project-find:toggle-case-option'
+  'ctrl-alt-o': 'project-find:toggle-open-files-option'
   'ctrl-alt-w': 'project-find:toggle-whole-word-option'
 
 '.find-and-replace, .project-find, .project-find .results-view':
