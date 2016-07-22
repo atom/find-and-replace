@@ -108,6 +108,8 @@ module.exports =
         selectNextObjectForEditorElement(this).findAndSelectNext()
       'find-and-replace:select-all': (event) ->
         selectNextObjectForEditorElement(this).findAndSelectAll()
+      'find-and-replace:select-all-under': (event) ->
+        selectNextObjectForEditorElement(this).findAndSelectAllUnder()
       'find-and-replace:select-undo': (event) ->
         selectNextObjectForEditorElement(this).undoLastSelection()
       'find-and-replace:select-skip': (event) ->
