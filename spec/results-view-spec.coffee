@@ -705,7 +705,10 @@ describe 'ResultsView', ->
 
   describe "handling of multiple icon-classes", ->
     beforeEach ->
-      service = iconClassForPath: -> "first second"
+      service =
+        iconClassForPath: (path, context) ->
+          expect(context).toBe "find-and-replace"
+          "first second"
       FileIcons.setService(service)
       projectFindView.findEditor.setText('i')
       atom.commands.dispatch projectFindView.element, 'core:confirm'

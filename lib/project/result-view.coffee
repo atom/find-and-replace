@@ -7,7 +7,7 @@ path = require 'path'
 module.exports =
 class ResultView extends View
   @content: (model, filePath, result) ->
-    iconClass = FileIcons.getService().iconClassForPath(filePath) or []
+    iconClass = FileIcons.getService().iconClassForPath(filePath, "find-and-replace") or []
     unless Array.isArray iconClass
       iconClass = iconClass?.toString().split(/\s+/g)
     fileBasename = path.basename(filePath)
