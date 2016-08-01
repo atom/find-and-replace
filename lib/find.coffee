@@ -46,6 +46,7 @@ module.exports =
       @createViews()
       @findPanel.hide()
       @projectFindPanel.show()
+      @projectFindView.focusFindElement()
       @projectFindView.findInCurrentlySelectedDirectory(target)
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:use-selection-as-find-pattern', =>

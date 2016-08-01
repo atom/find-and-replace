@@ -67,18 +67,21 @@ describe 'ResultsView', ->
         expect(resultsView.find('.search-result:first')).toHaveClass 'selected'
 
         # at the beginning
-        projectFindView.model.addResult('/a', matches: [match])
-        expect(resultsView.find(".path-name")[0].textContent).toContain '/a'
+        firstResult = path.resolve('/a')
+        projectFindView.model.addResult(firstResult, matches: [match])
+        expect(resultsView.find(".path-name")[0].textContent).toContain firstResult
         expect(resultsView.find('.search-result:first')).toHaveClass 'selected'
 
         # at the end
-        projectFindView.model.addResult('/z', matches: [match])
-        expect(resultsView.find(".path-name")[4].textContent).toContain '/z'
+        lastResult = path.resolve('/z')
+        projectFindView.model.addResult(lastResult, matches: [match])
+        expect(resultsView.find(".path-name")[4].textContent).toContain lastResult
         expect(resultsView.find('.search-result:first')).toHaveClass 'selected'
 
-        # in the middle
-        projectFindView.model.addResult('/x', matches: [match])
-        expect(resultsView.find(".path-name")[4].textContent).toContain '/x'
+        # 2nd to last
+        almostLastResult = path.resolve('/x')
+        projectFindView.model.addResult(almostLastResult, matches: [match])
+        expect(resultsView.find(".path-name")[4].textContent).toContain almostLastResult
         expect(resultsView.find('.search-result:first')).toHaveClass 'selected'
 
     describe "when shouldRenderMoreResults is false", ->
@@ -94,16 +97,17 @@ describe 'ResultsView', ->
         expect(pathNames[2]).toContain 'sample.js'
 
         # nope, not at the end
-        projectFindView.model.addResult('/z', matches: [])
+        projectFindView.model.addResult(path.resolve('/z'), matches: [])
         expect(resultsView.find(".path-name")).toHaveLength 3
 
         # yes, at the beginning
-        projectFindView.model.addResult('/a', matches: [])
+        firstResult = path.resolve('/a')
+        projectFindView.model.addResult(firstResult, matches: [])
         expect(resultsView.find(".path-name")).toHaveLength 4
-        expect(resultsView.find(".path-name")[0].textContent).toContain '/a'
+        expect(resultsView.find(".path-name")[0].textContent).toContain firstResult
 
         # yes, in the middle
-        projectFindView.model.addResult("#{dirname}/ppppp", matches: [])
+        projectFindView.model.addResult(path.resolve("#{dirname}/ppppp"), matches: [])
         expect(resultsView.find(".path-name")).toHaveLength 5
         expect(resultsView.find(".path-name")[2].textContent).toContain 'ppppp'
 
@@ -272,6 +276,7 @@ describe 'ResultsView', ->
     describe "core:page-up and core:page-down", ->
       beforeEach ->
         workspaceElement.style.height = '300px'
+        workspaceElement.style.width = '1024px'
         projectFindView.findEditor.setText(' ')
         projectFindView.confirm()
 

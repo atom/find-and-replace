@@ -432,6 +432,24 @@ describe "BufferSearch", ->
       expect(currentResultListener.mostRecentCall.args[0].getBufferRange()).toEqual markers[2].getBufferRange()
       expect(currentResultListener.mostRecentCall.args[0].isDestroyed()).toBe false
 
+    it "replaces the marked text with the given string that contains escaped escape sequence", ->
+      markers = markersListener.mostRecentCall.args[0]
+      markersListener.reset()
+
+      model.replace(markers, "new-text\\\\n")
+
+      expect(editor.getText()).toBe """
+        -----------
+        new-text\\n bbb ccc
+        ddd new-text\\n bbb
+        ccc ddd new-text\\n
+        -----------
+        new-text\\n bbb ccc
+        ddd new-text\\n bbb
+        ccc ddd new-text\\n
+        -----------
+      """
+
   describe ".prototype.resultsMarkerLayerForTextEditor(editor)", ->
     it "creates or retrieves the results marker layer for the given editor", ->
       layer1 = model.resultsMarkerLayerForTextEditor(editor)

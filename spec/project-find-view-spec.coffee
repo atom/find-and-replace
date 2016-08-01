@@ -127,6 +127,42 @@ describe 'ProjectFindView', ->
         expect(projectFindView.regexOptionButton).toHaveClass 'selected'
         expect(projectFindView.wholeWordOptionButton).toHaveClass 'selected'
 
+  describe "when project-find:show-in-current-directory is triggered with an open buffer", ->
+    editor = null
+
+    beforeEach ->
+      atom.project.setPaths([__dirname])
+      atom.commands.dispatch(workspaceElement, 'project-find:show')
+
+      waitsForPromise ->
+        activationPromise
+
+      runs ->
+        projectFindView.findEditor.setText('')
+        projectFindView.pathsEditor.setText('')
+
+      waitsForPromise ->
+        atom.workspace.open('fixtures/sample.js').then (o) -> editor = o
+
+    it "calls project-find:show, and populates both findEditor and pathsEditor when there is a selection", ->
+      editor.setSelectedBufferRange([[3, 8], [3, 13]])
+      atom.commands.dispatch(workspaceElement, 'project-find:show-in-current-directory')
+      expect(getAtomPanel()).toBeVisible()
+      expect(projectFindView.findEditor.getText()).toBe('pivot')
+      expect(projectFindView.pathsEditor.getText()).toBe('fixtures')
+
+      editor.setSelectedBufferRange([[2, 14], [2, 20]])
+      atom.commands.dispatch(workspaceElement, 'project-find:show-in-current-directory')
+      expect(getAtomPanel()).toBeVisible()
+      expect(projectFindView.findEditor.getText()).toBe('length')
+      expect(projectFindView.pathsEditor.getText()).toBe('fixtures')
+
+    it "calls project-find:show, and populates only pathsEditor when there is no selection", ->
+      atom.commands.dispatch(workspaceElement, 'project-find:show-in-current-directory')
+      expect(getAtomPanel()).toBeVisible()
+      expect(projectFindView.findEditor.getText()).toBe('')
+      expect(projectFindView.pathsEditor.getText()).toBe('fixtures')
+
   describe "when project-find:toggle is triggered", ->
     it "toggles the visibility of the ProjectFindView", ->
       atom.commands.dispatch(workspaceElement, 'project-find:toggle')
