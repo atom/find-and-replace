@@ -13,9 +13,9 @@ class ResultsPaneView extends ScrollView
       @header class: 'preview-header', =>
         @span outlet: 'previewCount', class: 'preview-count inline-block'
         @div class: 'preview-controls', =>
-            @div class: 'btn-group', =>
-                @button outlet: 'previewCollapse', class: 'btn'
-                @button outlet: 'previewExpand', class: 'btn'
+          @div class: 'btn-group', =>
+            @button outlet: 'previewCollapse', class: 'btn'
+            @button outlet: 'previewExpand', class: 'btn'
         @div outlet: 'loadingMessage', class: 'inline-block', =>
           @div class: 'loading loading-spinner-tiny inline-block'
           @div outlet: 'searchedCountBlock', class: 'inline-block', =>
@@ -152,7 +152,7 @@ class ResultsPaneView extends ScrollView
 
   collapseAllResults: =>
     i=0
-    while i != @resultsView.lastRenderedResultIndex
+    while i isnt @resultsView.lastRenderedResultIndex
       @resultsView.collapseResult()
       @resultsView.selectNextResult()
       i++
@@ -160,7 +160,7 @@ class ResultsPaneView extends ScrollView
 
   expandAllResults: =>
     i=0
-    while i != @resultsView.lastRenderedResultIndex
+    while i isnt @resultsView.lastRenderedResultIndex
       @resultsView.expandResult()
       @resultsView.selectNextResult()
       i++
