@@ -228,7 +228,15 @@ atom-workspace.find-visible {
   display: flex;
   flex-direction: column;
 
-  .panel-heading {
+  .preview-header {
+    display: flex;
+    padding: @component-padding;
+    align-items: center;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  }
+
+  .preview-controls {
     flex-shrink: 0;
   }
 

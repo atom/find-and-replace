@@ -10,8 +10,12 @@ class ResultsPaneView extends ScrollView
 
   @content: ->
     @div class: 'preview-pane pane-item', tabindex: -1, =>
-      @div class: 'panel-heading', =>
+      @header class: 'preview-header', =>
         @span outlet: 'previewCount', class: 'preview-count inline-block'
+        @div class: 'preview-controls', =>
+            @div class: 'btn-group', =>
+                @button outlet: 'previewCollapse', class: 'btn'
+                @button outlet: 'previewExpand', class: 'btn'
         @div outlet: 'loadingMessage', class: 'inline-block', =>
           @div class: 'loading loading-spinner-tiny inline-block'
           @div outlet: 'searchedCountBlock', class: 'inline-block', =>
@@ -30,6 +34,12 @@ class ResultsPaneView extends ScrollView
     @model = @constructor.model
     @onFinishedSearching(@model.getResultsSummary())
     @on 'focus', @focused
+    @previewCollapse
+      .text('Collapse All')
+      .click(@collapseAllResults)
+    @previewExpand
+      .text('Expand All')
+      .click(@expandAllResults)
 
   attached: ->
     @model.setActive(true)
@@ -116,7 +126,6 @@ class ResultsPaneView extends ScrollView
   onFinishedSearching: (results) =>
     @hideOrShowNoResults(results)
     @previewCount.html(Util.getSearchResultsMessage(results))
-
     if results.searchErrors? or results.replacementErrors?
       errors = _.pluck(results.replacementErrors, 'message')
       errors = errors.concat _.pluck(results.searchErrors, 'message')
@@ -140,3 +149,19 @@ class ResultsPaneView extends ScrollView
       @removeClass('no-results')
     else
       @addClass('no-results')
+
+  collapseAllResults: =>
+    i=0
+    while i != @resultsView.lastRenderedResultIndex
+      @resultsView.collapseResult()
+      @resultsView.selectNextResult()
+      i++
+    @resultsView.selectFirstResult()
+
+  expandAllResults: =>
+    i=0
+    while i != @resultsView.lastRenderedResultIndex
+      @resultsView.expandResult()
+      @resultsView.selectNextResult()
+      i++
+    @resultsView.selectFirstResult()
