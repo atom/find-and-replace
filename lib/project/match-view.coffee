@@ -12,14 +12,29 @@ class MatchView extends View
     matchEnd = range.end.column - match.lineTextOffset
     prefix = removeLeadingWhitespace(match.lineText[0...matchStart])
     suffix = match.lineText[matchEnd..]
+    contextBefore = match.contextBefore || []
+    contextAfter = match.contextAfter || []
 
-    @li class: 'search-result list-item', =>
-      @span range.start.row + 1, class: 'line-number text-subtle'
-      @span class: 'preview', outlet: 'preview', =>
-        @span prefix
-        @span match.matchText, class: 'match highlight-info', outlet: 'matchText'
-        @span match.matchText, class: 'replacement highlight-success', outlet: 'replacementText'
-        @span suffix
+    @li class: 'search-result list-item', style: 'padding-top: 0; padding-bottom: 0', =>
+      for i in [0...contextBefore.length]
+        line = contextBefore[i]
+        @div class: 'context context-before', =>
+          @span range.start.row + 1 - (contextBefore.length - i), class: 'line-number text-subtle'
+          @span line, class: 'preview', outlet: 'preview'
+      @div class: 'matching-line', =>
+        @span range.start.row + 1, class: 'line-number text-subtle'
+        @span class: 'preview', outlet: 'preview', =>
+          @span prefix
+          @span match.matchText, class: 'match highlight-info', outlet: 'matchText'
+          @span match.matchText, class: 'replacement highlight-success', outlet: 'replacementText'
+          @span suffix
+      for i in [0...contextAfter.length]
+        line = contextAfter[i]
+        @div class: 'context context-after', =>
+          @span range.start.row + 1 + (i + 1), class: 'line-number text-subtle'
+          @span line, class: 'preview', outlet: 'preview'
+      if match.gapAfter
+        @div '...', class: 'context gap-after'
 
   initialize: (@model, {@filePath, @match}) ->
     @render()

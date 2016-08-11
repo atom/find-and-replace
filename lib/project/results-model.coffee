@@ -115,6 +115,7 @@ class ResultsModel
     onPathsSearched = (numberOfPathsSearched) =>
       @emitter.emit 'did-search-paths', numberOfPathsSearched
 
+    console.log('atom.workspace.scan:', atom.workspace.scan)
     @inProgressSearchPromise = atom.workspace.scan @regex, {paths: searchPaths, onPathsSearched}, (result, error) =>
       if result
         @setResult(result.filePath, Result.create(result))
