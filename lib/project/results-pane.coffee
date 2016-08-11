@@ -12,10 +12,10 @@ class ResultsPaneView extends ScrollView
     @div class: 'preview-pane pane-item', tabindex: -1, =>
       @header class: 'preview-header', =>
         @span outlet: 'previewCount', class: 'preview-count inline-block'
-        @div class: 'preview-controls', =>
+        @div outlet: 'previewControlls', class: 'preview-controls', =>
           @div class: 'btn-group', =>
-            @button outlet: 'previewCollapse', class: 'btn'
-            @button outlet: 'previewExpand', class: 'btn'
+            @button outlet: 'collapseAll', class: 'btn'
+            @button outlet: 'expandAll', class: 'btn'
         @div outlet: 'loadingMessage', class: 'inline-block', =>
           @div class: 'loading loading-spinner-tiny inline-block'
           @div outlet: 'searchedCountBlock', class: 'inline-block', =>
@@ -34,10 +34,12 @@ class ResultsPaneView extends ScrollView
     @model = @constructor.model
     @onFinishedSearching(@model.getResultsSummary())
     @on 'focus', @focused
-    @previewCollapse
+
+    @previewControlls.hide()
+    @collapseAll
       .text('Collapse All')
       .click(@collapseAllResults)
-    @previewExpand
+    @expandAll
       .text('Expand All')
       .click(@expandAllResults)
 
@@ -98,6 +100,7 @@ class ResultsPaneView extends ScrollView
     @errorList.html('').hide()
 
   onSearch: (deferred) =>
+    @previewControlls.hide()
     @loadingMessage.show()
 
     @previewCount.text('Searching...')
@@ -125,6 +128,8 @@ class ResultsPaneView extends ScrollView
 
   onFinishedSearching: (results) =>
     @hideOrShowNoResults(results)
+    if @resultsView.lastRenderedResultIndex isnt 0 then @previewControlls.show()
+    else @previewControlls.hide()
     @previewCount.html(Util.getSearchResultsMessage(results))
     if results.searchErrors? or results.replacementErrors?
       errors = _.pluck(results.replacementErrors, 'message')
@@ -151,17 +156,7 @@ class ResultsPaneView extends ScrollView
       @addClass('no-results')
 
   collapseAllResults: =>
-    i=0
-    while i isnt @resultsView.lastRenderedResultIndex
-      @resultsView.collapseResult()
-      @resultsView.selectNextResult()
-      i++
-    @resultsView.selectFirstResult()
+    @resultsView.collapseAllResults()
 
   expandAllResults: =>
-    i=0
-    while i isnt @resultsView.lastRenderedResultIndex
-      @resultsView.expandResult()
-      @resultsView.selectNextResult()
-      i++
-    @resultsView.selectFirstResult()
+    @resultsView.expandAllResults()
