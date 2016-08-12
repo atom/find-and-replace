@@ -60,7 +60,7 @@ class ResultView extends View
     for matchIndex in [0...matches.length]
       match = matches[matchIndex]
       range = match.range
-      if !range
+      if not range
         continue
 
       rowIndex = (if range.start then range.start.row else range[0][0])
@@ -68,7 +68,7 @@ class ResultView extends View
       linesBefore = Math.min(rowIndex, CONTEXT_LINES)
       if prevMatch
         linesBefore = Math.min(Math.max(rowIndex - prevRowIndex - prevLinesAfter - 1, 0), linesBefore)
-        if prevLinesAfter > 0 && prevLinesAfter > rowIndex - prevRowIndex - 1
+        if prevLinesAfter > 0 and prevLinesAfter > rowIndex - prevRowIndex - 1
           extraRows = prevLinesAfter - Math.max(rowIndex - prevRowIndex - 1, 0)
           prevMatch.contextAfter.splice(prevLinesAfter - extraRows, extraRows)
           prevLinesAfter -= extraRows
@@ -81,13 +81,13 @@ class ResultView extends View
 
       for i in [0...linesBefore]
         lineIndex = rowIndex - (linesBefore - i)
-        line = lines[lineIndex] || ''
+        line = lines[lineIndex] or ''
         line = line.substr(0, 140)
         contextBefore.push(line)
 
       for i in [0...linesAfter]
         lineIndex = rowIndex + (i + 1)
-        line = lines[lineIndex] || ''
+        line = lines[lineIndex] or ''
         line = line.substr(0, 140)
         contextAfter.push(line)
 

@@ -12,8 +12,8 @@ class MatchView extends View
     matchEnd = range.end.column - match.lineTextOffset
     prefix = removeLeadingWhitespace(match.lineText[0...matchStart])
     suffix = match.lineText[matchEnd..]
-    contextBefore = match.contextBefore || []
-    contextAfter = match.contextAfter || []
+    contextBefore = match.contextBefore or []
+    contextAfter = match.contextAfter or []
 
     @li class: 'search-result list-item', style: 'padding-top: 0; padding-bottom: 0', =>
       for i in [0...contextBefore.length]
