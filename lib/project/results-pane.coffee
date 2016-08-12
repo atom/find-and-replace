@@ -12,7 +12,7 @@ class ResultsPaneView extends ScrollView
     @div class: 'preview-pane pane-item', tabindex: -1, =>
       @header class: 'preview-header', =>
         @span outlet: 'previewCount', class: 'preview-count inline-block'
-        @div outlet: 'previewControlls', class: 'preview-controls', =>
+        @div outlet: 'previewControls', class: 'preview-controls', =>
           @div class: 'btn-group', =>
             @button outlet: 'collapseAll', class: 'btn'
             @button outlet: 'expandAll', class: 'btn'
@@ -35,7 +35,7 @@ class ResultsPaneView extends ScrollView
     @onFinishedSearching(@model.getResultsSummary())
     @on 'focus', @focused
 
-    @previewControlls.hide()
+    @previewControls.hide()
     @collapseAll
       .text('Collapse All')
       .click(@collapseAllResults)
@@ -98,9 +98,7 @@ class ResultsPaneView extends ScrollView
 
   clearErrors: ->
     @errorList.html('').hide()
-
   onSearch: (deferred) =>
-    @previewControlls.hide()
     @loadingMessage.show()
 
     @previewCount.text('Searching...')
@@ -128,8 +126,6 @@ class ResultsPaneView extends ScrollView
 
   onFinishedSearching: (results) =>
     @hideOrShowNoResults(results)
-    if @resultsView.lastRenderedResultIndex isnt 0 then @previewControlls.show()
-    else @previewControlls.hide()
     @previewCount.html(Util.getSearchResultsMessage(results))
     if results.searchErrors? or results.replacementErrors?
       errors = _.pluck(results.replacementErrors, 'message')
@@ -151,8 +147,10 @@ class ResultsPaneView extends ScrollView
 
   hideOrShowNoResults: (results) ->
     if results.pathCount
+      @previewControls.show()
       @removeClass('no-results')
     else
+      @previewControls.hide()
       @addClass('no-results')
 
   collapseAllResults: =>

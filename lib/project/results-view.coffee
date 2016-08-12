@@ -206,25 +206,19 @@ class ResultsView extends ScrollView
     resultView.addClass('selected')
 
   collapseAllResults: ->
-    i = 0
-    while i isnt @lastRenderedResultIndex
-      @collapseResult()
-      @selectNextResult()
-      i++
-    @selectFirstResult()
-
-  expandAllResults: ->
-    i = 0
-    while i isnt @lastRenderedResultIndex
-      @expandResult()
-      @selectNextResult()
-      i++
-    @selectFirstResult()
+    @find('.list-nested-item').views().forEach(
+      (view) -> view.expand(false)
+    )
 
   collapseResult: ->
     parent = @find('.selected').closest('.path').view()
     parent.expand(false) if parent instanceof ResultView
     @renderResults()
+
+  expandAllResults: ->
+    @find('.list-nested-item').views().forEach(
+      (view) -> view.expand(true)
+    )
 
   expandResult: ->
     selectedView = @find('.selected').view()
