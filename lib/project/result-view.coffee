@@ -51,7 +51,8 @@ class ResultView extends View
     @matches.children().eq(selectedIndex).addClass('selected') if selectedIndex > -1
 
   addContextToMatches: (filePath, matches) ->
-    CONTEXT_LINES = 2
+    CONTEXT_LINES = atom.config.get('find-and-replace.searchContextExtraLines')
+    return if CONTEXT_LINES == 0
     content = fs.readFileSync(filePath).toString()
     lines = content.split('\n')
     prevMatch = match
