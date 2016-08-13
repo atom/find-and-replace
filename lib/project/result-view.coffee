@@ -94,6 +94,7 @@ class ResultView extends View
 
       match.contextBefore = contextBefore
       match.contextAfter = contextAfter
+      match.CONTEXT_LINES = CONTEXT_LINES
       prevMatch = match
       prevRowIndex = rowIndex
       prevLinesAfter = linesAfter

@@ -15,7 +15,8 @@ class MatchView extends View
     contextBefore = match.contextBefore or []
     contextAfter = match.contextAfter or []
 
-    @li class: 'search-result list-item', style: 'padding-top: 0; padding-bottom: 0', =>
+    style = if match.CONTEXT_LINES > 0 then 'padding-top: 0; padding-bottom: 0'
+    @li class: 'search-result list-item', style: style, =>
       for i in [0...contextBefore.length]
         line = contextBefore[i]
         @div class: 'context context-before', =>
