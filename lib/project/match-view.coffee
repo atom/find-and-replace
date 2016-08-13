@@ -10,19 +10,20 @@ class MatchView extends View
     range = Range.fromObject(match.range)
     matchStart = range.start.column - match.lineTextOffset
     matchEnd = range.end.column - match.lineTextOffset
-    prefix = removeLeadingWhitespace(match.lineText[0...matchStart])
+    prefix = match.lineText[0...matchStart]
     suffix = match.lineText[matchEnd..]
     contextBefore = match.contextBefore or []
     contextAfter = match.contextAfter or []
 
-    style = if match.CONTEXT_LINES > 0 then 'padding-top: 0; padding-bottom: 0'
-    @li class: 'search-result list-item', style: style, =>
+    liStyle = if match.CONTEXT_LINES > 0 then 'padding-top: 0; padding-bottom: 0'
+    divStyle = 'white-space: pre'
+    @li class: 'search-result list-item', style: liStyle, =>
       for i in [0...contextBefore.length]
         line = contextBefore[i]
-        @div class: 'context context-before', =>
+        @div class: 'context context-before', style: divStyle, =>
           @span range.start.row + 1 - (contextBefore.length - i), class: 'line-number text-subtle'
           @span line, class: 'preview', outlet: 'preview'
-      @div class: 'matching-line', =>
+      @div class: 'matching-line', style: divStyle, =>
         @span range.start.row + 1, class: 'line-number text-subtle'
         @span class: 'preview', outlet: 'preview', =>
           @span prefix
@@ -31,7 +32,7 @@ class MatchView extends View
           @span suffix
       for i in [0...contextAfter.length]
         line = contextAfter[i]
-        @div class: 'context context-after', =>
+        @div class: 'context context-after', style: divStyle, =>
           @span range.start.row + 1 + (i + 1), class: 'line-number text-subtle'
           @span line, class: 'preview', outlet: 'preview'
       if match.gapAfter

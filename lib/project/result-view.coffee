@@ -52,7 +52,7 @@ class ResultView extends View
 
   addContextToMatches: (filePath, matches) ->
     CONTEXT_LINES = atom.config.get('find-and-replace.searchContextExtraLines')
-    return if CONTEXT_LINES == 0
+    return if CONTEXT_LINES is 0
     content = fs.readFileSync(filePath).toString()
     lines = content.split('\n')
     prevMatch = match
