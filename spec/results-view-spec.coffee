@@ -603,7 +603,6 @@ describe 'ResultsView', ->
 
       it "collapses all results if collapse All button is pressed", ->
         collapseAll = resultsView.parentView.collapseAll
-        expandAll = resultsView.parentView.expandAll
         results = resultsView.find('.list-nested-item')
         collapseAll.click()
         expect(results).toHaveClass('collapsed')

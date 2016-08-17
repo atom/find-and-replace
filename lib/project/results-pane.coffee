@@ -10,7 +10,7 @@ class ResultsPaneView extends ScrollView
 
   @content: ->
     @div class: 'preview-pane pane-item', tabindex: -1, =>
-      @header class: 'preview-header', =>
+      @div class: 'preview-header', =>
         @span outlet: 'previewCount', class: 'preview-count inline-block'
         @div outlet: 'previewControls', class: 'preview-controls', =>
           @div class: 'btn-group', =>

@@ -234,6 +234,11 @@ atom-workspace.find-visible {
     align-items: center;
     flex-wrap: nowrap;
     justify-content: space-between;
+    font-weight: normal;
+    border-bottom: 1px solid @panel-heading-border-color;
+    border-top: 1px solid fadein(@background-color-highlight, 10%);
+    background-color: transparent;
+    background-image: -webkit-linear-gradient(@panel-heading-background-color, darken(@panel-heading-background-color, 10%));
   }
 
   .preview-controls {
