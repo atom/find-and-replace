@@ -155,6 +155,8 @@ class ResultsPaneView extends ScrollView
 
   collapseAllResults: =>
     @resultsView.collapseAllResults()
+    @resultsView.focus()
 
   expandAllResults: =>
     @resultsView.expandAllResults()
+    @resultsView.focus()
