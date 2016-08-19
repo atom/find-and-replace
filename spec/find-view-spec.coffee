@@ -36,7 +36,7 @@ describe 'FindView', ->
     runs ->
       jasmine.attachToDOM(workspaceElement)
       editor = atom.workspace.getActiveTextEditor()
-      editorView = atom.views.getView(editor)
+      editorView = editor.getElement()
 
       activationPromise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
         mainModule.createViews()
@@ -850,7 +850,7 @@ describe 'FindView', ->
             originalPane.moveItemToPane(newEditor, splitPane, 0)
             expect(getResultDecorations(newEditor, 'find-result')).toHaveLength 7
 
-            newEditorView = atom.views.getView(editor)
+            newEditorView = editor.getElement()
             atom.commands.dispatch newEditorView, 'core:close'
             editorView.focus()
 
