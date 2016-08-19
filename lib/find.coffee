@@ -113,6 +113,16 @@ module.exports =
       'find-and-replace:select-skip': (event) ->
         selectNextObjectForEditorElement(this).skipCurrentSelection()
 
+    # Request autocompletions for the find field.
+    autocompletePackage = atom.packages.activePackages['autocomplete-plus']
+    if autocompletePackage?
+      autocompleteManager = autocompletePackage.mainModule.autocompleteManager
+      for providerData in autocompleteManager.providerManager.providers
+        if providerData.provider.constructor.name is 'SymbolProvider'
+          providerData.provider.addTextEditorSelector?(
+            '.find-container atom-text-editor')
+          break
+
   provideService: ->
     resultsMarkerLayerForTextEditor: @findModel.resultsMarkerLayerForTextEditor.bind(@findModel)
 

@@ -14,6 +14,9 @@ class FindView extends View
       softWrapped: false
       buffer: findBuffer
       placeholderText: 'Find in current buffer'
+    if atom.textEditors?
+      disposable = atom.textEditors.add(findEditor)
+      findEditor.onDidDestroy -> disposable.dispose()
 
     replaceEditor = buildTextEditor
       mini: true
