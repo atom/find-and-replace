@@ -61,8 +61,7 @@ class ResultView extends View
     for matchIndex in [0...matches.length]
       match = matches[matchIndex]
       range = match.range
-      if not range
-        continue
+      continue unless range
 
       rowIndex = (if range.start then range.start.row else range[0][0])
 
