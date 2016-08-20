@@ -15,15 +15,14 @@ class MatchView extends View
     contextBefore = match.contextBefore or []
     contextAfter = match.contextAfter or []
 
-    liStyle = if match.CONTEXT_LINES > 0 then 'padding-top: 0; padding-bottom: 0'
-    divStyle = 'white-space: pre'
-    @li class: 'search-result list-item', style: liStyle, =>
+    liClass = if match.CONTEXT_LINES == 0 then 'no-context' else ''
+    @li class: 'search-result list-item ' + liClass, =>
       for i in [0...contextBefore.length]
         line = contextBefore[i]
-        @div class: 'context context-before', style: divStyle, =>
+        @div class: 'context context-before', =>
           @span range.start.row + 1 - (contextBefore.length - i), class: 'line-number text-subtle'
           @span line, class: 'preview', outlet: 'preview'
-      @div class: 'matching-line', style: divStyle, =>
+      @div class: 'matching-line', =>
         @span range.start.row + 1, class: 'line-number text-subtle'
         @span class: 'preview', outlet: 'preview', =>
           @span prefix
@@ -32,7 +31,7 @@ class MatchView extends View
           @span suffix
       for i in [0...contextAfter.length]
         line = contextAfter[i]
-        @div class: 'context context-after', style: divStyle, =>
+        @div class: 'context context-after', =>
           @span range.start.row + 1 + (i + 1), class: 'line-number text-subtle'
           @span line, class: 'preview', outlet: 'preview'
       if match.gapAfter
