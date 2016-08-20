@@ -3,6 +3,7 @@ _ = require 'underscore-plus'
 fs = require 'fs-plus'
 MatchView = require './match-view'
 path = require 'path'
+EOL = require('os').EOL
 
 module.exports =
 class ResultView extends View
@@ -54,7 +55,7 @@ class ResultView extends View
     CONTEXT_LINES = atom.config.get('find-and-replace.searchContextExtraLines')
     return if CONTEXT_LINES is 0
     content = fs.readFileSync(filePath).toString()
-    lines = content.split('\n')
+    lines = content.split(EOL)
     prevMatch = match
     prevRowIndex = 0
     prevLinesAfter = 0
