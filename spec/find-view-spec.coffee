@@ -36,7 +36,7 @@ describe 'FindView', ->
     runs ->
       jasmine.attachToDOM(workspaceElement)
       editor = atom.workspace.getActiveTextEditor()
-      editorView = atom.views.getView(editor)
+      editorView = editor.getElement()
 
       activationPromise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
         mainModule.createViews()
@@ -617,6 +617,7 @@ describe 'FindView', ->
 
     it "shows an icon when search wraps around and the editor scrolls", ->
       editorView.style.height = "80px"
+      editor.update?({autoHeight: false})
       atom.views.performDocumentPoll()
       expect(editor.getVisibleRowRange()).toEqual [0, 3]
 
@@ -645,6 +646,7 @@ describe 'FindView', ->
 
     it "does not show the wrap icon when the editor does not scroll", ->
       editorView.style.height = "400px"
+      editor.update?({autoHeight: false})
       atom.views.performDocumentPoll()
       expect(editor.getVisibleRowRange()).toEqual [0, 12]
 
@@ -850,7 +852,7 @@ describe 'FindView', ->
             originalPane.moveItemToPane(newEditor, splitPane, 0)
             expect(getResultDecorations(newEditor, 'find-result')).toHaveLength 7
 
-            newEditorView = atom.views.getView(editor)
+            newEditorView = editor.getElement()
             atom.commands.dispatch newEditorView, 'core:close'
             editorView.focus()
 
@@ -1104,42 +1106,26 @@ describe 'FindView', ->
         findView.findEditor.focus()
 
       it "scrolls to the first match if the settings scrollToResultOnLiveSearch is true", ->
-        atom.config.set('find-and-replace.scrollToResultOnLiveSearch', true)
-        if editorView.logicalDisplayBuffer
-          editorView.setHeight(3)
-        else
-          editor.setHeight(3)
+        editorView.style.height = "3px"
+        editor.update?({autoHeight: false})
+        atom.views.performDocumentPoll()
         editor.moveToTop()
-        if editorView.logicalDisplayBuffer
-          originalScrollPosition = editorView.getScrollTop()
-        else
-          originalScrollPosition = editor.getScrollTop()
+        atom.config.set('find-and-replace.scrollToResultOnLiveSearch', true)
         findView.findEditor.setText 'Array'
         advance()
-        if editorView.logicalDisplayBuffer
-          expect(editorView.getScrollTop()).not.toEqual originalScrollPosition
-        else
-          expect(editor.getScrollTop()).not.toEqual originalScrollPosition
+        expect(editorView.getScrollTop()).toBeGreaterThan(0)
         expect(editor.getSelectedBufferRange()).toEqual [[11, 14], [11, 19]]
         expect(findView.findEditor).toHaveFocus()
 
       it "doesn't scroll to the first match if the settings scrollToResultOnLiveSearch is false", ->
-        atom.config.set('find-and-replace.scrollToResultOnLiveSearch', false)
-        if editorView.logicalDisplayBuffer
-          editorView.setHeight(3)
-        else
-          editor.setHeight()
+        editorView.style.height = "3px"
+        editor.update?({autoHeight: false})
+        atom.views.performDocumentPoll()
         editor.moveToTop()
-        if editorView.logicalDisplayBuffer
-          originalScrollPosition = editorView.getScrollTop()
-        else
-          originalScrollPosition = editor.getScrollTop()
+        atom.config.set('find-and-replace.scrollToResultOnLiveSearch', false)
         findView.findEditor.setText 'Array'
         advance()
-        if editorView.logicalDisplayBuffer
-          expect(editorView.getScrollTop()).toEqual originalScrollPosition
-        else
-          expect(editor.getScrollTop()).toEqual originalScrollPosition
+        expect(editorView.getScrollTop()).toBe(0)
         expect(editor.getSelectedBufferRange()).toEqual []
         expect(findView.findEditor).toHaveFocus()
 
