@@ -39,15 +39,15 @@ class FindView extends View
         @div class: 'input-block-item', =>
           @div class: 'btn-group btn-group-find', =>
             @button outlet: 'nextButton', class: 'btn', 'Find'
+          @div class: 'btn-group btn-group-find-all', =>
+            @button outlet: 'findAllButton', class: 'btn', 'Find All'
+
+        @div class: 'input-block-item option-block', =>
           @div class: 'btn-group btn-toggle btn-group-options', =>
             @button outlet: 'regexOptionButton', class: 'btn', =>
               @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-regex" /></svg>'
             @button outlet: 'caseOptionButton', class: 'btn', =>
               @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-case" /></svg>'
-            @button outlet: 'selectionOptionButton', class: 'btn option-selection', =>
-              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-selection" /></svg>'
-            @button outlet: 'wholeWordOptionButton', class: 'btn option-whole-word', =>
-              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-word" /></svg>'
 
       @section class: 'input-block replace-container', =>
         @div class: 'input-block-item input-block-item--flex editor-container', =>
@@ -58,6 +58,13 @@ class FindView extends View
             @button outlet: 'replaceNextButton', class: 'btn btn-next', 'Replace'
           @div class: 'btn-group btn-group-replace-all', =>
             @button outlet: 'replaceAllButton', class: 'btn btn-all', 'Replace All'
+
+        @div class: 'input-block-item option-block', =>
+          @div class: 'btn-group btn-toggle btn-group-options', =>
+            @button outlet: 'selectionOptionButton', class: 'btn option-selection', =>
+              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-selection" /></svg>'
+            @button outlet: 'wholeWordOptionButton', class: 'btn option-whole-word', =>
+              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-word" /></svg>'
 
       @raw '<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
         <symbol id="find-and-replace-icon-regex" viewBox="0 0 20 16" stroke="none" fill-rule="evenodd">
@@ -138,6 +145,10 @@ class FindView extends View
       title: "Find Next",
       keyBindingCommand: 'find-and-replace:find-next',
       keyBindingTarget: @findEditor.element
+    subs.add atom.tooltips.add @findAllButton,
+      title: "Find All",
+      keyBindingCommand: 'find-and-replace:find-all',
+      keyBindingTarget: @findEditor.element
 
   didHide: ->
     @hideAllTooltips()
@@ -190,9 +201,11 @@ class FindView extends View
   handleFindEvents: ->
     @findEditor.getModel().onDidStopChanging => @liveSearch()
     @nextButton.on 'click', (e) => if e.shiftKey then @findPrevious(focusEditorAfter: true) else @findNext(focusEditorAfter: true)
+    @findAllButton.on 'click', @findAll
     @subscriptions.add atom.commands.add 'atom-workspace',
       'find-and-replace:find-next': => @findNext(focusEditorAfter: true)
       'find-and-replace:find-previous': => @findPrevious(focusEditorAfter: true)
+      'find-and-replace:find-all': => @findAll(focusEditorAfter: true)
       'find-and-replace:find-next-selected': @findNextSelected
       'find-and-replace:find-previous-selected': @findPreviousSelected
       'find-and-replace:use-selection-as-find-pattern': @setSelectionAsFindPattern
