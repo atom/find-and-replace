@@ -1,13 +1,15 @@
 _ = require 'underscore-plus'
 {$, View} = require 'atom-space-pen-views'
-fs = require 'fs-plus'
+FileIcons = require '../file-icons'
 MatchView = require './match-view'
 path = require 'path'
 
 module.exports =
 class ResultView extends View
   @content: (model, filePath, result) ->
-    iconClass = if fs.isReadmePath(filePath) then 'icon-book' else 'icon-file-text'
+    iconClass = FileIcons.getService().iconClassForPath(filePath, "find-and-replace") or []
+    unless Array.isArray iconClass
+      iconClass = iconClass?.toString().split(/\s+/g)
     fileBasename = path.basename(filePath)
 
     if atom.project?
@@ -20,7 +22,7 @@ class ResultView extends View
     @li class: 'path list-nested-item', 'data-path': _.escapeAttribute(filePath), =>
       @div outlet: 'pathDetails', class: 'path-details list-item', =>
         @span class: 'disclosure-arrow'
-        @span class: iconClass + ' icon', 'data-name': fileBasename
+        @span class: iconClass.join(' ') + ' icon', 'data-name': fileBasename
         @span class: 'path-name bright', relativePath
         @span outlet: 'description', class: 'path-match-number'
       @ul outlet: 'matches', class: 'matches list-tree'

@@ -37,6 +37,13 @@
   "devDependencies": {
     "coffeelint": "^1.9.7"
   },
+  "consumedServices": {
+    "atom.file-icons": {
+      "versions": {
+        "1.0.0": "consumeFileIcons"
+      }
+    }
+  },
   "providedServices": {
     "find-and-replace": {
       "description": "Atom's bundled find-and-replace package",
