@@ -4,6 +4,7 @@ _ = require 'underscore-plus'
 temp = require "temp"
 
 ResultsPaneView = require '../lib/project/results-pane'
+FileIcons = require '../lib/file-icons'
 
 # Default to 30 second promises
 waitsForPromise = (fn) -> window.waitsForPromise timeout: 30000, fn
@@ -678,6 +679,60 @@ describe 'ResultsView', ->
       _.times 2, -> atom.commands.dispatch resultsView.element, 'core:move-down'
       atom.commands.dispatch resultsView.element, 'core:copy'
       expect(atom.clipboard.read()).toBe '    return items if items.length <= 1'
+
+  describe "icon-service lifecycle", ->
+    beforeEach ->
+      projectFindView.findEditor.setText('i')
+      atom.commands.dispatch projectFindView.element, 'core:confirm'
+    
+    it "displays default file-icons", ->
+      waitsForPromise -> searchPromise
+      
+      runs ->
+        resultsView = getResultsView()
+        expect(resultsView.find('.path-details .icon-file-text')).not.toHaveLength 0
+    
+    it "allows the service to be overridden", ->
+      service = iconClassForPath: -> ""
+      FileIcons.setService(service)
+      expect(FileIcons.getService()).toBe(service)
+      
+    it "allows an overridden service to be reset", ->
+      service = iconClassForPath: -> ""
+      FileIcons.setService(service)
+      FileIcons.resetService()
+      expect(FileIcons.getService()).not.toBe(service)
+
+  describe "handling of multiple icon-classes", ->
+    beforeEach ->
+      service =
+        iconClassForPath: (path, context) ->
+          expect(context).toBe "find-and-replace"
+          "first second"
+      FileIcons.setService(service)
+      projectFindView.findEditor.setText('i')
+      atom.commands.dispatch projectFindView.element, 'core:confirm'
+    
+    it "allows multiple classes to be passed as a string", ->
+      waitsForPromise -> searchPromise
+      
+      runs ->
+        resultsView = getResultsView()
+        expect(resultsView.find('.path-details .icon.first.second')).not.toHaveLength 0
+
+  describe "handling of icon-class arrays", ->
+    beforeEach ->
+      service = iconClassForPath: -> ["uno", "dos", "tres"]
+      FileIcons.setService(service)
+      projectFindView.findEditor.setText('i')
+      atom.commands.dispatch projectFindView.element, 'core:confirm'
+    
+    it "allows multiple classes to be passed as a string", ->
+      waitsForPromise -> searchPromise
+      
+      runs ->
+        resultsView = getResultsView()
+        expect(resultsView.find('.path-details .icon.uno.dos.tres')).not.toHaveLength 0
 
   # Keep. Useful for debugging.
   logSelectedIndex = ->

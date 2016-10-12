@@ -2,7 +2,7 @@
   "name": "find-and-replace",
   "main": "./lib/find",
   "description": "Find and replace within buffers and across the project.",
-  "version": "0.201.0",
+  "version": "0.202.0",
   "license": "MIT",
   "activationCommands": {
     "atom-workspace": [
@@ -36,6 +36,13 @@
   },
   "devDependencies": {
     "coffeelint": "^1.9.7"
+  },
+  "consumedServices": {
+    "atom.file-icons": {
+      "versions": {
+        "1.0.0": "consumeFileIcons"
+      }
+    }
   },
   "providedServices": {
     "find-and-replace": {
