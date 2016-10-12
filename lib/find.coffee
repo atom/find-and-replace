@@ -116,7 +116,7 @@ module.exports =
 
   consumeFileIcons: (service) ->
     FileIcons.setService service
-    @subscriptions.add service.onWillDeactivate ->
+    @fileIconsDisposable = service.onWillDeactivate ->
       FileIcons.resetService()
 
   provideService: ->
@@ -173,6 +173,7 @@ module.exports =
     ResultsPaneView.model = null
     @resultsModel = null
 
+    @fileIconsDisposable?.dispose()
     @subscriptions?.dispose()
     @subscriptions = null
 
