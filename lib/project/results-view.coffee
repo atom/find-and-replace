@@ -14,7 +14,6 @@ class ResultsView extends ScrollView
 
     @pixelOverdraw = 100
     @lastRenderedResultIndex = 0
-    @allExpanded = true
 
     @on 'mousedown', '.path', (e) =>
       @find('.selected').removeClass('selected')
@@ -211,16 +210,21 @@ class ResultsView extends ScrollView
     parent.expand(false) if parent instanceof ResultView
     @renderResults()
 
+  collapseAllResults: ->
+    @renderResults(renderAll: true) # without this, not all views will be affected
+    @find('.path').views().forEach(
+      (view) -> view.expand(false)
+    )
+
   expandResult: ->
     selectedView = @find('.selected').view()
     selectedView.expand(true) if selectedView instanceof ResultView
     @renderResults()
 
-  toggleExpandedResults: ->
-    @allExpanded = not @allExpanded
+  expandAllResults: ->
     @renderResults(renderAll: true) # without this, not all views will be affected
     @find('.path').views().forEach(
-      (view) => view.expand(@allExpanded)
+      (view) -> view.expand(true)
     )
 
   getPathCount: ->

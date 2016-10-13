@@ -14,7 +14,8 @@ class ResultsPaneView extends ScrollView
         @span outlet: 'previewCount', class: 'preview-count inline-block'
         @div outlet: 'previewControls', class: 'preview-controls', =>
           @div class: 'btn-group', =>
-            @button outlet: 'toggleExpanded', class: 'btn'
+            @button outlet: 'collapseAll', class: 'btn'
+            @button outlet: 'expandAll', class: 'btn'
         @div outlet: 'loadingMessage', class: 'inline-block', =>
           @div class: 'loading loading-spinner-tiny inline-block'
           @div outlet: 'searchedCountBlock', class: 'inline-block', =>
@@ -35,9 +36,12 @@ class ResultsPaneView extends ScrollView
     @on 'focus', @focused
 
     @previewControls.hide()
-    @toggleExpanded
-      .text('Toggle Expanded')
-      .click(@toggleExpandedResults)
+    @collapseAll
+      .text('Collapse All')
+      .click(@collapseAllResults)
+    @expandAll
+      .text('Expand All')
+      .click(@expandAllResults)
 
   attached: ->
     @model.setActive(true)
@@ -149,6 +153,10 @@ class ResultsPaneView extends ScrollView
       @previewControls.hide()
       @addClass('no-results')
 
-  toggleExpandedResults: =>
-    @resultsView.toggleExpandedResults()
+  collapseAllResults: =>
+    @resultsView.collapseAllResults()
+    @resultsView.focus()
+
+  expandAllResults: =>
+    @resultsView.expandAllResults()
     @resultsView.focus()
