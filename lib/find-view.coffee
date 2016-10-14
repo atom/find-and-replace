@@ -313,9 +313,6 @@ class FindView extends View
     else
       @clearMessage()
 
-    if @model.getFindOptions().findPattern isnt @findEditor.getText()
-      @findEditor.setText(@model.getFindOptions().findPattern)
-
   findError: (error) =>
     @setErrorMessage(error.message)
 
@@ -426,7 +423,9 @@ class FindView extends View
     if editor?.getSelectedText?
       findPattern = editor.getSelectedText() or editor.getWordUnderCursor()
       findPattern = Util.escapeRegex(findPattern) if @model.getFindOptions().useRegex
-      @search(findPattern) if findPattern
+      if findPattern
+        @findEditor.setText(findPattern)
+        @search()
 
   findNextSelected: =>
     @setSelectionAsFindPattern()
