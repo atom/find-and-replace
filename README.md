@@ -3,15 +3,22 @@
 
 Find and replace in the current buffer or across the entire project in Atom.
 
-## Find in buffer
+![Find in buffer](https://f.cloud.github.com/assets/69169/1625938/a859fa70-56d9-11e3-8b2a-ac37c5033159.png)
 
-Using the shortcut <kbd>cmd-f</kbd> (macOS) or <kbd>ctrl-f</kbd> (Windows and Linux).
-![screen shot 2013-11-26 at 12 25 22 pm](https://f.cloud.github.com/assets/69169/1625938/a859fa70-56d9-11e3-8b2a-ac37c5033159.png)
+![Find in project](https://f.cloud.github.com/assets/69169/1625945/b216d7b8-56d9-11e3-8b14-6afc33467be9.png)
 
-## Find in project
+## Usage
+You can open find and replace for each individual buffer by navigating to _Find > Find in Buffer_ or find and replace for an entire project by navigating to _Find > Find in Project_.  To close, press _Find in Buffer_ or _Find in Project_ again, respectively.
 
-Using the shortcut <kbd>cmd-shift-f</kbd> (macOS) or <kbd>ctrl-shift-f</kbd> (Windows and Linux).
-![screen shot 2013-11-26 at 12 26 02 pm](https://f.cloud.github.com/assets/69169/1625945/b216d7b8-56d9-11e3-8b14-6afc33467be9.png)
+Once opened, the first text box is used to find phrases that can also be replaced by content in the second text box.  `Replace All` will replace all instances of the first text box's text.  If using find in project, there is also an additional text box that allows you to specify which directories/files are to be searched.
+
+There are also multiple options available while using find and replace:
+* `.*` - Use Regex
+* `Aa` - Match case
+* `"` - Only in selection (not available for find in project)
+* `\b` - Whole word (not available for find in project)
+
+Want to learn more?  Check out the [Using Atom: Find and Replace](http://flight-manual.atom.io/using-atom/sections/find-and-replace) section in the Atom flight manual.
 
 ## Commands and Keybindings
 |Command|Description|Keybinding (Linux)|Keybinding (macOS)|Keybinding (Windows)|
@@ -42,6 +49,8 @@ Using the shortcut <kbd>cmd-shift-f</kbd> (macOS) or <kbd>ctrl-shift-f</kbd> (Wi
 |`find-and-replace:focus-previous`|Focus the previous text box in the find and replace dialog|<kbd>shift-tab</kbd>|<kbd>shift-tab</kbd>|<kbd>shift-tab</kbd>|
 |`find-and-replace:replace-all`|Replace all occurences of the phrase|<kbd>ctrl-enter</kbd>|<kbd>cmd-enter</kbd>|<kbd>ctrl-enter</kbd>|
 
-## Provided Service
+## Contributing
+Always feel free to help out!  Whether it's [filing bugs and feature requests](https://github.com/atom/find-and-replace/issues/new) or working on some of the [open issues](https://github.com/atom/find-and-replace/issues), Atom's [contributing guide](https://github.com/atom/atom/blob/master/CONTRIBUTING.md) will help get you started while the [guide for contributing to packages](https://github.com/atom/atom/blob/master/docs/contributing-to-packages.md) has some extra information.
 
-If you need access the marker layer containing result markers for a given editor, use the `find-and-replace@0.0.1` service. The service exposes one method, `resultsMarkerLayerForTextEditor`, which takes a `TextEditor` and returns a `TextEditorMarkerLayer` that you can interact with. Keep in mind that any work you do in synchronous event handlers on this layer will impact the performance of find and replace.
+## License
+MIT License.  See [the license](LICENSE.md) for more details.
