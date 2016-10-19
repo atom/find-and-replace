@@ -25,10 +25,11 @@ class FindView extends View
 
     @div tabIndex: -1, class: 'find-and-replace', =>
       @header class: 'header', =>
-        @span outlet: 'descriptionLabel', class: 'header-item description', 'Find in Current Buffer'
-        @span class: 'header-item options-label pull-right', =>
-          @span 'Finding with Options: '
+        @span outlet: 'descriptionLabel', class: 'header-item description inline-block', 'Find in Current Buffer'
+        @span class: 'header-item options-label', =>
+          @span 'With Options: '
           @span outlet: 'optionsLabel', class: 'options'
+        @a outlet: 'closeButton', class: 'icon icon-x pull-right octicons'
 
       @section class: 'input-block find-container', =>
         @div class: 'input-block-item input-block-item--flex editor-container', =>
@@ -139,6 +140,11 @@ class FindView extends View
       keyBindingCommand: 'find-and-replace:find-next',
       keyBindingTarget: @findEditor.element
 
+    subs.add atom.tooltips.add @closeButton,
+      title: "Close this panel",
+      keyBindingCommand: 'core:cancel',
+      keyBindingTarget: @findEditor.element
+
   didHide: ->
     @hideAllTooltips()
     workspaceElement = atom.views.getView(atom.workspace)
@@ -186,6 +192,8 @@ class FindView extends View
     @find('button').on 'click', ->
       workspaceElement = atom.views.getView(atom.workspace)
       workspaceElement.focus()
+
+    @closeButton.on 'click', (e) => @panel?.hide()
 
   handleFindEvents: ->
     @findEditor.getModel().onDidStopChanging => @liveSearch()
@@ -336,7 +344,7 @@ class FindView extends View
     @descriptionLabel.text(errorMessage).addClass('text-error')
 
   clearMessage: ->
-    @descriptionLabel.html('Find in Current Buffer <span class="subtle-info-message">Close this panel with the <span class="highlight">esc</span> key</span>').removeClass('text-error')
+    @descriptionLabel.html('Find in Current Buffer').removeClass('text-error')
 
   selectFirstMarkerAfterCursor: =>
     marker = @firstMarkerIndexAfterCursor()
