@@ -54,6 +54,9 @@ class ResultsView extends ScrollView
       'core:copy': =>
         @find('.selected').view()?.copy?()
         false
+      'find-and-replace:copy-path': =>
+        @find('.selected').view()?.copyPath?()
+        false
 
     @subscriptions.add @model.onDidAddResult @addResult
     @subscriptions.add @model.onDidRemoveResult @removeResult

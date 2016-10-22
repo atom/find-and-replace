@@ -680,23 +680,46 @@ describe 'ResultsView', ->
       atom.commands.dispatch resultsView.element, 'core:copy'
       expect(atom.clipboard.read()).toBe '    return items if items.length <= 1'
 
+  describe "copying path with find-and-replace:copy-path", ->
+    [resultsView, openHandler] = []
+
+    beforeEach ->
+      runs ->
+        projectFindView.findEditor.setText('items')
+        atom.commands.dispatch projectFindView.element, 'core:confirm'
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        resultsView = getResultsView()
+        resultsView.selectFirstResult()
+        resultsView.collapseResult()
+
+    it "copies the selected file path to clipboard", ->
+      atom.commands.dispatch resultsView.element, 'find-and-replace:copy-path'
+      expect(atom.clipboard.read()).toBe('sample.coffee')
+      _.times 1, -> atom.commands.dispatch resultsView.element, 'core:move-down'
+      atom.commands.dispatch resultsView.element, 'find-and-replace:copy-path'
+      expect(atom.clipboard.read()).toBe('sample.js')
+
   describe "icon-service lifecycle", ->
     beforeEach ->
       projectFindView.findEditor.setText('i')
       atom.commands.dispatch projectFindView.element, 'core:confirm'
-    
+
     it "displays default file-icons", ->
       waitsForPromise -> searchPromise
-      
+
       runs ->
         resultsView = getResultsView()
         expect(resultsView.find('.path-details .icon-file-text')).not.toHaveLength 0
-    
+
     it "allows the service to be overridden", ->
       service = iconClassForPath: -> ""
       FileIcons.setService(service)
       expect(FileIcons.getService()).toBe(service)
-      
+
     it "allows an overridden service to be reset", ->
       service = iconClassForPath: -> ""
       FileIcons.setService(service)
@@ -712,10 +735,10 @@ describe 'ResultsView', ->
       FileIcons.setService(service)
       projectFindView.findEditor.setText('i')
       atom.commands.dispatch projectFindView.element, 'core:confirm'
-    
+
     it "allows multiple classes to be passed as a string", ->
       waitsForPromise -> searchPromise
-      
+
       runs ->
         resultsView = getResultsView()
         expect(resultsView.find('.path-details .icon.first.second')).not.toHaveLength 0
@@ -726,10 +749,10 @@ describe 'ResultsView', ->
       FileIcons.setService(service)
       projectFindView.findEditor.setText('i')
       atom.commands.dispatch projectFindView.element, 'core:confirm'
-    
+
     it "allows multiple classes to be passed as a string", ->
       waitsForPromise -> searchPromise
-      
+
       runs ->
         resultsView = getResultsView()
         expect(resultsView.find('.path-details .icon.uno.dos.tres')).not.toHaveLength 0
