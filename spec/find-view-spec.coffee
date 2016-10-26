@@ -349,6 +349,18 @@ describe 'FindView', ->
         atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:confirm')
         expect(getResultDecorations(editor, 'find-result')).toHaveLength 5
 
+    describe "when no results are found", ->
+      it "adds a .has-no-results class", ->
+        findView.findEditor.setText 'notinthefile'
+        atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:confirm')
+        expect(findView).toHaveClass 'has-no-results'
+
+    describe "when results are found", ->
+      it "adds a .has-results class", ->
+        findView.findEditor.setText 'items'
+        atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:confirm')
+        expect(findView).toHaveClass 'has-results'
+
     describe "when the find string contains an escaped char", ->
       beforeEach ->
         editor.setText("\t\n\\t\\\\")
