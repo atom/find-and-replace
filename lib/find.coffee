@@ -1,5 +1,5 @@
 {$} = require 'atom-space-pen-views'
-{CompositeDisposable, TextBuffer} = require 'atom'
+{CompositeDisposable, Disposable, TextBuffer} = require 'atom'
 
 SelectNext = require './select-next'
 {History, HistoryCycler} = require './history'
@@ -115,7 +115,7 @@ module.exports =
 
   consumeFileIcons: (service) ->
     FileIcons.setService service
-    @subscriptions.add service.onWillDeactivate ->
+    new Disposable ->
       FileIcons.resetService()
 
   provideService: ->

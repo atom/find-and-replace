@@ -681,58 +681,38 @@ describe 'ResultsView', ->
       expect(atom.clipboard.read()).toBe '    return items if items.length <= 1'
 
   describe "icon-service lifecycle", ->
-    beforeEach ->
-      projectFindView.findEditor.setText('i')
-      atom.commands.dispatch projectFindView.element, 'core:confirm'
-    
-    it "displays default file-icons", ->
-      waitsForPromise -> searchPromise
-      
-      runs ->
-        resultsView = getResultsView()
-        expect(resultsView.find('.path-details .icon-file-text')).not.toHaveLength 0
-    
-    it "allows the service to be overridden", ->
-      service = iconClassForPath: -> ""
-      FileIcons.setService(service)
-      expect(FileIcons.getService()).toBe(service)
-      
-    it "allows an overridden service to be reset", ->
-      service = iconClassForPath: -> ""
-      FileIcons.setService(service)
-      FileIcons.resetService()
-      expect(FileIcons.getService()).not.toBe(service)
-
-  describe "handling of multiple icon-classes", ->
-    beforeEach ->
-      service =
+    it 'renders file icon classes based on the provided file-icons service', ->
+      fileIconsDisposable = atom.packages.serviceHub.provide 'atom.file-icons', '1.0.0', {
         iconClassForPath: (path, context) ->
           expect(context).toBe "find-and-replace"
-          "first second"
-      FileIcons.setService(service)
+          if path.endsWith('sample.js')
+            "first-icon-class second-icon-class"
+          else
+            ['third-icon-class', 'fourth-icon-class']
+      }
       projectFindView.findEditor.setText('i')
       atom.commands.dispatch projectFindView.element, 'core:confirm'
-    
-    it "allows multiple classes to be passed as a string", ->
-      waitsForPromise -> searchPromise
-      
-      runs ->
-        resultsView = getResultsView()
-        expect(resultsView.find('.path-details .icon.first.second')).not.toHaveLength 0
 
-  describe "handling of icon-class arrays", ->
-    beforeEach ->
-      service = iconClassForPath: -> ["uno", "dos", "tres"]
-      FileIcons.setService(service)
-      projectFindView.findEditor.setText('i')
-      atom.commands.dispatch projectFindView.element, 'core:confirm'
-    
-    it "allows multiple classes to be passed as a string", ->
       waitsForPromise -> searchPromise
-      
       runs ->
         resultsView = getResultsView()
-        expect(resultsView.find('.path-details .icon.uno.dos.tres')).not.toHaveLength 0
+        fileIconClasses = Array.from(resultsView.find('.path-details .icon').map -> @className)
+        expect(fileIconClasses).toContain('first-icon-class second-icon-class icon')
+        expect(fileIconClasses).toContain('third-icon-class fourth-icon-class icon')
+        expect(fileIconClasses).not.toContain('icon-file-text icon')
+
+      runs ->
+        fileIconsDisposable.dispose()
+        projectFindView.findEditor.setText('e')
+        atom.commands.dispatch projectFindView.element, 'core:confirm'
+
+      waitsForPromise -> searchPromise
+      runs ->
+        resultsView = getResultsView()
+        fileIconClasses = Array.from(resultsView.find('.path-details .icon').map -> @className)
+        expect(fileIconClasses).not.toContain('first-icon-class second-icon-class icon')
+        expect(fileIconClasses).not.toContain('third-icon-class fourth-icon-class icon')
+        expect(fileIconClasses).toContain('icon-file-text icon')
 
   # Keep. Useful for debugging.
   logSelectedIndex = ->
