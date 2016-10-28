@@ -210,10 +210,22 @@ class ResultsView extends ScrollView
     parent.expand(false) if parent instanceof ResultView
     @renderResults()
 
+  collapseAllResults: ->
+    @renderResults(renderAll: true) # without this, not all views will be affected
+    @find('.path').views().forEach(
+      (view) -> view.expand(false)
+    )
+
   expandResult: ->
     selectedView = @find('.selected').view()
     selectedView.expand(true) if selectedView instanceof ResultView
     @renderResults()
+
+  expandAllResults: ->
+    @renderResults(renderAll: true) # without this, not all views will be affected
+    @find('.path').views().forEach(
+      (view) -> view.expand(true)
+    )
 
   getPathCount: ->
     @model.getPathCount()

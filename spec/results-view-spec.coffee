@@ -587,6 +587,10 @@ describe 'ResultsView', ->
         waitsForPromise -> searchPromise
         runs -> resultsView = getResultsView()
 
+      it "shows the preview-controls", ->
+        previewControls = resultsView.parentView.previewControls
+        expect(previewControls.isVisible()).toBe(true)
+
       it "collapses the selected results view", ->
         # select item in first list
         resultsView.find('.selected').removeClass('selected')
@@ -598,6 +602,12 @@ describe 'ResultsView', ->
         expect(selectedItem).toHaveClass('collapsed')
         expect(selectedItem.element).toBe resultsView.find('.path:eq(0)').element
 
+      it "collapses all results if collapse All button is pressed", ->
+        collapseAll = resultsView.parentView.collapseAll
+        results = resultsView.find('.list-nested-item')
+        collapseAll.click()
+        expect(results).toHaveClass('collapsed')
+
       it "expands the selected results view", ->
         # select item in first list
         resultsView.find('.selected').removeClass('selected')
@@ -608,6 +618,12 @@ describe 'ResultsView', ->
         selectedItem = resultsView.find('.selected')
         expect(selectedItem).toHaveClass('search-result')
         expect(selectedItem[0]).toBe resultsView.find('.path:eq(0) .search-result:first')[0]
+
+      it "expands all results if 'Expand All' button is pressed", ->
+        expandAll = resultsView.parentView.expandAll
+        results = resultsView.find('.list-nested-item')
+        expandAll.click()
+        expect(results).not.toHaveClass('collapsed')
 
       describe "when nothing is selected", ->
         it "doesnt error when the user arrows down", ->
@@ -656,6 +672,17 @@ describe 'ResultsView', ->
       runs ->
         resultsView = getResultsView()
         expect(-> atom.commands.dispatch resultsView.element, 'core:confirm').not.toThrow()
+
+    it "won't show the preview-controls", ->
+      projectFindView.findEditor.setText('thiswillnotmatchanythingintheproject')
+      atom.commands.dispatch projectFindView.element, 'core:confirm'
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        previewControls = getResultsView().parentView.previewControls
+        expect(previewControls.isVisible()).toBe(false)
 
   describe "copying items with core:copy", ->
     [resultsView, openHandler] = []
