@@ -703,6 +703,14 @@ describe 'ResultsView', ->
       FileIcons.resetService()
       expect(FileIcons.getService()).not.toBe(service)
 
+    it "doesn't throw if service returns a non-disposable", ->
+      service =
+        iconClassForPath: -> ""
+        onWillDeactivate: -> null
+      consume = ->
+        require('../lib/find').consumeFileIcons(service)
+      expect(consume).not.toThrow()
+
   describe "handling of multiple icon-classes", ->
     beforeEach ->
       service =
