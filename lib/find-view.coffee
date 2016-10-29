@@ -307,6 +307,8 @@ class FindView extends View
     if @model.getFindOptions().findPattern
       results = @markers.length
       resultsStr = if results then _.pluralize(results, 'result') else 'No results'
+      this.removeClass('has-results has-no-results')
+      this.addClass(if results then 'has-results' else 'has-no-results')
       @setInfoMessage("#{resultsStr} found for '#{@model.getFindOptions().findPattern}'")
       if @findEditor.hasFocus() and results > 0 and atom.config.get('find-and-replace.scrollToResultOnLiveSearch')
         @findAndSelectResult(@selectFirstMarkerStartingFromCursor, focusEditorAfter: false)
@@ -336,6 +338,7 @@ class FindView extends View
     @descriptionLabel.text(errorMessage).addClass('text-error')
 
   clearMessage: ->
+    this.removeClass('has-results has-no-results')
     @descriptionLabel.html('Find in Current Buffer <span class="subtle-info-message">Close this panel with the <span class="highlight">esc</span> key</span>').removeClass('text-error')
 
   selectFirstMarkerAfterCursor: =>

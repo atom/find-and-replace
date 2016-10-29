@@ -315,6 +315,7 @@ class ProjectFindView extends View
     @setInfoMessage(message)
 
   clearMessages: ->
+    this.removeClass('has-results has-no-results')
     @setInfoMessage('Find in Project <span class="subtle-info-message">Close this panel with the <span class="highlight">esc</span> key</span>').removeClass('text-error')
     @replacmentInfoBlock.hide()
 
