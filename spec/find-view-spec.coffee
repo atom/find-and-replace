@@ -1196,6 +1196,13 @@ describe 'FindView', ->
         expect(findView.descriptionLabel.text()).toContain "20 results"
         expect(findView).toHaveFocus()
 
+      it "doesn't live search on a regex that matches empty string", ->
+        expect(findView.descriptionLabel.text()).toContain "6 results"
+        atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
+        findView.findEditor.setText 'asdf|'
+        advance()
+        expect(findView.descriptionLabel.text()).toContain "6 results"
+
     describe "when another find is called", ->
       previousMarkers = null
 

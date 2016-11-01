@@ -234,8 +234,8 @@ class FindView extends View
 
   liveSearch: ->
     findPattern = @findEditor.getText()
-    if findPattern.length is 0 or findPattern.length >= atom.config.get('find-and-replace.liveSearchMinimumCharacters')
-      @search(findPattern)
+    if findPattern.length is 0 or findPattern.length >= atom.config.get('find-and-replace.liveSearchMinimumCharacters') and @model.checkSanity(findPattern)
+      @model.search(findPattern)
 
   search: (findPattern, options) ->
     if arguments.length is 1 and typeof findPattern is 'object'
