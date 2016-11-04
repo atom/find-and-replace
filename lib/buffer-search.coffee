@@ -1,6 +1,7 @@
 _ = require 'underscore-plus'
 {Point, Range, Emitter, CompositeDisposable, TextBuffer} = require 'atom'
 {Patch} = TextBuffer
+FindOptions = require './find-options'
 escapeHelper = require './escape-helper'
 
 ResultsMarkerLayersByEditor = new WeakMap
@@ -57,6 +58,14 @@ class BufferSearch
       layer = editor.addMarkerLayer({maintainHistory: false})
       ResultsMarkerLayersByEditor.set(editor, layer)
     layer
+
+  doesMatchTheEmptyString: (findPattern) ->
+    findOptions = new FindOptions(@findOptions.serialize())
+    findOptions.set({findPattern})
+    if regex = findOptions.getFindPatternRegex()
+      not regex.test('')
+    else
+      false
 
   search: (findPattern, otherOptions) ->
     options = {findPattern}
