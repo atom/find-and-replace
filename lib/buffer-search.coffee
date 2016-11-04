@@ -59,16 +59,13 @@ class BufferSearch
       ResultsMarkerLayersByEditor.set(editor, layer)
     layer
 
-  checkSanity: (findPattern) ->
+  doesMatchTheEmptyString: (findPattern) ->
     findOptions = new FindOptions(@findOptions.serialize())
     findOptions.set({findPattern})
     if regex = findOptions.getFindPatternRegex()
-      try
-        buffer = new TextBuffer('')
-        sane = true
-        buffer.scan regex, ({range}) -> sane = false
-        return sane
-    false
+      not regex.test('')
+    else
+      false
 
   search: (findPattern, otherOptions) ->
     options = {findPattern}
