@@ -21,7 +21,7 @@ describe "BufferSearch", ->
       -----------
     """
 
-    findOptions = new FindOptions
+    findOptions = new FindOptions findPattern: "a+"
     model = new BufferSearch(findOptions)
 
     markersListener = jasmine.createSpy('markersListener')
