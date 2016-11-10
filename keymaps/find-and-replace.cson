@@ -3,9 +3,6 @@
   'cmd-f': 'find-and-replace:show'
   'cmd-alt-f': 'find-and-replace:show-replace'
 
-'atom-text-editor':
-  'alt-a': 'project-find:show-in-current-directory'
-
 '.platform-win32, .platform-linux':
   'ctrl-F': 'project-find:show'
   'ctrl-f': 'find-and-replace:show'
