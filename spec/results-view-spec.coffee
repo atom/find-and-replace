@@ -24,6 +24,7 @@ describe 'ResultsView', ->
     workspaceElement = atom.views.getView(atom.workspace)
     workspaceElement.style.height = '1000px'
     jasmine.attachToDOM(workspaceElement)
+    atom.config.set('core.excludeVcsIgnores', false)
     atom.project.setPaths([path.join(__dirname, 'fixtures')])
     promise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
       mainModule.createViews()
