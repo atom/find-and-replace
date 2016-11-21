@@ -24,7 +24,7 @@ describe 'ProjectFindView', ->
 
   beforeEach ->
     workspaceElement = atom.views.getView(atom.workspace)
-    atom.config.set('core.excludeVcsIgnores', false)
+    atom.config.set('core.excludeVcsIgnoredPaths', false)
     atom.project.setPaths([path.join(__dirname, 'fixtures')])
     jasmine.attachToDOM(workspaceElement)
 
