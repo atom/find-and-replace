@@ -1203,6 +1203,14 @@ describe 'FindView', ->
         advance()
         expect(findView.descriptionLabel.text()).toContain "6 results"
 
+      it "doesn't live search on a invalid regex", ->
+        expect(findView.descriptionLabel.text()).toContain "6 results"
+        atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
+        findView.findEditor.setText('\\(.*)')
+        advance()
+        expect(findView.descriptionLabel).toHaveClass 'text-error'
+        expect(findView.descriptionLabel.text()).toContain 'Invalid regular expression'
+
     describe "when another find is called", ->
       previousMarkers = null
 
