@@ -44,8 +44,6 @@
   'alt-enter': 'find-and-replace:find-all'
   'ctrl-alt-/': 'find-and-replace:toggle-regex-option'
   'ctrl-shift-c': 'find-and-replace:toggle-case-option'
-  'ctrl-shift-e': 'find-and-replace:toggle-selection-option'
-  'ctrl-shift-.': 'find-and-replace:toggle-whole-word-option'
 
 '.platform-darwin .project-find':
   'cmd-enter': 'project-find:confirm'
@@ -57,8 +55,7 @@
   'ctrl-enter': 'project-find:confirm'
   'ctrl-alt-/': 'project-find:toggle-regex-option'
   'ctrl-shift-c': 'find-and-replace:toggle-case-option'
-  'ctrl-shift-.': 'find-and-replace:toggle-whole-word-option'
-
+  
 '.find-and-replace, .project-find, .project-find .results-view':
   'tab': 'find-and-replace:focus-next'
   'shift-tab': 'find-and-replace:focus-previous'
