@@ -1,6 +1,7 @@
 _ = require 'underscore-plus'
 {Emitter} = require 'atom'
 escapeHelper = require '../escape-helper'
+{watch} = require 'pathwatcher'
 
 class Result
   @create: (result) ->
@@ -71,6 +72,8 @@ class ResultsModel
     @matchCount = 0
     @regex = null
     @results = {}
+    @watchSubscriptions[path].close() for path of @watchSubscriptions
+    @watchSubscriptions = {}
     @paths = []
     @active = false
     @searchErrors = null
@@ -202,6 +205,8 @@ class ResultsModel
       @removeResult(filePath)
 
   addResult: (filePath, result) ->
+    @watchSubscriptions[filePath] = watch filePath, (eventType) =>
+      @removeResult(filePath) if eventType is 'delete'
     filePathInsertedIndex = null
     if @results[filePath]
       @matchCount -= @results[filePath].matches.length
@@ -216,6 +221,10 @@ class ResultsModel
     @emitter.emit 'did-add-result', {filePath, result, filePathInsertedIndex}
 
   removeResult: (filePath) ->
+    if @watchSubscriptions[filePath]?
+      @watchSubscriptions[filePath].close()
+      delete @watchSubscriptions[filePath]
+
     if @results[filePath]
       @pathCount--
       @matchCount -= @results[filePath].matches.length
