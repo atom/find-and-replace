@@ -31,7 +31,7 @@
   "dependencies": {
     "atom-space-pen-views": "^2.1.0",
     "fs-plus": "2.x",
-    "temp": "0.8.1",
+    "temp": "^0.8.3",
     "underscore-plus": "1.x"
   },
   "devDependencies": {
