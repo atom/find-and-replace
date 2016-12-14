@@ -28,7 +28,7 @@ describe 'ProjectFindView', ->
     atom.project.setPaths([path.join(__dirname, 'fixtures')])
     jasmine.attachToDOM(workspaceElement)
 
-    atom.config.set('find-and-replace.openProjectFindResultsInANewPane', 'no')
+    atom.config.set('find-and-replace.openProjectFindResultsDirection', 'none')
     activationPromise = atom.packages.activatePackage("find-and-replace").then (options) ->
       mainModule = options.mainModule
       mainModule.createViews()
@@ -368,7 +368,7 @@ describe 'ProjectFindView', ->
 
       it "splits when option is right", ->
         initialPane = atom.workspace.getActivePane()
-        atom.config.set('find-and-replace.openProjectFindResultsInANewPane', 'right pane')
+        atom.config.set('find-and-replace.openProjectFindResultsDirection', 'right')
         projectFindView.findEditor.setText('items')
         atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
@@ -381,7 +381,7 @@ describe 'ProjectFindView', ->
 
       it "splits when option is bottom", ->
         initialPane = atom.workspace.getActivePane()
-        atom.config.set('find-and-replace.openProjectFindResultsInANewPane', 'bottom pane')
+        atom.config.set('find-and-replace.openProjectFindResultsDirection', 'down')
         projectFindView.findEditor.setText('items')
         atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
@@ -405,7 +405,7 @@ describe 'ProjectFindView', ->
           expect(pane1).toBe initialPane
 
       it "can be duplicated on the right", ->
-        atom.config.set('find-and-replace.openProjectFindResultsInANewPane', 'right pane')
+        atom.config.set('find-and-replace.openProjectFindResultsDirection', 'right')
         projectFindView.findEditor.setText('items')
         atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
@@ -430,7 +430,7 @@ describe 'ProjectFindView', ->
           expect(resultsPaneView2.querySelector('.preview-count').innerHTML).toEqual resultsPaneView1.querySelector('.preview-count').innerHTML
 
       it "can be duplicated at the bottom", ->
-        atom.config.set('find-and-replace.openProjectFindResultsInANewPane', 'bottom pane')
+        atom.config.set('find-and-replace.openProjectFindResultsDirection', 'down')
         projectFindView.findEditor.setText('items')
         atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
@@ -1452,7 +1452,7 @@ describe 'ProjectFindView', ->
   describe "panel opening", ->
     describe "when a panel is already open on the right", ->
       beforeEach ->
-        atom.config.set('find-and-replace.openProjectFindResultsInANewPane', 'right pane')
+        atom.config.set('find-and-replace.openProjectFindResultsDirection', 'right')
 
         waitsForPromise ->
           atom.workspace.open('sample.js')
@@ -1485,7 +1485,7 @@ describe 'ProjectFindView', ->
 
     describe "when a panel is already open at the bottom", ->
       beforeEach ->
-        atom.config.set('find-and-replace.openProjectFindResultsInANewPane', 'bottom pane')
+        atom.config.set('find-and-replace.openProjectFindResultsDirection', 'down')
 
         waitsForPromise ->
           atom.workspace.open('sample.js')
