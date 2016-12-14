@@ -26,7 +26,7 @@
   },
   "repository": "https://github.com/atom/find-and-replace",
   "engines": {
-    "atom": "*"
+    "atom": ">=1.2.0"
   },
   "dependencies": {
     "atom-space-pen-views": "^2.1.0",
@@ -58,9 +58,11 @@
       "default": false,
       "description": "Focus the editor and select the next match when a file search is executed. If no matches are found, the editor will not be focused."
     },
-    "openProjectFindResultsInRightPane": {
-      "type": "boolean",
-      "default": false,
+    "openProjectFindResultsInANewPane": {
+      "type": "string",
+      "default": "no",
+      "enum": ["no", "right pane", "bottom pane"],
+      "title": "Open Results in a new pane",
       "description": "When a project-wide search is executed, open the results in a split pane instead of a tab in the same pane."
     },
     "closeFindPanelAfterSearch": {
