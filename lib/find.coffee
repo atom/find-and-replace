@@ -13,7 +13,7 @@ ResultsPaneView = require './project/results-pane'
 
 # To convert previous (and now unused) config setting "openProjectFindResultsInRightPane"
 if atom.config.get('find-and-replace.openProjectFindResultsInRightPane')
-  atom.config.set('find-and-replace.openProjectFindResultsInANewPane', 'right pane')
+  atom.config.set('find-and-replace.openProjectFindResultsDirection', 'right')
   atom.config.unset('find-and-replace.openProjectFindResultsInRightPane')
 
 module.exports =
