@@ -45,8 +45,8 @@ class MatchView extends View
   confirm: (options = {}) ->
     openInNewPane = atom.config.get('find-and-replace.openProjectFindResultsInANewPane')
     switch openInNewPane
-      when 'right pane' then options = {split: 'left'}
-      when 'bottom pane' then options = {split: 'up'}
+      when 'right pane' then options.split = 'left'
+      when 'bottom pane' then options.split = 'up'
     editorPromise = atom.workspace.open(@filePath, options)
     editorPromise.then (editor) =>
       editor.setSelectedBufferRange(@match.range, autoscroll: true)
