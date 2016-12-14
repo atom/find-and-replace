@@ -26,7 +26,7 @@
   },
   "repository": "https://github.com/atom/find-and-replace",
   "engines": {
-    "atom": ">=1.2.0"
+    "atom": "*"
   },
   "dependencies": {
     "atom-space-pen-views": "^2.1.0",
