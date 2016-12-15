@@ -1,6 +1,5 @@
 _ = require 'underscore-plus'
 {Point, Range, Emitter, CompositeDisposable, TextBuffer} = require 'atom'
-{Patch} = TextBuffer
 FindOptions = require './find-options'
 escapeHelper = require './escape-helper'
 
@@ -10,7 +9,6 @@ module.exports =
 class BufferSearch
   constructor: (@findOptions) ->
     @emitter = new Emitter
-    @patch = new Patch
     @subscriptions = null
     @markers = []
     @editor = null
@@ -38,7 +36,6 @@ class BufferSearch
     @subscriptions?.dispose()
     if @editor?.buffer?
       @subscriptions = new CompositeDisposable
-      @subscriptions.add @editor.buffer.onDidChange(@bufferChanged.bind(this))
       @subscriptions.add @editor.buffer.onDidStopChanging(@bufferStoppedChanging.bind(this))
       @subscriptions.add @editor.onDidAddSelection(@setCurrentMarkerFromSelection.bind(this))
       @subscriptions.add @editor.onDidChangeSelectionRange(@setCurrentMarkerFromSelection.bind(this))
@@ -128,15 +125,13 @@ class BufferSearch
         return false
     newMarkers
 
-  bufferStoppedChanging: ->
-    changes = @patch.changes()
+  bufferStoppedChanging: ({changes}) ->
     scanEnd = Point.ZERO
     markerIndex = 0
 
-    until (next = changes.next()).done
-      change = next.value
-      changeStart = change.position
-      changeEnd = changeStart.traverse(change.newExtent)
+    for change in changes
+      changeStart = change.start
+      changeEnd = change.start.traverse(change.newExtent)
       continue if changeEnd.isLessThan(scanEnd)
 
       precedingMarkerIndex = -1
@@ -182,7 +177,6 @@ class BufferSearch
         @markers[markerIndex] = @recreateMarker(marker)
 
     @emitter.emit "did-update", @markers.slice()
-    @patch.clear()
     @currentResultMarker = null
     @setCurrentMarkerFromSelection()
 
@@ -213,14 +207,6 @@ class BufferSearch
   createMarker: (range) ->
     marker = @resultsMarkerLayer.markBufferRange(range, {invalidate: 'inside'})
     marker
-
-  bufferChanged: ({oldRange, newRange, newText}) ->
-    @patch.splice(
-      oldRange.start,
-      oldRange.getExtent(),
-      newRange.getExtent(),
-      newText
-    )
 
   getFindPatternRegex: ->
     try

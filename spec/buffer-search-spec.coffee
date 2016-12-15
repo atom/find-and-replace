@@ -20,6 +20,7 @@ describe "BufferSearch", ->
       ccc ddd aaa
       -----------
     """
+    advanceClock(editor.buffer.stoppedChangingDelay)
 
     findOptions = new FindOptions
     model = new BufferSearch(findOptions)
