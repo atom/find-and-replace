@@ -691,7 +691,6 @@ describe 'FindView', ->
         atom.workspace.destroyActivePane()
         atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
         expect(findView.findEditor.getText()).toBe 'sort'
-        expect(editor.getSelectedBufferRange()).toEqual [[8, 11], [8, 15]]
 
       it "places the word under the cursor into the find editor", ->
         editor.setSelectedBufferRange([[1, 8], [1, 8]])
