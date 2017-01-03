@@ -1,9 +1,5 @@
-_ = require 'underscore-plus'
 {$} = require 'atom-space-pen-views'
-
 path = require 'path'
-
-# TODO: Remove references to logical display buffer when it gets released.
 
 describe 'FindView', ->
   [workspaceElement, editorView, editor, findView, activationPromise] = []
@@ -691,7 +687,6 @@ describe 'FindView', ->
         atom.workspace.destroyActivePane()
         atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
         expect(findView.findEditor.getText()).toBe 'sort'
-        expect(editor.getSelectedBufferRange()).toEqual [[8, 11], [8, 15]]
 
       it "places the word under the cursor into the find editor", ->
         editor.setSelectedBufferRange([[1, 8], [1, 8]])
@@ -1212,16 +1207,10 @@ describe 'FindView', ->
         expect(findView.descriptionLabel.text()).toContain 'Invalid regular expression'
 
     describe "when another find is called", ->
-      previousMarkers = null
-
-      beforeEach ->
-        previousMarkers = _.clone(editor.getMarkers())
-
       it "clears existing markers for another search", ->
         findView.findEditor.setText('notinthefile')
         atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
         expect(getResultDecorations(editor, 'find-result')).toHaveLength 0
-
 
       it "clears existing markers for an empty search", ->
         findView.findEditor.setText('')
