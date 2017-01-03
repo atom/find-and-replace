@@ -411,8 +411,11 @@ describe "BufferSearch", ->
         [[7, 8], [7, 11]]
       ]
 
-      editor.setSelectedBufferRange(markers[2].getBufferRange())
-      expect(currentResultListener).toHaveBeenCalledWith(markers[2])
+      markerToSelect = markers[2]
+      rangeToSelect = markerToSelect.getBufferRange()
+
+      editor.setSelectedBufferRange(rangeToSelect)
+      expect(currentResultListener).toHaveBeenCalledWith(markerToSelect)
       currentResultListener.reset()
 
       advanceClock(editor.buffer.stoppedChangingDelay)
@@ -430,7 +433,7 @@ describe "BufferSearch", ->
       ]
 
       expect(currentResultListener).toHaveBeenCalled()
-      expect(currentResultListener.mostRecentCall.args[0].getBufferRange()).toEqual markers[2].getBufferRange()
+      expect(currentResultListener.mostRecentCall.args[0].getBufferRange()).toEqual rangeToSelect
       expect(currentResultListener.mostRecentCall.args[0].isDestroyed()).toBe false
 
     it "replaces the marked text with the given string that contains escaped escape sequence", ->
