@@ -441,9 +441,9 @@ describe 'ResultsView', ->
       runs ->
         expect(atom.views.getView(editor)).toHaveFocus()
 
-    describe "when `openProjectFindResultsDirection` option is none", ->
+    describe "when `projectSearchResultsPaneSplitDirection` option is none", ->
       beforeEach ->
-        atom.config.set('find-and-replace.openProjectFindResultsDirection', 'none')
+        atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'none')
 
       it "does not specify a pane to split", ->
         spyOn(atom.workspace, 'open').andCallThrough()
@@ -451,9 +451,9 @@ describe 'ResultsView', ->
         atom.commands.dispatch resultsView.element, 'core:confirm'
         expect(atom.workspace.open.mostRecentCall.args[1]).toEqual {}
 
-    describe "when `openProjectFindResultsDirection` option is right", ->
+    describe "when `projectSearchResultsPaneSplitDirection` option is right", ->
       beforeEach ->
-        atom.config.set('find-and-replace.openProjectFindResultsDirection', 'right')
+        atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'right')
 
       it "always opens the file in the left pane", ->
         spyOn(atom.workspace, 'open').andCallThrough()
@@ -474,9 +474,9 @@ describe 'ResultsView', ->
           runs ->
             expect(atom.views.getView(editor)).toHaveFocus()
 
-    describe "when `openProjectFindResultsDirection` option is down", ->
+    describe "when `projectSearchResultsPaneSplitDirection` option is down", ->
       beforeEach ->
-        atom.config.set('find-and-replace.openProjectFindResultsDirection', 'down')
+        atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'down')
 
       it "always opens the file in the up pane", ->
         spyOn(atom.workspace, 'open').andCallThrough()

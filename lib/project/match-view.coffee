@@ -48,7 +48,7 @@ class MatchView extends View
         right: 'left'
         up: 'down'
         down: 'up'
-    openDirection = atom.config.get('find-and-replace.openProjectFindResultsDirection')
+    openDirection = atom.config.get('find-and-replace.projectSearchResultsPaneSplitDirection')
     options.split = reverseDirections[openDirection] unless openDirection is 'none'
     editorPromise = atom.workspace.open(@filePath, options)
     editorPromise.then (editor) =>
