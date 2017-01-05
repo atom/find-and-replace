@@ -441,9 +441,19 @@ describe 'ResultsView', ->
       runs ->
         expect(atom.views.getView(editor)).toHaveFocus()
 
-    describe "when `openProjectFindResultsInRightPane` option is true", ->
+    describe "when `openProjectFindResultsDirection` option is none", ->
       beforeEach ->
-        atom.config.set('find-and-replace.openProjectFindResultsInRightPane', true)
+        atom.config.set('find-and-replace.openProjectFindResultsDirection', 'none')
+
+      it "does not specify a pane to split", ->
+        spyOn(atom.workspace, 'open').andCallThrough()
+        atom.commands.dispatch resultsView.element, 'core:move-down'
+        atom.commands.dispatch resultsView.element, 'core:confirm'
+        expect(atom.workspace.open.mostRecentCall.args[1]).toEqual {}
+
+    describe "when `openProjectFindResultsDirection` option is right", ->
+      beforeEach ->
+        atom.config.set('find-and-replace.openProjectFindResultsDirection', 'right')
 
       it "always opens the file in the left pane", ->
         spyOn(atom.workspace, 'open').andCallThrough()
@@ -464,15 +474,28 @@ describe 'ResultsView', ->
           runs ->
             expect(atom.views.getView(editor)).toHaveFocus()
 
-    describe "when `openProjectFindResultsInRightPane` option is false", ->
+    describe "when `openProjectFindResultsDirection` option is down", ->
       beforeEach ->
-        atom.config.set('find-and-replace.openProjectFindResultsInRightPane', false)
+        atom.config.set('find-and-replace.openProjectFindResultsDirection', 'down')
 
-      it "does not specify a pane to split", ->
+      it "always opens the file in the up pane", ->
         spyOn(atom.workspace, 'open').andCallThrough()
         atom.commands.dispatch resultsView.element, 'core:move-down'
         atom.commands.dispatch resultsView.element, 'core:confirm'
-        expect(atom.workspace.open.mostRecentCall.args[1]).toEqual {}
+        expect(atom.workspace.open.mostRecentCall.args[1].split).toBe 'up'
+
+      describe "when a search result is single-clicked", ->
+        it "opens the file containing the result in pending state", ->
+          pathNode = resultsView.find(".search-result")[0]
+          pathNode.dispatchEvent(buildMouseEvent('mousedown', target: pathNode, which: 1))
+          editor = null
+          waitsFor ->
+            editor = atom.workspace.getActiveTextEditor()
+          waitsFor ->
+            atom.workspace.getActivePane().getPendingItem() is editor
+
+          runs ->
+            expect(atom.views.getView(editor)).toHaveFocus()
 
   describe "arrowing through the list", ->
     it "arrows through the entire list without selecting paths and overshooting the boundaries", ->

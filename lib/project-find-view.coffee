@@ -302,7 +302,8 @@ class ProjectFindView extends View
 
   showResultPane: ->
     options = {searchAllPanes: true}
-    options.split = 'right' if atom.config.get('find-and-replace.openProjectFindResultsInRightPane')
+    openDirection = atom.config.get('find-and-replace.openProjectFindResultsDirection')
+    options.split = openDirection unless openDirection is 'none'
     atom.workspace.open(ResultsPaneView.URI, options)
 
   onFinishedReplacing: (results) ->
