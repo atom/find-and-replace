@@ -4,6 +4,7 @@ _ = require 'underscore-plus'
 temp = require "temp"
 
 ResultsPaneView = require '../lib/project/results-pane'
+FileIcons = require '../lib/file-icons'
 
 # Default to 30 second promises
 waitsForPromise = (fn) -> window.waitsForPromise timeout: 30000, fn
@@ -23,6 +24,7 @@ describe 'ResultsView', ->
     workspaceElement = atom.views.getView(atom.workspace)
     workspaceElement.style.height = '1000px'
     jasmine.attachToDOM(workspaceElement)
+    atom.config.set('core.excludeVcsIgnoredPaths', false)
     atom.project.setPaths([path.join(__dirname, 'fixtures')])
     promise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
       mainModule.createViews()
@@ -586,6 +588,10 @@ describe 'ResultsView', ->
         waitsForPromise -> searchPromise
         runs -> resultsView = getResultsView()
 
+      it "shows the preview-controls", ->
+        previewControls = resultsView.parentView.previewControls
+        expect(previewControls.isVisible()).toBe(true)
+
       it "collapses the selected results view", ->
         # select item in first list
         resultsView.find('.selected').removeClass('selected')
@@ -597,6 +603,12 @@ describe 'ResultsView', ->
         expect(selectedItem).toHaveClass('collapsed')
         expect(selectedItem.element).toBe resultsView.find('.path:eq(0)').element
 
+      it "collapses all results if collapse All button is pressed", ->
+        collapseAll = resultsView.parentView.collapseAll
+        results = resultsView.find('.list-nested-item')
+        collapseAll.click()
+        expect(results).toHaveClass('collapsed')
+
       it "expands the selected results view", ->
         # select item in first list
         resultsView.find('.selected').removeClass('selected')
@@ -607,6 +619,12 @@ describe 'ResultsView', ->
         selectedItem = resultsView.find('.selected')
         expect(selectedItem).toHaveClass('search-result')
         expect(selectedItem[0]).toBe resultsView.find('.path:eq(0) .search-result:first')[0]
+
+      it "expands all results if 'Expand All' button is pressed", ->
+        expandAll = resultsView.parentView.expandAll
+        results = resultsView.find('.list-nested-item')
+        expandAll.click()
+        expect(results).not.toHaveClass('collapsed')
 
       describe "when nothing is selected", ->
         it "doesnt error when the user arrows down", ->
@@ -656,6 +674,17 @@ describe 'ResultsView', ->
         resultsView = getResultsView()
         expect(-> atom.commands.dispatch resultsView.element, 'core:confirm').not.toThrow()
 
+    it "won't show the preview-controls", ->
+      projectFindView.findEditor.setText('thiswillnotmatchanythingintheproject')
+      atom.commands.dispatch projectFindView.element, 'core:confirm'
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        previewControls = getResultsView().parentView.previewControls
+        expect(previewControls.isVisible()).toBe(false)
+
   describe "copying items with core:copy", ->
     [resultsView, openHandler] = []
 
@@ -678,6 +707,40 @@ describe 'ResultsView', ->
       _.times 2, -> atom.commands.dispatch resultsView.element, 'core:move-down'
       atom.commands.dispatch resultsView.element, 'core:copy'
       expect(atom.clipboard.read()).toBe '    return items if items.length <= 1'
+
+  describe "icon-service lifecycle", ->
+    it 'renders file icon classes based on the provided file-icons service', ->
+      fileIconsDisposable = atom.packages.serviceHub.provide 'atom.file-icons', '1.0.0', {
+        iconClassForPath: (path, context) ->
+          expect(context).toBe "find-and-replace"
+          if path.endsWith('sample.js')
+            "first-icon-class second-icon-class"
+          else
+            ['third-icon-class', 'fourth-icon-class']
+      }
+      projectFindView.findEditor.setText('i')
+      atom.commands.dispatch projectFindView.element, 'core:confirm'
+
+      waitsForPromise -> searchPromise
+      runs ->
+        resultsView = getResultsView()
+        fileIconClasses = Array.from(resultsView.find('.path-details .icon').map -> @className)
+        expect(fileIconClasses).toContain('first-icon-class second-icon-class icon')
+        expect(fileIconClasses).toContain('third-icon-class fourth-icon-class icon')
+        expect(fileIconClasses).not.toContain('icon-file-text icon')
+
+      runs ->
+        fileIconsDisposable.dispose()
+        projectFindView.findEditor.setText('e')
+        atom.commands.dispatch projectFindView.element, 'core:confirm'
+
+      waitsForPromise -> searchPromise
+      runs ->
+        resultsView = getResultsView()
+        fileIconClasses = Array.from(resultsView.find('.path-details .icon').map -> @className)
+        expect(fileIconClasses).not.toContain('first-icon-class second-icon-class icon')
+        expect(fileIconClasses).not.toContain('third-icon-class fourth-icon-class icon')
+        expect(fileIconClasses).toContain('icon-file-text icon')
 
   # Keep. Useful for debugging.
   logSelectedIndex = ->

@@ -234,8 +234,8 @@ class FindView extends View
 
   liveSearch: ->
     findPattern = @findEditor.getText()
-    if findPattern.length is 0 or findPattern.length >= atom.config.get('find-and-replace.liveSearchMinimumCharacters')
-      @search(findPattern)
+    if findPattern.length is 0 or findPattern.length >= atom.config.get('find-and-replace.liveSearchMinimumCharacters') and not @model.patternMatchesEmptyString(findPattern)
+      @model.search(findPattern)
 
   search: (findPattern, options) ->
     if arguments.length is 1 and typeof findPattern is 'object'
@@ -307,14 +307,13 @@ class FindView extends View
     if @model.getFindOptions().findPattern
       results = @markers.length
       resultsStr = if results then _.pluralize(results, 'result') else 'No results'
+      this.removeClass('has-results has-no-results')
+      this.addClass(if results then 'has-results' else 'has-no-results')
       @setInfoMessage("#{resultsStr} found for '#{@model.getFindOptions().findPattern}'")
       if @findEditor.hasFocus() and results > 0 and atom.config.get('find-and-replace.scrollToResultOnLiveSearch')
         @findAndSelectResult(@selectFirstMarkerStartingFromCursor, focusEditorAfter: false)
     else
       @clearMessage()
-
-    if @model.getFindOptions().findPattern isnt @findEditor.getText()
-      @findEditor.setText(@model.getFindOptions().findPattern)
 
   findError: (error) =>
     @setErrorMessage(error.message)
@@ -339,6 +338,7 @@ class FindView extends View
     @descriptionLabel.text(errorMessage).addClass('text-error')
 
   clearMessage: ->
+    this.removeClass('has-results has-no-results')
     @descriptionLabel.html('Find in Current Buffer <span class="subtle-info-message">Close this panel with the <span class="highlight">esc</span> key</span>').removeClass('text-error')
 
   selectFirstMarkerAfterCursor: =>
@@ -426,7 +426,9 @@ class FindView extends View
     if editor?.getSelectedText?
       findPattern = editor.getSelectedText() or editor.getWordUnderCursor()
       findPattern = Util.escapeRegex(findPattern) if @model.getFindOptions().useRegex
-      @search(findPattern) if findPattern
+      if findPattern
+        @findEditor.setText(findPattern)
+        @search()
 
   findNextSelected: =>
     @setSelectionAsFindPattern()

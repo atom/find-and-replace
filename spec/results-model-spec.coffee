@@ -10,6 +10,7 @@ describe 'ResultsModel', ->
   [editor, searchPromise, resultsModel, searchPromise] = []
 
   beforeEach ->
+    atom.config.set('core.excludeVcsIgnoredPaths', false)
     atom.project.setPaths([path.join(__dirname, 'fixtures')])
 
     waitsForPromise ->

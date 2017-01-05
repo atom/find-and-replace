@@ -1,10 +1,11 @@
 {$} = require 'atom-space-pen-views'
-{CompositeDisposable, TextBuffer} = require 'atom'
+{CompositeDisposable, Disposable, TextBuffer} = require 'atom'
 
 SelectNext = require './select-next'
 {History, HistoryCycler} = require './history'
 FindOptions = require './find-options'
 BufferSearch = require './buffer-search'
+FileIcons = require './file-icons'
 FindView = require './find-view'
 ProjectFindView = require './project-find-view'
 ResultsModel = require './project/results-model'
@@ -51,7 +52,6 @@ module.exports =
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:use-selection-as-find-pattern', =>
       return if @projectFindPanel?.isVisible() or @findPanel?.isVisible()
       @createViews()
-      showPanel @findPanel, @projectFindPanel, => @findView.focusFindEditor()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:toggle', =>
       @createViews()
@@ -112,6 +112,11 @@ module.exports =
         selectNextObjectForEditorElement(this).undoLastSelection()
       'find-and-replace:select-skip': (event) ->
         selectNextObjectForEditorElement(this).skipCurrentSelection()
+
+  consumeFileIcons: (service) ->
+    FileIcons.setService service
+    new Disposable ->
+      FileIcons.resetService()
 
   provideService: ->
     resultsMarkerLayerForTextEditor: @findModel.resultsMarkerLayerForTextEditor.bind(@findModel)
