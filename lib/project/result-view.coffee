@@ -4,6 +4,7 @@ FileIcons = require '../file-icons'
 MatchView = require './match-view'
 path = require 'path'
 EOL = require('os').EOL
+fs = require 'fs'
 
 module.exports =
 class ResultView extends View
