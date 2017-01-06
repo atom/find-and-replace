@@ -1,8 +1,6 @@
-path = require 'path'
 _ = require 'underscore-plus'
-{$} = require 'atom-space-pen-views'
+path = require 'path'
 temp = require "temp"
-
 ResultsPaneView = require '../lib/project/results-pane'
 FileIcons = require '../lib/file-icons'
 
@@ -26,7 +24,7 @@ describe 'ResultsView', ->
     jasmine.attachToDOM(workspaceElement)
     atom.config.set('core.excludeVcsIgnoredPaths', false)
     atom.project.setPaths([path.join(__dirname, 'fixtures')])
-    promise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
+    activationPromise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
       mainModule.createViews()
       {projectFindView} = mainModule
       spy = spyOn(projectFindView, 'confirm').andCallFake ->
@@ -35,7 +33,7 @@ describe 'ResultsView', ->
     atom.commands.dispatch workspaceElement, 'project-find:show'
 
     waitsForPromise ->
-      promise
+      activationPromise
 
   describe "result sorting", ->
     beforeEach ->
@@ -788,22 +786,8 @@ describe 'ResultsView', ->
         expect(fileIconClasses).not.toContain('third-icon-class fourth-icon-class icon')
         expect(fileIconClasses).toContain('icon-file-text icon')
 
-  # Keep. Useful for debugging.
-  logSelectedIndex = ->
-    paths = resultsView.find('.path')
-    selectedView = resultsView.find('.selected')
-
-    if selectedView.hasClass('path')
-      console.log 'PATH', paths.index(selectedView)
-    else
-      for pathElement, pathIndex in paths
-        index = $(pathElement).find('.search-result').index(selectedView)
-        console.log pathIndex, index if index > -1
-        break
-
 buildMouseEvent = (type, properties...) ->
-  properties = _.extend({bubbles: true, cancelable: true}, properties...)
-  properties.detail ?= 1
+  properties = _.extend({bubbles: true, cancelable: true, detail: 1}, properties...)
   event = new MouseEvent(type, properties)
   Object.defineProperty(event, 'which', get: -> properties.which) if properties.which?
   if properties.target?
