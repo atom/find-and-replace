@@ -1,9 +1,5 @@
-_ = require 'underscore-plus'
 {$} = require 'atom-space-pen-views'
-
 path = require 'path'
-
-# TODO: Remove references to logical display buffer when it gets released.
 
 describe 'FindView', ->
   [workspaceElement, editorView, editor, findView, activationPromise] = []
@@ -12,18 +8,11 @@ describe 'FindView', ->
     workspaceElement.querySelector('.find-and-replace').parentNode
 
   getResultDecorations = (editor, clazz) ->
-    if editor.decorationsStateForScreenRowRange?
-      resultDecorations = []
-      for id, decoration of editor.decorationsStateForScreenRowRange(0, editor.getLineCount())
-        if decoration.properties.class is clazz
-          resultDecorations.push(decoration)
-    else
-      markerIdForDecorations = editor.decorationsForScreenRowRange(0, editor.getLineCount())
-      resultDecorations = []
-      for markerId, decorations of markerIdForDecorations
-        for decoration in decorations
-          resultDecorations.push decoration if decoration.getProperties().class is clazz
-    resultDecorations
+    decorations = []
+    for id, decoration of editor.decorationsStateForScreenRowRange(0, editor.getLineCount())
+      if decoration.properties.class is clazz
+        decorations.push(decoration)
+    decorations
 
   beforeEach ->
     spyOn(atom, 'beep')
@@ -1206,16 +1195,10 @@ describe 'FindView', ->
         expect(findView.descriptionLabel.text()).toContain 'Invalid regular expression'
 
     describe "when another find is called", ->
-      previousMarkers = null
-
-      beforeEach ->
-        previousMarkers = _.clone(editor.getMarkers())
-
       it "clears existing markers for another search", ->
         findView.findEditor.setText('notinthefile')
         atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
         expect(getResultDecorations(editor, 'find-result')).toHaveLength 0
-
 
       it "clears existing markers for an empty search", ->
         findView.findEditor.setText('')
