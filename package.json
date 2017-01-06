@@ -11,6 +11,7 @@
       "project-find:show-in-current-directory",
       "find-and-replace:show",
       "find-and-replace:toggle",
+      "find-and-replace:find-all",
       "find-and-replace:find-next",
       "find-and-replace:find-previous",
       "find-and-replace:find-next-selected",

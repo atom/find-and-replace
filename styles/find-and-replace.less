@@ -118,8 +118,8 @@ atom-workspace.find-visible {
 
 // Buffer find and replace
 .find-and-replace {
-  @button-width: 120px;        // Find + Replace buttons
-  @option-button-width: 200px; // Replace All + option buttons
+  @button-width: 120px;        // Find + Replace + Find All + Replace All buttons
+  @option-button-width: 100px;  // option buttons
   @item-width: 260px;          // wrap block width
 
   .input-block-item {
@@ -128,17 +128,20 @@ atom-workspace.find-visible {
   .input-block-item--flex {
     flex: 100 1 @item-width;
   }
-
-  .btn-group-find,
-  .btn-group-replace {
-    flex: 1 1 @button-width;
-  }
-  .btn-group-replace-all,
-  .btn-group-options {
+  
+  .option-block {
     flex: 1 1 @option-button-width;
   }
 
+  .btn-group-find,
+  .btn-group-replace,
+  .btn-group-find-all,
+  .btn-group-replace-all, {
+    flex: 1 1 @button-width;
+  }
+
   .btn-group-options {
+    flex: 1 1 @option-button-width;
     .btn {
       flex: 1 1 25%;
       padding: 0;
