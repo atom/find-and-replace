@@ -1,4 +1,3 @@
-{$} = require 'atom-space-pen-views'
 path = require 'path'
 
 describe 'FindView', ->
@@ -543,9 +542,7 @@ describe 'FindView', ->
       expect(editor.getSelectedBufferRange()).toEqual [[2, 34], [2, 39]]
 
     it "selects the previous match when the next match button is pressed while holding shift", ->
-      shiftClick = $.Event('click')
-      shiftClick.shiftKey = true
-      findView.nextButton.trigger shiftClick
+      findView.nextButton[0].dispatchEvent(new MouseEvent('click', {shiftKey: true}))
       expect(findView.resultCounter.text()).toEqual('1 of 6')
       expect(editor.getSelectedBufferRange()).toEqual [[1, 22], [1, 27]]
 
@@ -1292,7 +1289,7 @@ describe 'FindView', ->
 
       describe "when the replace next button is pressed", ->
         it "replaces the match after the cursor and selects the next match", ->
-          $('.find-and-replace .btn-next').click()
+          findView[0].querySelector('.btn-next').click()
           expect(findView.resultCounter.text()).toEqual('2 of 5')
           expect(editor.lineTextForBufferRow(2)).toBe "    if (cats.length <= 1) return items;"
           expect(editor.getSelectedBufferRange()).toEqual [[2, 33], [2, 38]]
@@ -1317,14 +1314,14 @@ describe 'FindView', ->
     describe "replace all", ->
       describe "when the replace all button is pressed", ->
         it "replaces all matched text", ->
-          $('.find-and-replace .btn-all').click()
+          findView[0].querySelector('.btn-all').click()
           expect(findView.resultCounter.text()).toEqual('no results')
           expect(editor.getText()).not.toMatch /items/
           expect(editor.getText().match(/\bcats\b/g)).toHaveLength 6
           expect(editor.getSelectedBufferRange()).toEqual [[2, 0], [2, 0]]
 
         it "all changes are undoable in one transaction", ->
-          $('.find-and-replace .btn-all').click()
+          findView[0].querySelector('.btn-all').click()
           editor.undo()
           expect(editor.getText()).not.toMatch /\bcats\b/g
 
