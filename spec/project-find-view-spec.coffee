@@ -3,14 +3,16 @@ path = require 'path'
 temp = require 'temp'
 _ = require 'underscore-plus'
 fs = require 'fs-plus'
-
+{TextBuffer} = require 'atom'
 ResultsPaneView = require '../lib/project/results-pane'
 
 # Default to 30 second promises
 waitsForPromise = (fn) -> window.waitsForPromise timeout: 30000, fn
 
 describe 'ProjectFindView', ->
-  [activationPromise, editor, editorView, projectFindView, searchPromise, workspaceElement, mainModule, stoppedChangingDelay] = []
+  stoppedChangingDelay = TextBuffer::stoppedChangingDelay
+  [activationPromise, searchPromise] = []
+  [editor, editorElement, findView, projectFindView, workspaceElement] = []
 
   getAtomPanel = ->
     workspaceElement.querySelector('.project-find').parentNode
@@ -23,15 +25,12 @@ describe 'ProjectFindView', ->
   beforeEach ->
     workspaceElement = atom.views.getView(atom.workspace)
     atom.config.set('core.excludeVcsIgnoredPaths', false)
-    atom.project.setPaths([path.join(__dirname, 'fixtures')])
+    atom.project.setPaths([path.join(__dirname,   'fixtures')])
     jasmine.attachToDOM(workspaceElement)
 
-    atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'none')
-    activationPromise = atom.packages.activatePackage("find-and-replace").then (options) ->
-      mainModule = options.mainModule
+    activationPromise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
       mainModule.createViews()
-      {projectFindView} = mainModule
-      stoppedChangingDelay = projectFindView.findEditor.getModel().getBuffer().stoppedChangingDelay
+      {findView, projectFindView} = mainModule
       spy = spyOn(projectFindView, 'search').andCallFake ->
         searchPromise = spy.originalValue.apply(projectFindView, arguments)
         searchPromise
@@ -273,7 +272,7 @@ describe 'ProjectFindView', ->
 
       runs ->
         editor = atom.workspace.getActiveTextEditor()
-        editorView = atom.views.getView(editor)
+        editorElement = atom.views.getView(editor)
         atom.commands.dispatch(workspaceElement, 'project-find:show')
 
       waitsForPromise ->
@@ -364,7 +363,7 @@ describe 'ProjectFindView', ->
     describe "splitting into a second pane", ->
       beforeEach ->
         workspaceElement.style.height = '1000px'
-        atom.commands.dispatch editorView, 'project-find:show'
+        atom.commands.dispatch editorElement, 'project-find:show'
 
       it "splits when option is right", ->
         initialPane = atom.workspace.getActivePane()
@@ -456,7 +455,7 @@ describe 'ProjectFindView', ->
 
     describe "serialization", ->
       it "serializes if the case, regex and whole word options", ->
-        atom.commands.dispatch editorView, 'project-find:show'
+        atom.commands.dispatch editorElement, 'project-find:show'
         expect(projectFindView.caseOptionButton).not.toHaveClass('selected')
         projectFindView.caseOptionButton.click()
         expect(projectFindView.caseOptionButton).toHaveClass('selected')
@@ -475,7 +474,7 @@ describe 'ProjectFindView', ->
           mainModule.createViews()
           {projectFindView} = mainModule
 
-        atom.commands.dispatch editorView, 'project-find:show'
+        atom.commands.dispatch editorElement, 'project-find:show'
 
         waitsForPromise ->
           activationPromise
@@ -487,7 +486,7 @@ describe 'ProjectFindView', ->
 
     describe "description label", ->
       beforeEach ->
-        atom.commands.dispatch editorView, 'project-find:show'
+        atom.commands.dispatch editorElement, 'project-find:show'
 
       it "indicates that it's searching, then shows the results", ->
         projectFindView.findEditor.setText('item')
@@ -538,7 +537,7 @@ describe 'ProjectFindView', ->
 
     describe "regex", ->
       beforeEach ->
-        atom.commands.dispatch editorView, 'project-find:show'
+        atom.commands.dispatch editorElement, 'project-find:show'
         projectFindView.findEditor.setText('i(\\w)ems+')
         spyOn(atom.workspace, 'scan').andCallFake -> Promise.resolve()
 
@@ -598,7 +597,7 @@ describe 'ProjectFindView', ->
 
     describe "case sensitivity", ->
       beforeEach ->
-        atom.commands.dispatch editorView, 'project-find:show'
+        atom.commands.dispatch editorElement, 'project-find:show'
         spyOn(atom.workspace, 'scan').andCallFake -> Promise.resolve()
         projectFindView.findEditor.setText('ITEMS')
         atom.commands.dispatch(projectFindView[0], 'core:confirm')
@@ -631,7 +630,7 @@ describe 'ProjectFindView', ->
 
     describe "whole word", ->
       beforeEach ->
-        atom.commands.dispatch editorView, 'project-find:show'
+        atom.commands.dispatch editorElement, 'project-find:show'
         spyOn(atom.workspace, 'scan').andCallFake -> Promise.resolve()
         projectFindView.findEditor.setText('wholeword')
         atom.commands.dispatch(projectFindView[0], 'core:confirm')
@@ -953,12 +952,10 @@ describe 'ProjectFindView', ->
           expect(atom.workspace.scan).toHaveBeenCalled()
 
       it "shares the buffers and history cyclers between both buffer and project views", ->
-        {findView} = mainModule
-
         projectFindView.findEditor.setText('findme')
         projectFindView.replaceEditor.setText('replaceme')
 
-        atom.commands.dispatch editorView, 'find-and-replace:show'
+        atom.commands.dispatch editorElement, 'find-and-replace:show'
         expect(findView.findEditor.getText()).toBe 'findme'
         expect(findView.replaceEditor.getText()).toBe 'replaceme'
 
@@ -974,7 +971,7 @@ describe 'ProjectFindView', ->
         findView.replaceEditor.setText('')
 
         # Back to the project view to make sure we're using the same cycler
-        atom.commands.dispatch editorView, 'project-find:show'
+        atom.commands.dispatch editorElement, 'project-find:show'
 
         expect(projectFindView.findEditor.getText()).toBe ''
         atom.commands.dispatch(projectFindView.findEditor.element, 'core:move-up')
@@ -1459,7 +1456,7 @@ describe 'ProjectFindView', ->
 
         runs ->
           editor = atom.workspace.getActiveTextEditor()
-          editorView = atom.views.getView(editor)
+          editorElement = atom.views.getView(editor)
           atom.commands.dispatch(workspaceElement, 'project-find:show')
 
         waitsForPromise ->
@@ -1473,7 +1470,7 @@ describe 'ProjectFindView', ->
           searchPromise
 
       it "doesn't open another panel even if the active pane is vertically split", ->
-        atom.commands.dispatch(editorView, 'pane:split-down')
+        atom.commands.dispatch(editorElement, 'pane:split-down')
         projectFindView.findEditor.setText('items')
         atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
@@ -1492,7 +1489,7 @@ describe 'ProjectFindView', ->
 
         runs ->
           editor = atom.workspace.getActiveTextEditor()
-          editorView = atom.views.getView(editor)
+          editorElement = atom.views.getView(editor)
           atom.commands.dispatch(workspaceElement, 'project-find:show')
 
         waitsForPromise ->
@@ -1506,7 +1503,7 @@ describe 'ProjectFindView', ->
           searchPromise
 
       it "doesn't open another panel even if the active pane is horizontally split", ->
-        atom.commands.dispatch(editorView, 'pane:split-right')
+        atom.commands.dispatch(editorElement, 'pane:split-right')
         projectFindView.findEditor.setText('items')
         atom.commands.dispatch(projectFindView[0], 'core:confirm')
 
