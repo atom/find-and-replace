@@ -1,9 +1,7 @@
 os = require 'os'
 path = require 'path'
 temp = require 'temp'
-
 _ = require 'underscore-plus'
-{$, View} = require 'atom-space-pen-views'
 fs = require 'fs-plus'
 
 ResultsPaneView = require '../lib/project/results-pane'
@@ -12,7 +10,7 @@ ResultsPaneView = require '../lib/project/results-pane'
 waitsForPromise = (fn) -> window.waitsForPromise timeout: 30000, fn
 
 describe 'ProjectFindView', ->
-  [activationPromise, editor, editorView, projectFindView, searchPromise, resultsPane, workspaceElement, mainModule, stoppedChangingDelay] = []
+  [activationPromise, editor, editorView, projectFindView, searchPromise, workspaceElement, mainModule, stoppedChangingDelay] = []
 
   getAtomPanel = ->
     workspaceElement.querySelector('.project-find').parentNode
@@ -36,7 +34,6 @@ describe 'ProjectFindView', ->
       stoppedChangingDelay = projectFindView.findEditor.getModel().getBuffer().stoppedChangingDelay
       spy = spyOn(projectFindView, 'search').andCallFake ->
         searchPromise = spy.originalValue.apply(projectFindView, arguments)
-        resultsPane = $(workspaceElement).find('.preview-pane').view()
         searchPromise
 
   describe "when project-find:show is triggered", ->
@@ -179,39 +176,42 @@ describe 'ProjectFindView', ->
   describe "when project-find:show-in-current-directory is triggered", ->
     [nested, tree, projectPath] = []
 
-    class DirElement extends View
-      @content: (path) ->
-        @div class: 'directory', =>
-          @div class: 'nested-thing', =>
-            @span outlet: 'name', class: 'name', 'data-path': path, path
-            @ul outlet: 'files', class: 'files'
-      initialize: (@path) ->
-      createFiles: (names) ->
-        for name in names
-          @files.append(new FileElement(path.join(@path, name), name))
-
-    class FileElement extends View
-      @content: (path, name) ->
-        @li class: 'file', 'data-path': path, =>
-          @span outlet: 'name', class: 'name', name
-      initialize: (path) ->
-        fs.writeFileSync(path, '')
-
     beforeEach ->
       projectPath = temp.mkdirSync("atom")
       atom.project.setPaths([projectPath])
-      p = atom.project.getPaths()[0]
-      tree = new DirElement(p)
-      tree.createFiles(['one.js', 'two.js'])
 
-      nested = new DirElement(path.join(p, 'nested'))
-      nested.createFiles(['another.js'])
+      tree = document.createElement('div')
+      tree.className = 'directory'
+      tree.innerHTML = """
+        <div>
+          <span class='name' data-path='#{projectPath}'>#{projectPath}</span>
+          <ul class='files'>
+            <li class='file' data-path='#{path.join(projectPath, 'one.js')}'>
+              <span class='name'>one.js</span>
+            </li>
+            <li class='file' data-path='#{path.join(projectPath, 'two.js')}'>
+              <span class='name'>two.js</span>
+            </li>
+            <div class='directory'>
+              <div>
+                <span class='name' data-path='#{path.join(projectPath, 'nested')}'>nested</span>
+                <ul class='files'>
+                  <li class='file' data-path='#{path.join(projectPath, 'nested', 'another.js')}'>
+                    <span class='name'>another.js</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </ul>
+        </div>
+      """
 
-      tree.files.append(nested)
-      workspaceElement.appendChild(tree[0])
+      nested = tree.querySelector('.directory')
+
+      workspaceElement.appendChild(tree)
 
     it "populates the pathsEditor when triggered with a directory", ->
-      atom.commands.dispatch nested.name[0], 'project-find:show-in-current-directory'
+      atom.commands.dispatch nested.querySelector('.name'), 'project-find:show-in-current-directory'
 
       waitsForPromise ->
         activationPromise
@@ -221,11 +221,11 @@ describe 'ProjectFindView', ->
         expect(projectFindView.pathsEditor.getText()).toBe('nested')
         expect(projectFindView.findEditor).toHaveFocus()
 
-        atom.commands.dispatch tree.name[0], 'project-find:show-in-current-directory'
+        atom.commands.dispatch tree.querySelector('.name'), 'project-find:show-in-current-directory'
         expect(projectFindView.pathsEditor.getText()).toBe('')
 
     it "populates the pathsEditor when triggered on a directory's name", ->
-      atom.commands.dispatch nested[0], 'project-find:show-in-current-directory'
+      atom.commands.dispatch nested, 'project-find:show-in-current-directory'
 
       waitsForPromise ->
         activationPromise
@@ -235,11 +235,11 @@ describe 'ProjectFindView', ->
         expect(projectFindView.pathsEditor.getText()).toBe('nested')
         expect(projectFindView.findEditor).toHaveFocus()
 
-        atom.commands.dispatch tree.name[0], 'project-find:show-in-current-directory'
+        atom.commands.dispatch tree.querySelector('.name'), 'project-find:show-in-current-directory'
         expect(projectFindView.pathsEditor.getText()).toBe('')
 
     it "populates the pathsEditor when triggered on a file", ->
-      atom.commands.dispatch nested.files.find('> .file:eq(0)').view().name[0], 'project-find:show-in-current-directory'
+      atom.commands.dispatch nested.querySelector('.file .name'), 'project-find:show-in-current-directory'
 
       waitsForPromise ->
         activationPromise
@@ -249,7 +249,7 @@ describe 'ProjectFindView', ->
         expect(projectFindView.pathsEditor.getText()).toBe('nested')
         expect(projectFindView.findEditor).toHaveFocus()
 
-        atom.commands.dispatch tree.files.find('> .file:eq(0)').view().name[0], 'project-find:show-in-current-directory'
+        atom.commands.dispatch tree.querySelector('.file .name'), 'project-find:show-in-current-directory'
         expect(projectFindView.pathsEditor.getText()).toBe('')
 
     describe "when there are multiple root directories", ->
@@ -257,7 +257,7 @@ describe 'ProjectFindView', ->
         atom.project.addPath(temp.mkdirSync("another-path-"))
 
       it "includes the basename of the containing root directory in the paths-editor", ->
-        atom.commands.dispatch nested.files.find('> .file:eq(0)').view().name[0], 'project-find:show-in-current-directory'
+        atom.commands.dispatch nested.querySelector('.file .name'), 'project-find:show-in-current-directory'
 
         waitsForPromise ->
           activationPromise
