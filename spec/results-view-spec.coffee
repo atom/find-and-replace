@@ -750,7 +750,7 @@ describe 'ResultsView', ->
     it "copies the selected file path to clipboard", ->
       atom.commands.dispatch resultsView.element, 'find-and-replace:copy-path'
       expect(atom.clipboard.read()).toBe('sample.coffee')
-      _.times 1, -> atom.commands.dispatch resultsView.element, 'core:move-down'
+      atom.commands.dispatch resultsView.element, 'core:move-down'
       atom.commands.dispatch resultsView.element, 'find-and-replace:copy-path'
       expect(atom.clipboard.read()).toBe('sample.js')
 
