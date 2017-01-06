@@ -2,7 +2,7 @@
   "name": "find-and-replace",
   "main": "./lib/find",
   "description": "Find and replace within buffers and across the project.",
-  "version": "0.203.0",
+  "version": "0.205.1",
   "license": "MIT",
   "activationCommands": {
     "atom-workspace": [
@@ -31,7 +31,7 @@
   "dependencies": {
     "atom-space-pen-views": "^2.1.0",
     "fs-plus": "2.x",
-    "temp": "0.8.1",
+    "temp": "^0.8.3",
     "underscore-plus": "1.x"
   },
   "devDependencies": {
@@ -58,10 +58,12 @@
       "default": false,
       "description": "Focus the editor and select the next match when a file search is executed. If no matches are found, the editor will not be focused."
     },
-    "openProjectFindResultsInRightPane": {
-      "type": "boolean",
-      "default": false,
-      "description": "When a project-wide search is executed, open the results in a split pane instead of a tab in the same pane."
+    "projectSearchResultsPaneSplitDirection": {
+      "type": "string",
+      "default": "none",
+      "enum": ["none", "right", "down"],
+      "title": "Direction to open results pane",
+      "description": "Direction to split the active pane when showing project search results. If 'none', the results will be shown in the active pane."
     },
     "closeFindPanelAfterSearch": {
       "type": "boolean",

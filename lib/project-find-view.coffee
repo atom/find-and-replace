@@ -1,19 +1,17 @@
 fs = require 'fs-plus'
 path = require 'path'
 _ = require 'underscore-plus'
-{Disposable, CompositeDisposable} = require 'atom'
+{TextEditor, Disposable, CompositeDisposable} = require 'atom'
 {$, $$$, View, TextEditorView} = require 'atom-space-pen-views'
 
 Util = require './project/util'
 ResultsModel = require './project/results-model'
 ResultsPaneView = require './project/results-pane'
 
-buildTextEditor = require './build-text-editor'
-
 module.exports =
 class ProjectFindView extends View
   @content: (model, {findBuffer, replaceBuffer, pathsBuffer}) ->
-    findEditor = buildTextEditor
+    findEditor = new TextEditor
       mini: true
       tabLength: 2
       softTabs: true
@@ -21,7 +19,7 @@ class ProjectFindView extends View
       buffer: findBuffer
       placeholderText: 'Find in project'
 
-    replaceEditor = buildTextEditor
+    replaceEditor = new TextEditor
       mini: true
       tabLength: 2
       softTabs: true
@@ -29,7 +27,7 @@ class ProjectFindView extends View
       buffer: replaceBuffer
       placeholderText: 'Replace in project'
 
-    pathsEditor = buildTextEditor
+    pathsEditor = new TextEditor
       mini: true
       tabLength: 2
       softTabs: true
@@ -302,7 +300,8 @@ class ProjectFindView extends View
 
   showResultPane: ->
     options = {searchAllPanes: true}
-    options.split = 'right' if atom.config.get('find-and-replace.openProjectFindResultsInRightPane')
+    openDirection = atom.config.get('find-and-replace.projectSearchResultsPaneSplitDirection')
+    options.split = openDirection unless openDirection is 'none'
     atom.workspace.open(ResultsPaneView.URI, options)
 
   onFinishedReplacing: (results) ->
@@ -315,6 +314,7 @@ class ProjectFindView extends View
     @setInfoMessage(message)
 
   clearMessages: ->
+    this.removeClass('has-results has-no-results')
     @setInfoMessage('Find in Project <span class="subtle-info-message">Close this panel with the <span class="highlight">esc</span> key</span>').removeClass('text-error')
     @replacmentInfoBlock.hide()
 

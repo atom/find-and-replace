@@ -349,6 +349,18 @@ describe 'FindView', ->
         atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:confirm')
         expect(getResultDecorations(editor, 'find-result')).toHaveLength 5
 
+    describe "when no results are found", ->
+      it "adds a .has-no-results class", ->
+        findView.findEditor.setText 'notinthefile'
+        atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:confirm')
+        expect(findView).toHaveClass 'has-no-results'
+
+    describe "when results are found", ->
+      it "adds a .has-results class", ->
+        findView.findEditor.setText 'items'
+        atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:confirm')
+        expect(findView).toHaveClass 'has-results'
+
     describe "when the find string contains an escaped char", ->
       beforeEach ->
         editor.setText("\t\n\\t\\\\")
@@ -679,7 +691,6 @@ describe 'FindView', ->
         atom.workspace.destroyActivePane()
         atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
         expect(findView.findEditor.getText()).toBe 'sort'
-        expect(editor.getSelectedBufferRange()).toEqual [[8, 11], [8, 15]]
 
       it "places the word under the cursor into the find editor", ->
         editor.setSelectedBufferRange([[1, 8], [1, 8]])
@@ -808,13 +819,8 @@ describe 'FindView', ->
           newEditor = null
 
           waitsForPromise ->
-            opener =
-              if atom.workspace.buildTextEditor?
-                atom.workspace.open('sample.coffee', activateItem: false)
-              else
-                atom.project.open('sample.coffee')
-
-            opener.then (o) -> newEditor = o
+            atom.workspace.open('sample.coffee', activateItem: false).then (o) ->
+              newEditor = o
 
           runs ->
             newEditor = atom.workspace.paneForItem(editor).splitRight(items: [newEditor]).getActiveItem()
@@ -1183,6 +1189,21 @@ describe 'FindView', ->
         advance()
         expect(findView.descriptionLabel.text()).toContain "20 results"
         expect(findView).toHaveFocus()
+
+      it "doesn't live search on a regex that matches empty string", ->
+        expect(findView.descriptionLabel.text()).toContain "6 results"
+        atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
+        findView.findEditor.setText 'asdf|'
+        advance()
+        expect(findView.descriptionLabel.text()).toContain "6 results"
+
+      it "doesn't live search on a invalid regex", ->
+        expect(findView.descriptionLabel.text()).toContain "6 results"
+        atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
+        findView.findEditor.setText('\\(.*)')
+        advance()
+        expect(findView.descriptionLabel).toHaveClass 'text-error'
+        expect(findView.descriptionLabel.text()).toContain 'Invalid regular expression'
 
     describe "when another find is called", ->
       previousMarkers = null

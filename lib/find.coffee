@@ -1,5 +1,5 @@
 {$} = require 'atom-space-pen-views'
-{CompositeDisposable, TextBuffer} = require 'atom'
+{CompositeDisposable, Disposable, TextBuffer} = require 'atom'
 
 SelectNext = require './select-next'
 {History, HistoryCycler} = require './history'
@@ -13,6 +13,11 @@ ResultsPaneView = require './project/results-pane'
 
 module.exports =
   activate: ({findOptions, findHistory, replaceHistory, pathsHistory}={}) ->
+    # Convert old config setting for backward compatibility.
+    if atom.config.get('find-and-replace.openProjectFindResultsInRightPane')
+      atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'right')
+    atom.config.unset('find-and-replace.openProjectFindResultsInRightPane')
+
     atom.workspace.addOpener (filePath) ->
       new ResultsPaneView() if filePath is ResultsPaneView.URI
 
@@ -52,7 +57,6 @@ module.exports =
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:use-selection-as-find-pattern', =>
       return if @projectFindPanel?.isVisible() or @findPanel?.isVisible()
       @createViews()
-      showPanel @findPanel, @projectFindPanel, => @findView.focusFindEditor()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:toggle', =>
       @createViews()
@@ -116,7 +120,7 @@ module.exports =
 
   consumeFileIcons: (service) ->
     FileIcons.setService service
-    @subscriptions.add service.onWillDeactivate ->
+    new Disposable ->
       FileIcons.resetService()
 
   provideService: ->

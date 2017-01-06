@@ -1,12 +1,12 @@
 BufferSearch = require '../lib/buffer-search'
 FindOptions = require '../lib/find-options'
-buildTextEditor = require '../lib/build-text-editor'
+{TextEditor} = require 'atom'
 
 describe "BufferSearch", ->
   [model, editor, markersListener, currentResultListener] = []
 
   beforeEach ->
-    editor = buildTextEditor()
+    editor = new TextEditor()
     spyOn(editor, 'scanInBufferRange').andCallThrough()
 
     editor.setText """
@@ -20,6 +20,7 @@ describe "BufferSearch", ->
       ccc ddd aaa
       -----------
     """
+    advanceClock(editor.buffer.stoppedChangingDelay)
 
     findOptions = new FindOptions
     model = new BufferSearch(findOptions)
@@ -410,8 +411,11 @@ describe "BufferSearch", ->
         [[7, 8], [7, 11]]
       ]
 
-      editor.setSelectedBufferRange(markers[2].getBufferRange())
-      expect(currentResultListener).toHaveBeenCalledWith(markers[2])
+      markerToSelect = markers[2]
+      rangeToSelect = markerToSelect.getBufferRange()
+
+      editor.setSelectedBufferRange(rangeToSelect)
+      expect(currentResultListener).toHaveBeenCalledWith(markerToSelect)
       currentResultListener.reset()
 
       advanceClock(editor.buffer.stoppedChangingDelay)
@@ -429,7 +433,7 @@ describe "BufferSearch", ->
       ]
 
       expect(currentResultListener).toHaveBeenCalled()
-      expect(currentResultListener.mostRecentCall.args[0].getBufferRange()).toEqual markers[2].getBufferRange()
+      expect(currentResultListener.mostRecentCall.args[0].getBufferRange()).toEqual rangeToSelect
       expect(currentResultListener.mostRecentCall.args[0].isDestroyed()).toBe false
 
     it "replaces the marked text with the given string that contains escaped escape sequence", ->
@@ -461,7 +465,7 @@ describe "BufferSearch", ->
       for marker in layer1.findMarkers()
         expect(editor.getTextInBufferRange(marker.getBufferRange())).toMatch /a+/
 
-      editor2 = buildTextEditor()
+      editor2 = new TextEditor()
       model.setEditor(editor2)
       layer2 = model.resultsMarkerLayerForTextEditor(editor2)
 

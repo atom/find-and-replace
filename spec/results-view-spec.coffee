@@ -24,6 +24,7 @@ describe 'ResultsView', ->
     workspaceElement = atom.views.getView(atom.workspace)
     workspaceElement.style.height = '1000px'
     jasmine.attachToDOM(workspaceElement)
+    atom.config.set('core.excludeVcsIgnoredPaths', false)
     atom.project.setPaths([path.join(__dirname, 'fixtures')])
     promise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
       mainModule.createViews()
@@ -440,9 +441,19 @@ describe 'ResultsView', ->
       runs ->
         expect(atom.views.getView(editor)).toHaveFocus()
 
-    describe "when `openProjectFindResultsInRightPane` option is true", ->
+    describe "when `projectSearchResultsPaneSplitDirection` option is none", ->
       beforeEach ->
-        atom.config.set('find-and-replace.openProjectFindResultsInRightPane', true)
+        atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'none')
+
+      it "does not specify a pane to split", ->
+        spyOn(atom.workspace, 'open').andCallThrough()
+        atom.commands.dispatch resultsView.element, 'core:move-down'
+        atom.commands.dispatch resultsView.element, 'core:confirm'
+        expect(atom.workspace.open.mostRecentCall.args[1]).toEqual {}
+
+    describe "when `projectSearchResultsPaneSplitDirection` option is right", ->
+      beforeEach ->
+        atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'right')
 
       it "always opens the file in the left pane", ->
         spyOn(atom.workspace, 'open').andCallThrough()
@@ -463,15 +474,28 @@ describe 'ResultsView', ->
           runs ->
             expect(atom.views.getView(editor)).toHaveFocus()
 
-    describe "when `openProjectFindResultsInRightPane` option is false", ->
+    describe "when `projectSearchResultsPaneSplitDirection` option is down", ->
       beforeEach ->
-        atom.config.set('find-and-replace.openProjectFindResultsInRightPane', false)
+        atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'down')
 
-      it "does not specify a pane to split", ->
+      it "always opens the file in the up pane", ->
         spyOn(atom.workspace, 'open').andCallThrough()
         atom.commands.dispatch resultsView.element, 'core:move-down'
         atom.commands.dispatch resultsView.element, 'core:confirm'
-        expect(atom.workspace.open.mostRecentCall.args[1]).toEqual {}
+        expect(atom.workspace.open.mostRecentCall.args[1].split).toBe 'up'
+
+      describe "when a search result is single-clicked", ->
+        it "opens the file containing the result in pending state", ->
+          pathNode = resultsView.find(".search-result")[0]
+          pathNode.dispatchEvent(buildMouseEvent('mousedown', target: pathNode, which: 1))
+          editor = null
+          waitsFor ->
+            editor = atom.workspace.getActiveTextEditor()
+          waitsFor ->
+            atom.workspace.getActivePane().getPendingItem() is editor
+
+          runs ->
+            expect(atom.views.getView(editor)).toHaveFocus()
 
   describe "arrowing through the list", ->
     it "arrows through the entire list without selecting paths and overshooting the boundaries", ->
@@ -587,6 +611,10 @@ describe 'ResultsView', ->
         waitsForPromise -> searchPromise
         runs -> resultsView = getResultsView()
 
+      it "shows the preview-controls", ->
+        previewControls = resultsView.parentView.previewControls
+        expect(previewControls.isVisible()).toBe(true)
+
       it "collapses the selected results view", ->
         # select item in first list
         resultsView.find('.selected').removeClass('selected')
@@ -598,6 +626,12 @@ describe 'ResultsView', ->
         expect(selectedItem).toHaveClass('collapsed')
         expect(selectedItem.element).toBe resultsView.find('.path:eq(0)').element
 
+      it "collapses all results if collapse All button is pressed", ->
+        collapseAll = resultsView.parentView.collapseAll
+        results = resultsView.find('.list-nested-item')
+        collapseAll.click()
+        expect(results).toHaveClass('collapsed')
+
       it "expands the selected results view", ->
         # select item in first list
         resultsView.find('.selected').removeClass('selected')
@@ -608,6 +642,12 @@ describe 'ResultsView', ->
         selectedItem = resultsView.find('.selected')
         expect(selectedItem).toHaveClass('search-result')
         expect(selectedItem[0]).toBe resultsView.find('.path:eq(0) .search-result:first')[0]
+
+      it "expands all results if 'Expand All' button is pressed", ->
+        expandAll = resultsView.parentView.expandAll
+        results = resultsView.find('.list-nested-item')
+        expandAll.click()
+        expect(results).not.toHaveClass('collapsed')
 
       describe "when nothing is selected", ->
         it "doesnt error when the user arrows down", ->
@@ -657,6 +697,17 @@ describe 'ResultsView', ->
         resultsView = getResultsView()
         expect(-> atom.commands.dispatch resultsView.element, 'core:confirm').not.toThrow()
 
+    it "won't show the preview-controls", ->
+      projectFindView.findEditor.setText('thiswillnotmatchanythingintheproject')
+      atom.commands.dispatch projectFindView.element, 'core:confirm'
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        previewControls = getResultsView().parentView.previewControls
+        expect(previewControls.isVisible()).toBe(false)
+
   describe "copying items with core:copy", ->
     [resultsView, openHandler] = []
 
@@ -704,58 +755,38 @@ describe 'ResultsView', ->
       expect(atom.clipboard.read()).toBe('sample.js')
 
   describe "icon-service lifecycle", ->
-    beforeEach ->
-      projectFindView.findEditor.setText('i')
-      atom.commands.dispatch projectFindView.element, 'core:confirm'
-
-    it "displays default file-icons", ->
-      waitsForPromise -> searchPromise
-
-      runs ->
-        resultsView = getResultsView()
-        expect(resultsView.find('.path-details .icon-file-text')).not.toHaveLength 0
-
-    it "allows the service to be overridden", ->
-      service = iconClassForPath: -> ""
-      FileIcons.setService(service)
-      expect(FileIcons.getService()).toBe(service)
-
-    it "allows an overridden service to be reset", ->
-      service = iconClassForPath: -> ""
-      FileIcons.setService(service)
-      FileIcons.resetService()
-      expect(FileIcons.getService()).not.toBe(service)
-
-  describe "handling of multiple icon-classes", ->
-    beforeEach ->
-      service =
+    it 'renders file icon classes based on the provided file-icons service', ->
+      fileIconsDisposable = atom.packages.serviceHub.provide 'atom.file-icons', '1.0.0', {
         iconClassForPath: (path, context) ->
           expect(context).toBe "find-and-replace"
-          "first second"
-      FileIcons.setService(service)
+          if path.endsWith('sample.js')
+            "first-icon-class second-icon-class"
+          else
+            ['third-icon-class', 'fourth-icon-class']
+      }
       projectFindView.findEditor.setText('i')
       atom.commands.dispatch projectFindView.element, 'core:confirm'
 
-    it "allows multiple classes to be passed as a string", ->
       waitsForPromise -> searchPromise
-
       runs ->
         resultsView = getResultsView()
-        expect(resultsView.find('.path-details .icon.first.second')).not.toHaveLength 0
-
-  describe "handling of icon-class arrays", ->
-    beforeEach ->
-      service = iconClassForPath: -> ["uno", "dos", "tres"]
-      FileIcons.setService(service)
-      projectFindView.findEditor.setText('i')
-      atom.commands.dispatch projectFindView.element, 'core:confirm'
-
-    it "allows multiple classes to be passed as a string", ->
-      waitsForPromise -> searchPromise
+        fileIconClasses = Array.from(resultsView.find('.path-details .icon').map -> @className)
+        expect(fileIconClasses).toContain('first-icon-class second-icon-class icon')
+        expect(fileIconClasses).toContain('third-icon-class fourth-icon-class icon')
+        expect(fileIconClasses).not.toContain('icon-file-text icon')
 
       runs ->
+        fileIconsDisposable.dispose()
+        projectFindView.findEditor.setText('e')
+        atom.commands.dispatch projectFindView.element, 'core:confirm'
+
+      waitsForPromise -> searchPromise
+      runs ->
         resultsView = getResultsView()
-        expect(resultsView.find('.path-details .icon.uno.dos.tres')).not.toHaveLength 0
+        fileIconClasses = Array.from(resultsView.find('.path-details .icon').map -> @className)
+        expect(fileIconClasses).not.toContain('first-icon-class second-icon-class icon')
+        expect(fileIconClasses).not.toContain('third-icon-class fourth-icon-class icon')
+        expect(fileIconClasses).toContain('icon-file-text icon')
 
   # Keep. Useful for debugging.
   logSelectedIndex = ->
