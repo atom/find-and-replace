@@ -8,10 +8,6 @@ module.exports =
 class MatchView extends View
   @content: (model, {filePath, match}) ->
     range = Range.fromObject(match.range)
-    matchStart = range.start.column - match.lineTextOffset
-    matchEnd = range.end.column - match.lineTextOffset
-    prefix = match.lineText[0...matchStart]
-    suffix = match.lineText[matchEnd..]
     contextBefore = match.contextBefore or []
     contextAfter = match.contextAfter or []
 
@@ -25,10 +21,12 @@ class MatchView extends View
       @div class: 'matching-line', =>
         @span range.start.row + 1, class: 'line-number text-subtle'
         @span class: 'preview', outlet: 'preview', =>
-          @span prefix
-          @span match.matchText, class: 'match highlight-info', outlet: 'matchText'
-          @span match.matchText, class: 'replacement highlight-success', outlet: 'replacementText'
-          @span suffix
+          for rangeIndex in [0...@rangesCount(match)]
+            [prefix, matchText, suffix] = @getPrefixAndSuffix(match, rangeIndex)
+            @span prefix
+            @span matchText, class: 'match highlight-info', outlet: 'matchText'
+            @span '', class: 'replacement', outlet: 'replacementText'
+            @span suffix
       for i in [0...contextAfter.length]
         line = contextAfter[i]
         @div class: 'context context-after', =>
@@ -36,6 +34,39 @@ class MatchView extends View
           @span line, class: 'preview', outlet: 'preview'
       if match.gapAfter
         @div '...', class: 'context gap-after'
+
+  @rangesCount: (match) ->
+    1 + (match.extraRanges or []).length
+
+  @getPrefixAndSuffix: (match, rangeIndex) ->
+    prevRange = @getRange(match, rangeIndex - 1)
+    range = @getRange(match, rangeIndex)
+    nextRange = @getRange(match, rangeIndex + 1)
+
+    matchStart = range.start.column - match.lineTextOffset
+    matchEnd = range.end.column - match.lineTextOffset
+
+    matchText = match.lineText[matchStart...matchEnd]
+
+    if !prevRange
+      prefix = match.lineText[0...matchStart]
+    else
+      prefix = ''
+
+    if !nextRange
+      suffix = match.lineText[matchEnd..]
+    else
+      nextMatchStart = nextRange.start.column - match.lineTextOffset
+      suffix = match.lineText[matchEnd...nextMatchStart]
+
+    [prefix, matchText, suffix]
+
+  @getRange: (match, rangeIndex) ->
+    if rangeIndex == 0
+      Range.fromObject(match.range)
+    else if rangeIndex > 0 && match.extraRanges && (rangeIndex - 1 < match.extraRanges.length)
+      Range.fromObject(match.extraRanges[rangeIndex - 1])
+
 
   initialize: (@model, {@filePath, @match}) ->
     @render()

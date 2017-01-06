@@ -48,11 +48,28 @@ class ResultView extends View
       @hide()
     else
       @show()
+      @removeMultipleMatchesInSameLine(matches)
       @addContextToMatches(@filePath, matches)
       for match in matches
         @matches.append(new MatchView(@model, {@filePath, match}))
 
     @matches.children().eq(selectedIndex).addClass('selected') if selectedIndex > -1
+
+  removeMultipleMatchesInSameLine: (matches) ->
+    for matchIndex in [matches.length - 1 ... 0]
+      prevMatch = matches[matchIndex - 1]
+      match = matches[matchIndex]
+      prevRange = prevMatch.range
+      range = match.range
+      prevRowIndex = (if prevRange.start then prevRange.start.row else prevRange[0][0])
+      rowIndex = (if range.start then range.start.row else range[0][0])
+
+      if rowIndex == prevRowIndex && match.lineTextOffset == prevMatch.lineTextOffset
+        prevMatch.extraRanges = [] unless prevMatch.extraRanges
+        prevMatch.extraRanges.push(range)
+        if match.extraRanges
+          prevMatch.extraRanges = prevMatch.extraRanges.concat(match.extraRanges)
+        matches.splice(matchIndex, 1)
 
   addContextToMatches: (filePath, matches) ->
     CONTEXT_LINES = atom.config.get('find-and-replace.searchContextExtraLines')
