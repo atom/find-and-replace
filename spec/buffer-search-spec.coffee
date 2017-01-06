@@ -1,12 +1,12 @@
 BufferSearch = require '../lib/buffer-search'
 FindOptions = require '../lib/find-options'
-buildTextEditor = require '../lib/build-text-editor'
+{TextEditor} = require 'atom'
 
 describe "BufferSearch", ->
   [model, editor, markersListener, currentResultListener] = []
 
   beforeEach ->
-    editor = buildTextEditor()
+    editor = new TextEditor()
     spyOn(editor, 'scanInBufferRange').andCallThrough()
 
     editor.setText """
@@ -465,7 +465,7 @@ describe "BufferSearch", ->
       for marker in layer1.findMarkers()
         expect(editor.getTextInBufferRange(marker.getBufferRange())).toMatch /a+/
 
-      editor2 = buildTextEditor()
+      editor2 = new TextEditor()
       model.setEditor(editor2)
       layer2 = model.resultsMarkerLayerForTextEditor(editor2)
 

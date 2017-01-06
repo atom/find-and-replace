@@ -1,13 +1,12 @@
 _ = require 'underscore-plus'
 {$, $$$, View, TextEditorView} = require 'atom-space-pen-views'
-{CompositeDisposable} = require 'atom'
+{TextEditor, CompositeDisposable} = require 'atom'
 Util = require './project/util'
-buildTextEditor = require './build-text-editor'
 
 module.exports =
 class FindView extends View
   @content: (model, {findBuffer, replaceBuffer}) ->
-    findEditor = buildTextEditor
+    findEditor = new TextEditor
       mini: true
       tabLength: 2
       softTabs: true
@@ -15,7 +14,7 @@ class FindView extends View
       buffer: findBuffer
       placeholderText: 'Find in current buffer'
 
-    replaceEditor = buildTextEditor
+    replaceEditor = new TextEditor
       mini: true
       tabLength: 2
       softTabs: true
