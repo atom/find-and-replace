@@ -24,3 +24,6 @@
   '.tree-view > li.directory': [
     { 'label': 'Search in Directory', 'command': 'project-find:show-in-current-directory' }
   ]
+  '.path-details.list-item': [
+    { 'label': 'Copy Path', 'command': 'find-and-replace:copy-path' }
+  ]

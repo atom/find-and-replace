@@ -731,6 +731,29 @@ describe 'ResultsView', ->
       atom.commands.dispatch resultsView.element, 'core:copy'
       expect(atom.clipboard.read()).toBe '    return items if items.length <= 1'
 
+  describe "copying path with find-and-replace:copy-path", ->
+    [resultsView, openHandler] = []
+
+    beforeEach ->
+      runs ->
+        projectFindView.findEditor.setText('items')
+        atom.commands.dispatch projectFindView.element, 'core:confirm'
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        resultsView = getResultsView()
+        resultsView.selectFirstResult()
+        resultsView.collapseResult()
+
+    it "copies the selected file path to clipboard", ->
+      atom.commands.dispatch resultsView.element, 'find-and-replace:copy-path'
+      expect(atom.clipboard.read()).toBe('sample.coffee')
+      _.times 1, -> atom.commands.dispatch resultsView.element, 'core:move-down'
+      atom.commands.dispatch resultsView.element, 'find-and-replace:copy-path'
+      expect(atom.clipboard.read()).toBe('sample.js')
+
   describe "icon-service lifecycle", ->
     it 'renders file icon classes based on the provided file-icons service', ->
       fileIconsDisposable = atom.packages.serviceHub.provide 'atom.file-icons', '1.0.0', {
