@@ -40,8 +40,6 @@ class FindView extends View
             @button outlet: 'nextButton', class: 'btn', 'Find'
           @div class: 'btn-group btn-group-find-all', =>
             @button outlet: 'findAllButton', class: 'btn', 'Find All'
-
-        @div class: 'input-block-item option-block', =>
           @div class: 'btn-group btn-toggle btn-group-options', =>
             @button outlet: 'regexOptionButton', class: 'btn', =>
               @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-regex" /></svg>'
@@ -57,8 +55,6 @@ class FindView extends View
             @button outlet: 'replaceNextButton', class: 'btn btn-next', 'Replace'
           @div class: 'btn-group btn-group-replace-all', =>
             @button outlet: 'replaceAllButton', class: 'btn btn-all', 'Replace All'
-
-        @div class: 'input-block-item option-block', =>
           @div class: 'btn-group btn-toggle btn-group-options', =>
             @button outlet: 'selectionOptionButton', class: 'btn option-selection', =>
               @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-selection" /></svg>'
