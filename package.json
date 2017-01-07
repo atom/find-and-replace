@@ -36,7 +36,8 @@
     "underscore-plus": "1.x"
   },
   "devDependencies": {
-    "coffeelint": "^1.9.7"
+    "coffeelint": "^1.9.7",
+    "dedent": "^0.6.0"
   },
   "consumedServices": {
     "atom.file-icons": {
@@ -62,7 +63,11 @@
     "projectSearchResultsPaneSplitDirection": {
       "type": "string",
       "default": "none",
-      "enum": ["none", "right", "down"],
+      "enum": [
+        "none",
+        "right",
+        "down"
+      ],
       "title": "Direction to open results pane",
       "description": "Direction to split the active pane when showing project search results. If 'none', the results will be shown in the active pane."
     },
