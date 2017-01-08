@@ -29,37 +29,37 @@ class FindView extends View
           @span 'Finding with Options: '
           @span outlet: 'optionsLabel', class: 'options'
 
-      @section class: 'input-block find-container', =>
-        @div class: 'input-block-item input-block-item--flex editor-container', =>
-          @subview 'findEditor', new TextEditorView(editor: findEditor)
-          @div class: 'find-meta-container', =>
-            @span outlet: 'resultCounter', class: 'text-subtle result-counter', ''
+      @main class: 'find-wrapper', =>
+        @section class: 'find-wrapper-item find-wrapper-item--flex', =>
+          @div class: 'input-block-item editor-container', =>
+            @subview 'findEditor', new TextEditorView(editor: findEditor)
+            @div class: 'find-meta-container', =>
+              @span outlet: 'resultCounter', class: 'text-subtle result-counter', ''
+          @div class: 'input-block-item editor-container', =>
+            @subview 'replaceEditor', new TextEditorView(editor: replaceEditor)
 
-        @div class: 'input-block-item', =>
-          @div class: 'btn-group btn-group-find', =>
-            @button outlet: 'nextButton', class: 'btn', 'Find'
-          @div class: 'btn-group btn-group-find-all', =>
-            @button outlet: 'findAllButton', class: 'btn', 'Find All'
-          @div class: 'btn-group btn-toggle btn-group-options', =>
-            @button outlet: 'regexOptionButton', class: 'btn', =>
-              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-regex" /></svg>'
-            @button outlet: 'caseOptionButton', class: 'btn', =>
-              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-case" /></svg>'
+        @section class: 'find-wrapper-item', =>
+          @div class: 'input-block-item', =>
+            @div class: 'btn-group btn-group-find', =>
+              @button outlet: 'nextButton', class: 'btn', 'Find'
+            @div class: 'btn-group btn-group-find-all', =>
+              @button outlet: 'findAllButton', class: 'btn', 'Find All'
+            @div class: 'btn-group btn-toggle btn-group-options', =>
+              @button outlet: 'regexOptionButton', class: 'btn', =>
+                @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-regex" /></svg>'
+              @button outlet: 'caseOptionButton', class: 'btn', =>
+                @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-case" /></svg>'
 
-      @section class: 'input-block replace-container', =>
-        @div class: 'input-block-item input-block-item--flex editor-container', =>
-          @subview 'replaceEditor', new TextEditorView(editor: replaceEditor)
-
-        @div class: 'input-block-item', =>
-          @div class: 'btn-group btn-group-replace', =>
-            @button outlet: 'replaceNextButton', class: 'btn btn-next', 'Replace'
-          @div class: 'btn-group btn-group-replace-all', =>
-            @button outlet: 'replaceAllButton', class: 'btn btn-all', 'Replace All'
-          @div class: 'btn-group btn-toggle btn-group-options', =>
-            @button outlet: 'selectionOptionButton', class: 'btn option-selection', =>
-              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-selection" /></svg>'
-            @button outlet: 'wholeWordOptionButton', class: 'btn option-whole-word', =>
-              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-word" /></svg>'
+          @div class: 'input-block-item', =>
+            @div class: 'btn-group btn-group-replace', =>
+              @button outlet: 'replaceNextButton', class: 'btn btn-next', 'Replace'
+            @div class: 'btn-group btn-group-replace-all', =>
+              @button outlet: 'replaceAllButton', class: 'btn btn-all', 'Replace All'
+            @div class: 'btn-group btn-toggle btn-group-options', =>
+              @button outlet: 'selectionOptionButton', class: 'btn option-selection', =>
+                @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-selection" /></svg>'
+              @button outlet: 'wholeWordOptionButton', class: 'btn option-whole-word', =>
+                @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-word" /></svg>'
 
       @raw '<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
         <symbol id="find-and-replace-icon-regex" viewBox="0 0 20 16" stroke="none" fill-rule="evenodd">

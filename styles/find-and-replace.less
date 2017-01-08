@@ -45,6 +45,13 @@ atom-workspace.find-visible {
   .header {
     padding: @component-padding/4 @component-padding/2;
     min-width: @min-width;
+
+    // clearfix for .pull-right
+    &:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
   }
   .header-item {
     margin: @component-padding/4 0;
@@ -122,10 +129,15 @@ atom-workspace.find-visible {
   @option-button-width: 100px;  // option buttons
   @item-width: 300px;          // wrap block width
 
-  .input-block-item {
+  .find-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .find-wrapper-item {
     flex: 1 1 @item-width;
   }
-  .input-block-item--flex {
+  .find-wrapper-item--flex {
     flex: 100 1 @item-width;
   }
 
