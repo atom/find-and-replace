@@ -4,7 +4,7 @@ const temp = require("temp");
 const ResultsPaneView = require('../lib/project/results-pane');
 const FileIcons = require('../lib/file-icons');
 
-fdescribe('ResultsView', () => {
+describe('ResultsView', () => {
   let pack, projectFindView, resultsView, searchPromise, workspaceElement;
 
   function getExistingResultsPane() {
