@@ -33,28 +33,34 @@ describe("ResultsModel", () => {
       runs(() => {
         expect(resultAddedSpy).toHaveBeenCalled();
         expect(resultAddedSpy.callCount).toBe(1);
-        var result = resultsModel.getResult(editor.getPath());
+
+        const result = resultsModel.getResult(editor.getPath());
         expect(result.matches.length).toBe(6);
         expect(resultsModel.getPathCount()).toBe(1);
         expect(resultsModel.getMatchCount()).toBe(6);
         expect(resultsModel.getPaths()).toEqual([editor.getPath()]);
+
         editor.setText("there are some items in here");
         advanceClock(editor.buffer.stoppedChangingDelay);
         expect(resultAddedSpy.callCount).toBe(2);
+
         result = resultsModel.getResult(editor.getPath());
         expect(result.matches.length).toBe(1);
         expect(resultsModel.getPathCount()).toBe(1);
         expect(resultsModel.getMatchCount()).toBe(1);
         expect(resultsModel.getPaths()).toEqual([editor.getPath()]);
         expect(result.matches[0].lineText).toBe("there are some items in here");
+
         editor.setText("no matches in here");
         advanceClock(editor.buffer.stoppedChangingDelay);
         expect(resultAddedSpy.callCount).toBe(2);
         expect(resultRemovedSpy.callCount).toBe(1);
+
         result = resultsModel.getResult(editor.getPath());
         expect(result).not.toBeDefined();
         expect(resultsModel.getPathCount()).toBe(0);
         expect(resultsModel.getMatchCount()).toBe(0);
+
         resultsModel.clear();
         spyOn(editor, "scan").andCallThrough();
         editor.setText("no matches in here");
