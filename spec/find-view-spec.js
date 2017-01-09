@@ -1,4 +1,7 @@
+/** @babel */
+
 const path = require("path");
+const {beforeEach, it, fit, ffit, fffit} = require('./async-spec-helpers')
 
 describe("FindView", () => {
   let workspaceElement, editorView, editor, findView, activationPromise;
@@ -19,208 +22,173 @@ describe("FindView", () => {
     return result;
   }
 
-  beforeEach(() => {
+  beforeEach(async () => {
     spyOn(atom, "beep");
     workspaceElement = atom.views.getView(atom.workspace);
     atom.project.setPaths([path.join(__dirname, "fixtures")]);
 
-    waitsForPromise(() => atom.workspace.open("sample.js"));
+    await atom.workspace.open("sample.js");
 
-    runs(() => {
-      jasmine.attachToDOM(workspaceElement);
-      editor = atom.workspace.getActiveTextEditor();
-      editorView = editor.getElement();
+    jasmine.attachToDOM(workspaceElement);
+    editor = atom.workspace.getActiveTextEditor();
+    editorView = editor.getElement();
 
-      activationPromise = atom.packages.activatePackage("find-and-replace").then(function({mainModule}) {
-        mainModule.createViews();
-        return {findView} = mainModule;
-      });
+    activationPromise = atom.packages.activatePackage("find-and-replace").then(function({mainModule}) {
+      mainModule.createViews();
+      ({findView} = mainModule);
     });
   });
 
   describe("when find-and-replace:show is triggered", () => {
-    it("attaches FindView to the root view", () => {
+    it("attaches FindView to the root view", async () => {
       atom.commands.dispatch(editorView, "find-and-replace:show");
+      await activationPromise;
 
-      waitsForPromise(() => activationPromise);
-
-      runs(() => {
-        expect(workspaceElement.querySelector(".find-and-replace")).toBeDefined();
-      });
+      expect(workspaceElement.querySelector(".find-and-replace")).toBeDefined();
     });
 
-    it("populates the findEditor with selection when there is a selection", () => {
+    it("populates the findEditor with selection when there is a selection", async () => {
       editor.setSelectedBufferRange([[2, 8], [2, 13]]);
+
       atom.commands.dispatch(editorView, "find-and-replace:show");
+      await activationPromise;
 
-      waitsForPromise(() => activationPromise);
+      expect(getFindAtomPanel()).toBeVisible();
+      expect(findView.findEditor.getText()).toBe("items");
 
-      runs(() => {
-        expect(getFindAtomPanel()).toBeVisible();
-        expect(findView.findEditor.getText()).toBe("items");
-        findView.findEditor.setText("");
-        editor.setSelectedBufferRange([[2, 14], [2, 20]]);
-        atom.commands.dispatch(editorView, "find-and-replace:show");
-        expect(getFindAtomPanel()).toBeVisible();
-        expect(findView.findEditor.getText()).toBe("length");
-      });
+      findView.findEditor.setText("");
+      editor.setSelectedBufferRange([[2, 14], [2, 20]]);
+      atom.commands.dispatch(editorView, "find-and-replace:show");
+      expect(getFindAtomPanel()).toBeVisible();
+      expect(findView.findEditor.getText()).toBe("length");
     });
 
-    it("does not change the findEditor text when there is no selection", () => {
+    it("does not change the findEditor text when there is no selection", async () => {
       editor.setSelectedBufferRange([[2, 8], [2, 8]]);
+
       atom.commands.dispatch(editorView, "find-and-replace:show");
+      await activationPromise;
 
-      waitsForPromise(() => activationPromise);
-
-      runs(() => {
-        findView.findEditor.setText("kitten");
-        atom.commands.dispatch(editorView, "find-and-replace:show");
-        expect(findView.findEditor.getText()).toBe("kitten");
-      });
+      findView.findEditor.setText("kitten");
+      atom.commands.dispatch(editorView, "find-and-replace:show");
+      expect(findView.findEditor.getText()).toBe("kitten");
     });
 
-    it("does not change the findEditor text when there is a multiline selection", () => {
+    it("does not change the findEditor text when there is a multiline selection", async () => {
       editor.setSelectedBufferRange([[2, 8], [3, 12]]);
+
       atom.commands.dispatch(editorView, "find-and-replace:show");
+      await activationPromise;
 
-      waitsForPromise(() => activationPromise);
-
-      runs(() => {
-        expect(getFindAtomPanel()).toBeVisible();
-        expect(findView.findEditor.getText()).toBe("");
-      });
+      expect(getFindAtomPanel()).toBeVisible();
+      expect(findView.findEditor.getText()).toBe("");
     });
 
-    it("honors config settings for find options", () => {
+    it("honors config settings for find options", async () => {
       atom.config.set("find-and-replace.useRegex", true);
       atom.config.set("find-and-replace.caseSensitive", true);
       atom.config.set("find-and-replace.inCurrentSelection", true);
+
       atom.commands.dispatch(editorView, "find-and-replace:show");
+      await activationPromise;
 
-      waitsForPromise(() => activationPromise);
-
-      runs(() => {
-        expect(findView.caseOptionButton).toHaveClass("selected");
-        expect(findView.regexOptionButton).toHaveClass("selected");
-        expect(findView.selectionOptionButton).toHaveClass("selected");
-      });
+      expect(findView.caseOptionButton).toHaveClass("selected");
+      expect(findView.regexOptionButton).toHaveClass("selected");
+      expect(findView.selectionOptionButton).toHaveClass("selected");
     });
 
-    it("places selected text into the find editor and escapes it when Regex is enabled", () => {
+    it("places selected text into the find editor and escapes it when Regex is enabled", async () => {
       atom.config.set("find-and-replace.useRegex", true);
       editor.setSelectedBufferRange([[6, 6], [6, 65]]);
+
       atom.commands.dispatch(editorView, "find-and-replace:show");
+      await activationPromise;
 
-      waitsForPromise(() => activationPromise);
-
-      runs(() => {
-        expect(findView.findEditor.getText()).toBe(
-          "current < pivot \\? left\\.push\\(current\\) : right\\.push\\(current\\);"
-        );
-      });
+      expect(findView.findEditor.getText()).toBe(
+        "current < pivot \\? left\\.push\\(current\\) : right\\.push\\(current\\);"
+      );
     });
   });
 
   describe("when find-and-replace:toggle is triggered", () => {
-    it("toggles the visibility of the FindView", () => {
+    it("toggles the visibility of the FindView", async () => {
       atom.commands.dispatch(workspaceElement, "find-and-replace:toggle");
+      await activationPromise;
 
-      waitsForPromise(() => activationPromise);
-
-      runs(() => {
-        expect(getFindAtomPanel()).toBeVisible();
-        atom.commands.dispatch(workspaceElement, "find-and-replace:toggle");
-        expect(getFindAtomPanel()).not.toBeVisible();
-      });
+      expect(getFindAtomPanel()).toBeVisible();
+      atom.commands.dispatch(workspaceElement, "find-and-replace:toggle");
+      expect(getFindAtomPanel()).not.toBeVisible();
     });
   });
 
-  describe(
-    "when the find-view is focused and window:focus-next-pane is triggered",
-    () => {
-      beforeEach(() => {
-        atom.commands.dispatch(editorView, "find-and-replace:show");
+  describe("when the find-view is focused and window:focus-next-pane is triggered", () => {
+    it("attaches FindView to the root view", async () => {
+      atom.commands.dispatch(editorView, "find-and-replace:show");
+      await activationPromise;
 
-        waitsForPromise(() => activationPromise);
-      });
-
-      it("attaches FindView to the root view", () => {
-        expect(workspaceElement.querySelector(".find-and-replace")).toHaveFocus();
-        atom.commands.dispatch(findView.findEditor.element, "window:focus-next-pane");
-        expect(workspaceElement.querySelector(".find-and-replace")).not.toHaveFocus();
-      });
-    }
-  );
+      expect(workspaceElement.querySelector(".find-and-replace")).toHaveFocus();
+      atom.commands.dispatch(findView.findEditor.element, "window:focus-next-pane");
+      expect(workspaceElement.querySelector(".find-and-replace")).not.toHaveFocus();
+    });
+  });
 
   describe("find-and-replace:show-replace", () => {
-    it("focuses the replace editor", () => {
+    it("focuses the replace editor", async () => {
       atom.commands.dispatch(editorView, "find-and-replace:show-replace");
+      await activationPromise;
 
-      waitsForPromise(() => activationPromise);
-
-      runs(() => {
-        expect(findView.replaceEditor).toHaveFocus();
-      });
+      expect(findView.replaceEditor).toHaveFocus();
     });
 
-    it("places the current selection in the replace editor", () => {
+    it("places the current selection in the replace editor", async () => {
       editor.setSelectedBufferRange([[0, 16], [0, 27]]);
+
       atom.commands.dispatch(editorView, "find-and-replace:show-replace");
+      await activationPromise;
 
-      waitsForPromise(() => activationPromise);
-
-      runs(() => {
-        expect(findView.replaceEditor.getText()).toBe("function ()");
-      });
+      expect(findView.replaceEditor.getText()).toBe("function ()");
     });
 
-    it("does not escape the text when the regex option is enabled", () => {
+    it("does not escape the text when the regex option is enabled", async () => {
       editor.setSelectedBufferRange([[0, 16], [0, 27]]);
+
       atom.commands.dispatch(editorView, "find-and-replace:show");
       atom.commands.dispatch(editorView, "find-and-replace:toggle-regex-option");
       atom.commands.dispatch(editorView, "find-and-replace:show-replace");
+      await activationPromise;
 
-      waitsForPromise(() => activationPromise);
-
-      runs(() => {
-        expect(findView.replaceEditor.getText()).toBe("function ()");
-      });
+      expect(findView.replaceEditor.getText()).toBe("function ()");
     });
   });
 
   describe("when find-and-replace:clear-history is triggered", () => {
-    it("clears the find and replace histories", () => {
+    it("clears the find and replace histories", async () => {
       atom.commands.dispatch(editorView, "find-and-replace:show");
+      await activationPromise;
 
-      waitsForPromise(() => activationPromise);
+      findView.findEditor.setText("items");
+      findView.replaceEditor.setText("cat");
+      findView.replaceAll();
+      findView.findEditor.setText("sort");
+      findView.replaceEditor.setText("dog");
+      findView.replaceNext();
+      atom.commands.dispatch(editorView, "find-and-replace:clear-history");
+      atom.commands.dispatch(findView.findEditor.element, "core:move-up");
+      expect(findView.findEditor.getText()).toBe("");
 
-      runs(() => {
-        findView.findEditor.setText("items");
-        findView.replaceEditor.setText("cat");
-        findView.replaceAll();
-        findView.findEditor.setText("sort");
-        findView.replaceEditor.setText("dog");
-        findView.replaceNext();
-        atom.commands.dispatch(editorView, "find-and-replace:clear-history");
-        atom.commands.dispatch(findView.findEditor.element, "core:move-up");
-        expect(findView.findEditor.getText()).toBe("");
-        atom.commands.dispatch(findView.replaceEditor.element, "core:move-up");
-        expect(findView.replaceEditor.getText()).toBe("");
-      });
+      atom.commands.dispatch(findView.replaceEditor.element, "core:move-up");
+      expect(findView.replaceEditor.getText()).toBe("");
     });
   });
 
   describe("core:cancel", () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       atom.commands.dispatch(editorView, "find-and-replace:show");
+      await activationPromise;
 
-      waitsForPromise(() => activationPromise);
-
-      runs(() => {
-        findView.findEditor.setText("items");
-        atom.commands.dispatch(findView.findEditor.element, "core:confirm");
-        findView.focus();
-      });
+      findView.findEditor.setText("items");
+      atom.commands.dispatch(findView.findEditor.element, "core:confirm");
+      findView.focus();
     });
 
     describe("when core:cancel is triggered on the find view", () => {
@@ -246,13 +214,10 @@ describe("FindView", () => {
     });
 
     describe("when core:cancel is triggered on an editor", () => {
-      it("detaches from the workspace view", () => {
-        waitsForPromise(() => atom.workspace.open());
-
-        runs(() => {
-          atom.commands.dispatch(editorView, "core:cancel");
-          expect(getFindAtomPanel()).not.toBeVisible();
-        });
+      it("detaches from the workspace view", async () => {
+        atom.workspace.open();
+        atom.commands.dispatch(editorView, "core:cancel");
+        expect(getFindAtomPanel()).not.toBeVisible();
       });
     });
 
@@ -273,98 +238,83 @@ describe("FindView", () => {
   });
 
   describe("serialization", () => {
-    it("serializes find and replace history", () => {
+    it("serializes find and replace history", async () => {
       atom.commands.dispatch(editorView, "find-and-replace:show");
+      await activationPromise;
 
-      waitsForPromise(() => activationPromise);
+      findView.findEditor.setText("items");
+      findView.replaceEditor.setText("cat");
+      findView.replaceAll();
+      findView.findEditor.setText("sort");
+      findView.replaceEditor.setText("dog");
+      findView.replaceNext();
+      findView.findEditor.setText("shift");
+      findView.replaceEditor.setText("ok");
+      findView.findNext(false);
 
-      runs(() => {
-        findView.findEditor.setText("items");
-        findView.replaceEditor.setText("cat");
-        findView.replaceAll();
-        findView.findEditor.setText("sort");
-        findView.replaceEditor.setText("dog");
-        findView.replaceNext();
-        findView.findEditor.setText("shift");
-        findView.replaceEditor.setText("ok");
-        findView.findNext(false);
-        atom.packages.deactivatePackage("find-and-replace");
-
-        activationPromise = atom.packages.activatePackage("find-and-replace").then(function({mainModule}) {
-          mainModule.createViews();
-          return {findView} = mainModule;
-        });
-
-        atom.commands.dispatch(editorView, "find-and-replace:show");
+      atom.packages.deactivatePackage("find-and-replace");
+      activationPromise = atom.packages.activatePackage("find-and-replace").then(function({mainModule}) {
+        mainModule.createViews();
+        ({findView} = mainModule);
       });
+      atom.commands.dispatch(editorView, "find-and-replace:show");
+      await activationPromise;
 
-      waitsForPromise(() => activationPromise);
-
-      runs(() => {
-        atom.commands.dispatch(findView.findEditor.element, "core:move-up");
-        expect(findView.findEditor.getText()).toBe("shift");
-        atom.commands.dispatch(findView.findEditor.element, "core:move-up");
-        expect(findView.findEditor.getText()).toBe("sort");
-        atom.commands.dispatch(findView.findEditor.element, "core:move-up");
-        expect(findView.findEditor.getText()).toBe("items");
-        atom.commands.dispatch(findView.replaceEditor.element, "core:move-up");
-        expect(findView.replaceEditor.getText()).toBe("dog");
-        atom.commands.dispatch(findView.replaceEditor.element, "core:move-up");
-        expect(findView.replaceEditor.getText()).toBe("cat");
-      });
+      atom.commands.dispatch(findView.findEditor.element, "core:move-up");
+      expect(findView.findEditor.getText()).toBe("shift");
+      atom.commands.dispatch(findView.findEditor.element, "core:move-up");
+      expect(findView.findEditor.getText()).toBe("sort");
+      atom.commands.dispatch(findView.findEditor.element, "core:move-up");
+      expect(findView.findEditor.getText()).toBe("items");
+      atom.commands.dispatch(findView.replaceEditor.element, "core:move-up");
+      expect(findView.replaceEditor.getText()).toBe("dog");
+      atom.commands.dispatch(findView.replaceEditor.element, "core:move-up");
+      expect(findView.replaceEditor.getText()).toBe("cat");
     });
 
-    it("serializes find options ", () => {
+    it("serializes find options ", async () => {
       atom.commands.dispatch(editorView, "find-and-replace:show");
+      await activationPromise;
 
-      waitsForPromise(() => activationPromise);
+      expect(findView.caseOptionButton).not.toHaveClass("selected");
+      expect(findView.regexOptionButton).not.toHaveClass("selected");
+      expect(findView.selectionOptionButton).not.toHaveClass("selected");
+      expect(findView.wholeWordOptionButton).not.toHaveClass("selected");
 
-      runs(() => {
-        expect(findView.caseOptionButton).not.toHaveClass("selected");
-        expect(findView.regexOptionButton).not.toHaveClass("selected");
-        expect(findView.selectionOptionButton).not.toHaveClass("selected");
-        expect(findView.wholeWordOptionButton).not.toHaveClass("selected");
-        findView.caseOptionButton.click();
-        findView.regexOptionButton.click();
-        findView.selectionOptionButton.click();
-        findView.wholeWordOptionButton.click();
-        expect(findView.caseOptionButton).toHaveClass("selected");
-        expect(findView.regexOptionButton).toHaveClass("selected");
-        expect(findView.selectionOptionButton).toHaveClass("selected");
-        expect(findView.wholeWordOptionButton).toHaveClass("selected");
-        atom.packages.deactivatePackage("find-and-replace");
+      findView.caseOptionButton.click();
+      findView.regexOptionButton.click();
+      findView.selectionOptionButton.click();
+      findView.wholeWordOptionButton.click();
+      expect(findView.caseOptionButton).toHaveClass("selected");
+      expect(findView.regexOptionButton).toHaveClass("selected");
+      expect(findView.selectionOptionButton).toHaveClass("selected");
+      expect(findView.wholeWordOptionButton).toHaveClass("selected");
 
-        activationPromise = atom.packages.activatePackage("find-and-replace").then(function({mainModule}) {
-          mainModule.createViews();
-          return {findView} = mainModule;
-        });
-
-        atom.commands.dispatch(editorView, "find-and-replace:show");
+      atom.packages.deactivatePackage("find-and-replace");
+      activationPromise = atom.packages.activatePackage("find-and-replace").then(function({mainModule}) {
+        mainModule.createViews();
+        ({findView} = mainModule);
       });
+      atom.commands.dispatch(editorView, "find-and-replace:show");
+      await activationPromise;
 
-      waitsForPromise(() => activationPromise);
-
-      runs(() => {
-        expect(findView.caseOptionButton).toHaveClass("selected");
-        expect(findView.regexOptionButton).toHaveClass("selected");
-        expect(findView.selectionOptionButton).toHaveClass("selected");
-        expect(findView.wholeWordOptionButton).toHaveClass("selected");
-      });
+      expect(findView.caseOptionButton).toHaveClass("selected");
+      expect(findView.regexOptionButton).toHaveClass("selected");
+      expect(findView.selectionOptionButton).toHaveClass("selected");
+      expect(findView.wholeWordOptionButton).toHaveClass("selected");
     });
   });
 
   describe("finding", () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       atom.config.set("find-and-replace.focusEditorAfterSearch", false);
       editor.setCursorBufferPosition([2, 0]);
+
       atom.commands.dispatch(editorView, "find-and-replace:show");
+      await activationPromise;
 
-      waitsForPromise(() => activationPromise);
-
-      runs(() => {
-        findView.findEditor.setText("items");
-        atom.commands.dispatch(findView.findEditor.element, "core:confirm");
-      });
+      findView.findEditor.setText("items");
+      atom.commands.dispatch(findView.findEditor.element, "core:confirm");
     });
 
     describe("when find-and-replace:confirm is triggered", () => {
@@ -372,6 +322,7 @@ describe("FindView", () => {
         findView.findEditor.setText("notinthefile");
         atom.commands.dispatch(findView.findEditor.element, "find-and-replace:confirm");
         expect(getResultDecorations(editor, "find-result")).toHaveLength(0);
+
         findView.findEditor.setText("items");
         atom.commands.dispatch(findView.findEditor.element, "find-and-replace:confirm");
         expect(getResultDecorations(editor, "find-result")).toHaveLength(5);
@@ -852,38 +803,31 @@ describe("FindView", () => {
         editor.setSelectedBufferRange([[0, 0], [0, 0]]);
       });
 
-      describe("when a new edit session is activated", () => {
-        it("reruns the search on the new edit session", () => {
-          waitsForPromise(() => atom.workspace.open("sample.coffee"));
-
-          runs(() => {
-            editor = atom.workspace.getActivePaneItem();
-            expect(findView.resultCounter.text()).toEqual("7 found");
-            expect(editor.getSelectedBufferRange()).toEqual([[0, 0], [0, 0]]);
-          });
+      describe("when a new editor is activated", () => {
+        it("reruns the search on the new editor", async () => {
+          await atom.workspace.open("sample.coffee");
+          editor = atom.workspace.getActivePaneItem();
+          expect(findView.resultCounter.text()).toEqual("7 found");
+          expect(editor.getSelectedBufferRange()).toEqual([[0, 0], [0, 0]]);
         });
 
-        it("initially highlights the found text in the new edit session", () => {
+        it("initially highlights the found text in the new editor", async () => {
           expect(getResultDecorations(editor, "find-result")).toHaveLength(6);
 
-          waitsForPromise(() => atom.workspace.open("sample.coffee"));
+          await atom.workspace.open("sample.coffee");
+          expect(getResultDecorations(editor, "find-result")).toHaveLength(0);
 
-          runs(() => {
-            expect(getResultDecorations(editor, "find-result")).toHaveLength(0);
-            const newEditor = atom.workspace.getActiveTextEditor();
-            expect(getResultDecorations(newEditor, "find-result")).toHaveLength(7);
-          });
+          const newEditor = atom.workspace.getActiveTextEditor();
+          expect(getResultDecorations(newEditor, "find-result")).toHaveLength(7);
         });
 
-        it("highlights the found text in the new edit session when find next is triggered", () => {
-          waitsForPromise(() => atom.workspace.open("sample.coffee"));
+        it("highlights the found text in the new editor when find next is triggered", async () => {
+          await atom.workspace.open("sample.coffee");
 
-          runs(() => {
-            atom.commands.dispatch(findView.findEditor.element, "find-and-replace:find-next");
-            const newEditor = atom.workspace.getActiveTextEditor();
-            expect(getResultDecorations(newEditor, "find-result")).toHaveLength(6);
-            expect(getResultDecorations(newEditor, "current-result")).toHaveLength(1);
-          });
+          atom.commands.dispatch(findView.findEditor.element, "find-and-replace:find-next");
+          const newEditor = atom.workspace.getActiveTextEditor();
+          expect(getResultDecorations(newEditor, "find-result")).toHaveLength(6);
+          expect(getResultDecorations(newEditor, "current-result")).toHaveLength(1);
         });
       });
 
@@ -894,7 +838,7 @@ describe("FindView", () => {
         });
       });
 
-      describe("when the active pane item is not an edit session", () => {
+      describe("when the active pane item is not an editor", () => {
         let openerDisposable;
 
         beforeEach(() => {
@@ -907,71 +851,50 @@ describe("FindView", () => {
           openerDisposable.dispose();
         });
 
-        it("updates the result view", () => {
-          waitsForPromise(() => atom.workspace.open("another"));
-
-          runs(() => {
-            expect(findView.resultCounter.text()).toEqual("no results");
-          });
+        it("updates the result view", async () => {
+          await atom.workspace.open("another");
+          expect(findView.resultCounter.text()).toEqual("no results");
         });
       });
 
-      describe("when a new edit session is activated on a different pane", () => {
+      describe("when a new editor is activated on a different pane", () => {
         it("initially highlights all the sample.js results", () => {
           expect(getResultDecorations(editor, "find-result")).toHaveLength(6);
         });
 
-        it("reruns the search on the new editor", () => {
-          let newEditor;
+        it("reruns the search on the new editor", async () => {
+          let newEditor = await atom.workspace.open("sample.coffee", {activateItem: false});
 
-          waitsForPromise(() => atom.workspace.open("sample.coffee", {activateItem: false}).then(o => (newEditor = o)));
+          newEditor = atom.workspace.paneForItem(editor).splitRight({
+            items: [newEditor]
+          }).getActiveItem();
 
-          runs(() => {
-            newEditor = atom.workspace.paneForItem(editor).splitRight({
-              items: [newEditor]
-            }).getActiveItem();
+          expect(getResultDecorations(newEditor, "find-result")).toHaveLength(7);
+          expect(findView.resultCounter.text()).toEqual("7 found");
+          expect(newEditor.getSelectedBufferRange()).toEqual([[0, 0], [0, 0]]);
 
-            expect(getResultDecorations(newEditor, "find-result")).toHaveLength(7);
-            expect(findView.resultCounter.text()).toEqual("7 found");
-            expect(newEditor.getSelectedBufferRange()).toEqual([[0, 0], [0, 0]]);
-
-            atom.commands.dispatch(findView.findEditor.element, "find-and-replace:find-next");
-            expect(findView.resultCounter.text()).toEqual("1 of 7");
-            expect(newEditor.getSelectedBufferRange()).toEqual([[1, 9], [1, 14]]);
-          });
+          atom.commands.dispatch(findView.findEditor.element, "find-and-replace:find-next");
+          expect(findView.resultCounter.text()).toEqual("1 of 7");
+          expect(newEditor.getSelectedBufferRange()).toEqual([[1, 9], [1, 14]]);
         });
 
-        it("highlights the found text in the new edit session (and removes the highlights from the other)", () => {
-          let newEditor;
-
-          waitsForPromise(() => atom.workspace.open("sample.coffee").then((o) => (newEditor = o)));
-
-          runs(() => {
-            expect(getResultDecorations(editor, "find-result")).toHaveLength(0);
-            expect(getResultDecorations(newEditor, "find-result")).toHaveLength(7);
-          });
+        it("highlights the found text in the new editor (and removes the highlights from the other)", async () => {
+          const newEditor = await atom.workspace.open("sample.coffee")
+          expect(getResultDecorations(editor, "find-result")).toHaveLength(0);
+          expect(getResultDecorations(newEditor, "find-result")).toHaveLength(7);
         });
 
-        it("will still highlight results after the split pane has been destroyed", () => {
-          let newEditor, newEditorView;
+        it("will still highlight results after the split pane has been destroyed", async () => {
+          const newEditor = await atom.workspace.open("sample.coffee")
+          const originalPane = atom.workspace.paneForItem(editor);
+          const splitPane = atom.workspace.paneForItem(editor).splitRight();
+          originalPane.moveItemToPane(newEditor, splitPane, 0);
+          expect(getResultDecorations(newEditor, "find-result")).toHaveLength(7);
 
-          waitsForPromise(() => atom.workspace.open("sample.coffee").then((o) => (newEditor = o)));
-
-          runs(() => {
-            const originalPane = atom.workspace.paneForItem(editor);
-            const splitPane = atom.workspace.paneForItem(editor).splitRight();
-            originalPane.moveItemToPane(newEditor, splitPane, 0);
-            expect(getResultDecorations(newEditor, "find-result")).toHaveLength(7);
-
-            newEditorView = editor.getElement();
-            atom.commands.dispatch(newEditorView, "core:close");
-            editorView.focus();
-            expect(atom.workspace.getActiveTextEditor()).toBe(editor);
-          });
-
-          runs(() => {
-            expect(getResultDecorations(editor, "find-result")).toHaveLength(6);
-          });
+          atom.commands.dispatch(editor.getElement(), "core:close");
+          editorView.focus();
+          expect(atom.workspace.getActiveTextEditor()).toBe(editor);
+          expect(getResultDecorations(editor, "find-result")).toHaveLength(6);
         });
       });
     });
@@ -1221,10 +1144,7 @@ describe("FindView", () => {
         expect(getResultDecorations(editor, "find-result")).toHaveLength(5);
         findView.findEditor.setText("notinthefilebro");
         atom.commands.dispatch(findView.findEditor.element, "core:confirm");
-
-        runs(() => {
-          expect(getResultDecorations(editor, "find-result")).toHaveLength(0);
-        });
+        expect(getResultDecorations(editor, "find-result")).toHaveLength(0);
       });
 
       it("adds a class to the current match indicating it is the current match", () => {
@@ -1389,16 +1309,14 @@ describe("FindView", () => {
   });
 
   describe("replacing", () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       editor.setCursorBufferPosition([2, 0]);
       atom.commands.dispatch(editorView, "find-and-replace:show-replace");
 
-      waitsForPromise(() => activationPromise);
+      await activationPromise;
 
-      runs(() => {
-        findView.findEditor.setText("items");
-        findView.replaceEditor.setText("cats");
-      });
+      findView.findEditor.setText("items");
+      findView.replaceEditor.setText("cats");
     });
 
     describe("when the find string is empty", () => {
@@ -1579,9 +1497,9 @@ describe("FindView", () => {
   });
 
   describe("history", () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       atom.commands.dispatch(editorView, "find-and-replace:show");
-      waitsForPromise(() => activationPromise);
+      await activationPromise;
     });
 
     describe("when there is no history", () => {
@@ -1694,9 +1612,9 @@ describe("FindView", () => {
   });
 
   describe("panel focus", () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       atom.commands.dispatch(editorView, "find-and-replace:show");
-      waitsForPromise(() => activationPromise);
+      await activationPromise;
     });
 
     it("focuses the find editor when the panel gets focus", () => {
@@ -1722,27 +1640,24 @@ describe("FindView", () => {
   });
 
   describe("when language-javascript is active", () => {
-    beforeEach(() => {
-      waitsForPromise(() => atom.packages.activatePackage("language-javascript"));
+    beforeEach(async () => {
+      await atom.packages.activatePackage("language-javascript");
     });
 
-    it("uses the regexp grammar when regex-mode is loaded from configuration", () => {
+    it("uses the regexp grammar when regex-mode is loaded from configuration", async () => {
       atom.config.set("find-and-replace.useRegex", true);
       atom.commands.dispatch(editorView, "find-and-replace:show");
+      await activationPromise;
 
-      waitsForPromise(() => activationPromise);
-
-      runs(() => {
-        expect(findView.model.getFindOptions().useRegex).toBe(true);
-        expect(findView.findEditor.getModel().getGrammar().scopeName).toBe("source.js.regexp");
-        expect(findView.replaceEditor.getModel().getGrammar().scopeName).toBe("source.js.regexp.replacement");
-      });
+      expect(findView.model.getFindOptions().useRegex).toBe(true);
+      expect(findView.findEditor.getModel().getGrammar().scopeName).toBe("source.js.regexp");
+      expect(findView.replaceEditor.getModel().getGrammar().scopeName).toBe("source.js.regexp.replacement");
     });
 
     describe("when panel is active", () => {
-      beforeEach(() => {
+      beforeEach(async () => {
         atom.commands.dispatch(editorView, "find-and-replace:show");
-        waitsForPromise(() => activationPromise);
+        await activationPromise;
       });
 
       it("does not use regexp grammar when in non-regex mode", () => {
@@ -1766,17 +1681,14 @@ describe("FindView", () => {
   });
 
   describe("when no buffer is open", () => {
-    it("toggles regex via an event and finds text matching the pattern", () => {
+    it("toggles regex via an event and finds text matching the pattern", async () => {
       atom.commands.dispatch(editorView, "find-and-replace:show");
       editor.destroy();
+      await activationPromise;
 
-      waitsForPromise(() => activationPromise);
-
-      runs(() => {
-        findView.findEditor.setText("items");
-        atom.commands.dispatch(findView.findEditor.element, "find-and-replace:toggle-regex-option");
-        expect(findView.descriptionLabel.text()).toContain("No results");
-      });
+      findView.findEditor.setText("items");
+      atom.commands.dispatch(findView.findEditor.element, "find-and-replace:toggle-regex-option");
+      expect(findView.descriptionLabel.text()).toContain("No results");
     });
   });
 });
