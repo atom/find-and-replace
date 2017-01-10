@@ -1334,7 +1334,7 @@ describe 'FindView', ->
     describe "replace all", ->
       describe "when the replace all button is pressed", ->
         it "replaces all matched text", ->
-          $('.find-and-replace .btn-all').click()
+          findView.replaceAllButton.click()
           expect(findView.resultCounter.text()).toEqual('no results')
           expect(editor.getText()).not.toMatch /items/
           expect(editor.getText().match(/\bcats\b/g)).toHaveLength 6
