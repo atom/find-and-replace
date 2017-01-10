@@ -6,7 +6,7 @@ const dedent = require('dedent');
 const {beforeEach, it, fit, ffit, fffit} = require('./async-spec-helpers')
 
 describe("SelectNext", () => {
-  let workspaceElement, editorElement, editor, promise;
+  let workspaceElement, editorElement, editor;
 
   beforeEach(async () => {
     workspaceElement = atom.views.getView(atom.workspace);

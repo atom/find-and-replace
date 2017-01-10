@@ -8,7 +8,7 @@ const FileIcons = require('../lib/file-icons');
 const {beforeEach, it, fit, ffit, fffit} = require('./async-spec-helpers')
 
 describe('ResultsView', () => {
-  let pack, projectFindView, resultsView, searchPromise, workspaceElement;
+  let projectFindView, resultsView, searchPromise, workspaceElement;
 
   function getExistingResultsPane() {
     let pane = atom.workspace.paneForURI(ResultsPaneView.URI);
@@ -690,7 +690,7 @@ describe('ResultsView', () => {
       atom.commands.dispatch(projectFindView.element, 'core:confirm');
       await searchPromise;
 
-      const resultsView = getResultsView();
+      resultsView = getResultsView();
       resultsView.selectFirstResult();
 
       _.times(2, () => atom.commands.dispatch(resultsView.element, 'core:move-down'));
@@ -703,10 +703,9 @@ describe('ResultsView', () => {
     it("copies the selected file path to clipboard", async () => {
       projectFindView.findEditor.setText('items');
       atom.commands.dispatch(projectFindView.element, 'core:confirm');
-
       await searchPromise;
 
-      const resultsView = getResultsView();
+      resultsView = getResultsView();
       resultsView.selectFirstResult();
       resultsView.collapseResult();
 
@@ -733,9 +732,9 @@ describe('ResultsView', () => {
 
       projectFindView.findEditor.setText('i');
       atom.commands.dispatch(projectFindView.element, 'core:confirm');
-
       await searchPromise;
-      let resultsView = getResultsView();
+
+      resultsView = getResultsView();
       let fileIconClasses = Array.from(resultsView.find('.path-details .icon')).map(el => el.className);
       expect(fileIconClasses).toContain('first-icon-class second-icon-class icon');
       expect(fileIconClasses).toContain('third-icon-class fourth-icon-class icon');
@@ -766,4 +765,4 @@ function buildMouseEvent(type, properties) {
     Object.defineProperty(event, 'srcObject', {get() { return properties.target; }});
   }
   return event;
-};
+}

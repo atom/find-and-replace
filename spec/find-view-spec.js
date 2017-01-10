@@ -1414,7 +1414,7 @@ describe("FindView", () => {
 
       describe("when the replace next button is pressed", () => {
         it("replaces the match after the cursor and selects the next match", () => {
-          findView[0].querySelector(".btn-next").click();
+          findView.replaceNextButton.click();
           expect(findView.resultCounter.text()).toEqual("2 of 5");
           expect(editor.lineTextForBufferRow(2)).toBe("    if (cats.length <= 1) return items;");
           expect(editor.getSelectedBufferRange()).toEqual([[2, 33], [2, 38]]);
@@ -1447,7 +1447,7 @@ describe("FindView", () => {
     describe("replace all", () => {
       describe("when the replace all button is pressed", () => {
         it("replaces all matched text", () => {
-          findView[0].querySelector(".btn-all").click();
+          findView.replaceAllButton.click();
           expect(findView.resultCounter.text()).toEqual("no results");
           expect(editor.getText()).not.toMatch(/items/);
           expect(editor.getText().match(/\bcats\b/g)).toHaveLength(6);
@@ -1455,7 +1455,7 @@ describe("FindView", () => {
         });
 
         it("all changes are undoable in one transaction", () => {
-          findView[0].querySelector(".btn-all").click();
+          findView.replaceAllButton.click();
           editor.undo();
           expect(editor.getText()).not.toMatch(/\bcats\b/g);
         });
