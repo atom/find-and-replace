@@ -58,7 +58,7 @@ class ProjectFindView extends View
           @subview 'findEditor', new TextEditorView(editor: findEditor)
         @div class: 'input-block-item', =>
           @div class: 'btn-group btn-group-find', =>
-            @button outlet: 'findAllButton', class: 'btn', 'Find'
+            @button outlet: 'findAllButton', class: 'btn', 'Find All'
 
       @section class: 'input-block replace-container', =>
         @div class: 'input-block-item input-block-item--flex editor-container', =>
