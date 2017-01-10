@@ -1,97 +1,78 @@
+/** @babel */
+
 const path = require("path");
 const ResultsModel = require("../lib/project/results-model");
 const FindOptions = require("../lib/find-options");
+const {beforeEach, it, fit, ffit, fffit} = require('./async-spec-helpers')
 
 describe("ResultsModel", () => {
-  let editor, resultsModel, searchPromise;
+  let editor, resultsModel;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     atom.config.set("core.excludeVcsIgnoredPaths", false);
     atom.project.setPaths([path.join(__dirname, "fixtures")]);
 
-    waitsForPromise(() => atom.workspace.open("sample.js"));
-
-    runs(() => {
-      editor = atom.workspace.getActiveTextEditor();
-      resultsModel = new ResultsModel(new FindOptions());
-    });
+    editor = await atom.workspace.open("sample.js");
+    resultsModel = new ResultsModel(new FindOptions());
   });
 
   describe("searching for a pattern", () => {
-    it("populates the model with all the results, and updates in response to changes in the buffer", () => {
+    it("populates the model with all the results, and updates in response to changes in the buffer", async () => {
       const resultAddedSpy = jasmine.createSpy();
       const resultRemovedSpy = jasmine.createSpy();
 
-      runs(() => {
-        resultsModel.onDidAddResult(resultAddedSpy);
-        resultsModel.onDidRemoveResult(resultRemovedSpy);
-        searchPromise = resultsModel.search("items", "*.js", "");
-      });
+      resultsModel.onDidAddResult(resultAddedSpy);
+      resultsModel.onDidRemoveResult(resultRemovedSpy);
+      await resultsModel.search("items", "*.js", "");
 
-      waitsForPromise(() => searchPromise);
+      expect(resultAddedSpy).toHaveBeenCalled();
+      expect(resultAddedSpy.callCount).toBe(1);
 
-      runs(() => {
-        expect(resultAddedSpy).toHaveBeenCalled();
-        expect(resultAddedSpy.callCount).toBe(1);
+      let result = resultsModel.getResult(editor.getPath());
+      expect(result.matches.length).toBe(6);
+      expect(resultsModel.getPathCount()).toBe(1);
+      expect(resultsModel.getMatchCount()).toBe(6);
+      expect(resultsModel.getPaths()).toEqual([editor.getPath()]);
 
-        const result = resultsModel.getResult(editor.getPath());
-        expect(result.matches.length).toBe(6);
-        expect(resultsModel.getPathCount()).toBe(1);
-        expect(resultsModel.getMatchCount()).toBe(6);
-        expect(resultsModel.getPaths()).toEqual([editor.getPath()]);
+      editor.setText("there are some items in here");
+      advanceClock(editor.buffer.stoppedChangingDelay);
+      expect(resultAddedSpy.callCount).toBe(2);
 
-        editor.setText("there are some items in here");
-        advanceClock(editor.buffer.stoppedChangingDelay);
-        expect(resultAddedSpy.callCount).toBe(2);
+      result = resultsModel.getResult(editor.getPath());
+      expect(result.matches.length).toBe(1);
+      expect(resultsModel.getPathCount()).toBe(1);
+      expect(resultsModel.getMatchCount()).toBe(1);
+      expect(resultsModel.getPaths()).toEqual([editor.getPath()]);
+      expect(result.matches[0].lineText).toBe("there are some items in here");
 
-        result = resultsModel.getResult(editor.getPath());
-        expect(result.matches.length).toBe(1);
-        expect(resultsModel.getPathCount()).toBe(1);
-        expect(resultsModel.getMatchCount()).toBe(1);
-        expect(resultsModel.getPaths()).toEqual([editor.getPath()]);
-        expect(result.matches[0].lineText).toBe("there are some items in here");
+      editor.setText("no matches in here");
+      advanceClock(editor.buffer.stoppedChangingDelay);
+      expect(resultAddedSpy.callCount).toBe(2);
+      expect(resultRemovedSpy.callCount).toBe(1);
 
-        editor.setText("no matches in here");
-        advanceClock(editor.buffer.stoppedChangingDelay);
-        expect(resultAddedSpy.callCount).toBe(2);
-        expect(resultRemovedSpy.callCount).toBe(1);
+      result = resultsModel.getResult(editor.getPath());
+      expect(result).not.toBeDefined();
+      expect(resultsModel.getPathCount()).toBe(0);
+      expect(resultsModel.getMatchCount()).toBe(0);
 
-        result = resultsModel.getResult(editor.getPath());
-        expect(result).not.toBeDefined();
-        expect(resultsModel.getPathCount()).toBe(0);
-        expect(resultsModel.getMatchCount()).toBe(0);
-
-        resultsModel.clear();
-        spyOn(editor, "scan").andCallThrough();
-        editor.setText("no matches in here");
-        advanceClock(editor.buffer.stoppedChangingDelay);
-        expect(editor.scan).not.toHaveBeenCalled();
-        expect(resultsModel.getPathCount()).toBe(0);
-        expect(resultsModel.getMatchCount()).toBe(0);
-      });
+      resultsModel.clear();
+      spyOn(editor, "scan").andCallThrough();
+      editor.setText("no matches in here");
+      advanceClock(editor.buffer.stoppedChangingDelay);
+      expect(editor.scan).not.toHaveBeenCalled();
+      expect(resultsModel.getPathCount()).toBe(0);
+      expect(resultsModel.getMatchCount()).toBe(0);
     });
 
-    it("ignores changes in untitled buffers", () => {
-      const resultAddedSpy = jasmine.createSpy();
-      const resultRemovedSpy = jasmine.createSpy();
+    it("ignores changes in untitled buffers", async () => {
+      await atom.workspace.open();
+      await resultsModel.search("items", "*.js", "");
 
-      waitsForPromise(() => atom.workspace.open());
-
-      runs(() => {
-        resultsModel.onDidAddResult(resultAddedSpy);
-        resultsModel.onDidRemoveResult(resultRemovedSpy);
-        searchPromise = resultsModel.search("items", "*.js", "");
-      });
-
-      waitsForPromise(() => searchPromise);
-
-      runs(() => {
-        editor = atom.workspace.getActiveTextEditor();
-        editor.setText("items\nitems");
-        spyOn(editor, "scan").andCallThrough();
-        advanceClock(editor.buffer.stoppedChangingDelay);
-        expect(editor.scan).not.toHaveBeenCalled();
-      });
+      editor = atom.workspace.getActiveTextEditor();
+      editor.setText("items\nitems");
+      spyOn(editor, "scan").andCallThrough();
+      advanceClock(editor.buffer.stoppedChangingDelay);
+      expect(editor.scan).not.toHaveBeenCalled();
     });
   });
 
@@ -103,29 +84,23 @@ describe("ResultsModel", () => {
       resultsModel.onDidCancelSearching(cancelledSpy);
     });
 
-    it("populates the model with all the results, and updates in response to changes in the buffer", () => {
-      searchPromise = resultsModel.search("items", "*.js", "");
+    it("populates the model with all the results, and updates in response to changes in the buffer", async () => {
+      const searchPromise = resultsModel.search("items", "*.js", "");
       expect(resultsModel.inProgressSearchPromise).toBeTruthy();
       resultsModel.clear();
       expect(resultsModel.inProgressSearchPromise).toBeFalsy();
 
-      waitsForPromise(() => searchPromise);
-
-      runs(() => {
-        expect(cancelledSpy).toHaveBeenCalled();
-      });
+      await searchPromise;
+      expect(cancelledSpy).toHaveBeenCalled();
     });
 
-    it("populates the model with all the results, and updates in response to changes in the buffer", () => {
-      searchPromise = resultsModel.search("items", "*.js", "");
-      searchPromise = resultsModel.search("sort", "*.js", "");
-      waitsForPromise(() => searchPromise);
+    it("populates the model with all the results, and updates in response to changes in the buffer", async () => {
+      resultsModel.search("items", "*.js", "");
+      await resultsModel.search("sort", "*.js", "");
 
-      runs(() => {
-        expect(cancelledSpy).toHaveBeenCalled();
-        expect(resultsModel.getPathCount()).toBe(1);
-        expect(resultsModel.getMatchCount()).toBe(5);
-      });
+      expect(cancelledSpy).toHaveBeenCalled();
+      expect(resultsModel.getPathCount()).toBe(1);
+      expect(resultsModel.getMatchCount()).toBe(5);
     });
   });
 });
