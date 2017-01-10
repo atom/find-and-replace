@@ -1,25 +1,24 @@
+/** @babel */
+
 const path = require('path');
 const SelectNext = require('../lib/select-next');
 const dedent = require('dedent');
+const {beforeEach, it, fit, ffit, fffit} = require('./async-spec-helpers')
 
 describe("SelectNext", () => {
   let workspaceElement, editorElement, editor, promise;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     workspaceElement = atom.views.getView(atom.workspace);
     atom.project.setPaths([path.join(__dirname, 'fixtures')]);
 
-    waitsForPromise(() => atom.workspace.open('sample.js'));
+    editor = await atom.workspace.open('sample.js');
+    editorElement = atom.views.getView(editor);
 
-    runs(() => {
-      jasmine.attachToDOM(workspaceElement);
-      editor = atom.workspace.getActiveTextEditor();
-      editorElement = atom.views.getView(editor);
-      promise = atom.packages.activatePackage("find-and-replace");
-      atom.commands.dispatch(editorElement, 'find-and-replace:show');
-    });
-
-    waitsForPromise(() => promise);
+    jasmine.attachToDOM(workspaceElement);
+    const activationPromise = atom.packages.activatePackage("find-and-replace");
+    atom.commands.dispatch(editorElement, 'find-and-replace:show');
+    await activationPromise;
   });
 
   describe("find-and-replace:select-next", () => {
