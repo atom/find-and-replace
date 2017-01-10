@@ -45,6 +45,7 @@ atom-workspace.find-visible {
   .header {
     padding: @component-padding/4 @component-padding/2;
     min-width: @min-width;
+    line-height: 1.75;
   }
   .header-item {
     margin: @component-padding/4 0;
@@ -73,12 +74,6 @@ atom-workspace.find-visible {
     }
   }
 
-  .btn-group-options {
-    .btn {
-      line-height: 1;
-    }
-  }
-
   .btn > .icon {
     width: 20px;
     height: 16px;
@@ -103,7 +98,19 @@ atom-workspace.find-visible {
     color: @text-color-subtle;
     position: relative;
     .options {
+      margin-right: .5em;
       color: @text-color;
+    }
+  }
+
+  .btn-group-options {
+    display: inline-flex;
+    margin-top: -.1em;
+
+    .btn {
+      width: 36px;
+      padding: 0;
+      line-height: 1.75;
     }
   }
 
@@ -118,35 +125,24 @@ atom-workspace.find-visible {
 
 // Buffer find and replace
 .find-and-replace {
-  @button-width: 120px;        // Find + Replace + Find All + Replace All buttons
-  @option-button-width: 100px;  // option buttons
-  @item-width: 260px;          // wrap block width
+  @input-width: 260px;
+  @block-width: 260px;
 
   .input-block-item {
-    flex: 1 1 @item-width;
+    flex: 1 1 @block-width;
   }
   .input-block-item--flex {
-    flex: 100 1 @item-width;
-  }
-
-  .input-block-item.option-block {
-    flex-basis: @option-button-width;
+    flex: 100 1 @input-width;
   }
 
   .btn-group-find,
-  .btn-group-replace,
-  .btn-group-find-all,
-  .btn-group-replace-all, {
-    flex: 1 1 @button-width;
+  .btn-group-replace {
+    flex: 1;
   }
 
-  .btn-group-options {
-    flex: 1 1 @option-button-width;
-    .btn {
-      flex: 1 1 25%;
-      padding: 0;
-      text-align: center;
-    }
+  .btn-group-find-all,
+  .btn-group-replace-all {
+    flex: 2;
   }
 
   .find-container atom-text-editor {
@@ -203,17 +199,13 @@ atom-workspace.find-visible {
 // Project find and replace
 .project-find {
   @project-input-width: 260px;
-  @project-block-width: 220px;
+  @project-block-width: 160px;
 
   .input-block-item {
     flex: 1 1 @project-block-width;
   }
   .input-block-item--flex {
     flex: 100 1 @project-input-width;
-  }
-
-  .btn-group-find {
-    flex: .6;
   }
 
   .loading,
