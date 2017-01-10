@@ -41,6 +41,13 @@ class ProjectFindView extends View
         @span class: 'header-item options-label pull-right', =>
           @span 'Finding with Options: '
           @span outlet: 'optionsLabel', class: 'options'
+          @span class: 'btn-group btn-toggle btn-group-options', =>
+            @button outlet: 'regexOptionButton', class: 'btn option-regex', =>
+              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-regex" /></svg>'
+            @button outlet: 'caseOptionButton', class: 'btn option-case-sensitive', =>
+              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-case" /></svg>'
+            @button outlet: 'wholeWordOptionButton', class: 'btn option-whole-word', =>
+              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-word" /></svg>'
 
       @section outlet: 'replacmentInfoBlock', class: 'input-block', =>
         @progress outlet: 'replacementProgress', class: 'inline-block'
@@ -52,13 +59,6 @@ class ProjectFindView extends View
         @div class: 'input-block-item', =>
           @div class: 'btn-group btn-group-find', =>
             @button outlet: 'findAllButton', class: 'btn', 'Find'
-          @div class: 'btn-group btn-toggle btn-group-options', =>
-            @button outlet: 'regexOptionButton', class: 'btn option-regex', =>
-              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-regex" /></svg>'
-            @button outlet: 'caseOptionButton', class: 'btn option-case-sensitive', =>
-              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-case" /></svg>'
-            @button outlet: 'wholeWordOptionButton', class: 'btn option-whole-word', =>
-              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-word" /></svg>'
 
       @section class: 'input-block replace-container', =>
         @div class: 'input-block-item input-block-item--flex editor-container', =>
