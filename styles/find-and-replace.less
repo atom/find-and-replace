@@ -74,9 +74,9 @@ atom-workspace.find-visible {
   }
 
   .btn-group-options {
-    .btn {
-      line-height: 1;
-    }
+    display: inline-flex;
+    width: 140px;
+    margin-left: .5em;
   }
 
   .btn > .icon {
@@ -118,34 +118,21 @@ atom-workspace.find-visible {
 
 // Buffer find and replace
 .find-and-replace {
-  @button-width: 120px;        // Find + Replace + Find All + Replace All buttons
-  @option-button-width: 100px;  // option buttons
-  @item-width: 260px;          // wrap block width
-
-  .input-block-item {
-    flex: 1 1 @item-width;
-  }
-  .input-block-item--flex {
-    flex: 100 1 @item-width;
-  }
-
-  .input-block-item.option-block {
-    flex-basis: @option-button-width;
-  }
 
   .btn-group-find,
-  .btn-group-replace,
+  .btn-group-replace {
+    flex: 1;
+  }
+
   .btn-group-find-all,
-  .btn-group-replace-all, {
-    flex: 1 1 @button-width;
+  .btn-group-replace-all {
+    flex: 2;
   }
 
   .btn-group-options {
-    flex: 1 1 @option-button-width;
     .btn {
-      flex: 1 1 25%;
-      padding: 0;
-      text-align: center;
+    margin-top: -.1em;
+      line-height: 1.75;
     }
   }
 
