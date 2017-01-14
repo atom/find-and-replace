@@ -152,7 +152,7 @@ describe('ResultsView', () => {
 
     beforeEach(() => {
       projectFindView.findEditor.setText('ghijkl');
-      modifiedDelay = projectFindView.replaceEditor.getModel().getBuffer().stoppedChangingDelay;
+      modifiedDelay = projectFindView.replaceEditor.getBuffer().stoppedChangingDelay;
     });
 
     it("renders the replacement when doing a search and there is a replacement pattern", async () => {

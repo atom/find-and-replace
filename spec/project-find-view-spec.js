@@ -48,9 +48,7 @@ describe('ProjectFindView', () => {
 
       projectFindView.findEditor.setText('items');
       expect(getAtomPanel()).toBeVisible();
-      expect(projectFindView.find('.preview-block')).not.toBeVisible();
-      expect(projectFindView.find('.loading')).not.toBeVisible();
-      expect(projectFindView.findEditor.getModel().getSelectedBufferRange()).toEqual([[0, 0], [0, 5]]);
+      expect(projectFindView.findEditor.getSelectedBufferRange()).toEqual([[0, 0], [0, 5]]);
     });
 
     describe("with an open buffer", () => {
@@ -86,7 +84,7 @@ describe('ProjectFindView', () => {
       });
 
       it("places selected text into the find editor and escapes it when Regex is enabled", () => {
-        atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option');
+        atom.commands.dispatch(projectFindView.element, 'project-find:toggle-regex-option');
         editor.setSelectedBufferRange([[6, 6], [6, 65]]);
         atom.commands.dispatch(workspaceElement, 'project-find:show');
         expect(projectFindView.findEditor.getText()).toBe('current < pivot \\? left\\.push\\(current\\) : right\\.push\\(current\\);');
@@ -99,13 +97,13 @@ describe('ProjectFindView', () => {
         await activationPromise;
 
         projectFindView.findEditor.setText('items');
-        projectFindView.findEditor.getModel().setSelectedBufferRange([[0, 0], [0, 0]]);
+        projectFindView.findEditor.setSelectedBufferRange([[0, 0], [0, 0]]);
       });
 
       it("focuses the find editor and selects all the text", () => {
         atom.commands.dispatch(workspaceElement, 'project-find:show');
-        expect(projectFindView.findEditor).toHaveFocus();
-        expect(projectFindView.findEditor.getModel().getSelectedText()).toBe("items");
+        expect(projectFindView.findEditor.getElement()).toHaveFocus();
+        expect(projectFindView.findEditor.getSelectedText()).toBe("items");
       });
     });
 
@@ -117,9 +115,9 @@ describe('ProjectFindView', () => {
       atom.commands.dispatch(workspaceElement, 'project-find:show');
       await activationPromise;
 
-      expect(projectFindView.caseOptionButton).toHaveClass('selected');
-      expect(projectFindView.regexOptionButton).toHaveClass('selected');
-      expect(projectFindView.wholeWordOptionButton).toHaveClass('selected');
+      expect(projectFindView.refs.caseOptionButton).toHaveClass('selected');
+      expect(projectFindView.refs.regexOptionButton).toHaveClass('selected');
+      expect(projectFindView.refs.wholeWordOptionButton).toHaveClass('selected');
     });
   });
 
@@ -212,7 +210,7 @@ describe('ProjectFindView', () => {
 
       expect(getAtomPanel()).toBeVisible();
       expect(projectFindView.pathsEditor.getText()).toBe('nested');
-      expect(projectFindView.findEditor).toHaveFocus();
+      expect(projectFindView.findEditor.getElement()).toHaveFocus();
 
       atom.commands.dispatch(tree.querySelector('.name'), 'project-find:show-in-current-directory');
       expect(projectFindView.pathsEditor.getText()).toBe('');
@@ -224,7 +222,7 @@ describe('ProjectFindView', () => {
 
       expect(getAtomPanel()).toBeVisible();
       expect(projectFindView.pathsEditor.getText()).toBe('nested');
-      expect(projectFindView.findEditor).toHaveFocus();
+      expect(projectFindView.findEditor.getElement()).toHaveFocus();
 
       atom.commands.dispatch(tree.querySelector('.name'), 'project-find:show-in-current-directory');
       expect(projectFindView.pathsEditor.getText()).toBe('');
@@ -236,7 +234,7 @@ describe('ProjectFindView', () => {
 
       expect(getAtomPanel()).toBeVisible();
       expect(projectFindView.pathsEditor.getText()).toBe('nested');
-      expect(projectFindView.findEditor).toHaveFocus();
+      expect(projectFindView.findEditor.getElement()).toHaveFocus();
 
       atom.commands.dispatch(tree.querySelector('.file .name'), 'project-find:show-in-current-directory');
       expect(projectFindView.pathsEditor.getText()).toBe('');
@@ -275,10 +273,10 @@ describe('ProjectFindView', () => {
 
       describe("when regex seach is enabled", () => {
         it("finds a literal tab character", async () => {
-          atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option');
+          atom.commands.dispatch(projectFindView.element, 'project-find:toggle-regex-option');
           projectFindView.findEditor.setText('\\t');
 
-          atom.commands.dispatch(projectFindView[0], 'core:confirm');
+          atom.commands.dispatch(projectFindView.element, 'core:confirm');
           await searchPromise;
 
           const resultsPaneView = getExistingResultsPane();
@@ -292,7 +290,7 @@ describe('ProjectFindView', () => {
         it("finds the escape char", async () => {
           projectFindView.findEditor.setText('\\t');
 
-          atom.commands.dispatch(projectFindView[0], 'core:confirm');
+          atom.commands.dispatch(projectFindView.element, 'core:confirm');
           await searchPromise;
 
           const resultsPaneView = getExistingResultsPane();
@@ -304,7 +302,7 @@ describe('ProjectFindView', () => {
         it("finds a backslash", async () => {
           projectFindView.findEditor.setText('\\');
 
-          atom.commands.dispatch(projectFindView[0], 'core:confirm');
+          atom.commands.dispatch(projectFindView.element, 'core:confirm');
           await searchPromise;
 
           const resultsPaneView = getExistingResultsPane();
@@ -316,7 +314,7 @@ describe('ProjectFindView', () => {
         it("doesn't insert a escaped char if there are multiple backslashs in front of the char", async () => {
           projectFindView.findEditor.setText('\\\\t');
 
-          atom.commands.dispatch(projectFindView[0], 'core:confirm');
+          atom.commands.dispatch(projectFindView.element, 'core:confirm');
           await searchPromise;
 
           const resultsPaneView = getExistingResultsPane();
@@ -330,7 +328,7 @@ describe('ProjectFindView', () => {
     describe("when core:cancel is triggered", () => {
       it("detaches from the root view", () => {
         atom.commands.dispatch(workspaceElement, 'project-find:show');
-        projectFindView.focus();
+        projectFindView.element.focus();
         atom.commands.dispatch(document.activeElement, 'core:cancel');
         expect(getAtomPanel()).not.toBeVisible();
       });
@@ -340,7 +338,7 @@ describe('ProjectFindView', () => {
       it("closes the panel after search", async () => {
         atom.config.set('find-and-replace.closeFindPanelAfterSearch', true);
 
-        atom.commands.dispatch(projectFindView[0], 'core:confirm');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
 
         expect(getAtomPanel()).not.toBeVisible();
@@ -358,7 +356,7 @@ describe('ProjectFindView', () => {
         atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'right');
         projectFindView.findEditor.setText('items');
 
-        atom.commands.dispatch(projectFindView[0], 'core:confirm');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
 
         expect(atom.workspace.getActivePane()).not.toBe(initialPane);
@@ -369,7 +367,7 @@ describe('ProjectFindView', () => {
         atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'down');
         projectFindView.findEditor.setText('items');
 
-        atom.commands.dispatch(projectFindView[0], 'core:confirm');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
 
         expect(atom.workspace.getActivePane()).not.toBe(initialPane);
@@ -379,7 +377,7 @@ describe('ProjectFindView', () => {
         const initialPane = atom.workspace.getActivePane();
         projectFindView.findEditor.setText('items');
 
-        atom.commands.dispatch(projectFindView[0], 'core:confirm');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
 
         expect(atom.workspace.getActivePane()).toBe(initialPane);
@@ -389,7 +387,7 @@ describe('ProjectFindView', () => {
         atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'right');
         projectFindView.findEditor.setText('items');
 
-        atom.commands.dispatch(projectFindView[0], 'core:confirm');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
 
         const resultsPaneView1 = atom.views.getView(getExistingResultsPane());
@@ -411,7 +409,7 @@ describe('ProjectFindView', () => {
         atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'down');
         projectFindView.findEditor.setText('items');
 
-        atom.commands.dispatch(projectFindView[0], 'core:confirm');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
 
         const resultsPaneView1 = atom.views.getView(getExistingResultsPane());
@@ -434,17 +432,17 @@ describe('ProjectFindView', () => {
     describe("serialization", () => {
       it("serializes if the case, regex and whole word options", async () => {
         atom.commands.dispatch(editorElement, 'project-find:show');
-        expect(projectFindView.caseOptionButton).not.toHaveClass('selected');
-        projectFindView.caseOptionButton.click();
-        expect(projectFindView.caseOptionButton).toHaveClass('selected');
+        expect(projectFindView.refs.caseOptionButton).not.toHaveClass('selected');
+        projectFindView.refs.caseOptionButton.click();
+        expect(projectFindView.refs.caseOptionButton).toHaveClass('selected');
 
-        expect(projectFindView.regexOptionButton).not.toHaveClass('selected');
-        projectFindView.regexOptionButton.click();
-        expect(projectFindView.regexOptionButton).toHaveClass('selected');
+        expect(projectFindView.refs.regexOptionButton).not.toHaveClass('selected');
+        projectFindView.refs.regexOptionButton.click();
+        expect(projectFindView.refs.regexOptionButton).toHaveClass('selected');
 
-        expect(projectFindView.wholeWordOptionButton).not.toHaveClass('selected');
-        projectFindView.wholeWordOptionButton.click();
-        expect(projectFindView.wholeWordOptionButton).toHaveClass('selected');
+        expect(projectFindView.refs.wholeWordOptionButton).not.toHaveClass('selected');
+        projectFindView.refs.wholeWordOptionButton.click();
+        expect(projectFindView.refs.wholeWordOptionButton).toHaveClass('selected');
 
         atom.packages.deactivatePackage("find-and-replace");
 
@@ -456,9 +454,9 @@ describe('ProjectFindView', () => {
         atom.commands.dispatch(editorElement, 'project-find:show');
         await activationPromise;
 
-        expect(projectFindView.caseOptionButton).toHaveClass('selected');
-        expect(projectFindView.regexOptionButton).toHaveClass('selected');
-        expect(projectFindView.wholeWordOptionButton).toHaveClass('selected');
+        expect(projectFindView.refs.caseOptionButton).toHaveClass('selected');
+        expect(projectFindView.refs.regexOptionButton).toHaveClass('selected');
+        expect(projectFindView.refs.wholeWordOptionButton).toHaveClass('selected');
       })
     });
 
@@ -469,43 +467,43 @@ describe('ProjectFindView', () => {
 
       it("indicates that it's searching, then shows the results", async () => {
         projectFindView.findEditor.setText('item');
-        atom.commands.dispatch(projectFindView[0], 'core:confirm');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
 
         await projectFindView.showResultPane();
 
-        expect(projectFindView.descriptionLabel.text()).toContain('Searching...');
+        expect(projectFindView.refs.descriptionLabel.textContent).toContain('Searching...');
 
         await searchPromise;
 
-        expect(projectFindView.descriptionLabel.text()).toContain('13 results found in 2 files');
-        atom.commands.dispatch(projectFindView[0], 'core:confirm');
-        expect(projectFindView.descriptionLabel.text()).toContain('13 results found in 2 files');
+        expect(projectFindView.refs.descriptionLabel.textContent).toContain('13 results found in 2 files');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
+        expect(projectFindView.refs.descriptionLabel.textContent).toContain('13 results found in 2 files');
       });
 
       it("shows an error when the pattern is invalid and clears when no error", async () => {
         spyOn(atom.workspace, 'scan').andReturn(Promise.resolve());
-        atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option');
+        atom.commands.dispatch(projectFindView.element, 'project-find:toggle-regex-option');
         projectFindView.findEditor.setText('[');
-        atom.commands.dispatch(projectFindView[0], 'core:confirm');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
 
         await searchPromise;
 
-        expect(projectFindView.descriptionLabel).toHaveClass('text-error');
-        expect(projectFindView.descriptionLabel.text()).toContain('Invalid regular expression');
+        expect(projectFindView.refs.descriptionLabel).toHaveClass('text-error');
+        expect(projectFindView.refs.descriptionLabel.textContent).toContain('Invalid regular expression');
 
         projectFindView.findEditor.setText('');
-        atom.commands.dispatch(projectFindView[0], 'core:confirm');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
 
-        expect(projectFindView.descriptionLabel).not.toHaveClass('text-error');
-        expect(projectFindView.descriptionLabel.text()).toContain('Find in Project');
+        expect(projectFindView.refs.descriptionLabel).not.toHaveClass('text-error');
+        expect(projectFindView.refs.descriptionLabel.textContent).toContain('Find in Project');
 
         projectFindView.findEditor.setText('items');
-        atom.commands.dispatch(projectFindView[0], 'core:confirm');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
 
         await searchPromise;
 
-        expect(projectFindView.descriptionLabel).not.toHaveClass('text-error');
-        expect(projectFindView.descriptionLabel.text()).toContain('items');
+        expect(projectFindView.refs.descriptionLabel).not.toHaveClass('text-error');
+        expect(projectFindView.refs.descriptionLabel.textContent).toContain('items');
       });
     });
 
@@ -517,54 +515,54 @@ describe('ProjectFindView', () => {
       });
 
       it("escapes regex patterns by default", async () => {
-        atom.commands.dispatch(projectFindView[0], 'core:confirm');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
 
         expect(atom.workspace.scan.argsForCall[0][0]).toEqual(/i\(\\w\)ems\+/gi);
       });
 
       it("shows an error when the regex pattern is invalid", async () => {
-        atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option');
+        atom.commands.dispatch(projectFindView.element, 'project-find:toggle-regex-option');
         projectFindView.findEditor.setText('[');
 
-        atom.commands.dispatch(projectFindView[0], 'core:confirm');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
 
-        expect(projectFindView.descriptionLabel).toHaveClass('text-error');
+        expect(projectFindView.refs.descriptionLabel).toHaveClass('text-error');
       });
 
       describe("when search has not been run yet", () => {
         it("toggles regex option via an event but does not run the search", () => {
-          expect(projectFindView.regexOptionButton).not.toHaveClass('selected');
-          atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option');
-          expect(projectFindView.regexOptionButton).toHaveClass('selected');
+          expect(projectFindView.refs.regexOptionButton).not.toHaveClass('selected');
+          atom.commands.dispatch(projectFindView.element, 'project-find:toggle-regex-option');
+          expect(projectFindView.refs.regexOptionButton).toHaveClass('selected');
           expect(atom.workspace.scan).not.toHaveBeenCalled();
         })
       });
 
       describe("when search has been run", () => {
         beforeEach(async () => {
-          atom.commands.dispatch(projectFindView[0], 'core:confirm');
+          atom.commands.dispatch(projectFindView.element, 'core:confirm');
           await searchPromise;
         });
 
         it("toggles regex option via an event and finds files matching the pattern", async () => {
-          expect(projectFindView.regexOptionButton).not.toHaveClass('selected');
-          atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option');
+          expect(projectFindView.refs.regexOptionButton).not.toHaveClass('selected');
+          atom.commands.dispatch(projectFindView.element, 'project-find:toggle-regex-option');
 
           await searchPromise;
 
-          expect(projectFindView.regexOptionButton).toHaveClass('selected');
+          expect(projectFindView.refs.regexOptionButton).toHaveClass('selected');
           expect(atom.workspace.scan.mostRecentCall.args[0]).toEqual(/i(\w)ems+/gi);
         });
 
         it("toggles regex option via a button and finds files matching the pattern", async () => {
-          expect(projectFindView.regexOptionButton).not.toHaveClass('selected');
-          projectFindView.regexOptionButton.click();
+          expect(projectFindView.refs.regexOptionButton).not.toHaveClass('selected');
+          projectFindView.refs.regexOptionButton.click();
 
           await searchPromise;
 
-          expect(projectFindView.regexOptionButton).toHaveClass('selected');
+          expect(projectFindView.refs.regexOptionButton).toHaveClass('selected');
           expect(atom.workspace.scan.mostRecentCall.args[0]).toEqual(/i(\w)ems+/gi);
         });
       });
@@ -576,29 +574,29 @@ describe('ProjectFindView', () => {
         spyOn(atom.workspace, 'scan').andCallFake(() => Promise.resolve());
         projectFindView.findEditor.setText('ITEMS');
 
-        atom.commands.dispatch(projectFindView[0], 'core:confirm');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
       });
 
       it("runs a case insensitive search by default", () => expect(atom.workspace.scan.argsForCall[0][0]).toEqual(/ITEMS/gi));
 
       it("toggles case sensitive option via an event and finds files matching the pattern", async () => {
-        expect(projectFindView.caseOptionButton).not.toHaveClass('selected');
+        expect(projectFindView.refs.caseOptionButton).not.toHaveClass('selected');
 
-        atom.commands.dispatch(projectFindView[0], 'project-find:toggle-case-option');
+        atom.commands.dispatch(projectFindView.element, 'project-find:toggle-case-option');
         await searchPromise;
 
-        expect(projectFindView.caseOptionButton).toHaveClass('selected');
+        expect(projectFindView.refs.caseOptionButton).toHaveClass('selected');
         expect(atom.workspace.scan.mostRecentCall.args[0]).toEqual(/ITEMS/g);
       });
 
       it("toggles case sensitive option via a button and finds files matching the pattern", async () => {
-        expect(projectFindView.caseOptionButton).not.toHaveClass('selected');
+        expect(projectFindView.refs.caseOptionButton).not.toHaveClass('selected');
 
-        projectFindView.caseOptionButton.click();
+        projectFindView.refs.caseOptionButton.click();
         await searchPromise;
 
-        expect(projectFindView.caseOptionButton).toHaveClass('selected');
+        expect(projectFindView.refs.caseOptionButton).toHaveClass('selected');
         expect(atom.workspace.scan.mostRecentCall.args[0]).toEqual(/ITEMS/g);
       });
     });
@@ -609,7 +607,7 @@ describe('ProjectFindView', () => {
         spyOn(atom.workspace, 'scan').andCallFake(async () => {});
         projectFindView.findEditor.setText('wholeword');
 
-        atom.commands.dispatch(projectFindView[0], 'core:confirm');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
       });
 
@@ -618,21 +616,21 @@ describe('ProjectFindView', () => {
       });
 
       it("toggles whole word option via an event and finds files matching the pattern", async () => {
-        expect(projectFindView.wholeWordOptionButton).not.toHaveClass('selected');
-        atom.commands.dispatch(projectFindView[0], 'project-find:toggle-whole-word-option');
+        expect(projectFindView.refs.wholeWordOptionButton).not.toHaveClass('selected');
+        atom.commands.dispatch(projectFindView.element, 'project-find:toggle-whole-word-option');
 
         await searchPromise;
-        expect(projectFindView.wholeWordOptionButton).toHaveClass('selected');
+        expect(projectFindView.refs.wholeWordOptionButton).toHaveClass('selected');
         expect(atom.workspace.scan.mostRecentCall.args[0]).toEqual(/\bwholeword\b/gi);
       });
 
       it("toggles whole word option via a button and finds files matching the pattern", async () => {
-        expect(projectFindView.wholeWordOptionButton).not.toHaveClass('selected');
+        expect(projectFindView.refs.wholeWordOptionButton).not.toHaveClass('selected');
 
-        projectFindView.wholeWordOptionButton.click();
+        projectFindView.refs.wholeWordOptionButton.click();
         await searchPromise;
 
-        expect(projectFindView.wholeWordOptionButton).toHaveClass('selected');
+        expect(projectFindView.refs.wholeWordOptionButton).toHaveClass('selected');
         expect(atom.workspace.scan.mostRecentCall.args[0]).toEqual(/\bwholeword\b/gi);
       });
     });
@@ -640,7 +638,7 @@ describe('ProjectFindView', () => {
     describe("when project-find:confirm is triggered", () => {
       it("displays the results and no errors", async () => {
         projectFindView.findEditor.setText('items');
-        atom.commands.dispatch(projectFindView[0], 'project-find:confirm');
+        atom.commands.dispatch(projectFindView.element, 'project-find:confirm');
 
         await searchPromise;
 
@@ -662,7 +660,7 @@ describe('ProjectFindView', () => {
         it("does not run the seach but clears the model", () => {
           spyOn(atom.workspace, 'scan');
           spyOn(projectFindView.model, 'clear');
-          atom.commands.dispatch(projectFindView[0], 'core:confirm');
+          atom.commands.dispatch(projectFindView.element, 'core:confirm');
           expect(atom.workspace.scan).not.toHaveBeenCalled();
           expect(projectFindView.model.clear).toHaveBeenCalled();
         })
@@ -670,25 +668,25 @@ describe('ProjectFindView', () => {
 
       it("reruns the search when confirmed again after focusing the window", async () => {
         projectFindView.findEditor.setText('thisdoesnotmatch');
-        atom.commands.dispatch(projectFindView[0], 'core:confirm');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
 
         await searchPromise;
 
         spyOn(atom.workspace, 'scan');
-        atom.commands.dispatch(projectFindView[0], 'core:confirm');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
 
         await searchPromise;
 
         expect(atom.workspace.scan).not.toHaveBeenCalled();
         atom.workspace.scan.reset();
         window.dispatchEvent(new FocusEvent("focus"));
-        atom.commands.dispatch(projectFindView[0], 'core:confirm');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
 
         await searchPromise;
 
         expect(atom.workspace.scan).toHaveBeenCalled();
         atom.workspace.scan.reset();
-        atom.commands.dispatch(projectFindView[0], 'core:confirm');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
 
         await searchPromise;
 
@@ -701,7 +699,7 @@ describe('ProjectFindView', () => {
         });
 
         it("displays the results and no errors", async () => {
-          atom.commands.dispatch(projectFindView[0], 'core:confirm');
+          atom.commands.dispatch(projectFindView.element, 'core:confirm');
           await searchPromise;
 
           const resultsPaneView = getExistingResultsPane();
@@ -718,7 +716,7 @@ describe('ProjectFindView', () => {
           spyOn(atom.workspace, 'scan').andCallFake(async () => {});
           projectFindView.pathsEditor.setText('*.js');
 
-          atom.commands.dispatch(projectFindView[0], 'core:confirm');
+          atom.commands.dispatch(projectFindView.element, 'core:confirm');
           await searchPromise;
 
           expect(atom.workspace.scan.argsForCall[0][1].paths).toEqual(['*.js']);
@@ -727,7 +725,7 @@ describe('ProjectFindView', () => {
         it("updates the results list when a buffer changes", async () => {
           const buffer = atom.project.bufferForPathSync('sample.js');
 
-          atom.commands.dispatch(projectFindView[0], 'core:confirm');
+          atom.commands.dispatch(projectFindView.element, 'core:confirm');
           await searchPromise;
 
           const resultsPaneView = getExistingResultsPane();
@@ -760,7 +758,7 @@ describe('ProjectFindView', () => {
         });
 
         it("displays no errors and no results", async () => {
-          atom.commands.dispatch(projectFindView[0], 'core:confirm');
+          atom.commands.dispatch(projectFindView.element, 'core:confirm');
           await searchPromise;
 
           let {resultsView} = getExistingResultsPane();
@@ -783,46 +781,46 @@ describe('ProjectFindView', () => {
         projectFindView.findEditor.setText('sort');
         projectFindView.replaceEditor.setText('bort');
         projectFindView.pathsEditor.setText('abc');
-        atom.commands.dispatch(projectFindView.findEditor[0], 'core:confirm');
+        atom.commands.dispatch(projectFindView.findEditor.getElement(), 'core:confirm');
 
         projectFindView.findEditor.setText('items');
         projectFindView.replaceEditor.setText('eyetims');
         projectFindView.pathsEditor.setText('def');
-        atom.commands.dispatch(projectFindView.findEditor[0], 'core:confirm');
+        atom.commands.dispatch(projectFindView.findEditor.getElement(), 'core:confirm');
       });
 
       it("can navigate the entire history stack", () => {
         expect(projectFindView.findEditor.getText()).toEqual('items');
 
-        atom.commands.dispatch(projectFindView.findEditor[0], 'core:move-up');
+        atom.commands.dispatch(projectFindView.findEditor.getElement(), 'core:move-up');
         expect(projectFindView.findEditor.getText()).toEqual('sort');
 
-        atom.commands.dispatch(projectFindView.findEditor[0], 'core:move-down');
+        atom.commands.dispatch(projectFindView.findEditor.getElement(), 'core:move-down');
         expect(projectFindView.findEditor.getText()).toEqual('items');
 
-        atom.commands.dispatch(projectFindView.findEditor[0], 'core:move-down');
+        atom.commands.dispatch(projectFindView.findEditor.getElement(), 'core:move-down');
         expect(projectFindView.findEditor.getText()).toEqual('');
 
         expect(projectFindView.pathsEditor.getText()).toEqual('def');
 
-        atom.commands.dispatch(projectFindView.pathsEditor[0], 'core:move-up');
+        atom.commands.dispatch(projectFindView.pathsEditor.element, 'core:move-up');
         expect(projectFindView.pathsEditor.getText()).toEqual('abc');
 
-        atom.commands.dispatch(projectFindView.pathsEditor[0], 'core:move-down');
+        atom.commands.dispatch(projectFindView.pathsEditor.element, 'core:move-down');
         expect(projectFindView.pathsEditor.getText()).toEqual('def');
 
-        atom.commands.dispatch(projectFindView.pathsEditor[0], 'core:move-down');
+        atom.commands.dispatch(projectFindView.pathsEditor.element, 'core:move-down');
         expect(projectFindView.pathsEditor.getText()).toEqual('');
 
         expect(projectFindView.replaceEditor.getText()).toEqual('eyetims');
 
-        atom.commands.dispatch(projectFindView.replaceEditor[0], 'core:move-up');
+        atom.commands.dispatch(projectFindView.replaceEditor.element, 'core:move-up');
         expect(projectFindView.replaceEditor.getText()).toEqual('bort');
 
-        atom.commands.dispatch(projectFindView.replaceEditor[0], 'core:move-down');
+        atom.commands.dispatch(projectFindView.replaceEditor.element, 'core:move-down');
         expect(projectFindView.replaceEditor.getText()).toEqual('eyetims');
 
-        atom.commands.dispatch(projectFindView.replaceEditor[0], 'core:move-down');
+        atom.commands.dispatch(projectFindView.replaceEditor.element, 'core:move-down');
         expect(projectFindView.replaceEditor.getText()).toEqual('');
       });
     });
@@ -859,7 +857,7 @@ describe('ProjectFindView', () => {
       });
 
       it("places selected text into the find editor and escapes it when Regex is enabled", () => {
-        atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option');
+        atom.commands.dispatch(projectFindView.element, 'project-find:toggle-regex-option');
         editor.setSelectedBufferRange([[6, 6], [6, 65]]);
         atom.commands.dispatch(workspaceElement, 'find-and-replace:use-selection-as-find-pattern');
         expect(projectFindView.findEditor.getText()).toBe('current < pivot \\? left\\.push\\(current\\) : right\\.push\\(current\\);');
@@ -883,7 +881,7 @@ describe('ProjectFindView', () => {
           expect(errorList.find("li")).toHaveLength(2);
         });
 
-        atom.commands.dispatch(projectFindView[0], 'core:confirm');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
 
         await searchPromise;
 
@@ -910,11 +908,11 @@ describe('ProjectFindView', () => {
       it("setting the find text does not interfere with the project replace state", async () => {
         // Not sure why I need to advance the clock before setting the text. If
         // this advanceClock doesnt happen, the text will be ''. wtf.
-        advanceClock(projectFindView.findEditor.getModel().getBuffer().stoppedChangingDelay + 1);
+        advanceClock(projectFindView.findEditor.getBuffer().stoppedChangingDelay + 1);
         spyOn(atom.workspace, 'scan');
 
         projectFindView.findEditor.setText('findme');
-        advanceClock(projectFindView.findEditor.getModel().getBuffer().stoppedChangingDelay + 1);
+        advanceClock(projectFindView.findEditor.getBuffer().stoppedChangingDelay + 1);
 
         await projectFindView.search({onlyRunIfActive: false, onlyRunIfChanged: true});
         expect(atom.workspace.scan).toHaveBeenCalled();
@@ -967,7 +965,7 @@ describe('ProjectFindView', () => {
         expect(getResultDecorations('find-result')).toHaveLength(0);
 
         projectFindView.findEditor.setText('item');
-        atom.commands.dispatch(projectFindView[0], 'core:confirm');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
 
         const resultsPaneView = getExistingResultsPane();
@@ -994,7 +992,7 @@ describe('ProjectFindView', () => {
         expect(editor.getSelectedBufferRange()).not.toEqual(initialSelectedRange);
 
         // Now we toggle the whole-word option to make sure it is updated in the buffer find
-        atom.commands.dispatch(projectFindView[0], 'project-find:toggle-whole-word-option');
+        atom.commands.dispatch(projectFindView.element, 'project-find:toggle-whole-word-option');
         await searchPromise;
 
         // sample.js has 0 results for whole word `item`
@@ -1002,7 +1000,7 @@ describe('ProjectFindView', () => {
         expect(workspaceElement).toHaveClass('find-visible');
 
         // Now we toggle the whole-word option to make sure it is updated in the buffer find
-        atom.commands.dispatch(projectFindView[0], 'project-find:toggle-whole-word-option');
+        atom.commands.dispatch(projectFindView.element, 'project-find:toggle-whole-word-option');
       });
     });
   });
@@ -1068,16 +1066,16 @@ describe('ProjectFindView', () => {
 
       describe("when the regex option is chosen", () => {
         beforeEach(async () => {
-          atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option');
+          atom.commands.dispatch(projectFindView.element, 'project-find:toggle-regex-option');
           projectFindView.findEditor.setText('a');
-          atom.commands.dispatch(projectFindView[0], 'project-find:confirm');
+          atom.commands.dispatch(projectFindView.element, 'project-find:confirm');
           await searchPromise;
         });
 
         it("finds the escape char", async () => {
           projectFindView.replaceEditor.setText('\\t');
 
-          atom.commands.dispatch(projectFindView[0], 'project-find:replace-all');
+          atom.commands.dispatch(projectFindView.element, 'project-find:replace-all');
           await replacePromise;
 
           expect(fs.readFileSync(filePath, 'utf8')).toBe("\t\nb\n\t");
@@ -1086,7 +1084,7 @@ describe('ProjectFindView', () => {
         it("doesn't insert a escaped char if there are multiple backslashs in front of the char", async () => {
           projectFindView.replaceEditor.setText('\\\\t');
 
-          atom.commands.dispatch(projectFindView[0], 'project-find:replace-all');
+          atom.commands.dispatch(projectFindView.element, 'project-find:replace-all');
           await replacePromise;
 
           expect(fs.readFileSync(filePath, 'utf8')).toBe("\\t\nb\n\\t");
@@ -1096,14 +1094,14 @@ describe('ProjectFindView', () => {
       describe("when regex option is not set", () => {
         beforeEach(async () => {
           projectFindView.findEditor.setText('a');
-          atom.commands.dispatch(projectFindView[0], 'project-find:confirm');
+          atom.commands.dispatch(projectFindView.element, 'project-find:confirm');
           await searchPromise;
         });
 
         it("finds the escape char", async () => {
           projectFindView.replaceEditor.setText('\\t');
 
-          atom.commands.dispatch(projectFindView[0], 'project-find:replace-all');
+          atom.commands.dispatch(projectFindView.element, 'project-find:replace-all');
           await replacePromise;
 
           expect(fs.readFileSync(filePath, 'utf8')).toBe("\\t\nb\n\\t");
@@ -1115,55 +1113,55 @@ describe('ProjectFindView', () => {
       let disposable = null;
 
       it("is disabled initially", () => {
-        expect(projectFindView.replaceAllButton).toHaveClass('disabled')
+        expect(projectFindView.refs.replaceAllButton).toHaveClass('disabled')
       });
 
       it("is disabled when a search returns no results", async () => {
         projectFindView.findEditor.setText('items');
-        atom.commands.dispatch(projectFindView[0], 'project-find:confirm');
+        atom.commands.dispatch(projectFindView.element, 'project-find:confirm');
         await searchPromise;
 
-        expect(projectFindView.replaceAllButton).not.toHaveClass('disabled');
+        expect(projectFindView.refs.replaceAllButton).not.toHaveClass('disabled');
 
         projectFindView.findEditor.setText('nopenotinthefile');
-        atom.commands.dispatch(projectFindView[0], 'project-find:confirm');
+        atom.commands.dispatch(projectFindView.element, 'project-find:confirm');
         await searchPromise;
 
-        expect(projectFindView.replaceAllButton).toHaveClass('disabled');
+        expect(projectFindView.refs.replaceAllButton).toHaveClass('disabled');
       });
 
       it("is enabled when a search has results and disabled when there are no results", async () => {
         projectFindView.findEditor.setText('items');
-        atom.commands.dispatch(projectFindView[0], 'project-find:confirm');
+        atom.commands.dispatch(projectFindView.element, 'project-find:confirm');
 
         await searchPromise;
 
         disposable = projectFindView.replaceTooltipSubscriptions;
         spyOn(disposable, 'dispose');
 
-        expect(projectFindView.replaceAllButton).not.toHaveClass('disabled');
+        expect(projectFindView.refs.replaceAllButton).not.toHaveClass('disabled');
 
         // The replace all button should still be disabled as the text has been changed and a new search has not been run
         projectFindView.findEditor.setText('itemss');
         advanceClock(stoppedChangingDelay);
-        expect(projectFindView.replaceAllButton).toHaveClass('disabled');
+        expect(projectFindView.refs.replaceAllButton).toHaveClass('disabled');
         expect(disposable.dispose).toHaveBeenCalled();
 
         // The button should still be disabled because the search and search pattern are out of sync
         projectFindView.replaceEditor.setText('omgomg');
         advanceClock(stoppedChangingDelay);
-        expect(projectFindView.replaceAllButton).toHaveClass('disabled');
+        expect(projectFindView.refs.replaceAllButton).toHaveClass('disabled');
 
         disposable = projectFindView.replaceTooltipSubscriptions;
         spyOn(disposable, 'dispose');
         projectFindView.findEditor.setText('items');
         advanceClock(stoppedChangingDelay);
-        expect(projectFindView.replaceAllButton).not.toHaveClass('disabled');
+        expect(projectFindView.refs.replaceAllButton).not.toHaveClass('disabled');
 
         projectFindView.findEditor.setText('');
-        atom.commands.dispatch(projectFindView[0], 'project-find:confirm');
+        atom.commands.dispatch(projectFindView.element, 'project-find:confirm');
 
-        expect(projectFindView.replaceAllButton).toHaveClass('disabled');
+        expect(projectFindView.refs.replaceAllButton).toHaveClass('disabled');
       });
     });
 
@@ -1174,15 +1172,15 @@ describe('ProjectFindView', () => {
 
       it("runs the search, and replaces all the matches", async () => {
         projectFindView.findEditor.setText('items');
-        atom.commands.dispatch(projectFindView[0], 'core:confirm');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
 
         projectFindView.replaceEditor.setText('sunshine');
-        projectFindView.replaceAllButton.click();
+        projectFindView.refs.replaceAllButton.click();
         await replacePromise;
 
         expect(projectFindView.errorMessages).not.toBeVisible();
-        expect(projectFindView.descriptionLabel.text()).toContain('Replaced');
+        expect(projectFindView.refs.descriptionLabel.textContent).toContain('Replaced');
 
         const sampleJsContent = fs.readFileSync(sampleJs, 'utf8');
         expect(sampleJsContent.match(/items/g)).toBeFalsy();
@@ -1196,21 +1194,21 @@ describe('ProjectFindView', () => {
       describe("when there are search results after a replace", () => {
         it("runs the search after the replace", async () => {
           projectFindView.findEditor.setText('items');
-          atom.commands.dispatch(projectFindView[0], 'core:confirm');
+          atom.commands.dispatch(projectFindView.element, 'core:confirm');
           await searchPromise;
 
           projectFindView.replaceEditor.setText('items-123');
-          projectFindView.replaceAllButton.click();
+          projectFindView.refs.replaceAllButton.click();
           await replacePromise;
 
           expect(projectFindView.errorMessages).not.toBeVisible();
           expect(getExistingResultsPane().previewCount.text()).toContain('13 results found in 2 files for items');
-          expect(projectFindView.descriptionLabel.text()).toContain('Replaced items with items-123 13 times in 2 files');
+          expect(projectFindView.refs.descriptionLabel.textContent).toContain('Replaced items with items-123 13 times in 2 files');
 
           projectFindView.replaceEditor.setText('cats');
-          advanceClock(projectFindView.replaceEditor.getModel().getBuffer().stoppedChangingDelay);
-          expect(projectFindView.descriptionLabel.text()).not.toContain('Replaced items');
-          expect(projectFindView.descriptionLabel.text()).toContain("13 results found in 2 files for items");
+          advanceClock(projectFindView.replaceEditor.getBuffer().stoppedChangingDelay);
+          expect(projectFindView.refs.descriptionLabel.textContent).not.toContain('Replaced items');
+          expect(projectFindView.refs.descriptionLabel.textContent).toContain("13 results found in 2 files for items");
         })
       });
     });
@@ -1226,12 +1224,12 @@ describe('ProjectFindView', () => {
           projectFindView.replaceEditor.setText('sunshine');
 
           spyOn(atom, 'beep');
-          atom.commands.dispatch(projectFindView[0], 'project-find:replace-all');
+          atom.commands.dispatch(projectFindView.element, 'project-find:replace-all');
 
           expect(replacePromise).toBeUndefined();
 
           expect(atom.beep).toHaveBeenCalled();
-          expect(projectFindView.descriptionLabel.text()).toContain("Find in Project");
+          expect(projectFindView.refs.descriptionLabel.textContent).toContain("Find in Project");
         });
       });
 
@@ -1239,7 +1237,7 @@ describe('ProjectFindView', () => {
         beforeEach(async () => {
           spyOn(atom, 'confirm').andReturn(0);
           projectFindView.findEditor.setText('nopenotinthefile');
-          atom.commands.dispatch(projectFindView[0], 'core:confirm');
+          atom.commands.dispatch(projectFindView.element, 'core:confirm');
 
           await searchPromise;
         });
@@ -1249,21 +1247,21 @@ describe('ProjectFindView', () => {
 
           spyOn(atom.workspace, 'scan').andCallThrough();
           spyOn(atom, 'beep');
-          atom.commands.dispatch(projectFindView[0], 'project-find:replace-all');
+          atom.commands.dispatch(projectFindView.element, 'project-find:replace-all');
 
           // The replacement isnt even run
           expect(replacePromise).toBeUndefined();
 
           expect(atom.workspace.scan).not.toHaveBeenCalled();
           expect(atom.beep).toHaveBeenCalled();
-          expect(projectFindView.descriptionLabel.text().replace(/(  )/g, ' ')).toContain("No results");
+          expect(projectFindView.refs.descriptionLabel.textContent.replace(/(  )/g, ' ')).toContain("No results");
         });
       });
 
       describe("when a search with results has been run", () => {
         beforeEach(async () => {
           projectFindView.findEditor.setText('items');
-          atom.commands.dispatch(projectFindView[0], 'core:confirm');
+          atom.commands.dispatch(projectFindView.element, 'core:confirm');
 
           await searchPromise;
         });
@@ -1276,7 +1274,7 @@ describe('ProjectFindView', () => {
           projectFindView.replaceEditor.setText('ok');
 
           advanceClock(stoppedChangingDelay);
-          atom.commands.dispatch(projectFindView[0], 'project-find:replace-all');
+          atom.commands.dispatch(projectFindView.element, 'project-find:replace-all');
 
           expect(replacePromise).toBeUndefined();
           expect(atom.workspace.scan).not.toHaveBeenCalled();
@@ -1289,7 +1287,7 @@ describe('ProjectFindView', () => {
           projectFindView.replaceEditor.setText('sunshine');
 
           expect(projectFindView.errorMessages).not.toBeVisible();
-          atom.commands.dispatch(projectFindView[0], 'project-find:replace-all');
+          atom.commands.dispatch(projectFindView.element, 'project-find:replace-all');
           await replacePromise;
 
           const resultsPaneView = getExistingResultsPane();
@@ -1298,7 +1296,7 @@ describe('ProjectFindView', () => {
           expect(resultsView).toBeVisible();
           expect(resultsView.find("li > ul > li")).toHaveLength(0);
 
-          expect(projectFindView.descriptionLabel.text()).toContain("Replaced items with sunshine 13 times in 2 files");
+          expect(projectFindView.refs.descriptionLabel.textContent).toContain("Replaced items with sunshine 13 times in 2 files");
 
           let sampleJsContent = fs.readFileSync(sampleJs, 'utf8');
           expect(sampleJsContent.match(/items/g)).toBeFalsy();
@@ -1317,10 +1315,10 @@ describe('ProjectFindView', () => {
           it("does not replace", async () => {
             projectFindView.replaceEditor.setText('sunshine');
 
-            atom.commands.dispatch(projectFindView[0], 'project-find:replace-all');
+            atom.commands.dispatch(projectFindView.element, 'project-find:replace-all');
             await replacePromise;
 
-            expect(projectFindView.descriptionLabel.text()).toContain("13 results found");
+            expect(projectFindView.refs.descriptionLabel.textContent).toContain("13 results found");
           });
         });
       });
@@ -1330,7 +1328,7 @@ describe('ProjectFindView', () => {
       beforeEach(async () => {
         spyOn(atom, 'confirm').andReturn(0);
         projectFindView.findEditor.setText('items');
-        atom.commands.dispatch(projectFindView[0], 'project-find:confirm');
+        atom.commands.dispatch(projectFindView.element, 'project-find:confirm');
         await searchPromise;
       });
 
@@ -1346,11 +1344,10 @@ describe('ProjectFindView', () => {
 
           callback(null, {path: '/some/path.js', code: 'ENOENT', message: 'Broken'});
           expect(errorList.find("li")).toHaveLength(2);
-
         });
 
         projectFindView.replaceEditor.setText('sunshine');
-        atom.commands.dispatch(projectFindView[0], 'project-find:replace-all');
+        atom.commands.dispatch(projectFindView.element, 'project-find:replace-all');
         await replacePromise;
 
         expect(errorList).toBeVisible();
@@ -1368,43 +1365,31 @@ describe('ProjectFindView', () => {
     });
 
     it("focuses the find editor when the panel gets focus", () => {
-      projectFindView.replaceEditor.focus();
-      expect(projectFindView.replaceEditor).toHaveFocus();
+      projectFindView.replaceEditor.element.focus();
+      expect(projectFindView.replaceEditor.element).toHaveFocus();
 
-      projectFindView.focus();
-      expect(projectFindView.findEditor).toHaveFocus();
+      projectFindView.element.focus();
+      expect(projectFindView.findEditor.getElement()).toHaveFocus();
     });
 
     it("moves focus between editors with find-and-replace:focus-next", () => {
-      projectFindView.findEditor.focus();
-      expect(projectFindView.findEditor).toHaveClass('is-focused');
-      expect(projectFindView.replaceEditor).not.toHaveClass('is-focused');
-      expect(projectFindView.pathsEditor).not.toHaveClass('is-focused');
+      projectFindView.findEditor.element.focus();
+      expect(projectFindView.findEditor.element).toHaveFocus()
 
       atom.commands.dispatch(projectFindView.findEditor.element, 'find-and-replace:focus-next');
-      expect(projectFindView.findEditor).not.toHaveClass('is-focused');
-      expect(projectFindView.replaceEditor).toHaveClass('is-focused');
-      expect(projectFindView.pathsEditor).not.toHaveClass('is-focused');
+      expect(projectFindView.replaceEditor.element).toHaveFocus()
 
       atom.commands.dispatch(projectFindView.replaceEditor.element, 'find-and-replace:focus-next');
-      expect(projectFindView.findEditor).not.toHaveClass('is-focused');
-      expect(projectFindView.replaceEditor).not.toHaveClass('is-focused');
-      expect(projectFindView.pathsEditor).toHaveClass('is-focused');
+      expect(projectFindView.pathsEditor.element).toHaveFocus()
 
       atom.commands.dispatch(projectFindView.replaceEditor.element, 'find-and-replace:focus-next');
-      expect(projectFindView.findEditor).toHaveClass('is-focused');
-      expect(projectFindView.replaceEditor).not.toHaveClass('is-focused');
-      expect(projectFindView.pathsEditor).not.toHaveClass('is-focused');
+      expect(projectFindView.findEditor.element).toHaveFocus()
 
       atom.commands.dispatch(projectFindView.replaceEditor.element, 'find-and-replace:focus-previous');
-      expect(projectFindView.findEditor).not.toHaveClass('is-focused');
-      expect(projectFindView.replaceEditor).not.toHaveClass('is-focused');
-      expect(projectFindView.pathsEditor).toHaveClass('is-focused');
+      expect(projectFindView.pathsEditor.element).toHaveFocus()
 
       atom.commands.dispatch(projectFindView.replaceEditor.element, 'find-and-replace:focus-previous');
-      expect(projectFindView.findEditor).not.toHaveClass('is-focused');
-      expect(projectFindView.replaceEditor).toHaveClass('is-focused');
-      expect(projectFindView.pathsEditor).not.toHaveClass('is-focused');
+      expect(projectFindView.replaceEditor.element).toHaveFocus()
     });
   });
 
@@ -1420,15 +1405,15 @@ describe('ProjectFindView', () => {
         await activationPromise;
 
         projectFindView.findEditor.setText('items');
-        atom.commands.dispatch(projectFindView[0], 'core:confirm');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
       });
 
       it("doesn't open another panel even if the active pane is vertically split", async () => {
         atom.commands.dispatch(editorElement, 'pane:split-down');
         projectFindView.findEditor.setText('items');
-        atom.commands.dispatch(projectFindView[0], 'core:confirm');
 
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
 
         expect(workspaceElement.querySelectorAll('.preview-pane').length).toBe(1);
@@ -1446,7 +1431,7 @@ describe('ProjectFindView', () => {
         await activationPromise;
 
         projectFindView.findEditor.setText('items');
-        atom.commands.dispatch(projectFindView[0], 'core:confirm');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
       });
 
@@ -1454,7 +1439,7 @@ describe('ProjectFindView', () => {
         atom.commands.dispatch(editorElement, 'pane:split-right');
         projectFindView.findEditor.setText('items');
 
-        atom.commands.dispatch(projectFindView[0], 'core:confirm');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
 
         expect(workspaceElement.querySelectorAll('.preview-pane').length).toBe(1);
@@ -1474,8 +1459,8 @@ describe('ProjectFindView', () => {
       await activationPromise;
 
       expect(projectFindView.model.getFindOptions().useRegex).toBe(true);
-      expect(projectFindView.findEditor.getModel().getGrammar().scopeName).toBe('source.js.regexp');
-      expect(projectFindView.replaceEditor.getModel().getGrammar().scopeName).toBe('source.js.regexp.replacement');
+      expect(projectFindView.findEditor.getGrammar().scopeName).toBe('source.js.regexp');
+      expect(projectFindView.replaceEditor.getGrammar().scopeName).toBe('source.js.regexp.replacement');
     });
 
     describe("when panel is active", () => {
@@ -1486,22 +1471,22 @@ describe('ProjectFindView', () => {
 
       it("does not use regexp grammar when in non-regex mode", () => {
         expect(projectFindView.model.getFindOptions().useRegex).not.toBe(true);
-        expect(projectFindView.findEditor.getModel().getGrammar().scopeName).toBe('text.plain.null-grammar');
-        expect(projectFindView.replaceEditor.getModel().getGrammar().scopeName).toBe('text.plain.null-grammar');
+        expect(projectFindView.findEditor.getGrammar().scopeName).toBe('text.plain.null-grammar');
+        expect(projectFindView.replaceEditor.getGrammar().scopeName).toBe('text.plain.null-grammar');
       });
 
       it("uses regexp grammar when in regex mode and clears the regexp grammar when regex is disabled", () => {
-        atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option');
+        atom.commands.dispatch(projectFindView.element, 'project-find:toggle-regex-option');
 
         expect(projectFindView.model.getFindOptions().useRegex).toBe(true);
-        expect(projectFindView.findEditor.getModel().getGrammar().scopeName).toBe('source.js.regexp');
-        expect(projectFindView.replaceEditor.getModel().getGrammar().scopeName).toBe('source.js.regexp.replacement');
+        expect(projectFindView.findEditor.getGrammar().scopeName).toBe('source.js.regexp');
+        expect(projectFindView.replaceEditor.getGrammar().scopeName).toBe('source.js.regexp.replacement');
 
-        atom.commands.dispatch(projectFindView[0], 'project-find:toggle-regex-option');
+        atom.commands.dispatch(projectFindView.element, 'project-find:toggle-regex-option');
 
         expect(projectFindView.model.getFindOptions().useRegex).not.toBe(true);
-        expect(projectFindView.findEditor.getModel().getGrammar().scopeName).toBe('text.plain.null-grammar');
-        expect(projectFindView.replaceEditor.getModel().getGrammar().scopeName).toBe('text.plain.null-grammar');
+        expect(projectFindView.findEditor.getGrammar().scopeName).toBe('text.plain.null-grammar');
+        expect(projectFindView.replaceEditor.getGrammar().scopeName).toBe('text.plain.null-grammar');
       });
     });
   });
