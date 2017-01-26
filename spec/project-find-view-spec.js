@@ -188,11 +188,6 @@ describe('ProjectFindView', () => {
             <div class='directory'>
               <div>
                 <span class='name' data-path='${path.join(projectPath, 'nested')}'>nested</span>
-                <ul class='files'>
-                  <li class='file' data-path='${path.join(projectPath, 'nested', 'another.js')}'>
-                    <span class='name'>another.js</span>
-                  </li>
-                </ul>
               </div>
             </div>
           </ul>
