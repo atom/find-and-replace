@@ -13,13 +13,27 @@ class MatchView extends View
     prefix = removeLeadingWhitespace(match.lineText[0...matchStart])
     suffix = match.lineText[matchEnd..]
 
-    @li class: 'search-result list-item', =>
-      @span range.start.row + 1, class: 'line-number text-subtle'
-      @span class: 'preview', outlet: 'preview', =>
-        @span prefix
-        @span match.matchText, class: 'match highlight-info', outlet: 'matchText'
-        @span match.matchText, class: 'replacement highlight-success', outlet: 'replacementText'
-        @span suffix
+    linesBefore = match.linesBefore or []
+    linesAfter = match.linesAfter or []
+    @li class: 'search-result list-group', =>
+      @ul class: 'list-tree', =>
+        for line, index in linesBefore
+          @li class: 'list-item', =>
+            @span range.start.row + 1 - linesBefore.length + index, class: 'line-number text-subtle'
+            @span class: 'preview', outlet: 'preview', =>
+              @span line
+        @li class: 'list-item match-line', =>
+          @span range.start.row + 1, class: 'line-number text-subtle'
+          @span class: 'preview', outlet: 'preview', =>
+            @span prefix
+            @span match.matchText, class: 'match highlight-info', outlet: 'matchText'
+            @span match.matchText, class: 'replacement highlight-success', outlet: 'replacementText'
+            @span suffix
+        for line, index in linesAfter
+          @li class: 'list-item', =>
+            @span range.end.row + 1 + index + 1, class: 'line-number text-subtle'
+            @span class: 'preview', outlet: 'preview', =>
+              @span line
 
   initialize: (@model, {@filePath, @match}) ->
     @render()

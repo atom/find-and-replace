@@ -49,7 +49,7 @@ class ResultView extends View
       for match in matches
         @matches.append(new MatchView(@model, {@filePath, match}))
 
-    @matches.children().eq(selectedIndex).addClass('selected') if selectedIndex > -1
+    @matches.find('.match-line').eq(selectedIndex).addClass('selected') if selectedIndex > -1
 
   expand: (expanded) ->
     # expand or collapse the list
@@ -59,7 +59,7 @@ class ResultView extends View
       if @hasClass('selected')
         @removeClass('selected')
         firstResult = @find('.search-result:first').view()
-        firstResult.addClass('selected')
+        firstResult.find('.match-line').addClass('selected')
 
         # scroll to the proper place
         resultView = firstResult.closest('.results-view').view()

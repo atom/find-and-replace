@@ -18,7 +18,7 @@ class ResultsView extends ScrollView
     @on 'mousedown', '.path', (e) =>
       @find('.selected').removeClass('selected')
       view = $(e.target).view()
-      view.addClass('selected')
+      view.find('.match-line').addClass('selected')
       if not e.ctrlKey
         if e.originalEvent?.detail is 1
           view.confirm(pending: true)
@@ -206,7 +206,7 @@ class ResultsView extends ScrollView
       parentView = resultView.closest('.path')
       resultView = parentView if parentView.hasClass('collapsed')
 
-    resultView.addClass('selected')
+    resultView.find('.match-line').addClass('selected')
 
   collapseResult: ->
     parent = @find('.selected').closest('.path').view()

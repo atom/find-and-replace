@@ -88,6 +88,18 @@
       "minimum": 0,
       "description": "The minimum number of characters which need to be typed into the buffer find box before search starts matching and highlighting matches as you type."
     },
+    "searchContextLineCountBefore": {
+      "type": "integer",
+      "default": 0,
+      "minimum": 0,
+      "description": "The number of extra lines of context to show before the match for project results"
+    },
+    "searchContextLineCountAfter": {
+      "type": "integer",
+      "default": 0,
+      "minimum": 0,
+      "description": "The number of extra lines of context to show after the match for project results"
+    },
     "showSearchWrapIcon": {
       "type": "boolean",
       "default": true,

@@ -10,7 +10,9 @@ class Result
           matchText: m.matchText,
           lineText: m.lineText,
           lineTextOffset: m.lineTextOffset,
-          range: m.range
+          range: m.range,
+          linesBefore: m.linesBefore,
+          linesAfter: m.linesAfter
         }
       )
       new Result({filePath: result.filePath, matches})
@@ -126,7 +128,9 @@ class ResultsModel
     onPathsSearched = (numberOfPathsSearched) =>
       @emitter.emit 'did-search-paths', numberOfPathsSearched
 
-    @inProgressSearchPromise = atom.workspace.scan @regex, {paths: searchPaths, onPathsSearched}, (result, error) =>
+    lineCountBefore = atom.config.get('find-and-replace.searchContextLineCountBefore')
+    lineCountAfter = atom.config.get('find-and-replace.searchContextLineCountAfter')
+    @inProgressSearchPromise = atom.workspace.scan @regex, {paths: searchPaths, onPathsSearched, lineCountBefore, lineCountAfter}, (result, error) =>
       if result
         @setResult(result.filePath, Result.create(result))
       else
@@ -240,7 +244,9 @@ class ResultsModel
     return unless editor.getPath()
 
     matches = []
-    editor.scan @regex, (match) ->
+    lineCountBefore = atom.config.get('find-and-replace.searchContextLineCountBefore')
+    lineCountAfter = atom.config.get('find-and-replace.searchContextLineCountAfter')
+    editor.scan @regex, {lineCountBefore, lineCountAfter}, (match) ->
       matches.push(match)
 
     result = Result.create({matches})
