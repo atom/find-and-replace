@@ -18,7 +18,7 @@ class ResultsView extends ScrollView
     @on 'mousedown', '.path', (e) =>
       @find('.selected').removeClass('selected')
       view = $(e.target).view()
-      view.find('.match-line').addClass('selected')
+      view.find('.match-line:first').addClass('selected')
       if not e.ctrlKey
         if e.originalEvent?.detail is 1
           view.confirm(pending: true)
@@ -123,46 +123,52 @@ class ResultsView extends ScrollView
     @scrollToBottom()
 
   selectPreviousPage: ->
-    selectedView = @find('.selected').view()
+    selectedItem = @find('.selected')
+    selectedView = selectedItem.view()
     return @selectFirstResult() unless selectedView
 
     if selectedView.hasClass('path')
       itemHeight = selectedView.find('.path-details').outerHeight()
     else
-      itemHeight = selectedView.outerHeight()
+      itemHeight = selectedItem.outerHeight()
     pageHeight = @innerHeight()
-    resultsPerPage = Math.round(pageHeight / itemHeight)
-    pageHeight = resultsPerPage * itemHeight # so it's divisible by the number of items
+    linesPerPage = Math.round(pageHeight / itemHeight)
+    pageHeight = linesPerPage * itemHeight # so it's divisible by the number of lines
 
     visibleItems = @find('li:visible')
-    index = visibleItems.index(selectedView)
+    index = visibleItems.index(selectedItem)
 
-    previousIndex = Math.max(index - resultsPerPage , 0)
-    previousView = $(visibleItems[previousIndex])
+    previousIndex = Math.max(index - linesPerPage , 0)
+    previousView = $(visibleItems[previousIndex]).view()
 
     @selectResult(previousView)
     @scrollTop(@scrollTop() - pageHeight)
     @scrollTo(previousView) # just in case the scrolltop misses the mark
 
   selectNextPage: ->
-    selectedView = @find('.selected').view()
+    selectedItem = @find('.selected')
+    selectedView = selectedItem.view()
     return @selectFirstResult() unless selectedView
 
     if selectedView.hasClass('path')
       itemHeight = selectedView.find('.path-details').outerHeight()
     else
-      itemHeight = selectedView.outerHeight()
+      itemHeight = selectedItem.outerHeight()
     pageHeight = @innerHeight()
-    resultsPerPage = Math.round(pageHeight / itemHeight)
-    pageHeight = resultsPerPage * itemHeight # so it's divisible by the number of items
-
-    @renderResults(renderNext: resultsPerPage + 1)
+    linesPerPage = Math.round(pageHeight / itemHeight)
+    pageHeight = linesPerPage * itemHeight # so it's divisible by the number of lines
 
     visibleItems = @find('li:visible')
-    index = visibleItems.index(selectedView)
+    index = visibleItems.index(selectedItem)
 
-    nextIndex = Math.min(index + resultsPerPage, visibleItems.length - 1)
-    nextView = $(visibleItems[nextIndex])
+    nextIndex = Math.min(index + linesPerPage, visibleItems.length - 1)
+    nextView = $(visibleItems[nextIndex]).view()
+
+    # determine number of moved-by results for rendering
+    visibleResults = @find('li:not(.list-item):visible')
+    resultIndex = visibleResults.index(selectedView)
+    nextResultIndex = visibleResults.index(nextView)
+    @renderResults(renderNext: nextResultIndex - resultIndex + 1)
 
     @selectResult(nextView)
     @scrollTop(@scrollTop() + pageHeight)
@@ -188,13 +194,13 @@ class ResultsView extends ScrollView
 
   getNextVisible: (element) ->
     return unless element?.length
-    visibleItems = @find('li:visible')
+    visibleItems = @find('li:not(.list-item):visible')
     itemIndex = visibleItems.index(element)
     $(visibleItems[Math.min(itemIndex + 1, visibleItems.length - 1)])
 
   getPreviousVisible: (element) ->
     return unless element?.length
-    visibleItems = @find('li:visible')
+    visibleItems = @find('li:not(.list-item):visible')
     itemIndex = visibleItems.index(element)
     $(visibleItems[Math.max(itemIndex - 1, 0)])
 
@@ -203,10 +209,11 @@ class ResultsView extends ScrollView
     @find('.selected').removeClass('selected')
 
     unless resultView.hasClass('path')
+      resultView = resultView.find('.match-line')
       parentView = resultView.closest('.path')
       resultView = parentView if parentView.hasClass('collapsed')
 
-    resultView.find('.match-line').addClass('selected')
+    resultView.addClass('selected')
 
   collapseResult: ->
     parent = @find('.selected').closest('.path').view()

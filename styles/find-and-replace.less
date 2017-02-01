@@ -254,10 +254,11 @@ atom-workspace.find-visible {
     padding: 0 @component-padding;
     flex: 1;
 
-    .search-result {
+    .search-result:not(:first-child) {
+      border-top: 1px solid @text-color-subtle;
       padding-top: 2px;
-      padding-bottom: 2px;
-
+    }
+    .search-result {
       .match-line {
         color: @text-color-selected;
       }

@@ -33,7 +33,7 @@ class ResultView extends View
 
   renderResult: (result) ->
     matches = result?.matches
-    selectedIndex = @matches.find('.selected').index()
+    selectedIndex = @matches.find('.selected').closest('.search-result').index()
 
     @matches.empty()
 
