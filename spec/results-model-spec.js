@@ -74,6 +74,15 @@ describe("ResultsModel", () => {
       advanceClock(editor.buffer.stoppedChangingDelay);
       expect(editor.scan).not.toHaveBeenCalled();
     });
+
+    it("contains valid match objects after destroying a buffer (regression)", async () => {
+      await resultsModel.search('items', '*.js', '');
+
+      advanceClock(editor.buffer.stoppedChangingDelay)
+      editor.getBuffer().destroy()
+      result = resultsModel.getResult(editor.getPath())
+      expect(result.matches[0].lineText).toBe("  var sort = function(items) {")
+    });
   });
 
   describe("cancelling a search", () => {
