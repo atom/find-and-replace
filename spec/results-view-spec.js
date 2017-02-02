@@ -326,18 +326,16 @@ describe('ResultsView', () => {
         let itemHeight = resultsView.element.querySelector('.selected').offsetHeight;
         let pageHeight = resultsView.element.offsetHeight;
         let initialScrollTop = resultsView.element.scrollTop;
-        let itemsPerPage = Math.floor(pageHeight / itemHeight);
+        let itemsPerPage = Math.round(pageHeight / itemHeight);
 
         let initiallySelectedIndex = getSelectedIndex();
 
         await resultsView.pageUp();
-        expect(resultsView.element.querySelectorAll('li')[initiallySelectedIndex]).not.toHaveClass('selected');
-        expect(resultsView.element.querySelectorAll('li')[initiallySelectedIndex - itemsPerPage]).toHaveClass('selected');
+        expect(getSelectedIndex()).toBe(initiallySelectedIndex - itemsPerPage);
         expect(resultsView.element.scrollTop).toBe(initialScrollTop - pageHeight);
 
         await resultsView.pageUp();
-        expect(resultsView.element.querySelectorAll('li')[initiallySelectedIndex - itemsPerPage]).not.toHaveClass('selected');
-        expect(resultsView.element.querySelectorAll('li')[initiallySelectedIndex - itemsPerPage * 2]).toHaveClass('selected');
+        expect(getSelectedIndex()).toBe(initiallySelectedIndex - itemsPerPage * 2);
         expect(resultsView.element.scrollTop).toBe(initialScrollTop - (pageHeight * 2));
 
         for (let i = 0; i < 60; i++) await resultsView.pageUp();
