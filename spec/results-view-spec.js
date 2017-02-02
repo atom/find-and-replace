@@ -21,14 +21,6 @@ describe('ResultsView', () => {
   }
 
   beforeEach(async () => {
-    etch.setScheduler({
-      updateDocument(callback) {
-        callback();
-      },
-
-      async getNextUpdatePromise() {}
-    });
-
     workspaceElement = atom.views.getView(atom.workspace);
     workspaceElement.style.height = '1000px';
     jasmine.attachToDOM(workspaceElement);

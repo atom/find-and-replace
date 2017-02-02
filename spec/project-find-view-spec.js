@@ -26,6 +26,10 @@ describe('ProjectFindView', () => {
     }
   }
 
+  function getResultsView() {
+    return getExistingResultsPane().refs.resultsView;
+  }
+
   beforeEach(() => {
     workspaceElement = atom.views.getView(atom.workspace);
     atom.config.set('core.excludeVcsIgnoredPaths', false);
@@ -188,6 +192,11 @@ describe('ProjectFindView', () => {
             <div class='directory'>
               <div>
                 <span class='name' data-path='${path.join(projectPath, 'nested')}'>nested</span>
+                <ul class='file'>
+                  <li class='file' data-path='${path.join(projectPath, 'three.js')}'>
+                    <span class='name'>three.js</span>
+                  </li>
+                </ul>
               </div>
             </div>
           </ul>
@@ -274,10 +283,9 @@ describe('ProjectFindView', () => {
           atom.commands.dispatch(projectFindView.element, 'core:confirm');
           await searchPromise;
 
-          const resultsPaneView = getExistingResultsPane();
-          const {resultsView} = resultsPaneView;
-          expect(resultsView).toBeVisible();
-          expect(resultsView.find("li > ul > li")).toHaveLength(2);
+          const resultsView = getResultsView();
+          expect(resultsView.element).toBeVisible();
+          expect(resultsView.element.querySelectorAll("li > ul > li")).toHaveLength(2);
         })
       });
 
@@ -288,10 +296,9 @@ describe('ProjectFindView', () => {
           atom.commands.dispatch(projectFindView.element, 'core:confirm');
           await searchPromise;
 
-          const resultsPaneView = getExistingResultsPane();
-          const {resultsView} = resultsPaneView;
-          expect(resultsView).toBeVisible();
-          expect(resultsView.find("li > ul > li")).toHaveLength(1);
+          const resultsView = getResultsView();
+          expect(resultsView.element).toBeVisible();
+          expect(resultsView.element.querySelectorAll("li > ul > li")).toHaveLength(1);
         });
 
         it("finds a backslash", async () => {
@@ -300,10 +307,9 @@ describe('ProjectFindView', () => {
           atom.commands.dispatch(projectFindView.element, 'core:confirm');
           await searchPromise;
 
-          const resultsPaneView = getExistingResultsPane();
-          const {resultsView} = resultsPaneView;
-          expect(resultsView).toBeVisible();
-          expect(resultsView.find("li > ul > li")).toHaveLength(3);
+          const resultsView = getResultsView();
+          expect(resultsView.element).toBeVisible();
+          expect(resultsView.element.querySelectorAll("li > ul > li")).toHaveLength(3);
         });
 
         it("doesn't insert a escaped char if there are multiple backslashs in front of the char", async () => {
@@ -312,10 +318,9 @@ describe('ProjectFindView', () => {
           atom.commands.dispatch(projectFindView.element, 'core:confirm');
           await searchPromise;
 
-          const resultsPaneView = getExistingResultsPane();
-          const {resultsView} = resultsPaneView;
-          expect(resultsView).toBeVisible();
-          expect(resultsView.find("li > ul > li")).toHaveLength(1);
+          const resultsView = getResultsView();
+          expect(resultsView.element).toBeVisible();
+          expect(resultsView.element.querySelectorAll("li > ul > li")).toHaveLength(1);
         });
       });
     });
@@ -637,12 +642,10 @@ describe('ProjectFindView', () => {
 
         await searchPromise;
 
-        const resultsPaneView = getExistingResultsPane();
-        const {resultsView} = resultsPaneView;
-        expect(resultsView).toBeVisible();
-
+        const resultsView = getResultsView();
+        expect(resultsView.element).toBeVisible();
         resultsView.scrollToBottom(); // To load ALL the results
-        expect(resultsView.find("li > ul > li")).toHaveLength(13);
+        expect(resultsView.element.querySelectorAll("li > ul > li")).toHaveLength(13);
       })
     });
 
@@ -697,13 +700,14 @@ describe('ProjectFindView', () => {
           atom.commands.dispatch(projectFindView.element, 'core:confirm');
           await searchPromise;
 
+          const resultsView = getResultsView();
           const resultsPaneView = getExistingResultsPane();
-          const {resultsView} = resultsPaneView;
-          expect(resultsView).toBeVisible();
 
+          expect(resultsView.element).toBeVisible();
           resultsView.scrollToBottom(); // To load ALL the results
-          expect(resultsView.find("li > ul > li")).toHaveLength(13);
-          expect(resultsPaneView.previewCount.text()).toBe("13 results found in 2 files for items");
+          expect(resultsView.element.querySelectorAll("li > ul > li")).toHaveLength(13);
+
+          expect(resultsPaneView.refs.previewCount.textContent).toBe("13 results found in 2 files for items");
           expect(projectFindView.errorMessages).not.toBeVisible();
         });
 
@@ -723,26 +727,27 @@ describe('ProjectFindView', () => {
           atom.commands.dispatch(projectFindView.element, 'core:confirm');
           await searchPromise;
 
+          const resultsView = getResultsView();
           const resultsPaneView = getExistingResultsPane();
-          const {resultsView} = resultsPaneView;
+
           resultsView.scrollToBottom(); // To load ALL the results
-          expect(resultsView.find("li > ul > li")).toHaveLength(13);
-          expect(resultsPaneView.previewCount.text()).toBe("13 results found in 2 files for items");
+          expect(resultsView.element.querySelectorAll("li > ul > li")).toHaveLength(13);
+          expect(resultsPaneView.refs.previewCount.textContent).toBe("13 results found in 2 files for items");
 
           resultsView.selectFirstResult();
-          _.times(7, () => resultsView.selectNextResult());
-          expect(resultsView.find(".path:eq(1)")).toHaveClass('selected');
+          for (let i = 0; i < 7; i++) await resultsView.moveDown()
+          expect(resultsView.element.querySelectorAll(".path")[1]).toHaveClass('selected');
 
           buffer.setText('there is one "items" in this file');
           advanceClock(buffer.stoppedChangingDelay);
-          expect(resultsView.find("li > ul > li")).toHaveLength(8);
-          expect(resultsPaneView.previewCount.text()).toBe("8 results found in 2 files for items");
-          expect(resultsView.find(".path:eq(1)")).toHaveClass('selected');
+          expect(resultsView.element.querySelectorAll("li > ul > li")).toHaveLength(8);
+          expect(resultsPaneView.refs.previewCount.textContent).toBe("8 results found in 2 files for items");
+          expect(resultsView.element.querySelectorAll(".path")[1]).toHaveClass('selected');
 
           buffer.setText('no matches in this file');
           advanceClock(buffer.stoppedChangingDelay);
-          expect(resultsView.find("li > ul > li")).toHaveLength(7);
-          expect(resultsPaneView.previewCount.text()).toBe("7 results found in 1 file for items");
+          expect(resultsView.element.querySelectorAll("li > ul > li")).toHaveLength(7);
+          expect(resultsPaneView.refs.previewCount.textContent).toBe("7 results found in 1 file for items");
         });
       });
 
@@ -756,10 +761,10 @@ describe('ProjectFindView', () => {
           atom.commands.dispatch(projectFindView.element, 'core:confirm');
           await searchPromise;
 
-          let {resultsView} = getExistingResultsPane();
-          expect(projectFindView.errorMessages).not.toBeVisible();
-          expect(resultsView).toBeVisible();
-          expect(resultsView.find("li > ul > li")).toHaveLength(0);
+          const resultsView = getResultsView();
+          expect(projectFindView.refs.errorMessages).not.toBeVisible();
+          expect(resultsView.element).toBeVisible();
+          expect(resultsView.element.querySelectorAll("li > ul > li")).toHaveLength(0);
         });
       });
     });
@@ -865,15 +870,16 @@ describe('ProjectFindView', () => {
 
         let errorList;
         spyOn(atom.workspace, 'scan').andCallFake(async (regex, options, callback) => {
-          ({ errorList } = getExistingResultsPane());
-          expect(errorList.find("li")).toHaveLength(0);
+          const resultsPaneView = getExistingResultsPane();
+          ({errorList} = resultsPaneView.refs);
+          expect(errorList.querySelectorAll("li")).toHaveLength(0);
 
           callback(null, {path: '/some/path.js', code: 'ENOENT', message: 'Nope'});
           expect(errorList).toBeVisible();
-          expect(errorList.find("li")).toHaveLength(1);
+          expect(errorList.querySelectorAll("li")).toHaveLength(1);
 
           callback(null, {path: '/some/path.js', code: 'ENOENT', message: 'Broken'});
-          expect(errorList.find("li")).toHaveLength(2);
+          expect(errorList.querySelectorAll("li")).toHaveLength(2);
         });
 
         atom.commands.dispatch(projectFindView.element, 'core:confirm');
@@ -881,9 +887,9 @@ describe('ProjectFindView', () => {
         await searchPromise;
 
         expect(errorList).toBeVisible();
-        expect(errorList.find("li")).toHaveLength(2);
-        expect(errorList.find("li:eq(0)").text()).toBe('Nope');
-        expect(errorList.find("li:eq(1)").text()).toBe('Broken');
+        expect(errorList.querySelectorAll("li")).toHaveLength(2);
+        expect(errorList.querySelectorAll("li")[0].textContent).toBe('Nope');
+        expect(errorList.querySelectorAll("li")[1].textContent).toBe('Broken');
       })
     });
 
@@ -963,16 +969,15 @@ describe('ProjectFindView', () => {
         atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
 
-        const resultsPaneView = getExistingResultsPane();
-        const {resultsView} = resultsPaneView;
+        const resultsView = getResultsView();
         resultsView.scrollToBottom(); // To load ALL the results
-        expect(resultsView).toBeVisible();
-        expect(resultsView.find("li > ul > li")).toHaveLength(13);
+        expect(resultsView.element).toBeVisible();
+        expect(resultsView.element.querySelectorAll("li > ul > li")).toHaveLength(13);
 
         resultsView.selectFirstResult();
-        _.times(10, () => atom.commands.dispatch(resultsView[0], 'core:move-down'));
+        for (let i = 0; i < 10; i++) await resultsView.moveDown();
 
-        atom.commands.dispatch(resultsView[0], 'core:confirm');
+        atom.commands.dispatch(resultsView.element, 'core:confirm');
         await new Promise(resolve => editor.onDidChangeSelectionRange(resolve))
 
         // sample.js has 6 results
@@ -1197,7 +1202,7 @@ describe('ProjectFindView', () => {
           await replacePromise;
 
           expect(projectFindView.errorMessages).not.toBeVisible();
-          expect(getExistingResultsPane().previewCount.text()).toContain('13 results found in 2 files for items');
+          expect(getExistingResultsPane().refs.previewCount.textContent).toContain('13 results found in 2 files for items');
           expect(projectFindView.refs.descriptionLabel.textContent).toContain('Replaced items with items-123 13 times in 2 files');
 
           projectFindView.replaceEditor.setText('cats');
@@ -1285,11 +1290,9 @@ describe('ProjectFindView', () => {
           atom.commands.dispatch(projectFindView.element, 'project-find:replace-all');
           await replacePromise;
 
-          const resultsPaneView = getExistingResultsPane();
-          const {resultsView} = resultsPaneView;
-
-          expect(resultsView).toBeVisible();
-          expect(resultsView.find("li > ul > li")).toHaveLength(0);
+          const resultsView = getResultsView();
+          expect(resultsView.element).toBeVisible();
+          expect(resultsView.element.querySelectorAll("li > ul > li")).toHaveLength(0);
 
           expect(projectFindView.refs.descriptionLabel.textContent).toContain("Replaced items with sunshine 13 times in 2 files");
 
@@ -1330,15 +1333,15 @@ describe('ProjectFindView', () => {
       it("displays the errors in the results pane", async () => {
         let errorList
         spyOn(atom.workspace, 'replace').andCallFake(async (regex, replacement, paths, callback) => {
-          ({ errorList } = getExistingResultsPane());
-          expect(errorList.find("li")).toHaveLength(0);
+          ({ errorList } = getExistingResultsPane().refs);
+          expect(errorList.querySelectorAll("li")).toHaveLength(0);
 
           callback(null, {path: '/some/path.js', code: 'ENOENT', message: 'Nope'});
           expect(errorList).toBeVisible();
-          expect(errorList.find("li")).toHaveLength(1);
+          expect(errorList.querySelectorAll("li")).toHaveLength(1);
 
           callback(null, {path: '/some/path.js', code: 'ENOENT', message: 'Broken'});
-          expect(errorList.find("li")).toHaveLength(2);
+          expect(errorList.querySelectorAll("li")).toHaveLength(2);
         });
 
         projectFindView.replaceEditor.setText('sunshine');
@@ -1346,9 +1349,9 @@ describe('ProjectFindView', () => {
         await replacePromise;
 
         expect(errorList).toBeVisible();
-        expect(errorList.find("li")).toHaveLength(2);
-        expect(errorList.find("li:eq(0)").text()).toBe('Nope');
-        expect(errorList.find("li:eq(1)").text()).toBe('Broken');
+        expect(errorList.querySelectorAll("li")).toHaveLength(2);
+        expect(errorList.querySelectorAll("li")[0].textContent).toBe('Nope');
+        expect(errorList.querySelectorAll("li")[1].textContent).toBe('Broken');
       });
     });
   });
