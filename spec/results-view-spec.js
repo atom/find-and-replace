@@ -738,7 +738,7 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      let fileIconClasses = Array.from(resultsView.element.querySelector('.path-details .icon')).map(el => el.className);
+      let fileIconClasses = Array.from(resultsView.element.querySelectorAll('.path-details .icon')).map(el => el.className);
       expect(fileIconClasses).toContain('first-icon-class second-icon-class icon');
       expect(fileIconClasses).toContain('third-icon-class fourth-icon-class icon');
       expect(fileIconClasses).not.toContain('icon-file-text icon');
@@ -749,7 +749,7 @@ describe('ResultsView', () => {
 
       await searchPromise;
       resultsView = getResultsView();
-      fileIconClasses = Array.from(resultsView.element.querySelector('.path-details .icon')).map(el => el.className);
+      fileIconClasses = Array.from(resultsView.element.querySelectorAll('.path-details .icon')).map(el => el.className);
       expect(fileIconClasses).not.toContain('first-icon-class second-icon-class icon');
       expect(fileIconClasses).not.toContain('third-icon-class fourth-icon-class icon');
       expect(fileIconClasses).toContain('icon-file-text icon');
