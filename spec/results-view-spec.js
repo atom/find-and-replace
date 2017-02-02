@@ -655,6 +655,7 @@ describe('ResultsView', () => {
         });
 
         it("moves to the correct previous result when a path is selected", () => {
+          clickOn(resultsView.element.querySelectorAll('.path')[0]);
           clickOn(resultsView.element.querySelectorAll('.path')[1].querySelector('.search-result'));
 
           atom.commands.dispatch(resultsView.element, 'core:move-up');
