@@ -30,7 +30,6 @@
     "atom": "*"
   },
   "dependencies": {
-    "atom-space-pen-views": "^2.1.0",
     "etch": "^0.8.0",
     "fs-plus": "2.x",
     "temp": "^0.8.3",
