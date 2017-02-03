@@ -168,7 +168,10 @@ atom-workspace.find-visible {
 .find-wrap-icon {
   @wrap-size: @font-size * 10;
 
-  display: none;
+  opacity: 0;
+  transition: opacity 0.5s;
+  &.visible { opacity: 1; }
+
   position: absolute;
 
   // These are getting placed in the DOM as a pane item, so override the pane
