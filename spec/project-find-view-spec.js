@@ -3,7 +3,6 @@
 const os = require('os');
 const path = require('path');
 const temp = require('temp');
-const _ = require('underscore-plus');
 const fs = require('fs-plus');
 const dedent = require('dedent');
 const {TextBuffer} = require('atom');
@@ -181,19 +180,19 @@ describe('ProjectFindView', () => {
       tree.className = 'directory';
       tree.innerHTML = dedent`
         <div>
-          <span class='name' data-path='${projectPath}'>${projectPath}</span>
+          <span class='name' data-path='${escapePath(projectPath)}'>${projectPath}</span>
           <ul class='files'>
-            <li class='file' data-path='${path.join(projectPath, 'one.js')}'>
+            <li class='file' data-path='${escapePath(path.join(projectPath, 'one.js'))}'>
               <span class='name'>one.js</span>
             </li>
-            <li class='file' data-path='${path.join(projectPath, 'two.js')}'>
+            <li class='file' data-path='${escapePath(path.join(projectPath, 'two.js'))}'>
               <span class='name'>two.js</span>
             </li>
             <div class='directory'>
               <div>
-                <span class='name' data-path='${path.join(projectPath, 'nested')}'>nested</span>
+                <span class='name' data-path='${escapePath(path.join(projectPath, 'nested'))}'>nested</span>
                 <ul class='file'>
-                  <li class='file' data-path='${path.join(projectPath, 'three.js')}'>
+                  <li class='file' data-path='${escapePath(path.join(projectPath, 'three.js'))}'>
                     <span class='name'>three.js</span>
                   </li>
                 </ul>
@@ -207,6 +206,10 @@ describe('ProjectFindView', () => {
 
       workspaceElement.appendChild(tree);
     });
+
+    function escapePath(filePath) {
+      return filePath.replace(/\\/g, '&#92;');
+    }
 
     it("populates the pathsEditor when triggered with a directory", async () => {
       atom.commands.dispatch(nested.querySelector('.name'), 'project-find:show-in-current-directory');
