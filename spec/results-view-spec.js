@@ -712,6 +712,23 @@ describe('ResultsView', () => {
     });
   });
 
+  describe("preview font", () => {
+    it('respects the editor.fontFamily setting', async () => {
+      atom.config.set('editor.fontFamily', 'Courier');
+
+      projectFindView.findEditor.setText('items');
+      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      await searchPromise;
+
+      resultsView = getResultsView();
+      const previewElement = resultsView.element.querySelector('.search-result .preview');
+      expect(previewElement.style.fontFamily).toBe('Courier');
+
+      atom.config.set('editor.fontFamily', 'Helvetica');
+      expect(previewElement.style.fontFamily).toBe('Helvetica');
+    })
+  });
+
   describe("icon-service lifecycle", () => {
     it('renders file icon classes based on the provided file-icons service', async () => {
       const fileIconsDisposable = atom.packages.serviceHub.provide('atom.file-icons', '1.0.0', {
@@ -764,5 +781,4 @@ function buildMouseEvent(type, properties) {
 
 function clickOn(element) {
   element.dispatchEvent(buildMouseEvent('mousedown', { detail: 1 }));
-  // element.dispatchEvent(buildMouseEvent('click', { detail: 1 }));
 }
