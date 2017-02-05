@@ -24,6 +24,7 @@ describe 'ResultsView', ->
     workspaceElement = atom.views.getView(atom.workspace)
     workspaceElement.style.height = '1000px'
     jasmine.attachToDOM(workspaceElement)
+    atom.config.set('core.excludeVcsIgnoredPaths', false)
     atom.project.setPaths([path.join(__dirname, 'fixtures')])
     promise = atom.packages.activatePackage("find-and-replace").then ({mainModule}) ->
       mainModule.createViews()
@@ -440,9 +441,19 @@ describe 'ResultsView', ->
       runs ->
         expect(atom.views.getView(editor)).toHaveFocus()
 
-    describe "when `openProjectFindResultsInRightPane` option is true", ->
+    describe "when `projectSearchResultsPaneSplitDirection` option is none", ->
       beforeEach ->
-        atom.config.set('find-and-replace.openProjectFindResultsInRightPane', true)
+        atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'none')
+
+      it "does not specify a pane to split", ->
+        spyOn(atom.workspace, 'open').andCallThrough()
+        atom.commands.dispatch resultsView.element, 'core:move-down'
+        atom.commands.dispatch resultsView.element, 'core:confirm'
+        expect(atom.workspace.open.mostRecentCall.args[1]).toEqual {}
+
+    describe "when `projectSearchResultsPaneSplitDirection` option is right", ->
+      beforeEach ->
+        atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'right')
 
       it "always opens the file in the left pane", ->
         spyOn(atom.workspace, 'open').andCallThrough()
@@ -463,15 +474,28 @@ describe 'ResultsView', ->
           runs ->
             expect(atom.views.getView(editor)).toHaveFocus()
 
-    describe "when `openProjectFindResultsInRightPane` option is false", ->
+    describe "when `projectSearchResultsPaneSplitDirection` option is down", ->
       beforeEach ->
-        atom.config.set('find-and-replace.openProjectFindResultsInRightPane', false)
+        atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'down')
 
-      it "does not specify a pane to split", ->
+      it "always opens the file in the up pane", ->
         spyOn(atom.workspace, 'open').andCallThrough()
         atom.commands.dispatch resultsView.element, 'core:move-down'
         atom.commands.dispatch resultsView.element, 'core:confirm'
-        expect(atom.workspace.open.mostRecentCall.args[1]).toEqual {}
+        expect(atom.workspace.open.mostRecentCall.args[1].split).toBe 'up'
+
+      describe "when a search result is single-clicked", ->
+        it "opens the file containing the result in pending state", ->
+          pathNode = resultsView.find(".search-result")[0]
+          pathNode.dispatchEvent(buildMouseEvent('mousedown', target: pathNode, which: 1))
+          editor = null
+          waitsFor ->
+            editor = atom.workspace.getActiveTextEditor()
+          waitsFor ->
+            atom.workspace.getActivePane().getPendingItem() is editor
+
+          runs ->
+            expect(atom.views.getView(editor)).toHaveFocus()
 
   describe "arrowing through the list", ->
     it "arrows through the entire list without selecting paths and overshooting the boundaries", ->
@@ -706,6 +730,29 @@ describe 'ResultsView', ->
       _.times 2, -> atom.commands.dispatch resultsView.element, 'core:move-down'
       atom.commands.dispatch resultsView.element, 'core:copy'
       expect(atom.clipboard.read()).toBe '    return items if items.length <= 1'
+
+  describe "copying path with find-and-replace:copy-path", ->
+    [resultsView, openHandler] = []
+
+    beforeEach ->
+      runs ->
+        projectFindView.findEditor.setText('items')
+        atom.commands.dispatch projectFindView.element, 'core:confirm'
+
+      waitsForPromise ->
+        searchPromise
+
+      runs ->
+        resultsView = getResultsView()
+        resultsView.selectFirstResult()
+        resultsView.collapseResult()
+
+    it "copies the selected file path to clipboard", ->
+      atom.commands.dispatch resultsView.element, 'find-and-replace:copy-path'
+      expect(atom.clipboard.read()).toBe('sample.coffee')
+      atom.commands.dispatch resultsView.element, 'core:move-down'
+      atom.commands.dispatch resultsView.element, 'find-and-replace:copy-path'
+      expect(atom.clipboard.read()).toBe('sample.js')
 
   describe "icon-service lifecycle", ->
     it 'renders file icon classes based on the provided file-icons service', ->

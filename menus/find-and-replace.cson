@@ -10,6 +10,7 @@
     { 'label': 'Find in Project', 'command': 'project-find:show'}
     { 'label': 'Toggle Find in Project', 'command': 'project-find:toggle'}
     { 'type': 'separator' }
+    { 'label': 'Find All', 'command': 'find-and-replace:find-all'}
     { 'label': 'Find Next', 'command': 'find-and-replace:find-next'}
     { 'label': 'Find Previous', 'command': 'find-and-replace:find-previous'}
     { 'label': 'Replace Next', 'command': 'find-and-replace:replace-next'}
@@ -23,4 +24,7 @@
 'context-menu':
   '.tree-view > li.directory': [
     { 'label': 'Search in Directory', 'command': 'project-find:show-in-current-directory' }
+  ]
+  '.path-details.list-item': [
+    { 'label': 'Copy Path', 'command': 'find-and-replace:copy-path' }
   ]

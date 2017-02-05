@@ -1,13 +1,12 @@
 _ = require 'underscore-plus'
 {$, $$$, View, TextEditorView} = require 'atom-space-pen-views'
-{CompositeDisposable} = require 'atom'
+{TextEditor, CompositeDisposable} = require 'atom'
 Util = require './project/util'
-buildTextEditor = require './build-text-editor'
 
 module.exports =
 class FindView extends View
   @content: (model, {findBuffer, replaceBuffer}) ->
-    findEditor = buildTextEditor
+    findEditor = new TextEditor
       mini: true
       tabLength: 2
       softTabs: true
@@ -15,7 +14,7 @@ class FindView extends View
       buffer: findBuffer
       placeholderText: 'Find in current buffer'
 
-    replaceEditor = buildTextEditor
+    replaceEditor = new TextEditor
       mini: true
       tabLength: 2
       softTabs: true
@@ -29,6 +28,15 @@ class FindView extends View
         @span class: 'header-item options-label pull-right', =>
           @span 'Finding with Options: '
           @span outlet: 'optionsLabel', class: 'options'
+          @span class: 'btn-group btn-toggle btn-group-options', =>
+            @button outlet: 'regexOptionButton', class: 'btn', =>
+              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-regex" /></svg>'
+            @button outlet: 'caseOptionButton', class: 'btn', =>
+              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-case" /></svg>'
+            @button outlet: 'selectionOptionButton', class: 'btn option-selection', =>
+              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-selection" /></svg>'
+            @button outlet: 'wholeWordOptionButton', class: 'btn option-whole-word', =>
+              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-word" /></svg>'
 
       @section class: 'input-block find-container', =>
         @div class: 'input-block-item input-block-item--flex editor-container', =>
@@ -38,16 +46,9 @@ class FindView extends View
 
         @div class: 'input-block-item', =>
           @div class: 'btn-group btn-group-find', =>
-            @button outlet: 'nextButton', class: 'btn', 'Find'
-          @div class: 'btn-group btn-toggle btn-group-options', =>
-            @button outlet: 'regexOptionButton', class: 'btn', =>
-              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-regex" /></svg>'
-            @button outlet: 'caseOptionButton', class: 'btn', =>
-              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-case" /></svg>'
-            @button outlet: 'selectionOptionButton', class: 'btn option-selection', =>
-              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-selection" /></svg>'
-            @button outlet: 'wholeWordOptionButton', class: 'btn option-whole-word', =>
-              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-word" /></svg>'
+            @button outlet: 'nextButton', class: 'btn btn-next', 'Find'
+          @div class: 'btn-group btn-group-find-all', =>
+            @button outlet: 'findAllButton', class: 'btn btn-all', 'Find All'
 
       @section class: 'input-block replace-container', =>
         @div class: 'input-block-item input-block-item--flex editor-container', =>
@@ -138,6 +139,10 @@ class FindView extends View
       title: "Find Next",
       keyBindingCommand: 'find-and-replace:find-next',
       keyBindingTarget: @findEditor.element
+    subs.add atom.tooltips.add @findAllButton,
+      title: "Find All",
+      keyBindingCommand: 'find-and-replace:find-all',
+      keyBindingTarget: @findEditor.element
 
   didHide: ->
     @hideAllTooltips()
@@ -190,9 +195,11 @@ class FindView extends View
   handleFindEvents: ->
     @findEditor.getModel().onDidStopChanging => @liveSearch()
     @nextButton.on 'click', (e) => if e.shiftKey then @findPrevious(focusEditorAfter: true) else @findNext(focusEditorAfter: true)
+    @findAllButton.on 'click', @findAll
     @subscriptions.add atom.commands.add 'atom-workspace',
       'find-and-replace:find-next': => @findNext(focusEditorAfter: true)
       'find-and-replace:find-previous': => @findPrevious(focusEditorAfter: true)
+      'find-and-replace:find-all': => @findAll(focusEditorAfter: true)
       'find-and-replace:find-next-selected': @findNextSelected
       'find-and-replace:find-previous-selected': @findPreviousSelected
       'find-and-replace:use-selection-as-find-pattern': @setSelectionAsFindPattern
@@ -234,7 +241,7 @@ class FindView extends View
 
   liveSearch: ->
     findPattern = @findEditor.getText()
-    if findPattern.length is 0 or findPattern.length >= atom.config.get('find-and-replace.liveSearchMinimumCharacters') and @model.doesMatchTheEmptyString(findPattern)
+    if findPattern.length is 0 or findPattern.length >= atom.config.get('find-and-replace.liveSearchMinimumCharacters') and not @model.patternMatchesEmptyString(findPattern)
       @model.search(findPattern)
 
   search: (findPattern, options) ->

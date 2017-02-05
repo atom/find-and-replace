@@ -13,6 +13,11 @@ ResultsPaneView = require './project/results-pane'
 
 module.exports =
   activate: ({findOptions, findHistory, replaceHistory, pathsHistory}={}) ->
+    # Convert old config setting for backward compatibility.
+    if atom.config.get('find-and-replace.openProjectFindResultsInRightPane')
+      atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'right')
+    atom.config.unset('find-and-replace.openProjectFindResultsInRightPane')
+
     atom.workspace.addOpener (filePath) ->
       new ResultsPaneView() if filePath is ResultsPaneView.URI
 

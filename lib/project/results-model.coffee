@@ -4,7 +4,18 @@ escapeHelper = require '../escape-helper'
 
 class Result
   @create: (result) ->
-    if result?.matches?.length then new Result(result) else null
+    if result?.matches?.length
+      matches = result.matches.map((m) ->
+        return {
+          matchText: m.matchText,
+          lineText: m.lineText,
+          lineTextOffset: m.lineTextOffset,
+          range: m.range
+        }
+      )
+      new Result({filePath: result.filePath, matches})
+    else
+      null
 
   constructor: (result) ->
     _.extend(this, result)

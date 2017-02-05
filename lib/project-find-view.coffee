@@ -1,19 +1,17 @@
 fs = require 'fs-plus'
 path = require 'path'
 _ = require 'underscore-plus'
-{Disposable, CompositeDisposable} = require 'atom'
+{TextEditor, Disposable, CompositeDisposable} = require 'atom'
 {$, $$$, View, TextEditorView} = require 'atom-space-pen-views'
 
 Util = require './project/util'
 ResultsModel = require './project/results-model'
 ResultsPaneView = require './project/results-pane'
 
-buildTextEditor = require './build-text-editor'
-
 module.exports =
 class ProjectFindView extends View
   @content: (model, {findBuffer, replaceBuffer, pathsBuffer}) ->
-    findEditor = buildTextEditor
+    findEditor = new TextEditor
       mini: true
       tabLength: 2
       softTabs: true
@@ -21,7 +19,7 @@ class ProjectFindView extends View
       buffer: findBuffer
       placeholderText: 'Find in project'
 
-    replaceEditor = buildTextEditor
+    replaceEditor = new TextEditor
       mini: true
       tabLength: 2
       softTabs: true
@@ -29,7 +27,7 @@ class ProjectFindView extends View
       buffer: replaceBuffer
       placeholderText: 'Replace in project'
 
-    pathsEditor = buildTextEditor
+    pathsEditor = new TextEditor
       mini: true
       tabLength: 2
       softTabs: true
@@ -43,6 +41,13 @@ class ProjectFindView extends View
         @span class: 'header-item options-label pull-right', =>
           @span 'Finding with Options: '
           @span outlet: 'optionsLabel', class: 'options'
+          @span class: 'btn-group btn-toggle btn-group-options', =>
+            @button outlet: 'regexOptionButton', class: 'btn option-regex', =>
+              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-regex" /></svg>'
+            @button outlet: 'caseOptionButton', class: 'btn option-case-sensitive', =>
+              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-case" /></svg>'
+            @button outlet: 'wholeWordOptionButton', class: 'btn option-whole-word', =>
+              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-word" /></svg>'
 
       @section outlet: 'replacmentInfoBlock', class: 'input-block', =>
         @progress outlet: 'replacementProgress', class: 'inline-block'
@@ -53,14 +58,7 @@ class ProjectFindView extends View
           @subview 'findEditor', new TextEditorView(editor: findEditor)
         @div class: 'input-block-item', =>
           @div class: 'btn-group btn-group-find', =>
-            @button outlet: 'findAllButton', class: 'btn', 'Find'
-          @div class: 'btn-group btn-toggle btn-group-options', =>
-            @button outlet: 'regexOptionButton', class: 'btn option-regex', =>
-              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-regex" /></svg>'
-            @button outlet: 'caseOptionButton', class: 'btn option-case-sensitive', =>
-              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-case" /></svg>'
-            @button outlet: 'wholeWordOptionButton', class: 'btn option-whole-word', =>
-              @raw '<svg class="icon"><use xlink:href="#find-and-replace-icon-word" /></svg>'
+            @button outlet: 'findAllButton', class: 'btn', 'Find All'
 
       @section class: 'input-block replace-container', =>
         @div class: 'input-block-item input-block-item--flex editor-container', =>
@@ -302,7 +300,8 @@ class ProjectFindView extends View
 
   showResultPane: ->
     options = {searchAllPanes: true}
-    options.split = 'right' if atom.config.get('find-and-replace.openProjectFindResultsInRightPane')
+    openDirection = atom.config.get('find-and-replace.projectSearchResultsPaneSplitDirection')
+    options.split = openDirection unless openDirection is 'none'
     atom.workspace.open(ResultsPaneView.URI, options)
 
   onFinishedReplacing: (results) ->

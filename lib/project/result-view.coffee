@@ -83,3 +83,13 @@ class ResultView extends View
   confirm: ->
     @expand(not @isExpanded)
     null
+
+  copyPath: ->
+    filePath = @filePath
+    if atom.project?
+      [rootPath, relativePath] = atom.project.relativizePath(filePath)
+      if rootPath? and atom.project.getDirectories().length > 1
+        relativePath = path.join(path.basename(rootPath), relativePath)
+    else
+      relativePath = filePath
+    atom.clipboard.write(relativePath)

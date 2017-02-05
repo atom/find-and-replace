@@ -691,7 +691,6 @@ describe 'FindView', ->
         atom.workspace.destroyActivePane()
         atom.commands.dispatch workspaceElement, 'find-and-replace:use-selection-as-find-pattern'
         expect(findView.findEditor.getText()).toBe 'sort'
-        expect(editor.getSelectedBufferRange()).toEqual [[8, 11], [8, 15]]
 
       it "places the word under the cursor into the find editor", ->
         editor.setSelectedBufferRange([[1, 8], [1, 8]])
@@ -820,13 +819,8 @@ describe 'FindView', ->
           newEditor = null
 
           waitsForPromise ->
-            opener =
-              if atom.workspace.buildTextEditor?
-                atom.workspace.open('sample.coffee', activateItem: false)
-              else
-                atom.project.open('sample.coffee')
-
-            opener.then (o) -> newEditor = o
+            atom.workspace.open('sample.coffee', activateItem: false).then (o) ->
+              newEditor = o
 
           runs ->
             newEditor = atom.workspace.paneForItem(editor).splitRight(items: [newEditor]).getActiveItem()
@@ -1203,6 +1197,14 @@ describe 'FindView', ->
         advance()
         expect(findView.descriptionLabel.text()).toContain "6 results"
 
+      it "doesn't live search on a invalid regex", ->
+        expect(findView.descriptionLabel.text()).toContain "6 results"
+        atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
+        findView.findEditor.setText('\\(.*)')
+        advance()
+        expect(findView.descriptionLabel).toHaveClass 'text-error'
+        expect(findView.descriptionLabel.text()).toContain 'Invalid regular expression'
+
     describe "when another find is called", ->
       previousMarkers = null
 
@@ -1332,7 +1334,7 @@ describe 'FindView', ->
     describe "replace all", ->
       describe "when the replace all button is pressed", ->
         it "replaces all matched text", ->
-          $('.find-and-replace .btn-all').click()
+          findView.replaceAllButton.click()
           expect(findView.resultCounter.text()).toEqual('no results')
           expect(editor.getText()).not.toMatch /items/
           expect(editor.getText().match(/\bcats\b/g)).toHaveLength 6

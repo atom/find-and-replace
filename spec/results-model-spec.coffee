@@ -10,6 +10,7 @@ describe 'ResultsModel', ->
   [editor, searchPromise, resultsModel, searchPromise] = []
 
   beforeEach ->
+    atom.config.set('core.excludeVcsIgnoredPaths', false)
     atom.project.setPaths([path.join(__dirname, 'fixtures')])
 
     waitsForPromise ->
@@ -105,6 +106,16 @@ describe 'ResultsModel', ->
         spyOn(editor, 'scan').andCallThrough()
         advanceClock(editor.buffer.stoppedChangingDelay)
         expect(editor.scan).not.toHaveBeenCalled()
+
+    it "contains valid match objects after destroying a buffer (regression)", ->
+      waitsForPromise ->
+        resultsModel.search('items', '*.js', '')
+
+      runs ->
+        advanceClock(editor.buffer.stoppedChangingDelay)
+        editor.getBuffer().destroy()
+        result = resultsModel.getResult(editor.getPath())
+        expect(result.matches[0].lineText).toBe("  var sort = function(items) {")
 
   describe "cancelling a search", ->
     cancelledSpy = null
