@@ -307,7 +307,6 @@ class FindView extends View
       atom.beep()
 
   markersUpdated: (@markers) =>
-    @findError = null
     @updateResultCounter()
     @updateReplaceEnablement()
 
@@ -342,6 +341,8 @@ class FindView extends View
     @descriptionLabel.text(infoMessage).removeClass('text-error')
 
   setErrorMessage: (errorMessage) ->
+    this.removeClass('has-results')
+    this.addClass('has-no-results')
     @descriptionLabel.text(errorMessage).addClass('text-error')
 
   clearMessage: ->
