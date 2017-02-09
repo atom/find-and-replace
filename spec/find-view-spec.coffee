@@ -518,6 +518,17 @@ describe 'FindView', ->
             expect(findView.descriptionLabel).toHaveClass 'text-error'
             expect(findView.descriptionLabel.text()).toContain 'Invalid regular expression'
 
+          it "adds the has-no-results class", ->
+            findView.findEditor.setText 'it'
+            atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
+            expect(findView).toHaveClass 'has-results'
+            expect(findView).not.toHaveClass 'has-no-results'
+
+            findView.findEditor.setText 'i[t'
+            atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
+            expect(findView).toHaveClass 'has-no-results'
+            expect(findView).not.toHaveClass 'has-results'
+
           it "will be reset when there is no longer an error", ->
             expect(findView.descriptionLabel).toHaveClass 'text-error'
 
