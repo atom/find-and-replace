@@ -506,6 +506,18 @@ describe 'FindView', ->
             expect(findView.descriptionLabel).toHaveClass 'text-error'
             expect(findView.descriptionLabel.text()).toContain 'Invalid regular expression'
 
+          it "does not reset when the buffer is updated", ->
+            # This is a rather specific test: the error message only disappeared
+            # when there were no changes. Backspacing nothing can reproduce this,
+            # as well as saving or undoing and then redoing.
+            editor.setCursorBufferPosition([0, 0])
+            # Since we're at the beginning of the file, backspacing will do nothing but still send a change event
+            editor.backspace()
+            advanceClock(editor.buffer.stoppedChangingDelay)
+
+            expect(findView.descriptionLabel).toHaveClass 'text-error'
+            expect(findView.descriptionLabel.text()).toContain 'Invalid regular expression'
+
           it "will be reset when there is no longer an error", ->
             expect(findView.descriptionLabel).toHaveClass 'text-error'
 
