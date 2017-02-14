@@ -1232,6 +1232,9 @@ describe 'FindView', ->
       findView.findEditor.setText '('
       atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
 
+      editor.insertText('hi')
+      advanceClock(editor.getBuffer().stoppedChangingDelay)
+
   describe "replacing", ->
     beforeEach ->
       editor.setCursorBufferPosition([2, 0])
