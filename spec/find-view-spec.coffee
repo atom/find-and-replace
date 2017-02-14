@@ -1222,6 +1222,16 @@ describe 'FindView', ->
         atom.commands.dispatch(findView.findEditor.element, 'core:confirm')
         expect(getResultDecorations(editor, 'find-result')).toHaveLength 0
 
+  it "doesn't throw an exception when toggling the regex option with an invalid pattern before performing any other search (regression)", ->
+    atom.commands.dispatch editorView, 'find-and-replace:show'
+
+    waitsForPromise ->
+      activationPromise
+
+    runs ->
+      findView.findEditor.setText '('
+      atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option')
+
   describe "replacing", ->
     beforeEach ->
       editor.setCursorBufferPosition([2, 0])
