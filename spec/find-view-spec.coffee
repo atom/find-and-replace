@@ -630,7 +630,7 @@ describe 'FindView', ->
     it "shows an icon when search wraps around and the editor scrolls", ->
       editorView.style.height = "80px"
       editor.update?({autoHeight: false})
-      atom.views.performDocumentPoll()
+      editorView.component.measureDimensions()
       expect(editor.getVisibleRowRange()).toEqual [0, 3]
 
       expect(findView.resultCounter.text()).toEqual('2 of 6')
@@ -659,7 +659,7 @@ describe 'FindView', ->
     it "does not show the wrap icon when the editor does not scroll", ->
       editorView.style.height = "400px"
       editor.update?({autoHeight: false})
-      atom.views.performDocumentPoll()
+      editorView.component.measureDimensions()
       expect(editor.getVisibleRowRange()).toEqual [0, 12]
 
       atom.commands.dispatch editorView, 'find-and-replace:find-previous'
@@ -1114,7 +1114,7 @@ describe 'FindView', ->
       it "scrolls to the first match if the settings scrollToResultOnLiveSearch is true", ->
         editorView.style.height = "3px"
         editor.update?({autoHeight: false})
-        atom.views.performDocumentPoll()
+        editorView.component.measureDimensions()
         editor.moveToTop()
         atom.config.set('find-and-replace.scrollToResultOnLiveSearch', true)
         findView.findEditor.setText 'Array'
@@ -1126,7 +1126,7 @@ describe 'FindView', ->
       it "doesn't scroll to the first match if the settings scrollToResultOnLiveSearch is false", ->
         editorView.style.height = "3px"
         editor.update?({autoHeight: false})
-        atom.views.performDocumentPoll()
+        editorView.component.measureDimensions()
         editor.moveToTop()
         atom.config.set('find-and-replace.scrollToResultOnLiveSearch', false)
         findView.findEditor.setText 'Array'
