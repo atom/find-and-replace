@@ -371,7 +371,7 @@ class FindView extends View
 
   firstMarkerIndexAfterCursor: (indexIncluded=false) ->
     editor = @model.getEditor()
-    return null unless editor
+    return null unless editor and @markers?.length > 0
 
     selection = editor.getLastSelection()
     {start, end} = selection.getBufferRange()
