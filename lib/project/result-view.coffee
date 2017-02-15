@@ -3,6 +3,8 @@ _ = require 'underscore-plus'
 FileIcons = require '../file-icons'
 MatchView = require './match-view'
 path = require 'path'
+EOL = require('os').EOL
+fs = require 'fs'
 
 module.exports =
 class ResultView extends View
@@ -46,10 +48,76 @@ class ResultView extends View
       @hide()
     else
       @show()
+      @removeMultipleMatchesInSameLine(matches)
+      @addContextToMatches(@filePath, matches)
       for match in matches
         @matches.append(new MatchView(@model, {@filePath, match}))
 
     @matches.children().eq(selectedIndex).addClass('selected') if selectedIndex > -1
+
+  removeMultipleMatchesInSameLine: (matches) ->
+    for matchIndex in [matches.length - 1 ... 0]
+      prevMatch = matches[matchIndex - 1]
+      match = matches[matchIndex]
+      prevRange = prevMatch.range
+      range = match.range
+      prevRowIndex = (if prevRange.start then prevRange.start.row else prevRange[0][0])
+      rowIndex = (if range.start then range.start.row else range[0][0])
+
+      if rowIndex == prevRowIndex && match.lineTextOffset == prevMatch.lineTextOffset
+        prevMatch.extraRanges = [] unless prevMatch.extraRanges
+        prevMatch.extraRanges.push(range)
+        if match.extraRanges
+          prevMatch.extraRanges = prevMatch.extraRanges.concat(match.extraRanges)
+        matches.splice(matchIndex, 1)
+
+  addContextToMatches: (filePath, matches) ->
+    CONTEXT_LINES = atom.config.get('find-and-replace.searchContextExtraLines')
+    return if CONTEXT_LINES is 0
+    content = fs.readFileSync(filePath).toString()
+    lines = content.split(EOL)
+    prevMatch = match
+    prevRowIndex = 0
+    prevLinesAfter = 0
+    for matchIndex in [0...matches.length]
+      match = matches[matchIndex]
+      range = match.range
+      continue unless range
+
+      rowIndex = (if range.start then range.start.row else range[0][0])
+
+      linesBefore = Math.min(rowIndex, CONTEXT_LINES)
+      if prevMatch
+        linesBefore = Math.min(Math.max(rowIndex - prevRowIndex - prevLinesAfter - 1, 0), linesBefore)
+        if prevLinesAfter > 0 and prevLinesAfter > rowIndex - prevRowIndex - 1
+          extraRows = prevLinesAfter - Math.max(rowIndex - prevRowIndex - 1, 0)
+          prevMatch.contextAfter.splice(prevLinesAfter - extraRows, extraRows)
+          prevLinesAfter -= extraRows
+        else if rowIndex - prevRowIndex > 2 * CONTEXT_LINES
+          prevMatch.gapAfter = true
+      linesAfter = Math.min(lines.length - rowIndex - 1, CONTEXT_LINES)
+
+      contextBefore = []
+      contextAfter = []
+
+      for i in [0...linesBefore]
+        lineIndex = rowIndex - (linesBefore - i)
+        line = lines[lineIndex] or ''
+        line = line.substr(0, 140)
+        contextBefore.push(line)
+
+      for i in [0...linesAfter]
+        lineIndex = rowIndex + (i + 1)
+        line = lines[lineIndex] or ''
+        line = line.substr(0, 140)
+        contextAfter.push(line)
+
+      match.contextBefore = contextBefore
+      match.contextAfter = contextAfter
+      match.CONTEXT_LINES = CONTEXT_LINES
+      prevMatch = match
+      prevRowIndex = rowIndex
+      prevLinesAfter = linesAfter
 
   expand: (expanded) ->
     # expand or collapse the list

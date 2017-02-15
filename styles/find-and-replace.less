@@ -257,6 +257,15 @@ atom-workspace.find-visible {
     .search-result {
       padding-top: 2px;
       padding-bottom: 2px;
+
+      &.no-context {
+        padding-top: 0;
+        padding-bottom: 0;
+      }
+
+      .context, .matching-line {
+        white-space: pre;
+      }
     }
 
     .line-number {

@@ -115,11 +115,11 @@ class ResultsView extends ScrollView
     @prop('scrollHeight') <= @height() + @pixelOverdraw or @prop('scrollHeight') <= @scrollBottom() + @pixelOverdraw
 
   selectFirstResult: ->
-    @selectResult(@find('.search-result:first'))
+    @selectResult(@find('.search-result > .matching-line:first'))
     @scrollToTop()
 
   selectLastResult: ->
-    @selectResult(@find('.search-result:last'))
+    @selectResult(@find('.search-result > .matching-line:last'))
     @scrollToBottom()
 
   selectPreviousPage: ->
@@ -190,13 +190,21 @@ class ResultsView extends ScrollView
     return unless element?.length
     visibleItems = @find('li:visible')
     itemIndex = visibleItems.index(element)
-    $(visibleItems[Math.min(itemIndex + 1, visibleItems.length - 1)])
+    li = $(visibleItems[Math.min(itemIndex + 1, visibleItems.length - 1)])
+    if li.hasClass('search-result')
+      li.children('.matching-line')
+    else
+      li
 
   getPreviousVisible: (element) ->
     return unless element?.length
     visibleItems = @find('li:visible')
     itemIndex = visibleItems.index(element)
-    $(visibleItems[Math.max(itemIndex - 1, 0)])
+    li = $(visibleItems[Math.max(itemIndex - 1, 0)])
+    if li.hasClass('search-result')
+      li.children('.matching-line')
+    else
+      li
 
   selectResult: (resultView) ->
     return unless resultView?.length
