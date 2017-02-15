@@ -376,25 +376,6 @@ describe "BufferSearch", ->
 
         expect(scannedRanges()).toEqual []
 
-    describe "when no markers are affected in a change event", ->
-      it "does not emit an update event", ->
-        editor.setCursorBufferPosition([0, 0])
-        editor.backspace()
-        advanceClock(editor.buffer.stoppedChangingDelay)
-        expectNoUpdateEvent()
-
-    describe "when the find pattern is invalid and a change occurs", ->
-      it "does not attempt to update markers", ->
-        model.search "a(",
-          caseSensitive: false
-          useRegex: true
-          wholeWord: false
-
-        editor.insertText(".")
-        advanceClock(editor.buffer.stoppedChangingDelay)
-
-        expectNoUpdateEvent()
-
   describe "replacing a search result", ->
     beforeEach ->
       editor.scanInBufferRange.reset()
