@@ -1,5 +1,5 @@
 _ = require 'underscore-plus'
-{Emitter} = require 'atom'
+{Emitter, Range} = require 'atom'
 escapeHelper = require '../escape-helper'
 
 class Result
@@ -221,10 +221,15 @@ class ResultsModel
       filePathInsertedIndex = binaryIndex(@paths, filePath, stringCompare)
       @paths.splice(filePathInsertedIndex, 0, filePath)
 
-    @matchCount += result.matches.length
-
-    @results[filePath] = result
-    @emitter.emit 'did-add-result', {filePath, result, filePathInsertedIndex}
+    bufferPromise = atom.project.buildBuffer(filePath)
+    bufferPromise.then (buffer) =>
+      for match in result.matches
+        range = Range.fromObject(match.range)
+        linesAmount = atom.config.get('find-and-replace.searchContextExtraLines')
+        match.lines = buffer.lines.slice(range.start.row-linesAmount, range.end.row+linesAmount+1)
+      @matchCount += result.matches.length
+      @results[filePath] = result
+      @emitter.emit 'did-add-result', {filePath, result, filePathInsertedIndex}
 
   removeResult: (filePath) ->
     if @results[filePath]
