@@ -671,7 +671,7 @@ describe("FindView", () => {
       editorView.style.height = "80px";
       editor.update({autoHeight: false})
 
-      atom.views.performDocumentPoll();
+      editorView.component.measureDimensions();
       expect(editor.getVisibleRowRange()).toEqual([0, 3]);
       expect(findView.refs.resultCounter.textContent).toEqual("2 of 6");
       expect(findView.wrapIcon).not.toBeVisible();
@@ -698,7 +698,7 @@ describe("FindView", () => {
       editorView.style.height = "400px";
       editor.update({autoHeight: false})
 
-      atom.views.performDocumentPoll();
+      editorView.component.measureDimensions();
       expect(editor.getVisibleRowRange()).toEqual([0, 12]);
 
       atom.commands.dispatch(editorView, "find-and-replace:find-previous");
@@ -1189,7 +1189,7 @@ describe("FindView", () => {
         editorView.style.height = "3px";
         editor.update({autoHeight: false})
 
-        atom.views.performDocumentPoll();
+        editorView.component.measureDimensions();
         editor.moveToTop();
         atom.config.set("find-and-replace.scrollToResultOnLiveSearch", true);
         findView.findEditor.setText("Array");
@@ -1203,7 +1203,7 @@ describe("FindView", () => {
         editorView.style.height = "3px";
         editor.update({autoHeight: false})
 
-        atom.views.performDocumentPoll();
+        editorView.component.measureDimensions();
         editor.moveToTop();
         atom.config.set("find-and-replace.scrollToResultOnLiveSearch", false);
         findView.findEditor.setText("Array");
@@ -1306,6 +1306,17 @@ describe("FindView", () => {
         expect(getResultDecorations(editor, "find-result")).toHaveLength(0);
       });
     });
+  });
+
+  it("doesn't throw an exception when toggling the regex option with an invalid pattern before performing any other search (regression)", async () => {
+    atom.commands.dispatch(editorView, 'find-and-replace:show');
+    await activationPromise;
+
+    findView.findEditor.setText('(');
+    atom.commands.dispatch(findView.findEditor.element, 'find-and-replace:toggle-regex-option');
+
+    editor.insertText('hi');
+    advanceClock(editor.getBuffer().stoppedChangingDelay);
   });
 
   describe("replacing", () => {
