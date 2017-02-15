@@ -1,5 +1,7 @@
 # Find and Replace package
-[![macOS Build Status](https://travis-ci.org/atom/find-and-replace.svg?branch=master)](https://travis-ci.org/atom/find-and-replace) [![Windows Build Status](https://ci.appveyor.com/api/projects/status/6w4baiiq5mw4nxky/branch/master?svg=true)](https://ci.appveyor.com/project/Atom/find-and-replace/branch/master) [![Dependency Status](https://david-dm.org/atom/find-and-replace.svg)](https://david-dm.org/atom/find-and-replace)
+[![macOS Build Status](https://travis-ci.org/atom/find-and-replace.svg?branch=master)](https://travis-ci.org/atom/find-and-replace)
+[![Windows Build Status](https://ci.appveyor.com/api/projects/status/6w4baiiq5mw4nxky/branch/master?svg=true)](https://ci.appveyor.com/project/Atom/find-and-replace/branch/master)
+[![Dependency Status](https://david-dm.org/atom/find-and-replace.svg)](https://david-dm.org/atom/find-and-replace)
 
 Find and replace in the current buffer or across the entire project in Atom.
 
@@ -23,7 +25,7 @@ Want to learn more?  Check out the [Using Atom: Find and Replace](http://flight-
 ## Commands and Keybindings
 |Command|Description|Keybinding (Linux)|Keybinding (macOS)|Keybinding (Windows)|
 |-------|-----------|------------------|-----------------|--------------------|
-|`project-find:show`|Show the project find and replace dialog|<kbd>ctrl-shift-F</kbd>|<kbd>cmd-shift-F</kbd>|<kbd>ctrl-shift-F</kbd>|
+|`project-find:show`|Show the project find and replace dialog|<kbd>ctrl-shift-f</kbd>|<kbd>cmd-shift-f</kbd>|<kbd>ctrl-shift-f</kbd>|
 |`project-find:confirm`|Find the next occurence of the phrase||<kbd>cmd-enter</kbd>|<kbd>ctrl-enter</kbd>|
 |`project-find:toggle-regex-option`|Toggle the "regex" option||<kbd>cmd-alt-/</kbd>|<kbd>ctrl-alt-/</kbd>|
 |`project-find:toggle-case-option`|Toggle the "match case" option||<kbd>cmd-alt-c</kbd>|<kbd>ctrl-alt-c</kbd>|
@@ -38,7 +40,7 @@ Want to learn more?  Check out the [Using Atom: Find and Replace](http://flight-
 |`find-and-replace:toggle-whole-word-option`|Toggle the "whold word" option||<kbd>cmd-alt-w</kbd>|<kbd>ctrl-alt-s</kbd>|
 |`find-and-replace:find-all`|Find all occurences of the pharase|<kbd>ctrl-enter</kbd>|<kbd>cmd-enter</kbd>|<kbd>ctrl-enter</kbd>|
 |`find-and-replace:find-next`|Find the next occurence of the phrase|<kbd>f3</kbd>|<kbd>cmd-g</kbd>|<kbd>f3</kbd>|
-|`find-and-replace:find-previous`|Find the previous occurence of the phrase|<kbd>shift-f3</kbd>|<kbd>cmd-shift-G</kbd>|<kbd>shift-f3</kbd>|
+|`find-and-replace:find-previous`|Find the previous occurence of the phrase|<kbd>shift-f3</kbd>|<kbd>cmd-shift-g</kbd>|<kbd>shift-f3</kbd>|
 |`find-and-replace:find-next-selected`|Find the next occurence of the phrase selected|<kbd>ctrl-f3</kbd>|<kbd>cmd-f3</kbd>|<kbd>ctrl-f3</kbd>|
 |`find-and-replace:find-previous-selected`|Find the previous occurence of the phrase selected|<kbd>ctrl-shift-f3</kbd>|<kbd>cmd-shift-f3</kbd>|<kbd>ctrl-shift-f3</kbd>|
 |`find-and-replace:select-all`|Select all occurences of the phrase|<kbd>alt-f3</kbd>|<kbd>cmd-ctrl-g</kbd>|<kbd>alt-f3</kbd>|
