@@ -34,7 +34,7 @@ class MatchView extends View
 
   render: =>
     if @model.getFindOptions().replacePattern and @model.regex and not @model.replacedPathCount?
-      replacementText = @match.matchText.replace(@model.regex, @model.getFindOptions().replacePattern)
+      replacementText = @match.matchText.replace(@model.regex, @model.getFindOptions().replacePattern) if @model.getFindOptions().useRegex
       @replacementText.text(replacementText)
       @replacementText.show()
       @matchText.removeClass('highlight-info').addClass('highlight-error')
