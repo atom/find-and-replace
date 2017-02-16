@@ -16,7 +16,7 @@ class FindOptions
   constructor: (state={}) ->
     @emitter = new Emitter
 
-    @findPattern = state.findPattern ? ''
+    @findPattern = ''
     @replacePattern = state.replacePattern ? ''
     @pathsPattern = state.pathsPattern ? ''
     @useRegex = state.useRegex ? atom.config.get('find-and-replace.useRegex') ? false
