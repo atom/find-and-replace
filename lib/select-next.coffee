@@ -21,6 +21,10 @@ class SelectNext
     @selectWord() if @editor.getLastSelection().isEmpty()
     @selectAllOccurrences()
 
+  findAndSelectAllUnder: ->
+    @selectWord() if @editor.getLastSelection().isEmpty()
+    @selectAllUnder()
+
   undoLastSelection: ->
     @updateSavedSelections()
 
@@ -62,6 +66,11 @@ class SelectNext
 
   selectAllOccurrences: ->
     range = [[0, 0], @editor.getEofBufferPosition()]
+    @scanForNextOccurrence range, ({range, stop}) =>
+      @addSelection(range)
+
+  selectAllUnder: ->
+    range = [@editor.getCursorBufferPosition(), @editor.getEofBufferPosition()]
     @scanForNextOccurrence range, ({range, stop}) =>
       @addSelection(range)
 

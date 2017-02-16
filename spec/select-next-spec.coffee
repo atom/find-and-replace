@@ -303,6 +303,119 @@ describe "SelectNext", ->
           [[1, 0], [1, 1]]
         ]
 
+  describe "find-and-replace:select-all-under", ->
+    describe "when there is no selection", ->
+      it "selects all occurrences of the word under the cursor from the cursor to the EOF", ->
+        editor.setText """
+          for
+          information
+          format
+          another for
+          fork
+          a 3rd for is here
+        """
+        editor.setCursorBufferPosition([0, 0])
+
+        atom.commands.dispatch editorElement, 'find-and-replace:select-all-under'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[0, 0], [0, 3]]
+          [[3, 8], [3, 11]]
+          [[5, 6], [5, 9]]
+        ]
+    describe "when a word is selected", ->
+      describe "when the word was selected using select-next", ->
+        it "selects all occurrences of the selected word from the cursor to the EOF", ->
+          editor.setText """
+            for
+            information
+            format
+            another for
+            fork
+            a 3rd for is here
+          """
+
+          editor.setCursorBufferPosition([0, 1])
+
+          atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+          atom.commands.dispatch editorElement, 'find-and-replace:select-all-under'
+          expect(editor.getSelectedBufferRanges()).toEqual [
+            [[0, 0], [0, 3]]
+            [[3, 8], [3, 11]]
+            [[5, 6], [5, 9]]
+          ]
+
+          editor.setCursorBufferPosition([3, 11])
+
+          atom.commands.dispatch editorElement, 'find-and-replace:select-next'
+          atom.commands.dispatch editorElement, 'find-and-replace:select-all-under'
+          expect(editor.getSelectedBufferRanges()).toEqual [
+            [[3, 8], [3, 11]]
+            [[5, 6], [5, 9]]
+          ]
+      describe "When the word was not selected using select-next", ->
+        it "selects all occurrences from the cursor to the EOF, including non-words", ->
+          editor.setText """
+            for
+            information
+            format
+            another for
+            fork
+            a 3rd for is here
+          """
+
+          editor.setSelectedBufferRange([[0, 0], [0, 3]])
+
+          atom.commands.dispatch editorElement, 'find-and-replace:select-all-under'
+          expect(editor.getSelectedBufferRanges()).toEqual [
+            [[0, 0], [0, 3]]
+            [[1, 2], [1, 5]]
+            [[2, 0], [2, 3]]
+            [[3, 8], [3, 11]]
+            [[4, 0], [4, 3]]
+            [[5, 6], [5, 9]]
+          ]
+
+          editor.setSelectedBufferRange([[2, 0], [2, 3]])
+
+          atom.commands.dispatch editorElement, 'find-and-replace:select-all-under'
+          expect(editor.getSelectedBufferRanges()).toEqual [
+            [[2, 0], [2, 3]]
+            [[3, 8], [3, 11]]
+            [[4, 0], [4, 3]]
+            [[5, 6], [5, 9]]
+          ]
+    describe "When a non-word is selected", ->
+      it "selects all occurrences from the cursor to the EOF", ->
+        editor.setText """
+          <for
+          information
+          form<at
+          another for
+          <fork
+          a 3rd for is<< here
+        """
+
+        editor.setSelectedBufferRange([[0, 0], [0, 1]])
+
+        atom.commands.dispatch editorElement, 'find-and-replace:select-all-under'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[0, 0], [0, 1]]
+          [[2, 4], [2, 5]]
+          [[4, 0], [4, 1]]
+          [[5, 12], [5, 13]]
+          [[5, 13], [5, 14]]
+        ]
+
+        editor.setSelectedBufferRange([[2, 4], [2, 5]])
+
+        atom.commands.dispatch editorElement, 'find-and-replace:select-all-under'
+        expect(editor.getSelectedBufferRanges()).toEqual [
+          [[2, 4], [2, 5]]
+          [[4, 0], [4, 1]]
+          [[5, 12], [5, 13]]
+          [[5, 13], [5, 14]]
+        ]
+
   describe "find-and-replace:select-undo", ->
     describe "when there is no selection", ->
       it "does nothing", ->
