@@ -108,6 +108,7 @@ class FindView extends View
   destroy: ->
     @subscriptions?.dispose()
     @tooltipSubscriptions?.dispose()
+    @findEditorSubscriptions?.dispose()
 
   setPanel: (@panel) ->
     @subscriptions.add @panel.onDidChangeVisible (visible) =>
@@ -193,7 +194,7 @@ class FindView extends View
       workspaceElement.focus()
 
   handleFindEvents: ->
-    @findEditor.getModel().onDidStopChanging => @liveSearch()
+    @subscriptions.add atom.config.observe 'find-and-replace.instantSearch', @handleFindEditorChanges.bind(this)
     @nextButton.on 'click', (e) => if e.shiftKey then @findPrevious(focusEditorAfter: true) else @findNext(focusEditorAfter: true)
     @findAllButton.on 'click', @findAll
     @subscriptions.add atom.commands.add 'atom-workspace',
@@ -203,6 +204,12 @@ class FindView extends View
       'find-and-replace:find-next-selected': @findNextSelected
       'find-and-replace:find-previous-selected': @findPreviousSelected
       'find-and-replace:use-selection-as-find-pattern': @setSelectionAsFindPattern
+
+  handleFindEditorChanges: (instantSearch) ->
+    @findEditorSubscriptions?.dispose()
+    @findEditorSubscriptions = new CompositeDisposable
+    changeEventListener = if instantSearch then 'onDidChange' else 'onDidStopChanging'
+    @findEditorSubscriptions.add @findEditor.getModel()[changeEventListener] => @liveSearch()
 
   handleReplaceEvents: ->
     @replaceNextButton.on 'click', @replaceNext
