@@ -206,6 +206,9 @@ class ResultsModel
   getResult: (filePath) ->
     @results[filePath]
 
+  getResultAt: (index) ->
+    @results[@paths[index]]
+
   setResult: (filePath, result) ->
     if result
       @addResult(filePath, result)
