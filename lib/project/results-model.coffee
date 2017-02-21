@@ -246,7 +246,7 @@ class ResultsModel
     editor.scan @regex, (match) ->
       matches.push(match)
 
-    result = Result.create({matches})
+    result = Result.create({filePath: editor.getPath(), matches})
     @setResult(editor.getPath(), result)
     @emitter.emit 'did-finish-searching', @getResultsSummary()
 
