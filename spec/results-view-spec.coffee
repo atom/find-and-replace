@@ -65,25 +65,25 @@ describe 'ResultsView', ->
         expect(pathNames[1]).toContain 'sample.coffee'
         expect(pathNames[2]).toContain 'sample.js'
 
-        expect(resultsView.find('.search-result:first')).toHaveClass 'selected'
+        expect(resultsView.find('.match-line:first')).toHaveClass 'selected'
 
         # at the beginning
         firstResult = path.resolve('/a')
         projectFindView.model.addResult(firstResult, matches: [match])
         expect(resultsView.find(".path-name")[0].textContent).toContain firstResult
-        expect(resultsView.find('.search-result:first')).toHaveClass 'selected'
+        expect(resultsView.find('.match-line:first')).toHaveClass 'selected'
 
         # at the end
         lastResult = path.resolve('/z')
         projectFindView.model.addResult(lastResult, matches: [match])
         expect(resultsView.find(".path-name")[4].textContent).toContain lastResult
-        expect(resultsView.find('.search-result:first')).toHaveClass 'selected'
+        expect(resultsView.find('.match-line:first')).toHaveClass 'selected'
 
         # 2nd to last
         almostLastResult = path.resolve('/x')
         projectFindView.model.addResult(almostLastResult, matches: [match])
         expect(resultsView.find(".path-name")[4].textContent).toContain almostLastResult
-        expect(resultsView.find('.search-result:first')).toHaveClass 'selected'
+        expect(resultsView.find('.match-line:first')).toHaveClass 'selected'
 
     describe "when shouldRenderMoreResults is false", ->
       beforeEach ->
@@ -361,13 +361,14 @@ describe 'ResultsView', ->
         expect(resultsView.find("li").length).toBeLessThan resultsView.getPathCount() + resultsView.getMatchCount()
 
         atom.commands.dispatch resultsView.element, 'core:move-to-bottom'
-        expect(resultsView.find("li").length).toBe resultsView.getPathCount() + resultsView.getMatchCount()
-        expect(resultsView.find("li:eq(1)")).not.toHaveClass 'selected'
-        expect(resultsView.find("li:last")).toHaveClass 'selected'
+        expect(resultsView.find("li.path").length).toBe resultsView.getPathCount()
+        expect(resultsView.find("li.match-line").length).toBe resultsView.getMatchCount()
+        expect(resultsView.find("li.match-line:first")).not.toHaveClass 'selected'
+        expect(resultsView.find("li.match-line:last")).toHaveClass 'selected'
         expect(resultsView.prop('scrollTop')).not.toBe 0
 
         atom.commands.dispatch resultsView.element, 'core:move-to-top'
-        expect(resultsView.find("li:eq(1)")).toHaveClass 'selected'
+        expect(resultsView.find("li.match-line:first")).toHaveClass 'selected'
         expect(resultsView.prop('scrollTop')).toBe 0
 
       it "selects the path when when core:move-to-bottom is triggered and last item is collapsed", ->
@@ -514,7 +515,7 @@ describe 'ResultsView', ->
 
         lastSelectedItem = null
 
-        length = resultsView.find("li > ul > li").length
+        length = resultsView.find("> li > ul > li").length
         expect(length).toBe 13
 
         resultsView.selectFirstResult()
@@ -522,7 +523,7 @@ describe 'ResultsView', ->
         # moves down for 13 results + 2 files
         _.times length + 1, -> atom.commands.dispatch resultsView.element, 'core:move-down'
         selectedItem = resultsView.find('.selected')
-        expect(selectedItem).toHaveClass('search-result')
+        expect(selectedItem).toHaveClass('match-line')
         expect(selectedItem[0]).not.toBe lastSelectedItem
 
         lastSelectedItem = selectedItem[0]
@@ -558,32 +559,32 @@ describe 'ResultsView', ->
         resultsView.find('.path:eq(1)').hide()
 
         atom.commands.dispatch resultsView.element, 'core:move-down'
-        expect(resultsView.find('.path:eq(0) .search-result:eq(1)')).toHaveClass 'selected'
+        expect(resultsView.find('.path:eq(0) .match-line:eq(1)')).toHaveClass 'selected'
 
         atom.commands.dispatch resultsView.element, 'core:move-down'
         expect(resultsView.find('.path:eq(2)')).toHaveClass 'selected'
 
         atom.commands.dispatch resultsView.element, 'core:move-down'
-        expect(resultsView.find('.path:eq(2) .search-result:eq(0)')).toHaveClass 'selected'
+        expect(resultsView.find('.path:eq(2) .match-line:eq(0)')).toHaveClass 'selected'
 
         atom.commands.dispatch resultsView.element, 'core:move-down'
-        expect(resultsView.find('.path:eq(2) .search-result:eq(1)')).toHaveClass 'selected'
+        expect(resultsView.find('.path:eq(2) .match-line:eq(1)')).toHaveClass 'selected'
 
         atom.commands.dispatch resultsView.element, 'core:move-up'
-        expect(resultsView.find('.path:eq(2) .search-result:eq(0)')).toHaveClass 'selected'
+        expect(resultsView.find('.path:eq(2) .match-line:eq(0)')).toHaveClass 'selected'
 
         atom.commands.dispatch resultsView.element, 'core:move-up'
         expect(resultsView.find('.path:eq(2)')).toHaveClass 'selected'
 
         atom.commands.dispatch resultsView.element, 'core:move-up'
-        expect(resultsView.find('.path:eq(0) .search-result:eq(1)')).toHaveClass 'selected'
+        expect(resultsView.find('.path:eq(0) .match-line:eq(1)')).toHaveClass 'selected'
 
         atom.commands.dispatch resultsView.element, 'core:move-down'
         atom.commands.dispatch resultsView.element, 'core:move-left'
         expect(resultsView.find('.path:eq(2)')).toHaveClass 'selected'
 
         atom.commands.dispatch resultsView.element, 'core:move-up'
-        expect(resultsView.find('.path:eq(0) .search-result:eq(1)')).toHaveClass 'selected'
+        expect(resultsView.find('.path:eq(0) .match-line:eq(1)')).toHaveClass 'selected'
 
         atom.commands.dispatch resultsView.element, 'core:move-down'
         expect(resultsView.find('.path:eq(2)')).toHaveClass 'selected'
@@ -618,7 +619,7 @@ describe 'ResultsView', ->
       it "collapses the selected results view", ->
         # select item in first list
         resultsView.find('.selected').removeClass('selected')
-        resultsView.find('.path:eq(0) .search-result:first').addClass('selected')
+        resultsView.find('.path:eq(0) .match-line:first').addClass('selected')
 
         atom.commands.dispatch resultsView.element, 'core:move-left'
 
@@ -640,8 +641,8 @@ describe 'ResultsView', ->
         atom.commands.dispatch resultsView.element, 'core:move-right'
 
         selectedItem = resultsView.find('.selected')
-        expect(selectedItem).toHaveClass('search-result')
-        expect(selectedItem[0]).toBe resultsView.find('.path:eq(0) .search-result:first')[0]
+        expect(selectedItem).toHaveClass('match-line')
+        expect(selectedItem[0]).toBe resultsView.find('.path:eq(0) .match-line:first')[0]
 
       it "expands all results if 'Expand All' button is pressed", ->
         expandAll = resultsView.parentView.expandAll
@@ -665,7 +666,7 @@ describe 'ResultsView', ->
       describe "when there are collapsed results", ->
         it "moves to the correct next result when a path is selected", ->
           resultsView.find('.selected').removeClass('selected')
-          resultsView.find('.path:eq(0) .search-result:last').addClass('selected')
+          resultsView.find('.path:eq(0) .match-line:last').addClass('selected')
           resultsView.find('.path:eq(1)').view().expand(false)
 
           atom.commands.dispatch resultsView.element, 'core:move-down'
@@ -676,7 +677,7 @@ describe 'ResultsView', ->
 
         it "moves to the correct previous result when a path is selected", ->
           resultsView.find('.selected').removeClass('selected')
-          resultsView.find('.path:eq(1) .search-result:first').addClass('selected')
+          resultsView.find('.path:eq(1) .match-line:first').addClass('selected')
           resultsView.find('.path:eq(0)').view().expand(false)
 
           atom.commands.dispatch resultsView.element, 'core:move-up'

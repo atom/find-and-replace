@@ -299,7 +299,7 @@ describe 'ProjectFindView', ->
             resultsPaneView = getExistingResultsPane()
             resultsView = resultsPaneView.resultsView
             expect(resultsView).toBeVisible()
-            expect(resultsView.find("li > ul > li")).toHaveLength(2)
+            expect(resultsView.find("> li > ul > li")).toHaveLength(2)
 
       describe "when regex seach is disabled", ->
         it "finds the escape char", ->
@@ -313,7 +313,7 @@ describe 'ProjectFindView', ->
             resultsPaneView = getExistingResultsPane()
             resultsView = resultsPaneView.resultsView
             expect(resultsView).toBeVisible()
-            expect(resultsView.find("li > ul > li")).toHaveLength(1)
+            expect(resultsView.find("> li > ul > li")).toHaveLength(1)
 
         it "finds a backslash", ->
           projectFindView.findEditor.setText('\\')
@@ -326,7 +326,7 @@ describe 'ProjectFindView', ->
             resultsPaneView = getExistingResultsPane()
             resultsView = resultsPaneView.resultsView
             expect(resultsView).toBeVisible()
-            expect(resultsView.find("li > ul > li")).toHaveLength(3)
+            expect(resultsView.find("> li > ul > li")).toHaveLength(3)
 
         it "doesn't insert a escaped char if there are multiple backslashs in front of the char", ->
           projectFindView.findEditor.setText('\\\\t')
@@ -339,7 +339,7 @@ describe 'ProjectFindView', ->
             resultsPaneView = getExistingResultsPane()
             resultsView = resultsPaneView.resultsView
             expect(resultsView).toBeVisible()
-            expect(resultsView.find("li > ul > li")).toHaveLength(1)
+            expect(resultsView.find("> li > ul > li")).toHaveLength(1)
 
     describe "when core:cancel is triggered", ->
       beforeEach ->
@@ -675,7 +675,7 @@ describe 'ProjectFindView', ->
           resultsView = resultsPaneView.resultsView
           expect(resultsView).toBeVisible()
           resultsView.scrollToBottom() # To load ALL the results
-          expect(resultsView.find("li > ul > li")).toHaveLength(13)
+          expect(resultsView.find("> li > ul > li")).toHaveLength(13)
 
     describe "when core:confirm is triggered", ->
       beforeEach ->
@@ -738,7 +738,7 @@ describe 'ProjectFindView', ->
             resultsView = resultsPaneView.resultsView
             expect(resultsView).toBeVisible()
             resultsView.scrollToBottom() # To load ALL the results
-            expect(resultsView.find("li > ul > li")).toHaveLength(13)
+            expect(resultsView.find("> li > ul > li")).toHaveLength(13)
             expect(resultsPaneView.previewCount.text()).toBe "13 results found in 2 files for items"
             expect(projectFindView.errorMessages).not.toBeVisible()
 
@@ -764,7 +764,7 @@ describe 'ProjectFindView', ->
             resultsPaneView = getExistingResultsPane()
             resultsView = resultsPaneView.resultsView
             resultsView.scrollToBottom() # To load ALL the results
-            expect(resultsView.find("li > ul > li")).toHaveLength(13)
+            expect(resultsView.find("> li > ul > li")).toHaveLength(13)
             expect(resultsPaneView.previewCount.text()).toBe "13 results found in 2 files for items"
 
             resultsView.selectFirstResult()
@@ -775,14 +775,14 @@ describe 'ProjectFindView', ->
             buffer.setText('there is one "items" in this file')
             advanceClock(buffer.stoppedChangingDelay)
 
-            expect(resultsView.find("li > ul > li")).toHaveLength(8)
+            expect(resultsView.find("> li > ul > li")).toHaveLength(8)
             expect(resultsPaneView.previewCount.text()).toBe "8 results found in 2 files for items"
             expect(resultsView.find(".path:eq(1)")).toHaveClass 'selected'
 
             buffer.setText('no matches in this file')
             advanceClock(buffer.stoppedChangingDelay)
 
-            expect(resultsView.find("li > ul > li")).toHaveLength(7)
+            expect(resultsView.find("> li > ul > li")).toHaveLength(7)
             expect(resultsPaneView.previewCount.text()).toBe "7 results found in 1 file for items"
 
       describe "when no results exist", ->
@@ -1016,7 +1016,7 @@ describe 'ProjectFindView', ->
           resultsView.scrollToBottom() # To load ALL the results
 
           expect(resultsView).toBeVisible()
-          expect(resultsView.find("li > ul > li")).toHaveLength(13)
+          expect(resultsView.find("> li > ul > li")).toHaveLength(13)
 
           resultsView.selectFirstResult()
           _.times 10, -> atom.commands.dispatch(resultsView[0], 'core:move-down')
