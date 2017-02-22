@@ -7,7 +7,8 @@ const fs = require('fs-plus');
 const dedent = require('dedent');
 const {TextBuffer} = require('atom');
 const ResultsPaneView = require('../lib/project/results-pane');
-const {beforeEach, it, fit, ffit, fffit} = require('./async-spec-helpers')
+const etch = require('etch');
+const {beforeEach, it, fit, ffit, fffit, conditionPromise} = require('./async-spec-helpers')
 
 describe('ProjectFindView', () => {
   const {stoppedChangingDelay} = TextBuffer.prototype;
@@ -268,6 +269,7 @@ describe('ProjectFindView', () => {
       editorElement = atom.views.getView(editor);
       atom.commands.dispatch(workspaceElement, 'project-find:show');
       await activationPromise;
+      workspaceElement.style.height = '600px'
     });
 
     describe("when the find string contains an escaped char", () => {
@@ -287,8 +289,9 @@ describe('ProjectFindView', () => {
           await searchPromise;
 
           const resultsView = getResultsView();
+          await resultsView.heightInvalidationPromise
           expect(resultsView.element).toBeVisible();
-          expect(resultsView.element.querySelectorAll("li > ul > li")).toHaveLength(2);
+          expect(resultsView.refs.listView.element.querySelectorAll(".search-result")).toHaveLength(2);
         })
       });
 
@@ -300,8 +303,9 @@ describe('ProjectFindView', () => {
           await searchPromise;
 
           const resultsView = getResultsView();
+          await resultsView.heightInvalidationPromise
           expect(resultsView.element).toBeVisible();
-          expect(resultsView.element.querySelectorAll("li > ul > li")).toHaveLength(1);
+          expect(resultsView.refs.listView.element.querySelectorAll(".search-result")).toHaveLength(1);
         });
 
         it("finds a backslash", async () => {
@@ -311,8 +315,9 @@ describe('ProjectFindView', () => {
           await searchPromise;
 
           const resultsView = getResultsView();
+          await resultsView.heightInvalidationPromise
           expect(resultsView.element).toBeVisible();
-          expect(resultsView.element.querySelectorAll("li > ul > li")).toHaveLength(3);
+          expect(resultsView.refs.listView.element.querySelectorAll(".search-result")).toHaveLength(3);
         });
 
         it("doesn't insert a escaped char if there are multiple backslashs in front of the char", async () => {
@@ -322,8 +327,9 @@ describe('ProjectFindView', () => {
           await searchPromise;
 
           const resultsView = getResultsView();
+          await resultsView.heightInvalidationPromise
           expect(resultsView.element).toBeVisible();
-          expect(resultsView.element.querySelectorAll("li > ul > li")).toHaveLength(1);
+          expect(resultsView.refs.listView.element.querySelectorAll(".search-result")).toHaveLength(1);
         });
       });
     });
@@ -395,16 +401,21 @@ describe('ProjectFindView', () => {
 
         const resultsPaneView1 = atom.views.getView(getExistingResultsPane());
         const pane1 = atom.workspace.getActivePane();
+        const resultsView1 = pane1.getItems()[0].refs.resultsView
         pane1.splitRight({copyActiveItem: true});
 
         const pane2 = atom.workspace.getActivePane();
+        const resultsView2 = pane2.getItems()[0].refs.resultsView
         const resultsPaneView2 = atom.views.getView(pane2.itemForURI(ResultsPaneView.URI));
         expect(pane1).not.toBe(pane2);
         expect(resultsPaneView1).not.toBe(resultsPaneView2);
 
-        const {length: resultCount} = resultsPaneView1.querySelectorAll('li > ul > li');
+        await resultsView1.heightInvalidationPromise
+        await resultsView2.heightInvalidationPromise
+
+        const {length: resultCount} = resultsPaneView1.querySelectorAll('.search-result');
         expect(resultCount).toBeGreaterThan(0);
-        expect(resultsPaneView2.querySelectorAll('li > ul > li')).toHaveLength(resultCount);
+        expect(resultsPaneView2.querySelectorAll('.search-result')).toHaveLength(resultCount);
         expect(resultsPaneView2.querySelector('.preview-count').innerHTML).toEqual(resultsPaneView1.querySelector('.preview-count').innerHTML);
       });
 
@@ -417,17 +428,22 @@ describe('ProjectFindView', () => {
 
         const resultsPaneView1 = atom.views.getView(getExistingResultsPane());
         const pane1 = atom.workspace.getActivePane();
+        const resultsView1 = pane1.getItems()[0].refs.resultsView
         pane1.splitDown({copyActiveItem: true});
 
         const pane2 = atom.workspace.getActivePane();
+        const resultsView2 = pane2.getItems()[0].refs.resultsView
         const resultsPaneView2 = atom.views.getView(pane2.itemForURI(ResultsPaneView.URI));
-
         expect(pane1).not.toBe(pane2);
         expect(resultsPaneView1).not.toBe(resultsPaneView2);
 
-        const {length: resultCount} = resultsPaneView1.querySelectorAll('li > ul > li');
+        resultsPaneView2.style.height = '420px'
+        await resultsView1.heightInvalidationPromise
+        await resultsView2.heightInvalidationPromise
+
+        const {length: resultCount} = resultsPaneView1.querySelectorAll('.search-result');
         expect(resultCount).toBeGreaterThan(0);
-        expect(resultsPaneView2.querySelectorAll('li > ul > li')).toHaveLength(resultCount);
+        expect(resultsPaneView2.querySelectorAll('.search-result')).toHaveLength(resultCount);
         expect(resultsPaneView2.querySelector('.preview-count').innerHTML).toEqual(resultsPaneView1.querySelector('.preview-count').innerHTML);
       });
     });
@@ -646,9 +662,9 @@ describe('ProjectFindView', () => {
         await searchPromise;
 
         const resultsView = getResultsView();
+        await resultsView.heightInvalidationPromise
         expect(resultsView.element).toBeVisible();
-        resultsView.scrollToBottom(); // To load ALL the results
-        expect(resultsView.element.querySelectorAll("li > ul > li")).toHaveLength(13);
+        expect(resultsView.refs.listView.element.querySelectorAll(".search-result")).toHaveLength(13);
       })
     });
 
@@ -706,9 +722,9 @@ describe('ProjectFindView', () => {
           const resultsView = getResultsView();
           const resultsPaneView = getExistingResultsPane();
 
+          await resultsView.heightInvalidationPromise
           expect(resultsView.element).toBeVisible();
-          resultsView.scrollToBottom(); // To load ALL the results
-          expect(resultsView.element.querySelectorAll("li > ul > li")).toHaveLength(13);
+          expect(resultsView.refs.listView.element.querySelectorAll(".search-result")).toHaveLength(13);
 
           expect(resultsPaneView.refs.previewCount.textContent).toBe("13 results found in 2 files for items");
           expect(projectFindView.errorMessages).not.toBeVisible();
@@ -733,23 +749,23 @@ describe('ProjectFindView', () => {
           const resultsView = getResultsView();
           const resultsPaneView = getExistingResultsPane();
 
-          resultsView.scrollToBottom(); // To load ALL the results
-          expect(resultsView.element.querySelectorAll("li > ul > li")).toHaveLength(13);
+          await resultsView.heightInvalidationPromise
+          expect(resultsView.refs.listView.element.querySelectorAll(".search-result")).toHaveLength(13);
           expect(resultsPaneView.refs.previewCount.textContent).toBe("13 results found in 2 files for items");
 
           resultsView.selectFirstResult();
           for (let i = 0; i < 7; i++) await resultsView.moveDown()
-          expect(resultsView.element.querySelectorAll(".path")[1]).toHaveClass('selected');
+          expect(resultsView.refs.listView.element.querySelectorAll(".path")[1]).toHaveClass('selected');
 
           buffer.setText('there is one "items" in this file');
           advanceClock(buffer.stoppedChangingDelay);
-          expect(resultsView.element.querySelectorAll("li > ul > li")).toHaveLength(8);
+          await etch.getScheduler().getNextUpdatePromise()
           expect(resultsPaneView.refs.previewCount.textContent).toBe("8 results found in 2 files for items");
-          expect(resultsView.element.querySelectorAll(".path")[1]).toHaveClass('selected');
+          expect(resultsView.refs.listView.element.querySelectorAll(".path")[1]).toHaveClass('selected');
 
           buffer.setText('no matches in this file');
           advanceClock(buffer.stoppedChangingDelay);
-          expect(resultsView.element.querySelectorAll("li > ul > li")).toHaveLength(7);
+          await etch.getScheduler().getNextUpdatePromise()
           expect(resultsPaneView.refs.previewCount.textContent).toBe("7 results found in 1 file for items");
         });
       });
@@ -767,7 +783,7 @@ describe('ProjectFindView', () => {
           const resultsView = getResultsView();
           expect(projectFindView.refs.errorMessages).not.toBeVisible();
           expect(resultsView.element).toBeVisible();
-          expect(resultsView.element.querySelectorAll("li > ul > li")).toHaveLength(0);
+          expect(resultsView.refs.listView.element.querySelectorAll(".search-result")).toHaveLength(0);
         });
       });
     });
@@ -975,7 +991,7 @@ describe('ProjectFindView', () => {
         const resultsView = getResultsView();
         resultsView.scrollToBottom(); // To load ALL the results
         expect(resultsView.element).toBeVisible();
-        expect(resultsView.element.querySelectorAll("li > ul > li")).toHaveLength(13);
+        expect(resultsView.refs.listView.element.querySelectorAll(".search-result")).toHaveLength(13);
 
         resultsView.selectFirstResult();
         for (let i = 0; i < 10; i++) await resultsView.moveDown();
@@ -1295,7 +1311,7 @@ describe('ProjectFindView', () => {
 
           const resultsView = getResultsView();
           expect(resultsView.element).toBeVisible();
-          expect(resultsView.element.querySelectorAll("li > ul > li")).toHaveLength(0);
+          expect(resultsView.refs.listView.element.querySelectorAll(".search-result")).toHaveLength(0);
 
           expect(projectFindView.refs.descriptionLabel.textContent).toContain("Replaced items with sunshine 13 times in 2 files");
 
