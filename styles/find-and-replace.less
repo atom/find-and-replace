@@ -254,8 +254,11 @@ atom-workspace.find-visible {
   .results-view {
     overflow: auto;
     position: relative;
-    padding: 0 @component-padding;
     flex: 1;
+
+    .list-tree {
+      padding: 0 @component-padding;
+    }
 
     .search-result {
       padding-top: 2px;
