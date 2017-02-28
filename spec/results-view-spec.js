@@ -277,8 +277,14 @@ describe('ResultsView', () => {
 
     it("opens the file containing the result in a non-pending state when the search result is double-clicked", async () => {
       const pathNode = resultsView.refs.listView.element.querySelectorAll(".search-result")[0];
-      pathNode.dispatchEvent(buildMouseEvent('mousedown', {target: pathNode, detail: 1}));
-      pathNode.dispatchEvent(buildMouseEvent('mousedown', {target: pathNode, detail: 2}));
+      const click1 = buildMouseEvent('mousedown', {target: pathNode, detail: 1});
+      const click2 = buildMouseEvent('mousedown', {target: pathNode, detail: 2});
+      pathNode.dispatchEvent(click1);
+      pathNode.dispatchEvent(click2);
+
+      // Otherwise, the double click will transfer focus back to the results view
+      expect(click2.defaultPrevented).toBe(true);
+
       await paneItemOpening()
       const editor = atom.workspace.getActiveTextEditor();
       expect(atom.workspace.getActivePane().getPendingItem()).toBe(null);
