@@ -126,78 +126,77 @@ describe('ResultsView', () => {
     });
   });
 
-  describe("when list is scrollable", () => {
-    describe("core:page-up and core:page-down", () => {
-      beforeEach(async () => {
-        workspaceElement.style.height = '300px';
-        workspaceElement.style.width = '1024px';
-        projectFindView.findEditor.setText(' ');
-        projectFindView.confirm();
+  describe("core:page-up and core:page-down", () => {
+    beforeEach(async () => {
+      workspaceElement.style.height = '300px';
+      workspaceElement.style.width = '1024px';
+      projectFindView.findEditor.setText(' ');
+      projectFindView.confirm();
 
-        await searchPromise;
+      await searchPromise;
 
-        resultsView = getResultsView();
-        const {listView} = resultsView.refs;
-        expect(listView.element.scrollTop).toBe(0);
-        expect(listView.element.scrollHeight).toBeGreaterThan(listView.element.offsetHeight);
-      });
-
-      function getSelectedItem() {
-        return resultsView.refs.listView.element.querySelector('.selected');
-      }
-
-      function getSelectedPosition() {
-        return getSelectedItem().offsetTop;
-      }
-
-      function toNearest(n, multiple) {
-        return Math.round(n / multiple) * multiple;
-      }
-
-      it("selects the first result on the next page when core:page-down is triggered", async () => {
-        const {listView} = resultsView.refs;
-        const pageHeight = listView.element.clientHeight;
-        expect(listView.element.querySelectorAll('li').length).toBeLessThan(resultsView.model.getPathCount() + resultsView.model.getMatchCount());
-
-        let initiallySelectedPosition = getSelectedPosition();
-        await resultsView.pageDown();
-        await etch.getScheduler().getNextUpdatePromise()
-        expect(listView.element.scrollTop).toBe(pageHeight);
-        expect(getSelectedPosition()).toBeGreaterThan(initiallySelectedPosition);
-
-        initiallySelectedPosition = getSelectedPosition();
-        await resultsView.pageDown();
-        await etch.getScheduler().getNextUpdatePromise()
-        expect(listView.element.scrollTop).toBe(pageHeight * 2);
-        expect(getSelectedPosition()).toBeGreaterThan(initiallySelectedPosition);
-
-        for (let i = 0; i < 100; i++) await resultsView.pageDown();
-        expect(_.last(resultsView.element.querySelectorAll('.search-result'))).toHaveClass('selected');
-      });
-
-      it("selects the first result on the previous page when core:page-up is triggered", async () => {
-        await resultsView.moveToBottom();
-
-        const itemHeight = resultsView.element.querySelector('.selected').offsetHeight;
-        const {listView} = resultsView.refs;
-        const pageHeight = listView.element.clientHeight;
-        const initialScrollTop = listView.element.scrollTop;
-        const initiallySelectedPosition = getSelectedPosition();
-
-        await resultsView.pageUp();
-        expect(getSelectedPosition()).toBeWithin(initiallySelectedPosition - pageHeight, 20);
-        expect(listView.element.scrollTop).toBeWithin(initialScrollTop - pageHeight, 20);
-
-        await resultsView.pageUp();
-        expect(getSelectedPosition()).toBeWithin(initiallySelectedPosition - pageHeight * 2, 20);
-        expect(listView.element.scrollTop).toBeWithin(initialScrollTop - pageHeight * 2, 20);
-
-        for (let i = 0; i < 100; i++) await resultsView.pageUp();
-        expect(listView.element.querySelector('.path')).toHaveClass('selected');
-      });
+      resultsView = getResultsView();
+      const {listView} = resultsView.refs;
+      expect(listView.element.scrollTop).toBe(0);
+      expect(listView.element.scrollHeight).toBeGreaterThan(listView.element.offsetHeight);
     });
 
-    describe("core:move-to-top and core:move-to-bottom", () => {
+    function getSelectedItem() {
+      return resultsView.refs.listView.element.querySelector('.selected');
+    }
+
+    function getSelectedPosition() {
+      return getSelectedItem().offsetTop;
+    }
+
+    function toNearest(n, multiple) {
+      return Math.round(n / multiple) * multiple;
+    }
+
+    it("selects the first result on the next page when core:page-down is triggered", async () => {
+      const {listView} = resultsView.refs;
+      const pageHeight = listView.element.clientHeight;
+      expect(listView.element.querySelectorAll('li').length).toBeLessThan(resultsView.model.getPathCount() + resultsView.model.getMatchCount());
+
+      let initiallySelectedPosition = getSelectedPosition();
+      await resultsView.pageDown();
+      await etch.getScheduler().getNextUpdatePromise()
+      expect(listView.element.scrollTop).toBe(pageHeight);
+      expect(getSelectedPosition()).toBeGreaterThan(initiallySelectedPosition);
+
+      initiallySelectedPosition = getSelectedPosition();
+      await resultsView.pageDown();
+      await etch.getScheduler().getNextUpdatePromise()
+      expect(listView.element.scrollTop).toBe(pageHeight * 2);
+      expect(getSelectedPosition()).toBeGreaterThan(initiallySelectedPosition);
+
+      for (let i = 0; i < 100; i++) await resultsView.pageDown();
+      expect(_.last(resultsView.element.querySelectorAll('.search-result'))).toHaveClass('selected');
+    });
+
+    it("selects the first result on the previous page when core:page-up is triggered", async () => {
+      await resultsView.moveToBottom();
+
+      const itemHeight = resultsView.element.querySelector('.selected').offsetHeight;
+      const {listView} = resultsView.refs;
+      const pageHeight = listView.element.clientHeight;
+      const initialScrollTop = listView.element.scrollTop;
+      const initiallySelectedPosition = getSelectedPosition();
+
+      await resultsView.pageUp();
+      expect(getSelectedPosition()).toBeWithin(initiallySelectedPosition - pageHeight, 20);
+      expect(listView.element.scrollTop).toBeWithin(initialScrollTop - pageHeight, 20);
+
+      await resultsView.pageUp();
+      expect(getSelectedPosition()).toBeWithin(initiallySelectedPosition - pageHeight * 2, 20);
+      expect(listView.element.scrollTop).toBeWithin(initialScrollTop - pageHeight * 2, 20);
+
+      for (let i = 0; i < 100; i++) await resultsView.pageUp();
+      expect(listView.element.querySelector('.path')).toHaveClass('selected');
+    });
+  });
+
+  describe("core:move-to-top and core:move-to-bottom", () => {
       beforeEach(async () => {
         workspaceElement.style.height = '300px';
         projectFindView.findEditor.setText('so');
@@ -235,6 +234,55 @@ describe('ResultsView', () => {
 
         expect(resultsView.refs.listView.element.querySelector('li').closest('.path')).toHaveClass('selected');
       });
+    });
+
+  describe("expanding and collapsing results", () => {
+    it('preserves the selected file when collapsing all results', async () => {
+      projectFindView.findEditor.setText('items');
+      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      await searchPromise;
+
+      resultsView = getResultsView();
+
+      resultsView.moveDown();
+      resultsView.moveDown();
+      resultsView.moveDown();
+
+      const selectedMatch = resultsView.element.querySelector('.selected');
+      expect(selectedMatch).toHaveClass('search-result');
+
+      resultsView.collapseAllResults();
+      const selectedPath = resultsView.element.querySelector('.selected');
+      expect(selectedPath).toHaveClass('path');
+      expect(selectedPath.dataset.path).toContain('sample.coffee');
+
+      // If the result is re-expanded without moving up or down, the original
+      // selected match remains selected.
+      resultsView.expandAllResults();
+      const newSelectedMatch = resultsView.element.querySelector('.selected');
+      expect(newSelectedMatch.innerHTML).toBe(selectedMatch.innerHTML);
+      expect(selectedPath.contains(newSelectedMatch)).toBe(true);
+
+      resultsView.collapseAllResults();
+      resultsView.moveDown();
+      resultsView.expandAllResults();
+
+      // Moving down while the path is collapsed moves to the next path,
+      // as opposed to selecting the next match within the collapsed path.
+      const newSelectedPath = resultsView.element.querySelector('.selected');
+      expect(newSelectedPath.dataset.path).toContain('sample.js');
+
+      resultsView.moveDown();
+      resultsView.moveDown();
+      resultsView.moveDown();
+      expect(resultsView.element.querySelector('.selected')).toHaveClass('search-result');
+
+      // Moving up while the path is collapsed moves to the previous path,
+      // as opposed to moving up to the next match within the collapsed path.
+      resultsView.collapseAllResults();
+      resultsView.moveUp();
+      resultsView.expandAllResults();
+      expect(resultsView.element.querySelector('.selected')).toBe(selectedPath);
     });
   });
 
