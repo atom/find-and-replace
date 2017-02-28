@@ -520,7 +520,7 @@ describe('ResultsView', () => {
       const fileIconsDisposable = atom.packages.serviceHub.provide('atom.file-icons', '1.0.0', {
         iconClassForPath(path, context) {
           expect(context).toBe("find-and-replace");
-          if (path.endsWith('sample.js')) {
+          if (path.endsWith('one-long-line.coffee')) {
             return "first-icon-class second-icon-class";
           } else {
             return ['third-icon-class', 'fourth-icon-class'];
