@@ -20,13 +20,13 @@ global.beforeEach(function() {
 describe('ResultsView', () => {
   let projectFindView, resultsView, searchPromise, workspaceElement;
 
-  function getExistingResultsPane() {
+  function getResultsPane() {
     let pane = atom.workspace.paneForURI(ResultsPaneView.URI);
     if (pane) return pane.itemForURI(ResultsPaneView.URI);
   }
 
   function getResultsView() {
-    return getExistingResultsPane().refs.resultsView;
+    return getResultsPane().refs.resultsView;
   }
 
   beforeEach(async () => {
@@ -383,7 +383,7 @@ describe('ResultsView', () => {
       });
 
       it("shows the preview-controls", () => {
-        expect(getExistingResultsPane().refs.previewControls).toBeVisible();
+        expect(getResultsPane().refs.previewControls).toBeVisible();
       });
 
       it("collapses the selected results view", () => {
@@ -397,7 +397,7 @@ describe('ResultsView', () => {
       });
 
       it("collapses all results if collapse All button is pressed", () => {
-        clickOn(getExistingResultsPane().refs.collapseAll);
+        clickOn(getResultsPane().refs.collapseAll);
         for (let item of Array.from(resultsView.element.querySelector('.list-nested-item'))) {
           expect(item).toHaveClass('collapsed');
         }
@@ -414,7 +414,7 @@ describe('ResultsView', () => {
       });
 
       it("expands all results if 'Expand All' button is pressed", () => {
-        clickOn(getExistingResultsPane().refs.expandAll);
+        clickOn(getResultsPane().refs.expandAll);
         for (let item of Array.from(resultsView.element.querySelector('.list-nested-item'))) {
           expect(item).not.toHaveClass('collapsed');
         }
@@ -459,7 +459,7 @@ describe('ResultsView', () => {
       projectFindView.findEditor.setText('thiswillnotmatchanythingintheproject');
       atom.commands.dispatch(projectFindView.element, 'core:confirm');
       await searchPromise;
-      expect(getExistingResultsPane().refs.previewControls).not.toBeVisible();
+      expect(getResultsPane().refs.previewControls).not.toBeVisible();
     });
   });
 
@@ -550,6 +550,21 @@ describe('ResultsView', () => {
       expect(fileIconClasses).toContain('icon-file-text icon');
     })
   });
+
+  describe('updating the search while viewing results', () => {
+    it('resets the results message', async () => {
+      projectFindView.findEditor.setText('a');
+      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      await searchPromise;
+
+      resultsPane = getResultsPane();
+      expect(resultsPane.refs.previewCount.textContent).toContain('3 files');
+
+      projectFindView.findEditor.setText('');
+      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      expect(resultsPane.refs.previewCount.textContent).toContain('Project search results');
+    })
+  })
 });
 
 function buildMouseEvent(type, properties) {

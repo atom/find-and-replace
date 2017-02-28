@@ -21,7 +21,7 @@ getReplacementResultsMessage = ({findPattern, replacePattern, replacedPathCount,
     "<span class=\"text-highlight\">Nothing replaced</span>"
 
 getSearchResultsMessage = (results) ->
-  if results
+  if results?.findPattern?
     {findPattern, matchCount, pathCount, replacedPathCount} = results
     if matchCount
       "#{_.pluralize(matchCount, 'result')} found in #{_.pluralize(pathCount, 'file')} for <span class=\"highlight-info\">#{sanitizePattern(findPattern)}</span>"
