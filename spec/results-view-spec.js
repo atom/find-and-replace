@@ -284,6 +284,22 @@ describe('ResultsView', () => {
       resultsView.expandAllResults();
       expect(resultsView.element.querySelector('.selected')).toBe(selectedPath);
     });
+
+    it('re-expands all results when running a new search', async () => {
+      projectFindView.findEditor.setText('items');
+      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      await searchPromise;
+
+      resultsView = getResultsView();
+      resultsView.collapseResult();
+      expect(resultsView.element.querySelector('.collapsed')).not.toBe(null);
+
+      projectFindView.findEditor.setText('sort');
+      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      await searchPromise;
+
+      expect(resultsView.element.querySelector('.collapsed')).toBe(null);
+    })
   });
 
   describe("opening results", () => {
