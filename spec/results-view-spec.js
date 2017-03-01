@@ -438,6 +438,7 @@ describe('ResultsView', () => {
 
       it("shows the preview-controls", () => {
         expect(getResultsPane().refs.previewControls).toBeVisible();
+        expect(getResultsPane().refs.previewControls.style).not.toBe('hidden');
       });
 
       it("collapses the selected results view", () => {
@@ -513,7 +514,7 @@ describe('ResultsView', () => {
       projectFindView.findEditor.setText('thiswillnotmatchanythingintheproject');
       atom.commands.dispatch(projectFindView.element, 'core:confirm');
       await searchPromise;
-      expect(getResultsPane().refs.previewControls).not.toBeVisible();
+      expect(getResultsPane().refs.previewControls.style.visibility).toBe('hidden');
     });
   });
 
