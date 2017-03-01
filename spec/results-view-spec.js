@@ -22,6 +22,10 @@ describe('ResultsView', () => {
 
   function getResultsPane() {
     let pane = atom.workspace.paneForURI(ResultsPaneView.URI);
+
+    // Allow element-resize-detector to perform batched measurements
+    advanceClock(1);
+
     if (pane) return pane.itemForURI(ResultsPaneView.URI);
   }
 

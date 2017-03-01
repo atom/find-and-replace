@@ -22,6 +22,10 @@ describe('ProjectFindView', () => {
   function getExistingResultsPane() {
     const pane = atom.workspace.paneForURI(ResultsPaneView.URI);
     if (pane) {
+
+      // Allow element-resize-detector to perform batched measurements
+      advanceClock(1);
+
       return pane.itemForURI(ResultsPaneView.URI);
     }
   }
@@ -409,9 +413,7 @@ describe('ProjectFindView', () => {
         const resultsPaneView2 = atom.views.getView(pane2.itemForURI(ResultsPaneView.URI));
         expect(pane1).not.toBe(pane2);
         expect(resultsPaneView1).not.toBe(resultsPaneView2);
-
-        await resultsView1.heightInvalidationPromise
-        await resultsView2.heightInvalidationPromise
+        simulateResizeEvent(resultsView2.element);
 
         const {length: resultCount} = resultsPaneView1.querySelectorAll('.search-result');
         expect(resultCount).toBeGreaterThan(0);
@@ -437,9 +439,8 @@ describe('ProjectFindView', () => {
         expect(pane1).not.toBe(pane2);
         expect(resultsPaneView1).not.toBe(resultsPaneView2);
 
-        resultsPaneView2.style.height = '420px'
-        await resultsView1.heightInvalidationPromise
-        await resultsView2.heightInvalidationPromise
+        resultsPaneView2.style.height = '420px';
+        simulateResizeEvent(resultsView2.element);
 
         const {length: resultCount} = resultsPaneView1.querySelectorAll('.search-result');
         expect(resultCount).toBeGreaterThan(0);
@@ -1508,3 +1509,10 @@ describe('ProjectFindView', () => {
     });
   });
 });
+
+function simulateResizeEvent(element) {
+  Array.from(element.children).forEach((child) => {
+    child.dispatchEvent(new AnimationEvent('animationstart'));
+  });
+  advanceClock(1);
+}
