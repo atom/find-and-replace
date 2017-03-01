@@ -269,7 +269,7 @@ describe('ProjectFindView', () => {
       editorElement = atom.views.getView(editor);
       atom.commands.dispatch(workspaceElement, 'project-find:show');
       await activationPromise;
-      workspaceElement.style.height = '600px'
+      workspaceElement.style.height = '800px'
     });
 
     describe("when the find string contains an escaped char", () => {
