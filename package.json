@@ -30,13 +30,15 @@
     "atom": "*"
   },
   "dependencies": {
-    "atom-space-pen-views": "^2.1.0",
+    "element-resize-detector": "^1.1.10",
+    "etch": "0.9.0",
     "fs-plus": "2.x",
     "temp": "^0.8.3",
     "underscore-plus": "1.x"
   },
   "devDependencies": {
-    "coffeelint": "^1.9.7"
+    "coffeelint": "^1.9.7",
+    "dedent": "^0.6.0"
   },
   "consumedServices": {
     "atom.file-icons": {
