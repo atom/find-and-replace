@@ -431,20 +431,13 @@ describe('ProjectFindView', () => {
         const resultsPaneView1 = atom.views.getView(getExistingResultsPane());
         const pane1 = atom.workspace.getActivePane();
         const resultsView1 = pane1.getItems()[0].refs.resultsView
-        pane1.splitDown({copyActiveItem: true});
 
+        pane1.splitDown({copyActiveItem: true});
         const pane2 = atom.workspace.getActivePane();
         const resultsView2 = pane2.getItems()[0].refs.resultsView
         const resultsPaneView2 = atom.views.getView(pane2.itemForURI(ResultsPaneView.URI));
         expect(pane1).not.toBe(pane2);
         expect(resultsPaneView1).not.toBe(resultsPaneView2);
-
-        resultsPaneView2.style.height = '420px';
-        simulateResizeEvent(resultsView2.element);
-
-        const {length: resultCount} = resultsPaneView1.querySelectorAll('.search-result');
-        expect(resultCount).toBeGreaterThan(0);
-        expect(resultsPaneView2.querySelectorAll('.search-result')).toHaveLength(resultCount);
         expect(resultsPaneView2.querySelector('.preview-count').innerHTML).toEqual(resultsPaneView1.querySelector('.preview-count').innerHTML);
       });
     });
