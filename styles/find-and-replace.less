@@ -168,7 +168,10 @@ atom-workspace.find-visible {
 .find-wrap-icon {
   @wrap-size: @font-size * 10;
 
-  display: none;
+  opacity: 0;
+  transition: opacity 0.5s;
+  &.visible { opacity: 1; }
+
   position: absolute;
 
   // These are getting placed in the DOM as a pane item, so override the pane
@@ -251,21 +254,10 @@ atom-workspace.find-visible {
   .results-view {
     overflow: auto;
     position: relative;
-    padding: 0 @component-padding;
     flex: 1;
 
-    .search-result:not(:first-child) {
-      border-top: 1px solid @text-color-subtle;
-      padding-top: 2px;
-    }
-    .search-result {
-      .match-line {
-        color: @text-color-selected;
-      }
-
-      .match-line.selected {
-        color: @text-color;
-      }
+    .list-tree {
+      padding: 0 @component-padding;
     }
 
     .line-number {

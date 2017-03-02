@@ -1,4 +1,3 @@
-{$} = require 'atom-space-pen-views'
 {CompositeDisposable, Disposable, TextBuffer} = require 'atom'
 
 SelectNext = require './select-next'
