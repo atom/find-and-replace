@@ -11,8 +11,8 @@ class Result
           lineText: m.lineText,
           lineTextOffset: m.lineTextOffset,
           range: m.range,
-          linesBefore: m.linesBefore,
-          linesAfter: m.linesAfter
+          leadingContextLines: m.leadingContextLines,
+          trailingContextLines: m.trailingContextLines
         }
       )
       new Result({filePath: result.filePath, matches})
@@ -128,9 +128,9 @@ class ResultsModel
     onPathsSearched = (numberOfPathsSearched) =>
       @emitter.emit 'did-search-paths', numberOfPathsSearched
 
-    lineCountBefore = atom.config.get('find-and-replace.searchContextLineCountBefore')
-    lineCountAfter = atom.config.get('find-and-replace.searchContextLineCountAfter')
-    @inProgressSearchPromise = atom.workspace.scan @regex, {paths: searchPaths, onPathsSearched, lineCountBefore, lineCountAfter}, (result, error) =>
+    leadingContextLineCount = atom.config.get('find-and-replace.searchContextLineCountBefore')
+    trailingContextLineCount = atom.config.get('find-and-replace.searchContextLineCountAfter')
+    @inProgressSearchPromise = atom.workspace.scan @regex, {paths: searchPaths, onPathsSearched, leadingContextLineCount, trailingContextLineCount}, (result, error) =>
       if result
         @setResult(result.filePath, Result.create(result))
       else
@@ -247,9 +247,9 @@ class ResultsModel
     return unless editor.getPath()
 
     matches = []
-    lineCountBefore = atom.config.get('find-and-replace.searchContextLineCountBefore')
-    lineCountAfter = atom.config.get('find-and-replace.searchContextLineCountAfter')
-    editor.scan @regex, {lineCountBefore, lineCountAfter}, (match) ->
+    leadingContextLineCount = atom.config.get('find-and-replace.searchContextLineCountBefore')
+    trailingContextLineCount = atom.config.get('find-and-replace.searchContextLineCountAfter')
+    editor.scan @regex, {leadingContextLineCount, trailingContextLineCount}, (match) ->
       matches.push(match)
 
     result = Result.create({filePath: editor.getPath(), matches})
