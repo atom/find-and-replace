@@ -5,7 +5,7 @@ const path = require('path');
 const temp = require("temp");
 const etch = require('etch');
 const ResultsPaneView = require('../lib/project/results-pane');
-const FileIcons = require('../lib/file-icons');
+const IconServices = require('../lib/icon-services');
 const {beforeEach, it, fit, ffit, fffit} = require('./async-spec-helpers')
 
 global.beforeEach(function() {
