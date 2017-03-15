@@ -128,6 +128,21 @@ describe('ResultsView', () => {
       expect(resultsView.refs.listView.element.querySelector('.match')).toHaveClass('highlight-info');
       expect(resultsView.refs.listView.element.querySelector('.replacement')).toBeHidden();
     });
+
+    it('renders the captured text when the replace pattern uses captures', async () => {
+      projectFindView.refs.regexOptionButton.click();
+      projectFindView.findEditor.setText('function ?(\\([^)]*\\))');
+      projectFindView.replaceEditor.setText('$1 =>')
+      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      await searchPromise;
+
+      resultsView = getResultsView();
+      const listElement = resultsView.refs.listView.element;
+      expect(listElement.querySelectorAll('.match')[0].textContent).toBe('function ()');
+      expect(listElement.querySelectorAll('.replacement')[0].textContent).toBe('() =>');
+      expect(listElement.querySelectorAll('.match')[1].textContent).toBe('function(items)');
+      expect(listElement.querySelectorAll('.replacement')[1].textContent).toBe('(items) =>');
+    })
   });
 
   describe("core:page-up and core:page-down", () => {
