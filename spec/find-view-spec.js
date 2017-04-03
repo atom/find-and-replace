@@ -863,7 +863,7 @@ describe("FindView", () => {
         });
 
         it("reruns the search on the new editor", async () => {
-          let newEditor = await atom.workspace.open("sample.coffee", {activateItem: false});
+          let newEditor = await atom.workspace.createItemForURI("sample.coffee");
 
           newEditor = atom.workspace.paneForItem(editor).splitRight({
             items: [newEditor]
