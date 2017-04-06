@@ -537,12 +537,18 @@ describe('ResultsView', () => {
   });
 
   describe("when the results view is empty", () => {
-    it("ignores core:confirm events", async () => {
+    it("ignores core:confirm and other commands for selecting results", async () => {
       projectFindView.findEditor.setText('thiswillnotmatchanythingintheproject');
       atom.commands.dispatch(projectFindView.element, 'core:confirm');
       await searchPromise;
       resultsView = getResultsView();
       atom.commands.dispatch(resultsView.element, 'core:confirm');
+      atom.commands.dispatch(resultsView.element, 'core:move-down');
+      atom.commands.dispatch(resultsView.element, 'core:move-up');
+      atom.commands.dispatch(resultsView.element, 'core:move-to-top');
+      atom.commands.dispatch(resultsView.element, 'core:move-to-bottom');
+      atom.commands.dispatch(resultsView.element, 'core:page-down');
+      atom.commands.dispatch(resultsView.element, 'core:page-up');
     });
 
     it("won't show the preview-controls", async () => {
