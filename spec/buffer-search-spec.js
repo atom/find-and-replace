@@ -23,7 +23,7 @@ describe("BufferSearch", () => {
     `);
     advanceClock(editor.buffer.stoppedChangingDelay);
 
-    const findOptions = new FindOptions;
+    const findOptions = new FindOptions({findPattern: "a+"});
     model = new BufferSearch(findOptions);
 
     markersListener = jasmine.createSpy('markersListener');
