@@ -247,10 +247,14 @@ class ResultsModel
     return unless editor.getPath()
 
     matches = []
-    leadingContextLineCount = atom.config.get('find-and-replace.searchContextLineCountBefore')
-    trailingContextLineCount = atom.config.get('find-and-replace.searchContextLineCountAfter')
-    editor.scan @regex, {leadingContextLineCount, trailingContextLineCount}, (match) ->
-      matches.push(match)
+    if parseFloat(atom.getVersion()) >= 1.17
+      leadingContextLineCount = atom.config.get('find-and-replace.searchContextLineCountBefore')
+      trailingContextLineCount = atom.config.get('find-and-replace.searchContextLineCountAfter')
+      editor.scan @regex, {leadingContextLineCount, trailingContextLineCount}, (match) ->
+        matches.push(match)
+    else
+      editor.scan @regex, (match) ->
+        matches.push(match)
 
     result = Result.create({filePath: editor.getPath(), matches})
     @setResult(editor.getPath(), result)
