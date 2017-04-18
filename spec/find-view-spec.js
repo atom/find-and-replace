@@ -25,6 +25,7 @@ describe("FindView", () => {
   beforeEach(async () => {
     spyOn(atom, "beep");
     workspaceElement = atom.views.getView(atom.workspace);
+    workspaceElement.style.height = '800px'
     atom.project.setPaths([path.join(__dirname, "fixtures")]);
 
     await atom.workspace.open("sample.js");
@@ -669,27 +670,26 @@ describe("FindView", () => {
 
     it("shows an icon when search wraps around and the editor scrolls", () => {
       editorView.style.height = "80px";
-      editor.update({autoHeight: false})
 
       editorView.component.measureDimensions();
-      expect(editor.getVisibleRowRange()).toEqual([0, 3]);
+      expect(editor.getLastVisibleScreenRow()).toBe(3);
       expect(findView.refs.resultCounter.textContent).toEqual("2 of 6");
       expect(findView.wrapIcon).not.toBeVisible();
 
       atom.commands.dispatch(editorView, "find-and-replace:find-previous");
       expect(findView.refs.resultCounter.textContent).toEqual("1 of 6");
-      expect(editor.getVisibleRowRange()).toEqual([0, 3]);
+      expect(editor.getLastVisibleScreenRow()).toBe(3);
       expect(findView.wrapIcon).not.toBeVisible();
 
       atom.commands.dispatch(editorView, "find-and-replace:find-previous");
       expect(findView.refs.resultCounter.textContent).toEqual("6 of 6");
-      expect(editor.getVisibleRowRange()).toEqual([4, 7]);
+      expect(editor.getLastVisibleScreenRow()).toBe(7);
       expect(findView.wrapIcon).toBeVisible();
       expect(findView.wrapIcon).toHaveClass("icon-move-down");
 
       atom.commands.dispatch(editorView, "find-and-replace:find-next");
       expect(findView.refs.resultCounter.textContent).toEqual("1 of 6");
-      expect(editor.getVisibleRowRange()).toEqual([0, 3]);
+      expect(editor.getLastVisibleScreenRow()).toBe(3);
       expect(findView.wrapIcon).toBeVisible();
       expect(findView.wrapIcon).toHaveClass("icon-move-up");
     });
