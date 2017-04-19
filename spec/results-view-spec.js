@@ -257,44 +257,44 @@ describe('ResultsView', () => {
   });
 
   describe("core:move-to-top and core:move-to-bottom", () => {
-      beforeEach(async () => {
-        workspaceElement.style.height = '300px';
-        projectFindView.findEditor.setText('so');
-        projectFindView.confirm();
-        await searchPromise;
-        resultsView = getResultsView();
-      });
-
-      it("selects the first/last item when core:move-to-top/move-to-bottom is triggered", async () => {
-        const {listView} = resultsView.refs;
-        expect(listView.element.querySelectorAll('li').length).toBeLessThan(resultsView.model.getPathCount() + resultsView.model.getMatchCount());
-
-        await resultsView.moveToBottom();
-        expect(listView.element.querySelectorAll('li')[1]).not.toHaveClass('selected');
-        expect(_.last(listView.element.querySelectorAll('li'))).toHaveClass('selected');
-        expect(listView.element.scrollTop).not.toBe(0);
-
-        await resultsView.moveToTop();
-        expect(listView.element.querySelector('.match-line')).toHaveClass('selected');
-        expect(listView.element.scrollTop).toBe(0);
-      });
-
-      it("selects the path when when core:move-to-bottom is triggered and last item is collapsed", async () => {
-        await resultsView.moveToBottom();
-        resultsView.collapseResult();
-        await resultsView.moveToBottom();
-
-        expect(_.last(resultsView.element.querySelectorAll('li')).closest('.path')).toHaveClass('selected');
-      });
-
-      it("selects the path when when core:move-to-top is triggered and first item is collapsed", async () => {
-        await resultsView.moveToTop();
-        atom.commands.dispatch(resultsView.element, 'core:move-left');
-        await resultsView.moveToTop();
-
-        expect(resultsView.refs.listView.element.querySelector('li').closest('.path')).toHaveClass('selected');
-      });
+    beforeEach(async () => {
+      workspaceElement.style.height = '300px';
+      projectFindView.findEditor.setText('so');
+      projectFindView.confirm();
+      await searchPromise;
+      resultsView = getResultsView();
     });
+
+    it("selects the first/last item when core:move-to-top/move-to-bottom is triggered", async () => {
+      const {listView} = resultsView.refs;
+      expect(listView.element.querySelectorAll('li').length).toBeLessThan(resultsView.model.getPathCount() + resultsView.model.getMatchCount());
+
+      await resultsView.moveToBottom();
+      expect(listView.element.querySelectorAll('li')[1]).not.toHaveClass('selected');
+      expect(_.last(listView.element.querySelectorAll('li'))).toHaveClass('selected');
+      expect(listView.element.scrollTop).not.toBe(0);
+
+      await resultsView.moveToTop();
+      expect(listView.element.querySelector('.match-line')).toHaveClass('selected');
+      expect(listView.element.scrollTop).toBe(0);
+    });
+
+    it("selects the path when when core:move-to-bottom is triggered and last item is collapsed", async () => {
+      await resultsView.moveToBottom();
+      resultsView.collapseResult();
+      await resultsView.moveToBottom();
+
+      expect(_.last(resultsView.element.querySelectorAll('li')).closest('.path')).toHaveClass('selected');
+    });
+
+    it("selects the path when when core:move-to-top is triggered and first item is collapsed", async () => {
+      await resultsView.moveToTop();
+      atom.commands.dispatch(resultsView.element, 'core:move-left');
+      await resultsView.moveToTop();
+
+      expect(resultsView.refs.listView.element.querySelector('li').closest('.path')).toHaveClass('selected');
+    });
+  });
 
   describe("expanding and collapsing results", () => {
     it('preserves the selected file when collapsing all results', async () => {
@@ -424,41 +424,32 @@ describe('ResultsView', () => {
       expect(atom.views.getView(editor)).toHaveFocus();
     })
 
-    describe("when `projectSearchResultsPaneSplitDirection` option is none", () => {
+    describe("the `projectSearchResultsPaneSplitDirection` option", () => {
       beforeEach(() => {
-        atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'none');
+        spyOn(atom.workspace, 'open').andCallThrough()
       });
 
-      it("does not specify a pane to split", () => {
-        spyOn(atom.workspace, 'open').andCallThrough();
+      it("does not create a split when the option is 'none'", async () => {
+        atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'none');
         atom.commands.dispatch(resultsView.element, 'core:move-down');
         atom.commands.dispatch(resultsView.element, 'core:confirm');
+        await paneItemOpening()
         expect(atom.workspace.open.mostRecentCall.args[1].split).toBeUndefined();
       });
-    });
 
-    describe("when `projectSearchResultsPaneSplitDirection` option is right", () => {
-      beforeEach(() => {
+      it("always opens the file in the left pane when the option is 'right'", async () => {
         atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'right');
-      });
-
-      it("always opens the file in the left pane", () => {
-        spyOn(atom.workspace, 'open').andCallThrough();
         atom.commands.dispatch(resultsView.element, 'core:move-down');
         atom.commands.dispatch(resultsView.element, 'core:confirm');
+        await paneItemOpening()
         expect(atom.workspace.open.mostRecentCall.args[1].split).toBe('left');
       });
-    });
 
-    describe("when `projectSearchResultsPaneSplitDirection` option is down", () => {
-      beforeEach(() => {
+      it("always opens the file in the pane above when the options is 'down'", async () => {
         atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'down')
-      });
-
-      it("always opens the file in the up pane", () => {
-        spyOn(atom.workspace, 'open').andCallThrough();
         atom.commands.dispatch(resultsView.element, 'core:move-down');
         atom.commands.dispatch(resultsView.element, 'core:confirm');
+        await paneItemOpening()
         expect(atom.workspace.open.mostRecentCall.args[1].split).toBe('up');
       });
     });
