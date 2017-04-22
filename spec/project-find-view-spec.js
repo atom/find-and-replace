@@ -181,33 +181,34 @@ describe('ProjectFindView', () => {
       projectPath = temp.mkdirSync("atom");
       atom.project.setPaths([projectPath]);
 
-      tree = document.createElement('div');
-      tree.className = 'directory';
+      tree = document.createElement('ol');
       tree.innerHTML = dedent`
-        <div>
-          <span class='name' data-path='${escapePath(projectPath)}'>${projectPath}</span>
-          <ul class='files'>
-            <li class='file' data-path='${escapePath(path.join(projectPath, 'one.js'))}'>
-              <span class='name'>one.js</span>
-            </li>
-            <li class='file' data-path='${escapePath(path.join(projectPath, 'two.js'))}'>
-              <span class='name'>two.js</span>
-            </li>
-            <div class='directory'>
-              <div>
-                <span class='name' data-path='${escapePath(path.join(projectPath, 'nested'))}'>nested</span>
-                <ul class='file'>
-                  <li class='file' data-path='${escapePath(path.join(projectPath, 'three.js'))}'>
-                    <span class='name'>three.js</span>
-                  </li>
-                </ul>
+        <div class="directory">
+          <div>
+            <span class='name' data-path='${escapePath(projectPath)}'>${projectPath}</span>
+            <ul class='files'>
+              <li class='file' data-path='${escapePath(path.join(projectPath, 'one.js'))}'>
+                <span class='name'>one.js</span>
+              </li>
+              <li class='file' data-path='${escapePath(path.join(projectPath, 'two.js'))}'>
+                <span class='name'>two.js</span>
+              </li>
+              <div class='selected directory'>
+                <div>
+                  <span class='name' data-path='${escapePath(path.join(projectPath, 'nested'))}'>nested</span>
+                  <ul class='file'>
+                    <li class='file' data-path='${escapePath(path.join(projectPath, 'three.js'))}'>
+                      <span class='name'>three.js</span>
+                    </li>
+                  </ul>
+                </div>
               </div>
-            </div>
-          </ul>
+            </ul>
+          </div>
         </div>
       `;
 
-      nested = tree.querySelector('.directory');
+      nested = tree.querySelector('.selected.directory');
 
       workspaceElement.appendChild(tree);
     });
@@ -263,6 +264,16 @@ describe('ProjectFindView', () => {
 
         expect(getAtomPanel()).toBeVisible();
         expect(projectFindView.pathsEditor.getText()).toBe(path.join(path.basename(projectPath), 'nested'));
+      });
+    });
+
+    describe('when it is triggered with a hotkey', () => {
+      it('should use selected directory from tree-view as search path', async () => {
+        atom.commands.dispatch(tree, 'project-find:show-in-current-directory');
+        await activationPromise;
+
+        expect(getAtomPanel()).toBeVisible();
+        expect(projectFindView.pathsEditor.getText()).toBe('nested');
       });
     });
   });
