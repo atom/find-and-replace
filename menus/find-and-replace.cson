@@ -22,7 +22,7 @@
 ]
 
 'context-menu':
-  '.tree-view > li.directory': [
+  '.tree-view li.directory': [
     { 'label': 'Search in Directory', 'command': 'project-find:show-in-current-directory' }
   ]
   '.path-details.list-item': [
