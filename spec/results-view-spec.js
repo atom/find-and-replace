@@ -731,11 +731,11 @@ describe('ResultsView', () => {
         expect(lineNodes[1]).toHaveClass('match-line');
         expect(lineNodes[1].querySelector('.preview').textContent).toBe('sort: (items) ->');
         expect(lineNodes[2]).not.toHaveClass('match-line');
-        expect(lineNodes[2].querySelector('.preview').textContent).toBe('    return items if items.length <= 1');
+        expect(lineNodes[2].querySelector('.preview').textContent).toBe('return items if items.length <= 1');
         expect(lineNodes[3]).not.toHaveClass('match-line');
         expect(lineNodes[3].querySelector('.preview').textContent).toBe('');
         expect(lineNodes[4]).not.toHaveClass('match-line');
-        expect(lineNodes[4].querySelector('.preview').textContent).toBe('    pivot = items.shift()');
+        expect(lineNodes[4].querySelector('.preview').textContent).toBe('pivot = items.shift()');
       }
     });
   })
