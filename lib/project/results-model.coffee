@@ -247,6 +247,8 @@ class ResultsModel
     return unless editor.getPath()
 
     matches = []
+    # the following condition is pretty hacky
+    # it doesn't work correctly for e.g. version 1.2
     if parseFloat(atom.getVersion()) >= 1.17
       leadingContextLineCount = atom.config.get('find-and-replace.searchContextLineCountBefore')
       trailingContextLineCount = atom.config.get('find-and-replace.searchContextLineCountAfter')

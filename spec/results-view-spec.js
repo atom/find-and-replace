@@ -692,6 +692,43 @@ describe('ResultsView', () => {
       atom.commands.dispatch(projectFindView.element, 'core:confirm');
       expect(resultsPane.refs.previewCount.textContent).toContain('Project search results');
     })
+  });
+
+  describe('search result context lines', () => {
+    beforeEach(async () => {
+      atom.config.set('find-and-replace.searchContextLineCountBefore', 2);
+      atom.config.set('find-and-replace.searchContextLineCountAfter', 3);
+
+      projectFindView.findEditor.setText('items');
+      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      await searchPromise;
+
+      resultsView = getResultsView();
+    });
+
+    it('shows the context lines', async () => {
+      // the following condition is pretty hacky
+      // it doesn't work correctly for e.g. version 1.2
+      if (parseFloat(atom.getVersion()) >= 1.17) {
+        const pathNodes = resultsView.refs.listView.element.querySelectorAll('.path');
+        expect(pathNodes.length).toBe(1)
+        const pathNameNode = pathNodes[0].querySelector('.path-name');
+        expect(pathNameNode.textContent).toBe('sample.coffee');
+        const resultNode = pathNodes[0].querySelector('.search-result');
+        const lineNodes = resultNode.querySelectorAll('.list-item');
+        expect(lineNodes.length).toBe(5)
+        expect(lineNodes[0]).not.toHaveClass('match-line');
+        expect(lineNodes[0].querySelector('.preview').textContent).toBe('class quicksort');
+        expect(lineNodes[1]).toHaveClass('match-line');
+        expect(lineNodes[1].querySelector('.preview').textContent).toBe('sort: (items) ->');
+        expect(lineNodes[2]).not.toHaveClass('match-line');
+        expect(lineNodes[2].querySelector('.preview').textContent).toBe('return items if items.length <= 1');
+        expect(lineNodes[3]).not.toHaveClass('match-line');
+        expect(lineNodes[3].querySelector('.preview').textContent).toBe('');
+        expect(lineNodes[4]).not.toHaveClass('match-line');
+        expect(lineNodes[4].querySelector('.preview').textContent).toBe('pivot = items.shift()');
+      }
+    });
   })
 });
 
