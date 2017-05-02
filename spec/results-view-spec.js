@@ -716,6 +716,8 @@ describe('ResultsView', () => {
     });
 
     it('shows the context lines', async () => {
+      // the following condition is pretty hacky
+      // it doesn't work correctly for e.g. version 1.2
       if (parseFloat(atom.getVersion()) >= 1.17) {
         const pathNodes = resultsView.refs.listView.element.querySelectorAll('.path');
         expect(pathNodes.length).toBe(1)
