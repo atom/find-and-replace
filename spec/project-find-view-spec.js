@@ -724,6 +724,24 @@ describe('ProjectFindView', () => {
           expect(projectFindView.errorMessages).not.toBeVisible();
         });
 
+        it("can copy search results to clipboard", async () => {
+          oldClipboardText = atom.clipboard.read();
+
+          atom.commands.dispatch(projectFindView.element, 'core:confirm');
+          await searchPromise;
+
+          const resultsView = getResultsView();
+          await resultsView.heightInvalidationPromise;
+
+          atom.commands.dispatch(resultsView.element, 'project-find:copy-search-results');
+          searchResults = atom.clipboard.read().split('\n');
+          expect(searchResults[0]).toBe("13 results found in 2 files for items");
+          expect(searchResults[2]).toBe("sample.coffee (7 matches)");
+          expect(searchResults[3]).toBe("\t2\tsort: (items) ->");
+          expect(searchResults[4]).toBe("\t3\treturn items if items.length <= 1");
+          atom.clipboard.write(oldClipboardText);
+        });
+
         it("only searches paths matching text in the path filter", async () => {
           spyOn(atom.workspace, 'scan').andCallFake(async () => {});
           projectFindView.pathsEditor.setText('*.js');

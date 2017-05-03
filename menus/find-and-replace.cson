@@ -28,3 +28,6 @@
   '.path-details.list-item': [
     { 'label': 'Copy Path', 'command': 'find-and-replace:copy-path' }
   ]
+  'div.preview-pane': [
+    { 'label': 'Copy to Clipboard', 'command': 'project-find:copy-search-results' }
+  ]

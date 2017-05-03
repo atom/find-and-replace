@@ -36,7 +36,29 @@ showIf = (condition) ->
   else
     {display: 'none'}
 
+parseSearchResult = ->
+  searchResult = []
+  summary = document.querySelector('span.preview-count').textContent
+  searchResult.push summary, ''
+
+  orderList = document.querySelectorAll('.results-view ol.list-tree.has-collapsable-children')
+  orderListArray = Array.prototype.slice.call(orderList) # only visible item shown in DOM, you cannot query all search results
+  resItems = orderListArray[1].querySelectorAll('div > li') # omit first element which is dummy
+
+  resItems.forEach (el) ->
+    path = el.querySelector('div > span.path-name').textContent
+    matches = el.querySelector('div > span.path-match-number').textContent
+    searchResult.push "#{path} #{matches}"
+
+    el.querySelectorAll('li.search-result').forEach (e) ->
+      return if e.offsetParent is null  # skip invisible elements
+      lineNumber = e.querySelector('span.line-number').textContent
+      preview = e.querySelector('span.preview').textContent
+      searchResult.push "\t#{lineNumber}\t#{preview}"
+    searchResult.push ''
+  searchResult.join('\n')
+
 module.exports = {
   escapeHtml, escapeRegex, sanitizePattern, getReplacementResultsMessage,
-  getSearchResultsMessage, showIf
+  getSearchResultsMessage, showIf, parseSearchResult
 }
