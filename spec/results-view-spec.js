@@ -128,6 +128,21 @@ describe('ResultsView', () => {
       expect(resultsView.refs.listView.element.querySelector('.match')).toHaveClass('highlight-info');
       expect(resultsView.refs.listView.element.querySelector('.replacement')).toBeHidden();
     });
+
+    it('renders the captured text when the replace pattern uses captures', async () => {
+      projectFindView.refs.regexOptionButton.click();
+      projectFindView.findEditor.setText('function ?(\\([^)]*\\))');
+      projectFindView.replaceEditor.setText('$1 =>')
+      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      await searchPromise;
+
+      resultsView = getResultsView();
+      const listElement = resultsView.refs.listView.element;
+      expect(listElement.querySelectorAll('.match')[0].textContent).toBe('function ()');
+      expect(listElement.querySelectorAll('.replacement')[0].textContent).toBe('() =>');
+      expect(listElement.querySelectorAll('.match')[1].textContent).toBe('function(items)');
+      expect(listElement.querySelectorAll('.replacement')[1].textContent).toBe('(items) =>');
+    })
   });
 
   describe("core:page-up and core:page-down", () => {
@@ -149,96 +164,137 @@ describe('ResultsView', () => {
       return resultsView.refs.listView.element.querySelector('.selected');
     }
 
-    function getSelectedPosition() {
-      return getSelectedItem().offsetTop;
+    function getRecursivePosition(element, substract_scroll) {
+      let x = 0;
+      let y = 0;
+      while (element && !isNaN(element.offsetLeft) && !isNaN(element.offsetTop)) {
+        x += element.offsetLeft;
+        y += element.offsetTop;
+        if (substract_scroll) {
+          x -= element.scrollLeft;
+          y -= element.scrollTop;
+        }
+        element = element.offsetParent;
+      }
+      return { top: y, left: x };
     }
 
-    function toNearest(n, multiple) {
-      return Math.round(n / multiple) * multiple;
+    function getSelectedOffset() {
+      return getRecursivePosition(getSelectedItem(), true).top;
+    }
+
+    function getSelectedPosition() {
+      return getRecursivePosition(getSelectedItem(), false).top;
     }
 
     it("selects the first result on the next page when core:page-down is triggered", async () => {
       const {listView} = resultsView.refs;
-      const pageHeight = listView.element.clientHeight;
-      expect(listView.element.querySelectorAll('li').length).toBeLessThan(resultsView.model.getPathCount() + resultsView.model.getMatchCount());
+      expect(listView.element.querySelectorAll('.path').length).not.toBeGreaterThan(resultsView.model.getPathCount());
+      expect(listView.element.querySelectorAll('.match-line').length).not.toBeGreaterThan(resultsView.model.getMatchCount());
+      expect(listView.element.querySelector('.match-line')).toHaveClass('selected');
 
+      let initiallySelectedItem = getSelectedItem();
+      let initiallySelectedOffset = getSelectedOffset();
       let initiallySelectedPosition = getSelectedPosition();
+
       await resultsView.pageDown();
-      await etch.getScheduler().getNextUpdatePromise()
-      expect(listView.element.scrollTop).toBe(pageHeight);
+      await etch.getScheduler().getNextUpdatePromise();
+
+      expect(getSelectedItem()).not.toBe(initiallySelectedItem);
+      expect(Math.abs(getSelectedOffset() - initiallySelectedOffset)).toBeLessThan(getSelectedItem().offsetHeight);
+      expect(getSelectedPosition()).toBeGreaterThan(initiallySelectedPosition);
+
+      initiallySelectedItem = getSelectedItem();
+      initiallySelectedOffset = getSelectedOffset();
+      initiallySelectedPosition = getSelectedPosition();
+
+      await resultsView.pageDown();
+      await etch.getScheduler().getNextUpdatePromise();
+
+      expect(getSelectedItem()).not.toBe(initiallySelectedItem);
+      expect(Math.abs(getSelectedOffset() - initiallySelectedOffset)).toBeLessThan(getSelectedItem().offsetHeight);
       expect(getSelectedPosition()).toBeGreaterThan(initiallySelectedPosition);
 
       initiallySelectedPosition = getSelectedPosition();
-      await resultsView.pageDown();
-      await etch.getScheduler().getNextUpdatePromise()
-      expect(listView.element.scrollTop).toBe(pageHeight * 2);
-      expect(getSelectedPosition()).toBeGreaterThan(initiallySelectedPosition);
 
       for (let i = 0; i < 100; i++) await resultsView.pageDown();
-      expect(_.last(resultsView.element.querySelectorAll('.search-result'))).toHaveClass('selected');
+      expect(_.last(resultsView.element.querySelectorAll('.match-line'))).toHaveClass('selected');
+      expect(getSelectedPosition()).toBeGreaterThan(initiallySelectedPosition);
     });
 
     it("selects the first result on the previous page when core:page-up is triggered", async () => {
       await resultsView.moveToBottom();
+      expect(_.last(resultsView.element.querySelectorAll('.match-line'))).toHaveClass('selected');
 
-      const itemHeight = resultsView.element.querySelector('.selected').offsetHeight;
       const {listView} = resultsView.refs;
-      const pageHeight = listView.element.clientHeight;
-      const initialScrollTop = listView.element.scrollTop;
-      const initiallySelectedPosition = getSelectedPosition();
+
+      let initiallySelectedItem = getSelectedItem();
+      let initiallySelectedOffset = getSelectedOffset();
+      let initiallySelectedPosition = getSelectedPosition();
 
       await resultsView.pageUp();
-      expect(getSelectedPosition()).toBeWithin(initiallySelectedPosition - pageHeight, 20);
-      expect(listView.element.scrollTop).toBeWithin(initialScrollTop - pageHeight, 20);
+
+      expect(getSelectedItem()).not.toBe(initiallySelectedItem);
+      expect(Math.abs(getSelectedOffset() - initiallySelectedOffset)).toBeLessThan(getSelectedItem().offsetHeight);
+      expect(getSelectedPosition()).toBeLessThan(initiallySelectedPosition);
+
+      initiallySelectedItem = getSelectedItem();
+      initiallySelectedOffset = getSelectedOffset();
+      initiallySelectedPosition = getSelectedPosition();
 
       await resultsView.pageUp();
-      expect(getSelectedPosition()).toBeWithin(initiallySelectedPosition - pageHeight * 2, 20);
-      expect(listView.element.scrollTop).toBeWithin(initialScrollTop - pageHeight * 2, 20);
+
+      expect(getSelectedItem()).not.toBe(initiallySelectedItem);
+      expect(Math.abs(getSelectedOffset() - initiallySelectedOffset)).toBeLessThan(getSelectedItem().offsetHeight);
+      expect(getSelectedPosition()).toBeLessThan(initiallySelectedPosition);
+
+      initiallySelectedPosition = getSelectedPosition();
 
       for (let i = 0; i < 100; i++) await resultsView.pageUp();
       expect(listView.element.querySelector('.path')).toHaveClass('selected');
+      expect(getSelectedPosition()).toBeLessThan(initiallySelectedPosition);
     });
   });
 
   describe("core:move-to-top and core:move-to-bottom", () => {
-      beforeEach(async () => {
-        workspaceElement.style.height = '300px';
-        projectFindView.findEditor.setText('so');
-        projectFindView.confirm();
-        await searchPromise;
-        resultsView = getResultsView();
-      });
-
-      it("selects the first/last item when core:move-to-top/move-to-bottom is triggered", async () => {
-        const {listView} = resultsView.refs;
-        expect(listView.element.querySelectorAll('li').length).toBeLessThan(resultsView.model.getPathCount() + resultsView.model.getMatchCount());
-
-        await resultsView.moveToBottom();
-        expect(listView.element.querySelectorAll('li')[1]).not.toHaveClass('selected');
-        expect(_.last(listView.element.querySelectorAll('li'))).toHaveClass('selected');
-        expect(listView.element.scrollTop).not.toBe(0);
-
-        await resultsView.moveToTop();
-        expect(listView.element.querySelectorAll('li')[1]).toHaveClass('selected');
-        expect(listView.element.scrollTop).toBe(0);
-      });
-
-      it("selects the path when when core:move-to-bottom is triggered and last item is collapsed", async () => {
-        await resultsView.moveToBottom();
-        resultsView.collapseResult();
-        await resultsView.moveToBottom();
-
-        expect(_.last(resultsView.element.querySelectorAll('li')).closest('.path')).toHaveClass('selected');
-      });
-
-      it("selects the path when when core:move-to-top is triggered and first item is collapsed", async () => {
-        await resultsView.moveToTop();
-        atom.commands.dispatch(resultsView.element, 'core:move-left');
-        await resultsView.moveToTop();
-
-        expect(resultsView.refs.listView.element.querySelector('li').closest('.path')).toHaveClass('selected');
-      });
+    beforeEach(async () => {
+      workspaceElement.style.height = '300px';
+      projectFindView.findEditor.setText('so');
+      projectFindView.confirm();
+      await searchPromise;
+      resultsView = getResultsView();
     });
+
+    it("selects the first/last item when core:move-to-top/move-to-bottom is triggered", async () => {
+      const {listView} = resultsView.refs;
+      expect(listView.element.querySelectorAll('li').length).toBeLessThan(resultsView.model.getPathCount() + resultsView.model.getMatchCount());
+
+      await resultsView.moveToBottom();
+      expect(listView.element.querySelectorAll('li')[1]).not.toHaveClass('selected');
+      expect(_.last(listView.element.querySelectorAll('li'))).toHaveClass('selected');
+      expect(listView.element.scrollTop).not.toBe(0);
+
+      await resultsView.moveToTop();
+      expect(listView.element.querySelector('.match-line')).toHaveClass('selected');
+      expect(listView.element.scrollTop).toBe(0);
+    });
+
+    it("selects the path when when core:move-to-bottom is triggered and last item is collapsed", async () => {
+      await resultsView.moveToBottom();
+      resultsView.collapseResult();
+      await resultsView.moveToBottom();
+
+      expect(_.last(resultsView.element.querySelectorAll('li')).closest('.path')).toHaveClass('selected');
+    });
+
+    it("selects the path when when core:move-to-top is triggered and first item is collapsed", async () => {
+      await resultsView.moveToTop();
+      atom.commands.dispatch(resultsView.element, 'core:move-left');
+      await resultsView.moveToTop();
+
+      expect(resultsView.refs.listView.element.querySelector('li').closest('.path')).toHaveClass('selected');
+    });
+  });
 
   describe("expanding and collapsing results", () => {
     it('preserves the selected file when collapsing all results', async () => {
@@ -253,7 +309,7 @@ describe('ResultsView', () => {
       resultsView.moveDown();
 
       const selectedMatch = resultsView.element.querySelector('.selected');
-      expect(selectedMatch).toHaveClass('search-result');
+      expect(selectedMatch).toHaveClass('match-line');
 
       resultsView.collapseAllResults();
       const selectedPath = resultsView.element.querySelector('.selected');
@@ -279,7 +335,7 @@ describe('ResultsView', () => {
       resultsView.moveDown();
       resultsView.moveDown();
       resultsView.moveDown();
-      expect(resultsView.element.querySelector('.selected')).toHaveClass('search-result');
+      expect(resultsView.element.querySelector('.selected')).toHaveClass('match-line');
 
       // Moving up while the path is collapsed moves to the previous path,
       // as opposed to moving up to the next match within the collapsed path.
@@ -368,41 +424,32 @@ describe('ResultsView', () => {
       expect(atom.views.getView(editor)).toHaveFocus();
     })
 
-    describe("when `projectSearchResultsPaneSplitDirection` option is none", () => {
+    describe("the `projectSearchResultsPaneSplitDirection` option", () => {
       beforeEach(() => {
-        atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'none');
+        spyOn(atom.workspace, 'open').andCallThrough()
       });
 
-      it("does not specify a pane to split", () => {
-        spyOn(atom.workspace, 'open').andCallThrough();
+      it("does not create a split when the option is 'none'", async () => {
+        atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'none');
         atom.commands.dispatch(resultsView.element, 'core:move-down');
         atom.commands.dispatch(resultsView.element, 'core:confirm');
+        await paneItemOpening()
         expect(atom.workspace.open.mostRecentCall.args[1].split).toBeUndefined();
       });
-    });
 
-    describe("when `projectSearchResultsPaneSplitDirection` option is right", () => {
-      beforeEach(() => {
+      it("always opens the file in the left pane when the option is 'right'", async () => {
         atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'right');
-      });
-
-      it("always opens the file in the left pane", () => {
-        spyOn(atom.workspace, 'open').andCallThrough();
         atom.commands.dispatch(resultsView.element, 'core:move-down');
         atom.commands.dispatch(resultsView.element, 'core:confirm');
+        await paneItemOpening()
         expect(atom.workspace.open.mostRecentCall.args[1].split).toBe('left');
       });
-    });
 
-    describe("when `projectSearchResultsPaneSplitDirection` option is down", () => {
-      beforeEach(() => {
+      it("always opens the file in the pane above when the options is 'down'", async () => {
         atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'down')
-      });
-
-      it("always opens the file in the up pane", () => {
-        spyOn(atom.workspace, 'open').andCallThrough();
         atom.commands.dispatch(resultsView.element, 'core:move-down');
         atom.commands.dispatch(resultsView.element, 'core:confirm');
+        await paneItemOpening()
         expect(atom.workspace.open.mostRecentCall.args[1].split).toBe('up');
       });
     });
@@ -426,7 +473,7 @@ describe('ResultsView', () => {
       // moves down for 13 results + 2 files
       _.times(resultCount + 1, () => atom.commands.dispatch(resultsView.element, 'core:move-down'));
       let selectedItem = resultsView.element.querySelector('.selected');
-      expect(selectedItem).toHaveClass('search-result');
+      expect(selectedItem).toHaveClass('match-line');
 
       // stays at the bottom
       let lastSelectedItem = selectedItem;
@@ -484,8 +531,8 @@ describe('ResultsView', () => {
         atom.commands.dispatch(resultsView.element, 'core:move-right');
 
         let selectedItem = resultsView.element.querySelector('.selected');
-        expect(selectedItem).toHaveClass('search-result');
-        expect(selectedItem).toBe(resultsView.refs.listView.element.querySelector('.search-result'));
+        expect(selectedItem).toHaveClass('match-line');
+        expect(selectedItem).toBe(resultsView.refs.listView.element.querySelector('.match-line'));
       });
 
       it("expands all results if 'Expand All' button is pressed", () => {
@@ -522,12 +569,18 @@ describe('ResultsView', () => {
   });
 
   describe("when the results view is empty", () => {
-    it("ignores core:confirm events", async () => {
+    it("ignores core:confirm and other commands for selecting results", async () => {
       projectFindView.findEditor.setText('thiswillnotmatchanythingintheproject');
       atom.commands.dispatch(projectFindView.element, 'core:confirm');
       await searchPromise;
       resultsView = getResultsView();
       atom.commands.dispatch(resultsView.element, 'core:confirm');
+      atom.commands.dispatch(resultsView.element, 'core:move-down');
+      atom.commands.dispatch(resultsView.element, 'core:move-up');
+      atom.commands.dispatch(resultsView.element, 'core:move-to-top');
+      atom.commands.dispatch(resultsView.element, 'core:move-to-bottom');
+      atom.commands.dispatch(resultsView.element, 'core:page-down');
+      atom.commands.dispatch(resultsView.element, 'core:page-up');
     });
 
     it("won't show the preview-controls", async () => {
@@ -582,7 +635,7 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      const previewElement = resultsView.element.querySelector('.search-result .preview');
+      const previewElement = resultsView.element.querySelector('.match-line .preview');
       expect(previewElement.style.fontFamily).toBe('Courier');
 
       atom.config.set('editor.fontFamily', 'Helvetica');
@@ -639,6 +692,43 @@ describe('ResultsView', () => {
       atom.commands.dispatch(projectFindView.element, 'core:confirm');
       expect(resultsPane.refs.previewCount.textContent).toContain('Project search results');
     })
+  });
+
+  describe('search result context lines', () => {
+    beforeEach(async () => {
+      atom.config.set('find-and-replace.searchContextLineCountBefore', 2);
+      atom.config.set('find-and-replace.searchContextLineCountAfter', 3);
+
+      projectFindView.findEditor.setText('items');
+      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      await searchPromise;
+
+      resultsView = getResultsView();
+    });
+
+    it('shows the context lines', async () => {
+      // the following condition is pretty hacky
+      // it doesn't work correctly for e.g. version 1.2
+      if (parseFloat(atom.getVersion()) >= 1.17) {
+        const pathNodes = resultsView.refs.listView.element.querySelectorAll('.path');
+        expect(pathNodes.length).toBe(1)
+        const pathNameNode = pathNodes[0].querySelector('.path-name');
+        expect(pathNameNode.textContent).toBe('sample.coffee');
+        const resultNode = pathNodes[0].querySelector('.search-result');
+        const lineNodes = resultNode.querySelectorAll('.list-item');
+        expect(lineNodes.length).toBe(5)
+        expect(lineNodes[0]).not.toHaveClass('match-line');
+        expect(lineNodes[0].querySelector('.preview').textContent).toBe('class quicksort');
+        expect(lineNodes[1]).toHaveClass('match-line');
+        expect(lineNodes[1].querySelector('.preview').textContent).toBe('sort: (items) ->');
+        expect(lineNodes[2]).not.toHaveClass('match-line');
+        expect(lineNodes[2].querySelector('.preview').textContent).toBe('return items if items.length <= 1');
+        expect(lineNodes[3]).not.toHaveClass('match-line');
+        expect(lineNodes[3].querySelector('.preview').textContent).toBe('');
+        expect(lineNodes[4]).not.toHaveClass('match-line');
+        expect(lineNodes[4].querySelector('.preview').textContent).toBe('pivot = items.shift()');
+      }
+    });
   })
 });
 
