@@ -82,6 +82,20 @@ atom-workspace.find-visible {
     stroke: currentColor;
   }
 
+  .close-button {
+    margin-left: @component-padding;
+    cursor: pointer;
+    color: @text-color-subtle;
+    &:hover {
+      color: @text-color-highlight;
+    }
+    .icon::before {
+      margin-right: 0;
+      text-align: center;
+      vertical-align: middle;
+    }
+  }
+
   .description {
     display: inline-block;
     .subtle-info-message {
