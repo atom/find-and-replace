@@ -31,7 +31,7 @@ describe("FindView", () => {
     await atom.workspace.open("sample.js");
 
     jasmine.attachToDOM(workspaceElement);
-    editor = atom.workspace.getActiveTextEditor();
+    editor = atom.workspace.getCenter().getActiveTextEditor();
     editorView = editor.element;
 
     activationPromise = atom.packages.activatePackage("find-and-replace").then(function({mainModule}) {
@@ -207,7 +207,7 @@ describe("FindView", () => {
 
     describe("when core:cancel is triggered on an empty pane", () => {
       it("hides the find panel", () => {
-        const paneElement = atom.views.getView(atom.workspace.getActivePane());
+        const paneElement = atom.views.getView(atom.workspace.getCenter().getActivePane());
         paneElement.focus();
         atom.commands.dispatch(paneElement, "core:cancel");
         expect(getFindAtomPanel()).not.toBeVisible();
@@ -806,7 +806,7 @@ describe("FindView", () => {
       describe("when a new editor is activated", () => {
         it("reruns the search on the new editor", async () => {
           await atom.workspace.open("sample.coffee");
-          editor = atom.workspace.getActivePaneItem();
+          editor = atom.workspace.getCenter().getActivePaneItem();
           expect(findView.refs.resultCounter.textContent).toEqual("7 found");
           expect(editor.getSelectedBufferRange()).toEqual([[0, 0], [0, 0]]);
         });
@@ -817,7 +817,7 @@ describe("FindView", () => {
           await atom.workspace.open("sample.coffee");
           expect(getResultDecorations(editor, "find-result")).toHaveLength(0);
 
-          const newEditor = atom.workspace.getActiveTextEditor();
+          const newEditor = atom.workspace.getCenter().getActiveTextEditor();
           expect(getResultDecorations(newEditor, "find-result")).toHaveLength(7);
         });
 
@@ -825,7 +825,7 @@ describe("FindView", () => {
           await atom.workspace.open("sample.coffee");
 
           atom.commands.dispatch(findView.findEditor.element, "find-and-replace:find-next");
-          const newEditor = atom.workspace.getActiveTextEditor();
+          const newEditor = atom.workspace.getCenter().getActiveTextEditor();
           expect(getResultDecorations(newEditor, "find-result")).toHaveLength(6);
           expect(getResultDecorations(newEditor, "current-result")).toHaveLength(1);
         });
@@ -854,6 +854,16 @@ describe("FindView", () => {
         it("updates the result view", async () => {
           await atom.workspace.open("another");
           expect(findView.refs.resultCounter.textContent).toEqual("no results");
+        });
+      });
+
+      describe("when the active pane is in a dock", () => {
+        it("does nothing", async () => {
+          const dock = atom.workspace.getLeftDock()
+          dock.show()
+          dock.getActivePane().activateItem(document.createElement('div'))
+          dock.getActivePane().activate()
+          expect(findView.refs.resultCounter.textContent).not.toEqual("no results");
         });
       });
 
@@ -898,7 +908,7 @@ describe("FindView", () => {
 
           atom.commands.dispatch(editor.element, "core:close");
           editorView.focus();
-          expect(atom.workspace.getActiveTextEditor()).toBe(editor);
+          expect(atom.workspace.getCenter().getActiveTextEditor()).toBe(editor);
           expect(getResultDecorations(editor, "find-result")).toHaveLength(6);
         });
       });

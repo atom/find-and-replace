@@ -365,35 +365,35 @@ describe('ProjectFindView', () => {
       });
 
       it("splits when option is right", async () => {
-        const initialPane = atom.workspace.getActivePane();
+        const initialPane = atom.workspace.getCenter().getActivePane();
         atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'right');
         projectFindView.findEditor.setText('items');
 
         atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
 
-        expect(atom.workspace.getActivePane()).not.toBe(initialPane);
+        expect(atom.workspace.getCenter().getActivePane()).not.toBe(initialPane);
       });
 
       it("splits when option is bottom", async () => {
-        const initialPane = atom.workspace.getActivePane();
+        const initialPane = atom.workspace.getCenter().getActivePane();
         atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'down');
         projectFindView.findEditor.setText('items');
 
         atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
 
-        expect(atom.workspace.getActivePane()).not.toBe(initialPane);
+        expect(atom.workspace.getCenter().getActivePane()).not.toBe(initialPane);
       });
 
       it("does not split when option is false", async () => {
-        const initialPane = atom.workspace.getActivePane();
+        const initialPane = atom.workspace.getCenter().getActivePane();
         projectFindView.findEditor.setText('items');
 
         atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
 
-        expect(atom.workspace.getActivePane()).toBe(initialPane);
+        expect(atom.workspace.getCenter().getActivePane()).toBe(initialPane);
       });
 
       it("can be duplicated on the right", async () => {
@@ -404,11 +404,11 @@ describe('ProjectFindView', () => {
         await searchPromise;
 
         const resultsPaneView1 = atom.views.getView(getExistingResultsPane());
-        const pane1 = atom.workspace.getActivePane();
+        const pane1 = atom.workspace.getCenter().getActivePane();
         const resultsView1 = pane1.getItems()[0].refs.resultsView
         pane1.splitRight({copyActiveItem: true});
 
-        const pane2 = atom.workspace.getActivePane();
+        const pane2 = atom.workspace.getCenter().getActivePane();
         const resultsView2 = pane2.getItems()[0].refs.resultsView
         const resultsPaneView2 = atom.views.getView(pane2.itemForURI(ResultsPaneView.URI));
         expect(pane1).not.toBe(pane2);
@@ -429,11 +429,11 @@ describe('ProjectFindView', () => {
         await searchPromise;
 
         const resultsPaneView1 = atom.views.getView(getExistingResultsPane());
-        const pane1 = atom.workspace.getActivePane();
+        const pane1 = atom.workspace.getCenter().getActivePane();
         const resultsView1 = pane1.getItems()[0].refs.resultsView
 
         pane1.splitDown({copyActiveItem: true});
-        const pane2 = atom.workspace.getActivePane();
+        const pane2 = atom.workspace.getCenter().getActivePane();
         const resultsView2 = pane2.getItems()[0].refs.resultsView
         const resultsPaneView2 = atom.views.getView(pane2.itemForURI(ResultsPaneView.URI));
         expect(pane1).not.toBe(pane2);
@@ -1044,7 +1044,7 @@ describe('ProjectFindView', () => {
       // have to close the project before attempting to delete. Unfortunately,
       // Pathwatcher's close function is also not synchronous. Once
       // atom/node-pathwatcher#4 is implemented this should be alot cleaner.
-      let activePane = atom.workspace.getActivePane();
+      let activePane = atom.workspace.getCenter().getActivePane();
       if (activePane) {
         for (const item of activePane.getItems()) {
           if (item.shouldPromptToSave != null) {
