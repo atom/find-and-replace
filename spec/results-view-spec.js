@@ -389,14 +389,14 @@ describe('ResultsView', () => {
       _.times(3, () => atom.commands.dispatch(resultsView.element, 'core:move-down'));
       atom.commands.dispatch(resultsView.element, 'core:confirm');
       await paneItemOpening()
-      expect(atom.workspace.getActivePaneItem().getPath()).toContain('sample.');
+      expect(atom.workspace.getCenter().getActivePaneItem().getPath()).toContain('sample.');
 
       // open something in sample.js
       resultsView.element.focus();
       _.times(6, () => atom.commands.dispatch(resultsView.element, 'core:move-down'));
       atom.commands.dispatch(resultsView.element, 'core:confirm');
       await paneItemOpening()
-      expect(atom.workspace.getActivePaneItem().getPath()).toContain('sample.');
+      expect(atom.workspace.getCenter().getActivePaneItem().getPath()).toContain('sample.');
     });
 
     it("opens the file containing the result in a non-pending state when the search result is double-clicked", async () => {
@@ -410,8 +410,8 @@ describe('ResultsView', () => {
       expect(click2.defaultPrevented).toBe(true);
 
       await paneItemOpening()
-      const editor = atom.workspace.getActiveTextEditor();
-      expect(atom.workspace.getActivePane().getPendingItem()).toBe(null);
+      const editor = atom.workspace.getCenter().getActiveTextEditor();
+      expect(atom.workspace.getCenter().getActivePane().getPendingItem()).toBe(null);
       expect(atom.views.getView(editor)).toHaveFocus();
     });
 
@@ -419,8 +419,8 @@ describe('ResultsView', () => {
       const pathNode = resultsView.refs.listView.element.querySelectorAll(".search-result")[0];
       pathNode.dispatchEvent(buildMouseEvent('mousedown', {target: pathNode, which: 1}));
       await paneItemOpening()
-      const editor = atom.workspace.getActiveTextEditor();
-      expect(atom.workspace.getActivePane().getPendingItem()).toBe(editor);
+      const editor = atom.workspace.getCenter().getActiveTextEditor();
+      expect(atom.workspace.getCenter().getActivePane().getPendingItem()).toBe(editor);
       expect(atom.views.getView(editor)).toHaveFocus();
     })
 

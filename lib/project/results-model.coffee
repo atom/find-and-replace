@@ -1,5 +1,5 @@
 _ = require 'underscore-plus'
-{Emitter} = require 'atom'
+{Emitter, TextEditor} = require 'atom'
 escapeHelper = require '../escape-helper'
 
 class Result
@@ -27,8 +27,9 @@ class ResultsModel
   constructor: (@findOptions) ->
     @emitter = new Emitter
 
-    atom.workspace.observeTextEditors (editor) =>
-      editor.onDidStopChanging => @onContentsModified(editor)
+    atom.workspace.getCenter().observeActivePaneItem (item) =>
+      if item instanceof TextEditor
+        item.onDidStopChanging => @onContentsModified(item)
 
     @clear()
 

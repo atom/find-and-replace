@@ -88,7 +88,7 @@ describe("ResultsModel", () => {
       await atom.workspace.open();
       await resultsModel.search("items", "*.js", "");
 
-      editor = atom.workspace.getActiveTextEditor();
+      editor = atom.workspace.getCenter().getActiveTextEditor();
       editor.setText("items\nitems");
       spyOn(editor, "scan").andCallThrough();
       advanceClock(editor.buffer.stoppedChangingDelay);

@@ -29,7 +29,7 @@ module.exports =
     @findModel = new BufferSearch(@findOptions)
     @resultsModel = new ResultsModel(@findOptions)
 
-    @subscriptions.add atom.workspace.observeActivePaneItem (paneItem) =>
+    @subscriptions.add atom.workspace.getCenter().observeActivePaneItem (paneItem) =>
       if paneItem?.getBuffer?()
         @findModel.setEditor(paneItem)
       else
