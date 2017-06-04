@@ -697,7 +697,7 @@ describe('ResultsView', () => {
   describe('search result context lines', () => {
     beforeEach(async () => {
       atom.config.set('find-and-replace.searchContextLineCountBefore', 2);
-      atom.config.set('find-and-replace.searchContextLineCountAfter', 3);
+      atom.config.set('find-and-replace.searchContextLineCountAfter', 1);
 
       projectFindView.findEditor.setText('items');
       atom.commands.dispatch(projectFindView.element, 'core:confirm');
@@ -710,23 +710,40 @@ describe('ResultsView', () => {
       // the following condition is pretty hacky
       // it doesn't work correctly for e.g. version 1.2
       if (parseFloat(atom.getVersion()) >= 1.17) {
+        expect(resultsView.showContextLines).toBe(true);
         const pathNodes = resultsView.refs.listView.element.querySelectorAll('.path');
-        expect(pathNodes.length).toBe(1)
+        expect(pathNodes.length).toBe(2);
         const pathNameNode = pathNodes[0].querySelector('.path-name');
         expect(pathNameNode.textContent).toBe('sample.coffee');
+        // the second file is sample.js which we don't use
         const resultNode = pathNodes[0].querySelector('.search-result');
         const lineNodes = resultNode.querySelectorAll('.list-item');
-        expect(lineNodes.length).toBe(5)
+        expect(lineNodes.length).toBe(3);
         expect(lineNodes[0]).not.toHaveClass('match-line');
         expect(lineNodes[0].querySelector('.preview').textContent).toBe('class quicksort');
         expect(lineNodes[1]).toHaveClass('match-line');
         expect(lineNodes[1].querySelector('.preview').textContent).toBe('sort: (items) ->');
         expect(lineNodes[2]).not.toHaveClass('match-line');
         expect(lineNodes[2].querySelector('.preview').textContent).toBe('return items if items.length <= 1');
-        expect(lineNodes[3]).not.toHaveClass('match-line');
-        expect(lineNodes[3].querySelector('.preview').textContent).toBe('');
-        expect(lineNodes[4]).not.toHaveClass('match-line');
-        expect(lineNodes[4].querySelector('.preview').textContent).toBe('pivot = items.shift()');
+      }
+    });
+
+    it('hides the context lines', async () => {
+      // the following condition is pretty hacky
+      // it doesn't work correctly for e.g. version 1.2
+      if (parseFloat(atom.getVersion()) >= 1.17) {
+        await resultsView.toggleContextLines();
+        expect(resultsView.showContextLines).toBe(false);
+        const pathNodes = resultsView.refs.listView.element.querySelectorAll('.path');
+        expect(pathNodes.length).toBe(2);
+        let pathNameNode = pathNodes[0].querySelector('.path-name');
+        expect(pathNameNode.textContent).toBe('sample.coffee');
+        // the second file is sample.js which we don't use
+        const resultNode = pathNodes[0].querySelector('.search-result');
+        const lineNodes = resultNode.querySelectorAll('.list-item');
+        expect(lineNodes.length).toBe(1);
+        expect(lineNodes[0]).toHaveClass('match-line');
+        expect(lineNodes[0].querySelector('.preview').textContent).toBe('sort: (items) ->');
       }
     });
   })
