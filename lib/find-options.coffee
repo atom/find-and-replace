@@ -9,6 +9,7 @@ Params = [
   'wholeWord'
   'caseSensitive'
   'inCurrentSelection'
+  'showContextLines'
 ]
 
 module.exports =
@@ -23,6 +24,7 @@ class FindOptions
     @caseSensitive = state.caseSensitive ? atom.config.get('find-and-replace.caseSensitive') ? false
     @wholeWord = state.wholeWord ? atom.config.get('find-and-replace.wholeWord') ? false
     @inCurrentSelection = state.inCurrentSelection ? atom.config.get('find-and-replace.inCurrentSelection') ? false
+    @showContextLines = state.showContextLines ? atom.config.get('find-and-replace.showContextLines') ? false
 
   onDidChange: (callback) ->
     @emitter.on('did-change', callback)

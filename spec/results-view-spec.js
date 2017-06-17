@@ -698,6 +698,7 @@ describe('ResultsView', () => {
     beforeEach(async () => {
       atom.config.set('find-and-replace.searchContextLineCountBefore', 2);
       atom.config.set('find-and-replace.searchContextLineCountAfter', 1);
+      atom.config.set('find-and-replace.showContextLines', false);
 
       projectFindView.findEditor.setText('items');
       atom.commands.dispatch(projectFindView.element, 'core:confirm');
@@ -710,7 +711,9 @@ describe('ResultsView', () => {
       // the following condition is pretty hacky
       // it doesn't work correctly for e.g. version 1.2
       if (parseFloat(atom.getVersion()) >= 1.17) {
-        expect(resultsView.showContextLines).toBe(true);
+        expect(resultsView.model.getFindOptions().showContextLines).toBe(false);
+        await resultsView.toggleContextLines();
+        expect(resultsView.model.getFindOptions().showContextLines).toBe(true);
         const pathNodes = resultsView.refs.listView.element.querySelectorAll('.path');
         expect(pathNodes.length).toBe(2);
         const pathNameNode = pathNodes[0].querySelector('.path-name');
@@ -732,8 +735,7 @@ describe('ResultsView', () => {
       // the following condition is pretty hacky
       // it doesn't work correctly for e.g. version 1.2
       if (parseFloat(atom.getVersion()) >= 1.17) {
-        await resultsView.toggleContextLines();
-        expect(resultsView.showContextLines).toBe(false);
+        expect(resultsView.model.getFindOptions().showContextLines).toBe(false);
         const pathNodes = resultsView.refs.listView.element.querySelectorAll('.path');
         expect(pathNodes.length).toBe(2);
         let pathNameNode = pathNodes[0].querySelector('.path-name');
