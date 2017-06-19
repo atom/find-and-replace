@@ -698,7 +698,8 @@ describe('ResultsView', () => {
     beforeEach(async () => {
       atom.config.set('find-and-replace.searchContextLineCountBefore', 2);
       atom.config.set('find-and-replace.searchContextLineCountAfter', 1);
-      atom.config.set('find-and-replace.showContextLines', false);
+      atom.config.set('find-and-replace.leadingContextLineCount', 0);
+      atom.config.set('find-and-replace.trailingContextLineCount', 0);
 
       projectFindView.findEditor.setText('items');
       atom.commands.dispatch(projectFindView.element, 'core:confirm');
@@ -711,23 +712,47 @@ describe('ResultsView', () => {
       // the following condition is pretty hacky
       // it doesn't work correctly for e.g. version 1.2
       if (parseFloat(atom.getVersion()) >= 1.17) {
-        expect(resultsView.model.getFindOptions().showContextLines).toBe(false);
-        await resultsView.toggleContextLines();
-        expect(resultsView.model.getFindOptions().showContextLines).toBe(true);
-        const pathNodes = resultsView.refs.listView.element.querySelectorAll('.path');
-        expect(pathNodes.length).toBe(2);
-        const pathNameNode = pathNodes[0].querySelector('.path-name');
-        expect(pathNameNode.textContent).toBe('sample.coffee');
-        // the second file is sample.js which we don't use
-        const resultNode = pathNodes[0].querySelector('.search-result');
-        const lineNodes = resultNode.querySelectorAll('.list-item');
-        expect(lineNodes.length).toBe(3);
-        expect(lineNodes[0]).not.toHaveClass('match-line');
-        expect(lineNodes[0].querySelector('.preview').textContent).toBe('class quicksort');
-        expect(lineNodes[1]).toHaveClass('match-line');
-        expect(lineNodes[1].querySelector('.preview').textContent).toBe('sort: (items) ->');
-        expect(lineNodes[2]).not.toHaveClass('match-line');
-        expect(lineNodes[2].querySelector('.preview').textContent).toBe('return items if items.length <= 1');
+        expect(resultsView.model.getFindOptions().leadingContextLineCount).toBe(0);
+        expect(resultsView.model.getFindOptions().trailingContextLineCount).toBe(0);
+        await resultsView.toggleLeadingContextLines();
+        expect(resultsView.model.getFindOptions().leadingContextLineCount).toBe(2);
+        expect(resultsView.model.getFindOptions().trailingContextLineCount).toBe(0);
+
+        {
+          const pathNodes = resultsView.refs.listView.element.querySelectorAll('.path');
+          expect(pathNodes.length).toBe(2);
+          const pathNameNode = pathNodes[0].querySelector('.path-name');
+          expect(pathNameNode.textContent).toBe('sample.coffee');
+          // the second file is sample.js which we don't use
+          const resultNode = pathNodes[0].querySelector('.search-result');
+          const lineNodes = resultNode.querySelectorAll('.list-item');
+          expect(lineNodes.length).toBe(2);
+          expect(lineNodes[0]).not.toHaveClass('match-line');
+          expect(lineNodes[0].querySelector('.preview').textContent).toBe('class quicksort');
+          expect(lineNodes[1]).toHaveClass('match-line');
+          expect(lineNodes[1].querySelector('.preview').textContent).toBe('sort: (items) ->');
+        }
+
+        await resultsView.toggleTrailingContextLines();
+        expect(resultsView.model.getFindOptions().leadingContextLineCount).toBe(2);
+        expect(resultsView.model.getFindOptions().trailingContextLineCount).toBe(1);
+
+        {
+          const pathNodes = resultsView.refs.listView.element.querySelectorAll('.path');
+          expect(pathNodes.length).toBe(2);
+          const pathNameNode = pathNodes[0].querySelector('.path-name');
+          expect(pathNameNode.textContent).toBe('sample.coffee');
+          // the second file is sample.js which we don't use
+          const resultNode = pathNodes[0].querySelector('.search-result');
+          const lineNodes = resultNode.querySelectorAll('.list-item');
+          expect(lineNodes.length).toBe(3);
+          expect(lineNodes[0]).not.toHaveClass('match-line');
+          expect(lineNodes[0].querySelector('.preview').textContent).toBe('class quicksort');
+          expect(lineNodes[1]).toHaveClass('match-line');
+          expect(lineNodes[1].querySelector('.preview').textContent).toBe('sort: (items) ->');
+          expect(lineNodes[2]).not.toHaveClass('match-line');
+          expect(lineNodes[2].querySelector('.preview').textContent).toBe('return items if items.length <= 1');
+        }
       }
     });
 
@@ -735,7 +760,8 @@ describe('ResultsView', () => {
       // the following condition is pretty hacky
       // it doesn't work correctly for e.g. version 1.2
       if (parseFloat(atom.getVersion()) >= 1.17) {
-        expect(resultsView.model.getFindOptions().showContextLines).toBe(false);
+        expect(resultsView.model.getFindOptions().leadingContextLineCount).toBe(0);
+        expect(resultsView.model.getFindOptions().trailingContextLineCount).toBe(0);
         const pathNodes = resultsView.refs.listView.element.querySelectorAll('.path');
         expect(pathNodes.length).toBe(2);
         let pathNameNode = pathNodes[0].querySelector('.path-name');
