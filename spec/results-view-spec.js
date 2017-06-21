@@ -624,6 +624,22 @@ describe('ResultsView', () => {
       atom.commands.dispatch(resultsView.element, 'find-and-replace:copy-path');
       expect(atom.clipboard.read()).toBe('sample.js');
     });
+
+    fit("copies the selected file path to the clipboard when there are multiple project folders", async () => {
+        atom.project.setPaths([path.join(__dirname, 'fixtures', 'folder-1'), path.join(__dirname, 'fixtures', 'folder-2')]);
+        projectFindView.findEditor.setText('items');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
+        await searchPromise;
+
+        resultsView = getResultsView();
+        resultsView.selectFirstResult();
+        resultsView.collapseResult();
+        atom.commands.dispatch(resultsView.element, 'find-and-replace:copy-path');
+        expect(atom.clipboard.read()).toBe(path.join('folder-1', 'sample.txt'));
+        atom.commands.dispatch(resultsView.element, 'core:move-down');
+        atom.commands.dispatch(resultsView.element, 'find-and-replace:copy-path');
+        expect(atom.clipboard.read()).toBe(path.join('folder-2', 'sample.txt'));
+    });
   });
 
   describe("preview font", () => {
