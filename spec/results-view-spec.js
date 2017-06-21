@@ -2,7 +2,8 @@
 
 const _ = require('underscore-plus');
 const path = require('path');
-const temp = require("temp");
+const temp = require('temp');
+const fs = require('fs');
 const etch = require('etch');
 const ResultsPaneView = require('../lib/project/results-pane');
 const FileIcons = require('../lib/file-icons');
@@ -626,7 +627,15 @@ describe('ResultsView', () => {
     });
 
     it("copies the selected file path to the clipboard when there are multiple project folders", async () => {
-        atom.project.setPaths([path.join(__dirname, 'fixtures', 'folder-1'), path.join(__dirname, 'fixtures', 'folder-2')]);
+        const folder1 = temp.mkdirSync('folder-1')
+        const file1 = path.join(folder1, 'sample.txt')
+        fs.writeFileSync(file1, 'items')
+
+        const folder2 = temp.mkdirSync('folder-2')
+        const file2 = path.join(folder2, 'sample.txt')
+        fs.writeFileSync(file2, 'items')
+
+        atom.project.setPaths([folder1, folder2]);
         projectFindView.findEditor.setText('items');
         atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
@@ -635,10 +644,10 @@ describe('ResultsView', () => {
         resultsView.selectFirstResult();
         resultsView.collapseResult();
         atom.commands.dispatch(resultsView.element, 'find-and-replace:copy-path');
-        expect(atom.clipboard.read()).toBe(path.join('folder-1', 'sample.txt'));
+        expect(atom.clipboard.read()).toBe(path.join(path.basename(folder1), path.basename(file1)));
         atom.commands.dispatch(resultsView.element, 'core:move-down');
         atom.commands.dispatch(resultsView.element, 'find-and-replace:copy-path');
-        expect(atom.clipboard.read()).toBe(path.join('folder-2', 'sample.txt'));
+        expect(atom.clipboard.read()).toBe(path.join(path.basename(folder2), path.basename(file2)));
     });
   });
 
