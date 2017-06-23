@@ -767,8 +767,6 @@ describe('ResultsView', () => {
           expect(lineNodes[2].querySelector('.preview').textContent).toBe('return items if items.length <= 1');
           expect(lineNodes[3]).not.toHaveClass('match-line');
           expect(lineNodes[3].querySelector('.preview').textContent).toBe('');
-          // expect(lineNodes[4]).not.toHaveClass('match-line');
-          // expect(lineNodes[4].querySelector('.preview').textContent).toBe('pivot = items.shift()');
         }
 
         // show no leading context lines, show 3 trailing context lines
