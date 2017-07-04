@@ -755,7 +755,7 @@ describe('ResultsView', () => {
           const lineNodes = getLineNodesMatchFirstPath(resultsView, 0);
           expect(lineNodes.length).toBe(1);
           expect(lineNodes[0]).toHaveClass('match-line');
-          expect(lineNodes[0].querySelector('.preview').textContent).toBe('sort: (items) ->');
+          expect(lineNodes[0].querySelector('.preview').textContent).toBe('  sort: (items) ->');
         }
 
         // show all leading context lines, show 1 trailing context line
@@ -770,9 +770,9 @@ describe('ResultsView', () => {
           expect(lineNodes[0]).not.toHaveClass('match-line');
           expect(lineNodes[0].querySelector('.preview').textContent).toBe('class quicksort');
           expect(lineNodes[1]).toHaveClass('match-line');
-          expect(lineNodes[1].querySelector('.preview').textContent).toBe('sort: (items) ->');
+          expect(lineNodes[1].querySelector('.preview').textContent).toBe('  sort: (items) ->');
           expect(lineNodes[2]).not.toHaveClass('match-line');
-          expect(lineNodes[2].querySelector('.preview').textContent).toBe('return items if items.length <= 1');
+          expect(lineNodes[2].querySelector('.preview').textContent).toBe('    return items if items.length <= 1');
         }
 
         // show 1 leading context line, show 2 trailing context lines
@@ -787,9 +787,9 @@ describe('ResultsView', () => {
           expect(lineNodes[0]).not.toHaveClass('match-line');
           expect(lineNodes[0].querySelector('.preview').textContent).toBe('class quicksort');
           expect(lineNodes[1]).toHaveClass('match-line');
-          expect(lineNodes[1].querySelector('.preview').textContent).toBe('sort: (items) ->');
+          expect(lineNodes[1].querySelector('.preview').textContent).toBe('  sort: (items) ->');
           expect(lineNodes[2]).not.toHaveClass('match-line');
-          expect(lineNodes[2].querySelector('.preview').textContent).toBe('return items if items.length <= 1');
+          expect(lineNodes[2].querySelector('.preview').textContent).toBe('    return items if items.length <= 1');
           expect(lineNodes[3]).not.toHaveClass('match-line');
           expect(lineNodes[3].querySelector('.preview').textContent).toBe('');
         }
@@ -804,13 +804,13 @@ describe('ResultsView', () => {
           const lineNodes = getLineNodesMatchFirstPath(resultsView, 0);
           expect(lineNodes.length).toBe(4);
           expect(lineNodes[0]).toHaveClass('match-line');
-          expect(lineNodes[0].querySelector('.preview').textContent).toBe('sort: (items) ->');
+          expect(lineNodes[0].querySelector('.preview').textContent).toBe('  sort: (items) ->');
           expect(lineNodes[1]).not.toHaveClass('match-line');
-          expect(lineNodes[1].querySelector('.preview').textContent).toBe('return items if items.length <= 1');
+          expect(lineNodes[1].querySelector('.preview').textContent).toBe('    return items if items.length <= 1');
           expect(lineNodes[2]).not.toHaveClass('match-line');
           expect(lineNodes[2].querySelector('.preview').textContent).toBe('');
           expect(lineNodes[3]).not.toHaveClass('match-line');
-          expect(lineNodes[3].querySelector('.preview').textContent).toBe('pivot = items.shift()');
+          expect(lineNodes[3].querySelector('.preview').textContent).toBe('    pivot = items.shift()');
         }
 
         // show 1 leading context line, show 2 trailing context lines
@@ -825,9 +825,9 @@ describe('ResultsView', () => {
           expect(lineNodes[0]).not.toHaveClass('match-line');
           expect(lineNodes[0].querySelector('.preview').textContent).toBe('class quicksort');
           expect(lineNodes[1]).toHaveClass('match-line');
-          expect(lineNodes[1].querySelector('.preview').textContent).toBe('sort: (items) ->');
+          expect(lineNodes[1].querySelector('.preview').textContent).toBe('  sort: (items) ->');
           expect(lineNodes[2]).not.toHaveClass('match-line');
-          expect(lineNodes[2].querySelector('.preview').textContent).toBe('return items if items.length <= 1');
+          expect(lineNodes[2].querySelector('.preview').textContent).toBe('    return items if items.length <= 1');
           expect(lineNodes[3]).not.toHaveClass('match-line');
           expect(lineNodes[3].querySelector('.preview').textContent).toBe('');
         }
@@ -846,7 +846,7 @@ describe('ResultsView', () => {
           expect(lineNodes[0]).not.toHaveClass('match-line');
           expect(lineNodes[0].querySelector('.preview').textContent).toBe('class quicksort');
           expect(lineNodes[1]).toHaveClass('match-line');
-          expect(lineNodes[1].querySelector('.preview').textContent).toBe('sort: (items) ->');
+          expect(lineNodes[1].querySelector('.preview').textContent).toBe('  sort: (items) ->');
         }
       }
     });
