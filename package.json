@@ -92,15 +92,15 @@
     },
     "searchContextLineCountBefore": {
       "type": "integer",
-      "default": 0,
+      "default": 3,
       "minimum": 0,
-      "description": "The number of extra lines of context to show before the match for project results"
+      "description": "The number of extra lines of context to query before the match for project results"
     },
     "searchContextLineCountAfter": {
       "type": "integer",
-      "default": 0,
+      "default": 3,
       "minimum": 0,
-      "description": "The number of extra lines of context to show after the match for project results"
+      "description": "The number of extra lines of context to query after the match for project results"
     },
     "showSearchWrapIcon": {
       "type": "boolean",
