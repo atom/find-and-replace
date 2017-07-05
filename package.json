@@ -2,7 +2,7 @@
   "name": "find-and-replace",
   "main": "./lib/find",
   "description": "Find and replace within buffers and across the project.",
-  "version": "0.208.3",
+  "version": "0.209.1",
   "license": "MIT",
   "activationCommands": {
     "atom-workspace": [
@@ -97,15 +97,15 @@
     },
     "searchContextLineCountBefore": {
       "type": "integer",
-      "default": 0,
+      "default": 3,
       "minimum": 0,
-      "description": "The number of extra lines of context to show before the match for project results"
+      "description": "The number of extra lines of context to query before the match for project results"
     },
     "searchContextLineCountAfter": {
       "type": "integer",
-      "default": 0,
+      "default": 3,
       "minimum": 0,
-      "description": "The number of extra lines of context to show after the match for project results"
+      "description": "The number of extra lines of context to query after the match for project results"
     },
     "showSearchWrapIcon": {
       "type": "boolean",

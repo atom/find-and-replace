@@ -35,6 +35,7 @@ atom-workspace.find-visible {
 
 // Both project and buffer FNR styles
 .find-and-replace,
+.preview-pane,
 .project-find {
   @min-width: 200px; // min width before it starts scrolling
 
@@ -80,6 +81,7 @@ atom-workspace.find-visible {
     vertical-align: middle;
     fill: currentColor;
     stroke: currentColor;
+    pointer-events: none;
   }
 
   .close-button {
@@ -291,6 +293,7 @@ atom-workspace.find-visible {
     .preview {
       word-break: break-all;
       font-family: monospace;
+      white-space: pre;
     }
 
     .selected {
