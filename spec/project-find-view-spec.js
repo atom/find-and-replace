@@ -348,14 +348,22 @@ describe('ProjectFindView', () => {
     });
 
     describe("when close option is true", () => {
-      it("closes the panel after search", async () => {
+      beforeEach(() => {
         atom.config.set('find-and-replace.closeFindPanelAfterSearch', true);
+      })
 
+      it("closes the panel after search", async () => {
         atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
 
         expect(getAtomPanel()).not.toBeVisible();
       });
+
+      it("does not close the panel after the replacement text is altered", async () => {
+        projectFindView.replaceEditor.setText('something else');
+
+        expect(getAtomPanel()).toBeVisible();
+      })
     });
 
     describe("splitting into a second pane", () => {
