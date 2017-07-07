@@ -102,7 +102,7 @@ class ResultsModel
     @replacementErrors = null
     @emitter.emit 'did-clear-replacement-state', @getResultsSummary()
 
-  shoudldRerunSearch: (findPattern, pathsPattern, replacePattern, options={}) ->
+  shouldRerunSearch: (findPattern, pathsPattern, replacePattern, options={}) ->
     {onlyRunIfChanged} = options
     if onlyRunIfChanged and findPattern? and pathsPattern? and findPattern is @lastFindPattern and pathsPattern is @lastPathsPattern
       false
@@ -110,7 +110,7 @@ class ResultsModel
       true
 
   search: (findPattern, pathsPattern, replacePattern, options={}) ->
-    return Promise.resolve() unless @shoudldRerunSearch(findPattern, pathsPattern, replacePattern, options)
+    return Promise.resolve() unless @shouldRerunSearch(findPattern, pathsPattern, replacePattern, options)
 
     {keepReplacementState} = options
     if keepReplacementState
