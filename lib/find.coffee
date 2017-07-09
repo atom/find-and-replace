@@ -18,7 +18,18 @@ module.exports =
     atom.config.unset('find-and-replace.openProjectFindResultsInRightPane')
 
     atom.workspace.addOpener (filePath) ->
-      new ResultsPaneView() if filePath is ResultsPaneView.URI
+      # new ResultsPaneView() if filePath is ResultsPaneView.URI
+      if filePath is ResultsPaneView.URI
+        editor = atom.workspace.buildTextEditor()
+        editorView = atom.views.getView editor
+        editorView.destroy = -> console.log('destroy')
+        editor.setText('Yo Yo')
+        editor.getTitle = -> 'Find results'
+        editor.getPath = -> './find-results.txt'
+        editor.update({
+          showLineNumbers: false,
+        })
+        return editor
 
     @subscriptions = new CompositeDisposable
     @findHistory = new History(findHistory)
