@@ -9,6 +9,7 @@ FindView = require './find-view'
 ProjectFindView = require './project-find-view'
 ResultsModel = require './project/results-model'
 ResultsPaneView = require './project/results-pane'
+{buildResultsTextEditor} = require './project/results-text-builder'
 
 module.exports =
   activate: ({findOptions, findHistory, replaceHistory, pathsHistory}={}) ->
@@ -17,19 +18,10 @@ module.exports =
       atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'right')
     atom.config.unset('find-and-replace.openProjectFindResultsInRightPane')
 
-    atom.workspace.addOpener (filePath) ->
-      # new ResultsPaneView() if filePath is ResultsPaneView.URI
+    atom.workspace.addOpener (filePath) =>
       if filePath is ResultsPaneView.URI
-        editor = atom.workspace.buildTextEditor()
-        editorView = atom.views.getView editor
-        editorView.destroy = -> console.log('destroy')
-        editor.setText('Yo Yo')
-        editor.getTitle = -> 'Find results'
-        editor.getPath = -> './find-results.txt'
-        editor.update({
-          showLineNumbers: false,
-        })
-        return editor
+        # return new ResultsPaneView()
+        return buildResultsTextEditor(@resultsModel)
 
     @subscriptions = new CompositeDisposable
     @findHistory = new History(findHistory)
