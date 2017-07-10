@@ -353,26 +353,42 @@ describe('ProjectFindView', () => {
       })
 
       it("closes the panel after search", async () => {
-        projectFindView.findEditor.setText('something')
+        projectFindView.findEditor.setText('something');
         atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
 
         expect(getAtomPanel()).not.toBeVisible();
       });
 
-      it("closes the panel after an empty search", async () => {
-        projectFindView.findEditor.setText('')
+      it("leaves the panel open after an empty search", async () => {
+        projectFindView.findEditor.setText('');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
+        await searchPromise;
+
+        expect(getAtomPanel()).toBeVisible();
+      });
+
+      it("closes the panel after a no-op search", async () => {
+        projectFindView.findEditor.setText('something');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
+        await searchPromise;
+
+        atom.commands.dispatch(workspaceElement, 'project-find:show');
+        await activationPromise;
+
+        expect(getAtomPanel()).toBeVisible();
+
         atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
 
         expect(getAtomPanel()).not.toBeVisible();
-      })
+      });
 
       it("does not close the panel after the replacement text is altered", async () => {
         projectFindView.replaceEditor.setText('something else');
 
         expect(getAtomPanel()).toBeVisible();
-      })
+      });
     });
 
     describe("splitting into a second pane", () => {
