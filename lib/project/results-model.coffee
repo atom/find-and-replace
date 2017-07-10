@@ -48,6 +48,9 @@ class ResultsModel
   onDidErrorForPath: (callback) ->
     @emitter.on 'did-error-for-path', callback
 
+  onDidNoopSearch: (callback) ->
+    @emitter.on 'did-noop-search', callback
+
   onDidStartSearching: (callback) ->
     @emitter.on 'did-start-searching', callback
 
@@ -110,7 +113,9 @@ class ResultsModel
       true
 
   search: (findPattern, pathsPattern, replacePattern, options={}) ->
-    return Promise.resolve() unless @shouldRerunSearch(findPattern, pathsPattern, replacePattern, options)
+    unless @shouldRerunSearch(findPattern, pathsPattern, replacePattern, options)
+      @emitter.emit 'did-noop-search'
+      return Promise.resolve()
 
     {keepReplacementState} = options
     if keepReplacementState
