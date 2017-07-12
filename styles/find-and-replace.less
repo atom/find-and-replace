@@ -1,6 +1,8 @@
 @import "ui-variables";
 @import "syntax-variables";
 
+@find-and-replace-font: Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+
 // result markers
 atom-text-editor {
   .find-result .region {
@@ -280,6 +282,7 @@ atom-workspace.find-visible {
       margin-right: 1ex;
       text-align: right;
       display: inline-block;
+      font-family: @find-and-replace-font;
     }
     .selected .line-number {
       color: @text-color-selected;
@@ -296,7 +299,7 @@ atom-workspace.find-visible {
 
     .preview {
       word-break: break-all;
-      font-family: monospace;
+      font-family: @find-and-replace-font;
       white-space: pre;
     }
 
