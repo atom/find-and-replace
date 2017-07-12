@@ -301,7 +301,16 @@ atom-workspace.find-visible {
       word-break: break-all;
       font-family: @find-and-replace-font;
       white-space: pre;
+      color: @text-color-subtle;
     }
+
+    .match-line .preview {
+      color: @text-color-highlight;
+    }
+    .match-line.selected .preview {
+      color: @text-color-selected;
+    }
+
 
     .selected {
       .highlight-info {
