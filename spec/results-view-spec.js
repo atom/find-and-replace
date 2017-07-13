@@ -850,6 +850,61 @@ describe('ResultsView', () => {
         }
       }
     });
+  });
+
+  describe('selected result and match index', () => {
+    beforeEach(async () => {
+      projectFindView.findEditor.setText('push');
+      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      await searchPromise;
+
+      resultsView = getResultsView();
+    });
+
+    it('maintains selected result when adding and removing results', async () => {
+      {
+        const matchLines = resultsView.refs.listView.element.querySelectorAll('.match-line');
+        expect(matchLines.length).toBe(4);
+
+        resultsView.moveDown();
+        resultsView.moveDown();
+        resultsView.moveDown();
+        resultsView.moveDown();
+        expect(matchLines[3]).toHaveClass('selected');
+        expect(matchLines[3].querySelector('.preview').textContent).toBe('      current < pivot ? left.push(current) : right.push(current);');
+        expect(resultsView.selectedResultIndex).toBe(1);
+        expect(resultsView.selectedMatchIndex).toBe(1);
+      }
+
+      // remove the first result
+      const firstPath = resultsView.model.getPaths()[0];
+      const firstResult = resultsView.model.getResult(firstPath);
+      resultsView.model.removeResult(firstPath);
+
+      // check that the same match is still selected
+      {
+        const matchLines = resultsView.refs.listView.element.querySelectorAll('.match-line');
+        expect(matchLines.length).toBe(2);
+        expect(matchLines[1]).toHaveClass('selected');
+        expect(matchLines[1].querySelector('.preview').textContent).toBe('      current < pivot ? left.push(current) : right.push(current);');
+        expect(resultsView.selectedResultIndex).toBe(0);
+        expect(resultsView.selectedMatchIndex).toBe(1);
+
+      }
+
+      // re-add the first result
+      resultsView.model.addResult(firstPath, firstResult);
+
+      // check that the same match is still selected
+      {
+        const matchLines = resultsView.refs.listView.element.querySelectorAll('.match-line');
+        expect(matchLines.length).toBe(4);
+        expect(matchLines[3]).toHaveClass('selected');
+        expect(matchLines[3].querySelector('.preview').textContent).toBe('      current < pivot ? left.push(current) : right.push(current);');
+        expect(resultsView.selectedResultIndex).toBe(1);
+        expect(resultsView.selectedMatchIndex).toBe(1);
+      }
+    });
   })
 });
 

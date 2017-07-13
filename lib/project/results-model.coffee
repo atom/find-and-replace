@@ -222,8 +222,10 @@ class ResultsModel
 
   addResult: (filePath, result) ->
     filePathInsertedIndex = null
+    filePathUpdatedIndex = null
     if @results[filePath]
       @matchCount -= @results[filePath].matches.length
+      filePathUpdatedIndex = @paths.indexOf(filePath)
     else
       @pathCount++
       filePathInsertedIndex = binaryIndex(@paths, filePath, stringCompare)
@@ -232,16 +234,17 @@ class ResultsModel
     @matchCount += result.matches.length
 
     @results[filePath] = result
-    @emitter.emit 'did-add-result', {filePath, result, filePathInsertedIndex}
+    @emitter.emit 'did-add-result', {filePath, result, filePathInsertedIndex, filePathUpdatedIndex}
 
   removeResult: (filePath) ->
     if @results[filePath]
       @pathCount--
       @matchCount -= @results[filePath].matches.length
 
+      filePathRemovedIndex = @paths.indexOf(filePath)
       @paths = _.without(@paths, filePath)
       delete @results[filePath]
-      @emitter.emit 'did-remove-result', {filePath}
+      @emitter.emit 'did-remove-result', {filePath, filePathRemovedIndex}
 
   onContentsModified: (editor) =>
     return unless @active and @regex
