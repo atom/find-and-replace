@@ -295,7 +295,10 @@ atom-workspace.find-visible {
 
     .search-result {
       // box-shadow over a border is used to not affect height calculation
-      box-shadow: inset 0 1px 0 @base-border-color;
+      box-shadow: inset 0 -1px 0 @base-border-color;
+      &:first-child {
+        box-shadow: inset 0 -1px 0 @base-border-color, inset 0 1px 0 @base-border-color;
+      }
     }
 
     .preview {
