@@ -9,7 +9,7 @@ FindView = require './find-view'
 ProjectFindView = require './project-find-view'
 ResultsModel = require './project/results-model'
 ResultsPaneView = require './project/results-pane'
-{buildResultsTextEditor} = require './project/results-text-builder'
+ResultsTextViewManager = require './project/results-text-view-manager'
 
 module.exports =
   activate: ({findOptions, findHistory, replaceHistory, pathsHistory}={}) ->
@@ -21,7 +21,7 @@ module.exports =
     atom.workspace.addOpener (filePath) =>
       if filePath is ResultsPaneView.URI
         # return new ResultsPaneView()
-        return buildResultsTextEditor(@resultsModel)
+        return @resultsTextViewManager.getResultsTextEditor()
 
     @subscriptions = new CompositeDisposable
     @findHistory = new History(findHistory)
@@ -31,6 +31,8 @@ module.exports =
     @findOptions = new FindOptions(findOptions)
     @findModel = new BufferSearch(@findOptions)
     @resultsModel = new ResultsModel(@findOptions)
+
+    @resultsTextViewManager = new ResultsTextViewManager(@resultsModel)
 
     @subscriptions.add atom.workspace.getCenter().observeActivePaneItem (paneItem) =>
       if paneItem?.getBuffer?()
@@ -177,6 +179,7 @@ module.exports =
     @projectFindView = null
 
     ResultsPaneView.model = null
+    ResultsTextViewManager.model = null
     @resultsModel = null
 
     @subscriptions?.dispose()
