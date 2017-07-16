@@ -7,9 +7,12 @@
 
 // Highlighting ranges of text
 // Remember: no default is provided for highlight decorations.
-.syntax--find-results-line-number {
+.syntax--find-results-main-line-number {
   color: @syntax-color-variable;
 }
+.syntax--find-results-context-line-number {
+  color: fadeout(@syntax-color-variable, 30%);
+}
 .syntax--find-results-path {
-  color: @syntax-color-value;
+  color: @syntax-color-import;
 }
