@@ -48,6 +48,9 @@ class ResultsModel
   onDidErrorForPath: (callback) ->
     @emitter.on 'did-error-for-path', callback
 
+  onDidNoopSearch: (callback) ->
+    @emitter.on 'did-noop-search', callback
+
   onDidStartSearching: (callback) ->
     @emitter.on 'did-start-searching', callback
 
@@ -102,7 +105,7 @@ class ResultsModel
     @replacementErrors = null
     @emitter.emit 'did-clear-replacement-state', @getResultsSummary()
 
-  shoudldRerunSearch: (findPattern, pathsPattern, replacePattern, options={}) ->
+  shouldRerunSearch: (findPattern, pathsPattern, replacePattern, options={}) ->
     {onlyRunIfChanged} = options
     if onlyRunIfChanged and findPattern? and pathsPattern? and findPattern is @lastFindPattern and pathsPattern is @lastPathsPattern
       false
@@ -110,7 +113,9 @@ class ResultsModel
       true
 
   search: (findPattern, pathsPattern, replacePattern, options={}) ->
-    return Promise.resolve() unless @shoudldRerunSearch(findPattern, pathsPattern, replacePattern, options)
+    unless @shouldRerunSearch(findPattern, pathsPattern, replacePattern, options)
+      @emitter.emit 'did-noop-search'
+      return Promise.resolve()
 
     {keepReplacementState} = options
     if keepReplacementState
@@ -222,8 +227,10 @@ class ResultsModel
 
   addResult: (filePath, result) ->
     filePathInsertedIndex = null
+    filePathUpdatedIndex = null
     if @results[filePath]
       @matchCount -= @results[filePath].matches.length
+      filePathUpdatedIndex = @paths.indexOf(filePath)
     else
       @pathCount++
       filePathInsertedIndex = binaryIndex(@paths, filePath, stringCompare)
@@ -232,16 +239,17 @@ class ResultsModel
     @matchCount += result.matches.length
 
     @results[filePath] = result
-    @emitter.emit 'did-add-result', {filePath, result, filePathInsertedIndex}
+    @emitter.emit 'did-add-result', {filePath, result, filePathInsertedIndex, filePathUpdatedIndex}
 
   removeResult: (filePath) ->
     if @results[filePath]
       @pathCount--
       @matchCount -= @results[filePath].matches.length
 
+      filePathRemovedIndex = @paths.indexOf(filePath)
       @paths = _.without(@paths, filePath)
       delete @results[filePath]
-      @emitter.emit 'did-remove-result', {filePath}
+      @emitter.emit 'did-remove-result', {filePath, filePathRemovedIndex}
 
   onContentsModified: (editor) =>
     return unless @active and @regex
