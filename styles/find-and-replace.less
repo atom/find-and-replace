@@ -1,6 +1,8 @@
 @import "ui-variables";
 @import "syntax-variables";
 
+@find-and-replace-font: Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+
 // result markers
 atom-text-editor {
   .find-result .region {
@@ -280,8 +282,9 @@ atom-workspace.find-visible {
       margin-right: 1ex;
       text-align: right;
       display: inline-block;
+      font-family: @find-and-replace-font;
     }
-    .selected .line-number {
+    .match-line.selected .line-number {
       color: @text-color-selected;
     }
 
@@ -290,11 +293,28 @@ atom-workspace.find-visible {
       color: @text-color-subtle;
     }
 
+    .search-result {
+      // box-shadow over a border is used to not affect height calculation
+      box-shadow: inset 0 -1px 0 @base-border-color;
+      &:first-child {
+        box-shadow: inset 0 -1px 0 @base-border-color, inset 0 1px 0 @base-border-color;
+      }
+    }
+
     .preview {
       word-break: break-all;
-      font-family: monospace;
+      font-family: @find-and-replace-font;
       white-space: pre;
+      color: @text-color-subtle;
     }
+
+    .match-line .preview {
+      color: @text-color-highlight;
+    }
+    .match-line.selected .preview {
+      color: @text-color-selected;
+    }
+
 
     .selected {
       .highlight-info {
