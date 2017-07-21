@@ -596,6 +596,16 @@ describe("FindView", () => {
       expect(findView.findEditor.element).toHaveFocus();
     });
 
+    describe("when the match is folded", () => {
+      it("unfolds the match", () => {
+        editor.foldAll();
+        atom.commands.dispatch(findView.findEditor.element, "core:confirm");
+        expect(editor.getSelectedBufferRange()).toEqual([[2, 34], [2, 39]]);
+        expect(editor.isFoldedAtBufferRow(2)).toBe(false);
+        expect(editor.getCursorBufferPosition()).toEqual([2, 39]);
+      })
+    })
+
     it("will re-run search if 'find-and-replace:find-next' is triggered after changing the findEditor's text", () => {
       findView.findEditor.setText("sort");
       atom.commands.dispatch(findView.findEditor.element, "find-and-replace:find-next");
