@@ -20,8 +20,10 @@ module.exports =
 
     atom.workspace.addOpener (filePath) =>
       if filePath is ResultsPaneView.URI
-        # return new ResultsPaneView()
-        return @resultsTextViewManager.getResultsTextEditor()
+        if atom.config.get('find-and-replace.openProjectFindResultsAsText')
+          return @resultsTextViewManager.getResultsTextEditor()
+        else
+          return new ResultsPaneView()
 
     @subscriptions = new CompositeDisposable
     @findHistory = new History(findHistory)
