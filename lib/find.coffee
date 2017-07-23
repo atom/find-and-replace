@@ -20,7 +20,7 @@ module.exports =
 
     atom.workspace.addOpener (filePath) =>
       if filePath is ResultsPaneView.URI
-        if atom.config.get('find-and-replace.openProjectFindResultsAsText')
+        if atom.config.get('find-and-replace.findResultsAsText')
           return @resultsTextViewManager.getResultsTextEditor()
         else
           return new ResultsPaneView()
