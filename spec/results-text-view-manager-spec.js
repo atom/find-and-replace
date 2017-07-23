@@ -49,7 +49,6 @@ describe('ResultsTextViewManager', () => {
       resultsEditor = getResultsEditor();
       resultsEditor.update({autoHeight: false})
       const lines = resultsEditor.getText().split('\n');
-      expect(lines[0]).toBe("\x1C/Users/javi/Development/github/find-and-replace/spec/fixtures/one-long-line.coffee:\x1C");
       expect(lines[1]).toBe("\x1B    1:\x1B test test test test test test test test test test test a b c d e f g h i j k l abcdefghijklmnopqrstuvwxyz");
     })
   });
