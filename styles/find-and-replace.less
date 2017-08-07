@@ -1,4 +1,4 @@
-@import "ui-variables";
+ @import "ui-variables";
 @import "syntax-variables";
 
 @find-and-replace-font: Menlo, Consolas, 'DejaVu Sans Mono', monospace;
@@ -63,6 +63,9 @@ atom-workspace.find-visible {
   .input-block-item {
     display: flex;
     flex: 1;
+    padding: @component-padding / 2;
+  }
+  .input-block-btn {
     padding: @component-padding / 2;
   }
 
@@ -161,6 +164,14 @@ atom-workspace.find-visible {
   .btn-group-find-all,
   .btn-group-replace-all {
     flex: 2;
+  }
+
+  .btn-group-replace-function {
+    display: inline-flex;
+    .btn {
+      width: 36px;
+      padding: 0;
+    }
   }
 
   .find-container atom-text-editor {

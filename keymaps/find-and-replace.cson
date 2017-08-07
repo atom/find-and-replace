@@ -38,6 +38,7 @@
   'cmd-alt-c': 'find-and-replace:toggle-case-option'
   'cmd-alt-s': 'find-and-replace:toggle-selection-option'
   'cmd-alt-w': 'find-and-replace:toggle-whole-word-option'
+  'cmd-alt-f': 'find-and-replace:toggle-function-option'
 
 '.platform-win32 .find-and-replace, .platform-linux .find-and-replace':
   'shift-enter': 'find-and-replace:show-previous'
@@ -51,12 +52,13 @@
   'cmd-alt-/': 'project-find:toggle-regex-option'
   'cmd-alt-c': 'project-find:toggle-case-option'
   'cmd-alt-w': 'project-find:toggle-whole-word-option'
+  'cmd-alt-f': 'find-and-replace:toggle-function-option'
 
 '.platform-win32 .project-find, .platform-linux .project-find':
   'ctrl-enter': 'project-find:confirm'
   'ctrl-alt-/': 'project-find:toggle-regex-option'
   'ctrl-shift-c': 'find-and-replace:toggle-case-option'
-  
+
 '.find-and-replace, .project-find, .project-find .results-view':
   'tab': 'find-and-replace:focus-next'
   'shift-tab': 'find-and-replace:focus-previous'
