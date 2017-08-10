@@ -53,7 +53,7 @@ class FindOptions
       @emitter.emit('did-change', changedParams)
 
   getFindPatternRegex: ->
-    flags = 'g'
+    flags = 'gm'
     flags += 'i' unless @caseSensitive
 
     if @useRegex
