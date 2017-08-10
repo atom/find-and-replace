@@ -36,7 +36,21 @@ showIf = (condition) ->
   else
     {display: 'none'}
 
+capitalize = (str) -> str.replace(/(?:^|\s)\S/g, (capital) -> capital.toUpperCase())
+
+preserveCase = (text, reference) ->
+  # If replaced text is capitalized (strict), capitalize replacement
+  if reference is capitalize(reference.toLowerCase())
+    capitalize(text)
+
+  # If replaced text is uppercase, uppercase replacement
+  else if reference is reference.toUpperCase()
+    text.toUpperCase()
+  else
+    text
+
+
 module.exports = {
   escapeHtml, escapeRegex, sanitizePattern, getReplacementResultsMessage,
-  getSearchResultsMessage, showIf
+  getSearchResultsMessage, showIf, preserveCase
 }
