@@ -1,8 +1,7 @@
 /** @babel */
 
-const os = require('os');
 const path = require('path');
-const temp = require('temp');
+const temp = require('temp').track();
 const fs = require('fs-plus');
 const dedent = require('dedent');
 const {TextBuffer} = require('atom');
@@ -1055,7 +1054,7 @@ describe('ProjectFindView', () => {
     let testDir, sampleJs, sampleCoffee, replacePromise;
 
     beforeEach(async () => {
-      testDir = path.join(os.tmpdir(), "atom-find-and-replace");
+      testDir = temp.mkdirSync('atom-find-and-replace');
       sampleJs = path.join(testDir, 'sample.js');
       sampleCoffee = path.join(testDir, 'sample.coffee');
 
@@ -1070,31 +1069,6 @@ describe('ProjectFindView', () => {
       const spy = spyOn(projectFindView, 'replaceAll').andCallFake(() => {
         replacePromise = spy.originalValue.call(projectFindView);
       });
-    });
-
-    afterEach(async () => {
-      // On Windows, you can not remove a watched directory/file, therefore we
-      // have to close the project before attempting to delete. Unfortunately,
-      // Pathwatcher's close function is also not synchronous. Once
-      // atom/node-pathwatcher#4 is implemented this should be alot cleaner.
-      let activePane = atom.workspace.getCenter().getActivePane();
-      if (activePane) {
-        for (const item of activePane.getItems()) {
-          if (item.shouldPromptToSave != null) {
-            spyOn(item, 'shouldPromptToSave').andReturn(false);
-          }
-          activePane.destroyItem(item);
-        }
-      }
-
-      for (;;) {
-        try {
-          fs.removeSync(testDir);
-          break
-        } catch (e) {
-          await new Promise(resolve => setTimeout(resolve, 50))
-        }
-      }
     });
 
     describe("when the replace string contains an escaped char", () => {
