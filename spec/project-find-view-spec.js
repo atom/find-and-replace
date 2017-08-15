@@ -1369,6 +1369,11 @@ describe('ProjectFindView', () => {
 
       describe("when the find field contains a ^ or a $ and the regex option is enabled", () => {
         it("correctly replaces all matches", async () => {
+          // TODO: Remove version check when Atom 1.21 reaches stable
+          if (parseFloat(atom.getVersion()) < 1.21) {
+            return;
+          }
+
           atom.commands.dispatch(projectFindView.element, 'project-find:toggle-regex-option');
           projectFindView.findEditor.setText(';$');
           atom.commands.dispatch(projectFindView.element, 'core:confirm');
