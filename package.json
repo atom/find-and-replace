@@ -45,6 +45,11 @@
       "versions": {
         "1.0.0": "consumeFileIcons"
       }
+    },
+    "autocomplete.watchEditor": {
+      "versions": {
+        "1.0.0": "consumeAutocompleteWatchEditor"
+      }
     }
   },
   "providedServices": {
