@@ -1,8 +1,7 @@
 /** @babel */
 
-const os = require('os');
 const path = require('path');
-const temp = require('temp');
+const temp = require('temp').track();
 const fs = require('fs-plus');
 const dedent = require('dedent');
 const {TextBuffer} = require('atom');
@@ -564,7 +563,7 @@ describe('ProjectFindView', () => {
         atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
 
-        expect(atom.workspace.scan.argsForCall[0][0]).toEqual(/i\(\\w\)ems\+/gi);
+        expect(atom.workspace.scan.argsForCall[0][0]).toEqual(/i\(\\w\)ems\+/gim);
       });
 
       it("shows an error when the regex pattern is invalid", async () => {
@@ -599,7 +598,7 @@ describe('ProjectFindView', () => {
           await searchPromise;
 
           expect(projectFindView.refs.regexOptionButton).toHaveClass('selected');
-          expect(atom.workspace.scan.mostRecentCall.args[0]).toEqual(/i(\w)ems+/gi);
+          expect(atom.workspace.scan.mostRecentCall.args[0]).toEqual(/i(\w)ems+/gim);
         });
 
         it("toggles regex option via a button and finds files matching the pattern", async () => {
@@ -609,7 +608,7 @@ describe('ProjectFindView', () => {
           await searchPromise;
 
           expect(projectFindView.refs.regexOptionButton).toHaveClass('selected');
-          expect(atom.workspace.scan.mostRecentCall.args[0]).toEqual(/i(\w)ems+/gi);
+          expect(atom.workspace.scan.mostRecentCall.args[0]).toEqual(/i(\w)ems+/gim);
         });
       });
     });
@@ -624,7 +623,7 @@ describe('ProjectFindView', () => {
         await searchPromise;
       });
 
-      it("runs a case insensitive search by default", () => expect(atom.workspace.scan.argsForCall[0][0]).toEqual(/ITEMS/gi));
+      it("runs a case insensitive search by default", () => expect(atom.workspace.scan.argsForCall[0][0]).toEqual(/ITEMS/gim));
 
       it("toggles case sensitive option via an event and finds files matching the pattern", async () => {
         expect(projectFindView.refs.caseOptionButton).not.toHaveClass('selected');
@@ -633,7 +632,7 @@ describe('ProjectFindView', () => {
         await searchPromise;
 
         expect(projectFindView.refs.caseOptionButton).toHaveClass('selected');
-        expect(atom.workspace.scan.mostRecentCall.args[0]).toEqual(/ITEMS/g);
+        expect(atom.workspace.scan.mostRecentCall.args[0]).toEqual(/ITEMS/gm);
       });
 
       it("toggles case sensitive option via a button and finds files matching the pattern", async () => {
@@ -643,7 +642,7 @@ describe('ProjectFindView', () => {
         await searchPromise;
 
         expect(projectFindView.refs.caseOptionButton).toHaveClass('selected');
-        expect(atom.workspace.scan.mostRecentCall.args[0]).toEqual(/ITEMS/g);
+        expect(atom.workspace.scan.mostRecentCall.args[0]).toEqual(/ITEMS/gm);
       });
     });
 
@@ -658,7 +657,7 @@ describe('ProjectFindView', () => {
       });
 
       it("does not run whole word search by default", () => {
-        expect(atom.workspace.scan.argsForCall[0][0]).toEqual(/wholeword/gi)
+        expect(atom.workspace.scan.argsForCall[0][0]).toEqual(/wholeword/gim)
       });
 
       it("toggles whole word option via an event and finds files matching the pattern", async () => {
@@ -667,7 +666,7 @@ describe('ProjectFindView', () => {
 
         await searchPromise;
         expect(projectFindView.refs.wholeWordOptionButton).toHaveClass('selected');
-        expect(atom.workspace.scan.mostRecentCall.args[0]).toEqual(/\bwholeword\b/gi);
+        expect(atom.workspace.scan.mostRecentCall.args[0]).toEqual(/\bwholeword\b/gim);
       });
 
       it("toggles whole word option via a button and finds files matching the pattern", async () => {
@@ -677,7 +676,7 @@ describe('ProjectFindView', () => {
         await searchPromise;
 
         expect(projectFindView.refs.wholeWordOptionButton).toHaveClass('selected');
-        expect(atom.workspace.scan.mostRecentCall.args[0]).toEqual(/\bwholeword\b/gi);
+        expect(atom.workspace.scan.mostRecentCall.args[0]).toEqual(/\bwholeword\b/gim);
       });
     });
 
@@ -1055,7 +1054,7 @@ describe('ProjectFindView', () => {
     let testDir, sampleJs, sampleCoffee, replacePromise;
 
     beforeEach(async () => {
-      testDir = path.join(os.tmpdir(), "atom-find-and-replace");
+      testDir = temp.mkdirSync('atom-find-and-replace');
       sampleJs = path.join(testDir, 'sample.js');
       sampleCoffee = path.join(testDir, 'sample.coffee');
 
@@ -1070,31 +1069,6 @@ describe('ProjectFindView', () => {
       const spy = spyOn(projectFindView, 'replaceAll').andCallFake(() => {
         replacePromise = spy.originalValue.call(projectFindView);
       });
-    });
-
-    afterEach(async () => {
-      // On Windows, you can not remove a watched directory/file, therefore we
-      // have to close the project before attempting to delete. Unfortunately,
-      // Pathwatcher's close function is also not synchronous. Once
-      // atom/node-pathwatcher#4 is implemented this should be alot cleaner.
-      let activePane = atom.workspace.getCenter().getActivePane();
-      if (activePane) {
-        for (const item of activePane.getItems()) {
-          if (item.shouldPromptToSave != null) {
-            spyOn(item, 'shouldPromptToSave').andReturn(false);
-          }
-          activePane.destroyItem(item);
-        }
-      }
-
-      for (;;) {
-        try {
-          fs.removeSync(testDir);
-          break
-        } catch (e) {
-          await new Promise(resolve => setTimeout(resolve, 50))
-        }
-      }
     });
 
     describe("when the replace string contains an escaped char", () => {
@@ -1364,6 +1338,33 @@ describe('ProjectFindView', () => {
 
             expect(projectFindView.refs.descriptionLabel.textContent).toContain("13 results found");
           });
+        });
+      });
+
+      describe("when the find field contains a ^ or a $ and the regex option is enabled", () => {
+        it("correctly replaces all matches", async () => {
+          // TODO: Remove version check when Atom 1.21 reaches stable
+          if (parseFloat(atom.getVersion()) < 1.21) {
+            return;
+          }
+
+          atom.commands.dispatch(projectFindView.element, 'project-find:toggle-regex-option');
+          projectFindView.findEditor.setText(';$');
+          atom.commands.dispatch(projectFindView.element, 'core:confirm');
+          await searchPromise;
+
+          spyOn(atom, 'confirm').andReturn(0);
+          projectFindView.replaceEditor.setText('sunshine');
+
+          expect(projectFindView.errorMessages).not.toBeVisible();
+          atom.commands.dispatch(projectFindView.element, 'project-find:replace-all');
+          await replacePromise;
+
+          expect(projectFindView.refs.descriptionLabel.textContent).toContain("Replaced ;$ with sunshine 9 times in 2 files");
+
+          let sampleJsContent = fs.readFileSync(sampleJs, 'utf8');
+          expect(sampleJsContent.match(/;$/gm)).toBeFalsy();
+          expect(sampleJsContent.match(/sunshine/g)).toHaveLength(8);
         });
       });
     });

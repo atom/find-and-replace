@@ -745,109 +745,105 @@ describe('ResultsView', () => {
     }
 
     it('shows the context lines', async () => {
-      // the following condition is pretty hacky
-      // it doesn't work correctly for e.g. version 1.2
-      if (parseFloat(atom.getVersion()) >= 1.17) {
-        // show no context lines
-        expect(resultsView.model.getFindOptions().leadingContextLineCount).toBe(0);
-        expect(resultsView.model.getFindOptions().trailingContextLineCount).toBe(0);
-        {
-          const lineNodes = getLineNodesMatchFirstPath(resultsView, 0);
-          expect(lineNodes.length).toBe(1);
-          expect(lineNodes[0]).toHaveClass('match-line');
-          expect(lineNodes[0].querySelector('.preview').textContent).toBe('  sort: (items) ->');
-        }
+      // show no context lines
+      expect(resultsView.model.getFindOptions().leadingContextLineCount).toBe(0);
+      expect(resultsView.model.getFindOptions().trailingContextLineCount).toBe(0);
+      {
+        const lineNodes = getLineNodesMatchFirstPath(resultsView, 0);
+        expect(lineNodes.length).toBe(1);
+        expect(lineNodes[0]).toHaveClass('match-line');
+        expect(lineNodes[0].querySelector('.preview').textContent).toBe('  sort: (items) ->');
+      }
 
-        // show all leading context lines, show 1 trailing context line
-        await resultsView.toggleLeadingContextLines();
-        await resultsView.incrementTrailingContextLines();
-        expect(resultsView.model.getFindOptions().leadingContextLineCount).toBe(2);
-        expect(resultsView.model.getFindOptions().trailingContextLineCount).toBe(1);
+      // show all leading context lines, show 1 trailing context line
+      await resultsView.toggleLeadingContextLines();
+      await resultsView.incrementTrailingContextLines();
+      expect(resultsView.model.getFindOptions().leadingContextLineCount).toBe(2);
+      expect(resultsView.model.getFindOptions().trailingContextLineCount).toBe(1);
 
-        {
-          const lineNodes = getLineNodesMatchFirstPath(resultsView, 0);
-          expect(lineNodes.length).toBe(3);
-          expect(lineNodes[0]).not.toHaveClass('match-line');
-          expect(lineNodes[0].querySelector('.preview').textContent).toBe('class quicksort');
-          expect(lineNodes[1]).toHaveClass('match-line');
-          expect(lineNodes[1].querySelector('.preview').textContent).toBe('  sort: (items) ->');
-          expect(lineNodes[2]).not.toHaveClass('match-line');
-          expect(lineNodes[2].querySelector('.preview').textContent).toBe('    return items if items.length <= 1');
-        }
+      {
+        const lineNodes = getLineNodesMatchFirstPath(resultsView, 0);
+        expect(lineNodes.length).toBe(3);
+        expect(lineNodes[0]).not.toHaveClass('match-line');
+        expect(lineNodes[0].querySelector('.preview').textContent).toBe('class quicksort');
+        expect(lineNodes[1]).toHaveClass('match-line');
+        expect(lineNodes[1].querySelector('.preview').textContent).toBe('  sort: (items) ->');
+        expect(lineNodes[2]).not.toHaveClass('match-line');
+        expect(lineNodes[2].querySelector('.preview').textContent).toBe('    return items if items.length <= 1');
+      }
 
-        // show 1 leading context line, show 2 trailing context lines
-        await resultsView.decrementLeadingContextLines();
-        await resultsView.incrementTrailingContextLines();
-        expect(resultsView.model.getFindOptions().leadingContextLineCount).toBe(1);
-        expect(resultsView.model.getFindOptions().trailingContextLineCount).toBe(2);
+      // show 1 leading context line, show 2 trailing context lines
+      await resultsView.decrementLeadingContextLines();
+      await resultsView.incrementTrailingContextLines();
+      expect(resultsView.model.getFindOptions().leadingContextLineCount).toBe(1);
+      expect(resultsView.model.getFindOptions().trailingContextLineCount).toBe(2);
 
-        {
-          const lineNodes = getLineNodesMatchFirstPath(resultsView, 0);
-          expect(lineNodes.length).toBe(4);
-          expect(lineNodes[0]).not.toHaveClass('match-line');
-          expect(lineNodes[0].querySelector('.preview').textContent).toBe('class quicksort');
-          expect(lineNodes[1]).toHaveClass('match-line');
-          expect(lineNodes[1].querySelector('.preview').textContent).toBe('  sort: (items) ->');
-          expect(lineNodes[2]).not.toHaveClass('match-line');
-          expect(lineNodes[2].querySelector('.preview').textContent).toBe('    return items if items.length <= 1');
-          expect(lineNodes[3]).not.toHaveClass('match-line');
-          expect(lineNodes[3].querySelector('.preview').textContent).toBe('');
-        }
+      {
+        const lineNodes = getLineNodesMatchFirstPath(resultsView, 0);
+        expect(lineNodes.length).toBe(4);
+        expect(lineNodes[0]).not.toHaveClass('match-line');
+        expect(lineNodes[0].querySelector('.preview').textContent).toBe('class quicksort');
+        expect(lineNodes[1]).toHaveClass('match-line');
+        expect(lineNodes[1].querySelector('.preview').textContent).toBe('  sort: (items) ->');
+        expect(lineNodes[2]).not.toHaveClass('match-line');
+        expect(lineNodes[2].querySelector('.preview').textContent).toBe('    return items if items.length <= 1');
+        expect(lineNodes[3]).not.toHaveClass('match-line');
+        expect(lineNodes[3].querySelector('.preview').textContent).toBe('');
+      }
 
-        // show no leading context lines, show 3 trailing context lines
-        await resultsView.decrementLeadingContextLines();
-        await resultsView.incrementTrailingContextLines();
-        expect(resultsView.model.getFindOptions().leadingContextLineCount).toBe(0);
-        expect(resultsView.model.getFindOptions().trailingContextLineCount).toBe(3);
+      // show no leading context lines, show 3 trailing context lines
+      await resultsView.decrementLeadingContextLines();
+      await resultsView.incrementTrailingContextLines();
+      expect(resultsView.model.getFindOptions().leadingContextLineCount).toBe(0);
+      expect(resultsView.model.getFindOptions().trailingContextLineCount).toBe(3);
 
-        {
-          const lineNodes = getLineNodesMatchFirstPath(resultsView, 0);
-          expect(lineNodes.length).toBe(4);
-          expect(lineNodes[0]).toHaveClass('match-line');
-          expect(lineNodes[0].querySelector('.preview').textContent).toBe('  sort: (items) ->');
-          expect(lineNodes[1]).not.toHaveClass('match-line');
-          expect(lineNodes[1].querySelector('.preview').textContent).toBe('    return items if items.length <= 1');
-          expect(lineNodes[2]).not.toHaveClass('match-line');
-          expect(lineNodes[2].querySelector('.preview').textContent).toBe('');
-          expect(lineNodes[3]).not.toHaveClass('match-line');
-          expect(lineNodes[3].querySelector('.preview').textContent).toBe('    pivot = items.shift()');
-        }
+      {
+        const lineNodes = getLineNodesMatchFirstPath(resultsView, 0);
+        expect(lineNodes.length).toBe(4);
+        expect(lineNodes[0]).toHaveClass('match-line');
+        expect(lineNodes[0].querySelector('.preview').textContent).toBe('  sort: (items) ->');
+        expect(lineNodes[1]).not.toHaveClass('match-line');
+        expect(lineNodes[1].querySelector('.preview').textContent).toBe('    return items if items.length <= 1');
+        expect(lineNodes[2]).not.toHaveClass('match-line');
+        expect(lineNodes[2].querySelector('.preview').textContent).toBe('');
+        expect(lineNodes[3]).not.toHaveClass('match-line');
+        expect(lineNodes[3].querySelector('.preview').textContent).toBe('    pivot = items.shift()');
+      }
 
-        // show 1 leading context line, show 2 trailing context lines
-        await resultsView.incrementLeadingContextLines();
-        await resultsView.decrementTrailingContextLines();
-        expect(resultsView.model.getFindOptions().leadingContextLineCount).toBe(1);
-        expect(resultsView.model.getFindOptions().trailingContextLineCount).toBe(2);
+      // show 1 leading context line, show 2 trailing context lines
+      await resultsView.incrementLeadingContextLines();
+      await resultsView.decrementTrailingContextLines();
+      expect(resultsView.model.getFindOptions().leadingContextLineCount).toBe(1);
+      expect(resultsView.model.getFindOptions().trailingContextLineCount).toBe(2);
 
-        {
-          const lineNodes = getLineNodesMatchFirstPath(resultsView, 0);
-          expect(lineNodes.length).toBe(4);
-          expect(lineNodes[0]).not.toHaveClass('match-line');
-          expect(lineNodes[0].querySelector('.preview').textContent).toBe('class quicksort');
-          expect(lineNodes[1]).toHaveClass('match-line');
-          expect(lineNodes[1].querySelector('.preview').textContent).toBe('  sort: (items) ->');
-          expect(lineNodes[2]).not.toHaveClass('match-line');
-          expect(lineNodes[2].querySelector('.preview').textContent).toBe('    return items if items.length <= 1');
-          expect(lineNodes[3]).not.toHaveClass('match-line');
-          expect(lineNodes[3].querySelector('.preview').textContent).toBe('');
-        }
+      {
+        const lineNodes = getLineNodesMatchFirstPath(resultsView, 0);
+        expect(lineNodes.length).toBe(4);
+        expect(lineNodes[0]).not.toHaveClass('match-line');
+        expect(lineNodes[0].querySelector('.preview').textContent).toBe('class quicksort');
+        expect(lineNodes[1]).toHaveClass('match-line');
+        expect(lineNodes[1].querySelector('.preview').textContent).toBe('  sort: (items) ->');
+        expect(lineNodes[2]).not.toHaveClass('match-line');
+        expect(lineNodes[2].querySelector('.preview').textContent).toBe('    return items if items.length <= 1');
+        expect(lineNodes[3]).not.toHaveClass('match-line');
+        expect(lineNodes[3].querySelector('.preview').textContent).toBe('');
+      }
 
-        // show 1 leading context line, show 2 trailing context lines
-        await resultsView.incrementTrailingContextLines();
-        expect(resultsView.model.getFindOptions().trailingContextLineCount).toBe(3);
-        await resultsView.incrementLeadingContextLines();
-        await resultsView.toggleTrailingContextLines();
-        expect(resultsView.model.getFindOptions().leadingContextLineCount).toBe(2);
-        expect(resultsView.model.getFindOptions().trailingContextLineCount).toBe(0);
+      // show 1 leading context line, show 2 trailing context lines
+      await resultsView.incrementTrailingContextLines();
+      expect(resultsView.model.getFindOptions().trailingContextLineCount).toBe(3);
+      await resultsView.incrementLeadingContextLines();
+      await resultsView.toggleTrailingContextLines();
+      expect(resultsView.model.getFindOptions().leadingContextLineCount).toBe(2);
+      expect(resultsView.model.getFindOptions().trailingContextLineCount).toBe(0);
 
-        {
-          const lineNodes = getLineNodesMatchFirstPath(resultsView, 0);
-          expect(lineNodes.length).toBe(2);
-          expect(lineNodes[0]).not.toHaveClass('match-line');
-          expect(lineNodes[0].querySelector('.preview').textContent).toBe('class quicksort');
-          expect(lineNodes[1]).toHaveClass('match-line');
-          expect(lineNodes[1].querySelector('.preview').textContent).toBe('  sort: (items) ->');
-        }
+      {
+        const lineNodes = getLineNodesMatchFirstPath(resultsView, 0);
+        expect(lineNodes.length).toBe(2);
+        expect(lineNodes[0]).not.toHaveClass('match-line');
+        expect(lineNodes[0].querySelector('.preview').textContent).toBe('class quicksort');
+        expect(lineNodes[1]).toHaveClass('match-line');
+        expect(lineNodes[1].querySelector('.preview').textContent).toBe('  sort: (items) ->');
       }
     });
   });

@@ -35,18 +35,14 @@ describe("ResultsModel", () => {
       expect(resultsModel.getPathCount()).toBe(1);
       expect(resultsModel.getMatchCount()).toBe(6);
       expect(resultsModel.getPaths()).toEqual([editor.getPath()]);
-      // the following condition is pretty hacky
-      // it doesn't work correctly for e.g. version 1.2
-      if (parseFloat(atom.getVersion()) >= 1.17) {
-        expect(result.matches[0].leadingContextLines.length).toBe(1);
-        expect(result.matches[0].leadingContextLines[0]).toBe("var quicksort = function () {");
-        expect(result.matches[0].trailingContextLines.length).toBe(3);
-        expect(result.matches[0].trailingContextLines[0]).toBe("    if (items.length <= 1) return items;");
-        expect(result.matches[0].trailingContextLines[1]).toBe("    var pivot = items.shift(), current, left = [], right = [];");
-        expect(result.matches[0].trailingContextLines[2]).toBe("    while(items.length > 0) {");
-        expect(result.matches[5].leadingContextLines.length).toBe(2);
-        expect(result.matches[5].trailingContextLines.length).toBe(3);
-      }
+      expect(result.matches[0].leadingContextLines.length).toBe(1);
+      expect(result.matches[0].leadingContextLines[0]).toBe("var quicksort = function () {");
+      expect(result.matches[0].trailingContextLines.length).toBe(3);
+      expect(result.matches[0].trailingContextLines[0]).toBe("    if (items.length <= 1) return items;");
+      expect(result.matches[0].trailingContextLines[1]).toBe("    var pivot = items.shift(), current, left = [], right = [];");
+      expect(result.matches[0].trailingContextLines[2]).toBe("    while(items.length > 0) {");
+      expect(result.matches[5].leadingContextLines.length).toBe(2);
+      expect(result.matches[5].trailingContextLines.length).toBe(3);
 
       editor.setText("there are some items in here");
       advanceClock(editor.buffer.stoppedChangingDelay);
@@ -58,12 +54,8 @@ describe("ResultsModel", () => {
       expect(resultsModel.getMatchCount()).toBe(1);
       expect(resultsModel.getPaths()).toEqual([editor.getPath()]);
       expect(result.matches[0].lineText).toBe("there are some items in here");
-      // the following condition is pretty hacky
-      // it doesn't work correctly for e.g. version 1.2
-      if (parseFloat(atom.getVersion()) >= 1.17) {
-        expect(result.matches[0].leadingContextLines.length).toBe(0);
-        expect(result.matches[0].trailingContextLines.length).toBe(0);
-      }
+      expect(result.matches[0].leadingContextLines.length).toBe(0);
+      expect(result.matches[0].trailingContextLines.length).toBe(0);
 
       editor.setText("no matches in here");
       advanceClock(editor.buffer.stoppedChangingDelay);
