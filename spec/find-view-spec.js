@@ -1767,6 +1767,25 @@ describe("FindView", () => {
         expect(findView.findEditor.getGrammar().scopeName).toBe("text.plain.null-grammar");
         expect(findView.replaceEditor.getGrammar().scopeName).toBe("text.plain.null-grammar");
       });
+
+      it("uses the basic javascript grammar for replaceEditor when in function mode", () => {
+        atom.commands.dispatch(findView.findEditor.element, "find-and-replace:toggle-function-option");
+        expect(findView.findEditor.getGrammar().scopeName).toBe("text.plain.null-grammar");
+        expect(findView.replaceEditor.getGrammar().scopeName).toBe("source.js");
+
+        atom.commands.dispatch(findView.findEditor.element, "find-and-replace:toggle-function-option");
+        expect(findView.findEditor.getGrammar().scopeName).toBe("text.plain.null-grammar");
+        expect(findView.replaceEditor.getGrammar().scopeName).toBe("text.plain.null-grammar");
+
+        atom.commands.dispatch(findView.findEditor.element, "find-and-replace:toggle-function-option");
+        atom.commands.dispatch(findView.findEditor.element, "find-and-replace:toggle-regex-option");
+        expect(findView.findEditor.getGrammar().scopeName).toBe("source.js.regexp");
+        expect(findView.replaceEditor.getGrammar().scopeName).toBe("source.js");
+
+        atom.commands.dispatch(findView.findEditor.element, "find-and-replace:toggle-function-option");
+        expect(findView.findEditor.getGrammar().scopeName).toBe("source.js.regexp");
+        expect(findView.replaceEditor.getGrammar().scopeName).toBe("source.js.regexp.replacement");
+      });
     });
   });
 
