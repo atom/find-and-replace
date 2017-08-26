@@ -281,15 +281,18 @@ describe("FindView", () => {
       expect(findView.refs.regexOptionButton).not.toHaveClass("selected");
       expect(findView.refs.selectionOptionButton).not.toHaveClass("selected");
       expect(findView.refs.wholeWordOptionButton).not.toHaveClass("selected");
+      expect(findView.refs.functionOptionButton).not.toHaveClass("selected");
 
       findView.refs.caseOptionButton.click();
       findView.refs.regexOptionButton.click();
       findView.refs.selectionOptionButton.click();
       findView.refs.wholeWordOptionButton.click();
+      findView.refs.functionOptionButton.click();
       expect(findView.refs.caseOptionButton).toHaveClass("selected");
       expect(findView.refs.regexOptionButton).toHaveClass("selected");
       expect(findView.refs.selectionOptionButton).toHaveClass("selected");
       expect(findView.refs.wholeWordOptionButton).toHaveClass("selected");
+      expect(findView.refs.functionOptionButton).toHaveClass("selected");
 
       atom.packages.deactivatePackage("find-and-replace");
       activationPromise = atom.packages.activatePackage("find-and-replace").then(function({mainModule}) {
@@ -303,6 +306,7 @@ describe("FindView", () => {
       expect(findView.refs.regexOptionButton).toHaveClass("selected");
       expect(findView.refs.selectionOptionButton).toHaveClass("selected");
       expect(findView.refs.wholeWordOptionButton).toHaveClass("selected");
+      expect(findView.refs.functionOptionButton).toHaveClass("selected");
     });
   });
 
@@ -1445,6 +1449,56 @@ describe("FindView", () => {
           );
 
           expect(editor.getSelectedBufferRange()).toEqual([[0, 81], [0, 86]]);
+        });
+
+        describe('when using function replace', ()=>{
+          beforeEach(() => {
+            atom.commands.dispatch(findView.findEditor.element, "find-and-replace:toggle-function-option");
+            findView.replaceEditor.setText("()=>'cats'");
+            atom.commands.dispatch(findView.replaceEditor.element, "core:confirm");
+          });
+
+          it("replaces the _current_ match when function replace succeeds", () => {
+            expect(findView.refs.resultCounter.textContent).toEqual("2 of 5");
+            expect(editor.lineTextForBufferRow(2)).toBe("    if (cats.length <= 1) return items;");
+            expect(editor.getSelectedBufferRange()).toEqual([[2, 33], [2, 38]]);
+          });
+
+          describe("when the replace function contains a mistake", () => {
+            afterEach(()=>{
+              expect(atom.beep).toHaveBeenCalled();
+              expect(findView.refs.descriptionLabel).toHaveClass("text-error");
+              // it didn't replace or change the selection
+              expect(findView.refs.resultCounter.textContent).toEqual("2 of 5");
+              expect(editor.lineTextForBufferRow(2)).toBe("    if (cats.length <= 1) return items;");
+              expect(editor.getSelectedBufferRange()).toEqual([[2, 33], [2, 38]]);
+            });
+
+            it("handles functions that don't compile", () => {
+              findView.replaceEditor.setText("()=>'cats");
+              atom.commands.dispatch(findView.replaceEditor.element, "core:confirm");
+              expect(findView.refs.descriptionLabel.textContent).toContain("Function didn't compile");
+              expect(findView.refs.descriptionLabel.textContent).toContain("Invalid or unexpected token");
+            });
+
+            it("handles replace text that isn't a function", () => {
+              findView.replaceEditor.setText("1");
+              atom.commands.dispatch(findView.replaceEditor.element, "core:confirm");
+              expect(findView.refs.descriptionLabel.textContent).toContain("Function was number");
+            });
+
+            it("handles functions that don't evaluate", () => {
+              findView.replaceEditor.setText("()=>a.b");
+              atom.commands.dispatch(findView.replaceEditor.element, "core:confirm");
+              expect(findView.refs.descriptionLabel.textContent).toContain("a is not defined");
+            });
+
+            it("handles functions that return a non-string", () => {
+              findView.replaceEditor.setText("()=>1");
+              atom.commands.dispatch(findView.replaceEditor.element, "core:confirm");
+              expect(findView.refs.descriptionLabel.textContent).toContain("Function returned number");
+            });
+          });
         });
       });
 
