@@ -122,18 +122,24 @@ module.exports =
     new Disposable ->
       FileIcons.resetService()
 
-  requestAutocompletions: ->
-    disposable = @autocompleteWatchEditor?(@findView.findEditor, ['default'])
-    if disposable?
-      @autocompleteSubscriptions.add(disposable)
+  toggleAutocompletions: (value) ->
+    if not @findView?
+      return
+    if value
+      @autocompleteSubscriptions = new CompositeDisposable
+      disposable = @autocompleteWatchEditor?(@findView.findEditor, ['default'])
+      if disposable?
+        @autocompleteSubscriptions.add(disposable)
+    else
+      @autocompleteSubscriptions?.dispose()
 
   consumeAutocompleteWatchEditor: (watchEditor) ->
-    @autocompleteSubscriptions = new CompositeDisposable
     @autocompleteWatchEditor = watchEditor
-    if @findView?
-      requestAutocompletions()
+    atom.config.observe(
+      'find-and-replace.autocompleteSearches',
+      (value) => @toggleAutocompletions(value))
     new Disposable =>
-      @autocompleteSubscriptions.dispose()
+      @autocompleteSubscriptions?.dispose()
       @autocompleteWatchEditor = null
 
   provideService: ->
@@ -175,7 +181,7 @@ module.exports =
     # See https://github.com/atom/find-and-replace/issues/63
     ResultsPaneView.model = @resultsModel
 
-    @requestAutocompletions()
+    @toggleAutocompletions atom.config.get('find-and-replace.autocompleteSearches')
 
   deactivate: ->
     @findPanel?.destroy()
