@@ -485,7 +485,7 @@ describe("BufferSearch", () => {
 
   describe("replacing a search result with a replace function", () => {
     beforeEach(() => {
-      editor.scanInBufferRange.reset()
+      editor.scanInBufferRange.reset();
     });
 
     it("replaces the marked text with the correct function replacement", () => {
@@ -515,7 +515,7 @@ describe("BufferSearch", () => {
       expect(currentResultListener).toHaveBeenCalledWith(markers[1]);
       currentResultListener.reset();
 
-      model.replace([markers[1]], "(m,m1,m2,m3) => m1 + m2.toUpperCase() + m3");
+      model.replace([markers[1]], "(m, m1, m2, m3) => m1 + m2.toUpperCase() + m3");
 
       expect(editor.getText()).toBe(dedent`
         -----------

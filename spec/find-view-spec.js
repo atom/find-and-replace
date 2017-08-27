@@ -1451,7 +1451,7 @@ describe("FindView", () => {
           expect(editor.getSelectedBufferRange()).toEqual([[0, 81], [0, 86]]);
         });
 
-        describe('when using function replace', ()=>{
+        describe('when using function replace', () => {
           beforeEach(() => {
             atom.commands.dispatch(findView.findEditor.element, "find-and-replace:toggle-function-option");
             findView.replaceEditor.setText("()=>'cats'");
@@ -1465,7 +1465,7 @@ describe("FindView", () => {
           });
 
           describe("when the replace function contains a mistake", () => {
-            afterEach(()=>{
+            afterEach(() => {
               expect(atom.beep).toHaveBeenCalled();
               expect(findView.refs.descriptionLabel).toHaveClass("text-error");
               // it didn't replace or change the selection
