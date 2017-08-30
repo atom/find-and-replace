@@ -122,6 +122,26 @@ module.exports =
     new Disposable ->
       FileIcons.resetService()
 
+  toggleAutocompletions: (value) ->
+    if not @findView?
+      return
+    if value
+      @autocompleteSubscriptions = new CompositeDisposable
+      disposable = @autocompleteWatchEditor?(@findView.findEditor, ['default'])
+      if disposable?
+        @autocompleteSubscriptions.add(disposable)
+    else
+      @autocompleteSubscriptions?.dispose()
+
+  consumeAutocompleteWatchEditor: (watchEditor) ->
+    @autocompleteWatchEditor = watchEditor
+    atom.config.observe(
+      'find-and-replace.autocompleteSearches',
+      (value) => @toggleAutocompletions(value))
+    new Disposable =>
+      @autocompleteSubscriptions?.dispose()
+      @autocompleteWatchEditor = null
+
   provideService: ->
     resultsMarkerLayerForTextEditor: @findModel.resultsMarkerLayerForTextEditor.bind(@findModel)
 
@@ -139,6 +159,7 @@ module.exports =
     options = {findBuffer, replaceBuffer, pathsBuffer, findHistoryCycler, replaceHistoryCycler, pathsHistoryCycler}
 
     @findView = new FindView(@findModel, options)
+
     @projectFindView = new ProjectFindView(@resultsModel, options)
 
     @findPanel = atom.workspace.addBottomPanel(item: @findView, visible: false, className: 'tool-panel panel-bottom')
@@ -160,6 +181,8 @@ module.exports =
     # See https://github.com/atom/find-and-replace/issues/63
     ResultsPaneView.model = @resultsModel
 
+    @toggleAutocompletions atom.config.get('find-and-replace.autocompleteSearches')
+
   deactivate: ->
     @findPanel?.destroy()
     @findPanel = null
@@ -176,6 +199,8 @@ module.exports =
     ResultsPaneView.model = null
     @resultsModel = null
 
+    @autocompleteSubscriptions?.dispose()
+    @autocompleteManagerService = null
     @subscriptions?.dispose()
     @subscriptions = null
 

@@ -45,6 +45,11 @@
       "versions": {
         "1.0.0": "consumeFileIcons"
       }
+    },
+    "autocomplete.watchEditor": {
+      "versions": {
+        "1.0.0": "consumeAutocompleteWatchEditor"
+      }
     }
   },
   "providedServices": {
@@ -107,6 +112,12 @@
       "default": true,
       "title": "Show Search Wrap Icon",
       "description": "Display a visual cue over the editor when looping through search results."
+    },
+    "autocompleteSearches": {
+      "type": "boolean",
+      "default": false,
+      "title": "Autocomplete Search",
+      "description": "Autocompletes entries in the find search field."
     }
   }
 }
