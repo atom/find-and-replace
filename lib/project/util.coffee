@@ -36,16 +36,25 @@ showIf = (condition) ->
   else
     {display: 'none'}
 
-capitalize = (str) -> str.replace(/(?:^|\s)\S/g, (capital) -> capital.toUpperCase())
+capitalize = (str) -> str[0].toUpperCase() + str.toLowerCase().slice(1)
+titleize = (str) -> str.toLowerCase().replace(/(?:^|\s)\S/g, (capital) -> capital.toUpperCase())
 
 preserveCase = (text, reference) ->
-  # If replaced text is capitalized (strict), capitalize replacement
+  # If replaced text is capitalized (strict) like a sentence, capitalize replacement
   if reference is capitalize(reference.toLowerCase())
     capitalize(text)
+
+  # If replaced text is titleized (i.e., each word start with an uppercase), titleize replacement
+  else if reference is titleize(reference.toLowerCase())
+    titleize(text)
 
   # If replaced text is uppercase, uppercase replacement
   else if reference is reference.toUpperCase()
     text.toUpperCase()
+
+  # If replaced text is lowercase, lowercase replacement
+  else if reference is reference.toLowerCase()
+    text.toLowerCase()
   else
     text
 

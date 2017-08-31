@@ -621,12 +621,12 @@ describe("BufferSearch", () => {
       expect(editor.getText()).toBe(dedent`
         -----------
         foo bar bbb ccc
-        ddd Foo Bar bbb
+        ddd Foo bar bbb
         CCC DDD foo bar
         -----------
         FOO BAR Bbb cCc
-        Ddd Foo Bar Bbb
-        ccc DDD Foo Bar
+        Ddd Foo bar Bbb
+        ccc DDD Foo bar
         -----------
       `);
     });
@@ -645,7 +645,7 @@ describe("BufferSearch", () => {
       expect(editor.getText()).toBe(dedent`
         -----------
         foo ccc
-        ddd foo
+        ddd Foo
         CCC DDD aaa
         -----------
         foo cCc
@@ -690,14 +690,48 @@ describe("BufferSearch", () => {
 
       expect(editor.getText()).toBe(dedent`
         -----------
-        FoO bbb ccc
-        ddd FoO bbb
-        CCC DDD FoO
+        foo bbb ccc
+        ddd Foo bbb
+        CCC DDD foo
         -----------
         FOO Bbb cCc
-        Ddd FoO Bbb
-        ccc DDD FoO
+        Ddd Foo Bbb
+        ccc DDD Foo
         -----------
+      `);
+    });
+    it("preserves case of sentence, title, upper and lower case.", () => {
+      editor.setText(dedent`
+        x aaa bbb x
+        x Aaa bbb x
+        x aaa Bbb x
+        x Aaa Bbb x
+        x AAA BBB x
+        x aaA bbb x
+        x aaa bbB x
+        x aaA bbB x
+      `);
+      advanceClock(editor.buffer.stoppedChangingDelay);
+
+      model.search("aAa bBb", {
+        caseSensitive: false,
+        useRegex: false,
+        wholeWord: false
+      });
+      const markers = markersListener.mostRecentCall.args[0];
+      markersListener.reset();
+
+      model.replace(markers, "xxX yYy");
+
+      expect(editor.getText()).toBe(dedent`
+        x xxx yyy x
+        x Xxx yyy x
+        x xxX yYy x
+        x Xxx Yyy x
+        x XXX YYY x
+        x xxX yYy x
+        x xxX yYy x
+        x xxX yYy x
       `);
     });
   });
