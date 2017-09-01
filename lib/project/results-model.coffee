@@ -1,5 +1,5 @@
 _ = require 'underscore-plus'
-{Emitter, TextEditor} = require 'atom'
+{Emitter, TextEditor, Range} = require 'atom'
 escapeHelper = require '../escape-helper'
 
 class Result
@@ -10,7 +10,7 @@ class Result
           matchText: m.matchText,
           lineText: m.lineText,
           lineTextOffset: m.lineTextOffset,
-          range: m.range,
+          range: Range.fromObject(m.range),
           leadingContextLines: m.leadingContextLines,
           trailingContextLines: m.trailingContextLines
         }
