@@ -489,7 +489,7 @@ describe('ProjectFindView', () => {
         projectFindView.refs.wholeWordOptionButton.click();
         expect(projectFindView.refs.wholeWordOptionButton).toHaveClass('selected');
 
-        atom.packages.deactivatePackage("find-and-replace");
+        await atom.packages.deactivatePackage("find-and-replace");
 
         activationPromise = atom.packages.activatePackage("find-and-replace").then(function({mainModule}) {
           mainModule.createViews();
