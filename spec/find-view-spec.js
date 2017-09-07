@@ -253,7 +253,7 @@ describe("FindView", () => {
       findView.replaceEditor.setText("ok");
       findView.findNext(false);
 
-      atom.packages.deactivatePackage("find-and-replace");
+      await atom.packages.deactivatePackage("find-and-replace");
       activationPromise = atom.packages.activatePackage("find-and-replace").then(function({mainModule}) {
         mainModule.createViews();
         ({findView} = mainModule);
@@ -291,7 +291,7 @@ describe("FindView", () => {
       expect(findView.refs.selectionOptionButton).toHaveClass("selected");
       expect(findView.refs.wholeWordOptionButton).toHaveClass("selected");
 
-      atom.packages.deactivatePackage("find-and-replace");
+      await atom.packages.deactivatePackage("find-and-replace");
       activationPromise = atom.packages.activatePackage("find-and-replace").then(function({mainModule}) {
         mainModule.createViews();
         ({findView} = mainModule);
