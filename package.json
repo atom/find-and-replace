@@ -34,7 +34,8 @@
     "etch": "0.9.3",
     "fs-plus": "^3.0.0",
     "temp": "^0.8.3",
-    "underscore-plus": "1.x"
+    "underscore-plus": "1.x",
+    "vm": "^0.1.0"
   },
   "devDependencies": {
     "coffeelint": "^1.9.7",

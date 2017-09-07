@@ -483,6 +483,54 @@ describe("BufferSearch", () => {
     });
   });
 
+  describe("replacing a search result with a replace function", () => {
+    beforeEach(() => {
+      editor.scanInBufferRange.reset();
+    });
+
+    it("replaces the marked text with the correct function replacement", () => {
+      const findOptions = new FindOptions({findPattern: "([a-z])([a-z])([a-z])"});
+      model = new BufferSearch(findOptions);
+
+      markersListener = jasmine.createSpy('markersListener');
+      model.onDidUpdate(markersListener);
+
+      currentResultListener = jasmine.createSpy('currentResultListener');
+      model.onDidChangeCurrentResult(currentResultListener);
+
+      model.setEditor(editor);
+      markersListener.reset();
+
+      model.search("([a-z])([a-z])([a-z])", {
+        caseSensitive: false,
+        useRegex: true,
+        wholeWord: false,
+        useFunction: true
+      });
+
+      const markers = markersListener.mostRecentCall.args[0];
+      markersListener.reset();
+
+      editor.setSelectedBufferRange(markers[1].getBufferRange());
+      expect(currentResultListener).toHaveBeenCalledWith(markers[1]);
+      currentResultListener.reset();
+
+      model.replace([markers[1]], "(m, m1, m2, m3) => m1 + m2.toUpperCase() + m3");
+
+      expect(editor.getText()).toBe(dedent`
+        -----------
+        aaa bBb ccc
+        ddd aaa bbb
+        ccc ddd aaa
+        -----------
+        aaa bbb ccc
+        ddd aaa bbb
+        ccc ddd aaa
+        -----------
+      `);
+    });
+  });
+
   describe(".prototype.resultsMarkerLayerForTextEditor(editor)", () =>
     it("creates or retrieves the results marker layer for the given editor", () => {
       const layer1 = model.resultsMarkerLayerForTextEditor(editor);
