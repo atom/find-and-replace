@@ -55,8 +55,8 @@
 '.platform-win32 .project-find, .platform-linux .project-find':
   'ctrl-enter': 'project-find:confirm'
   'ctrl-alt-/': 'project-find:toggle-regex-option'
-  'ctrl-shift-c': 'find-and-replace:toggle-case-option'
-  
+  'ctrl-shift-c': 'project-find:toggle-case-option'
+
 '.find-and-replace, .project-find, .project-find .results-view':
   'tab': 'find-and-replace:focus-next'
   'shift-tab': 'find-and-replace:focus-previous'
