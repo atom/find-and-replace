@@ -489,7 +489,7 @@ describe('ProjectFindView', () => {
         projectFindView.refs.wholeWordOptionButton.click();
         expect(projectFindView.refs.wholeWordOptionButton).toHaveClass('selected');
 
-        atom.packages.deactivatePackage("find-and-replace");
+        await atom.packages.deactivatePackage("find-and-replace");
 
         activationPromise = atom.packages.activatePackage("find-and-replace").then(function({mainModule}) {
           mainModule.createViews();
@@ -767,7 +767,7 @@ describe('ProjectFindView', () => {
         });
 
         it("updates the results list when a buffer changes", async () => {
-          const buffer = atom.project.bufferForPathSync('sample.js');
+          const editor = await atom.workspace.open('sample.js')
 
           atom.commands.dispatch(projectFindView.element, 'core:confirm');
           await searchPromise;
@@ -783,14 +783,20 @@ describe('ProjectFindView', () => {
           for (let i = 0; i < 7; i++) await resultsView.moveDown()
           expect(resultsView.refs.listView.element.querySelectorAll(".path")[1]).toHaveClass('selected');
 
-          buffer.setText('there is one "items" in this file');
-          advanceClock(buffer.stoppedChangingDelay);
+          editor.setText('there is one "items" in this file');
+          advanceClock(editor.getBuffer().stoppedChangingDelay);
           await etch.getScheduler().getNextUpdatePromise()
           expect(resultsPaneView.refs.previewCount.textContent).toBe("8 results found in 2 files for items");
           expect(resultsView.refs.listView.element.querySelectorAll(".path")[1]).toHaveClass('selected');
 
-          buffer.setText('no matches in this file');
-          advanceClock(buffer.stoppedChangingDelay);
+          // Ensure the newly added item can be opened.
+          await resultsView.moveDown()
+          atom.commands.dispatch(resultsView.element, 'core:confirm');
+          await new Promise(resolve => editor.onDidChangeSelectionRange(resolve));
+          expect(editor.getSelectedText()).toBe("items")
+
+          editor.setText('no matches in this file');
+          advanceClock(editor.getBuffer().stoppedChangingDelay);
           await etch.getScheduler().getNextUpdatePromise()
           expect(resultsPaneView.refs.previewCount.textContent).toBe("7 results found in 1 file for items");
         });
