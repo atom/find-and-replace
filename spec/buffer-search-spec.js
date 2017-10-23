@@ -21,7 +21,7 @@ describe("BufferSearch", () => {
       ccc ddd aaa
       -----------
     `);
-    advanceClock(editor.buffer.stoppedChangingDelay);
+    advanceClock(editor.getBuffer().stoppedChangingDelay);
 
     const findOptions = new FindOptions({findPattern: "a+"});
     model = new BufferSearch(findOptions);
@@ -115,7 +115,7 @@ describe("BufferSearch", () => {
           [[7, 8], [7, 11]]
         ]);
 
-        advanceClock(editor.buffer.stoppedChangingDelay);
+        advanceClock(editor.getBuffer().stoppedChangingDelay);
 
         expectUpdateEvent();
         expect(getHighlightedRanges()).toEqual([
@@ -151,7 +151,7 @@ describe("BufferSearch", () => {
           [[7, 8], [7, 11]]
         ]);
 
-        advanceClock(editor.buffer.stoppedChangingDelay);
+        advanceClock(editor.getBuffer().stoppedChangingDelay);
 
         expectUpdateEvent();
         expect(getHighlightedRanges()).toEqual([
@@ -185,7 +185,7 @@ describe("BufferSearch", () => {
           [[6, 4], [6, 7]]
         ]);
 
-        advanceClock(editor.buffer.stoppedChangingDelay);
+        advanceClock(editor.getBuffer().stoppedChangingDelay);
 
         expectUpdateEvent();
         expect(getHighlightedRanges()).toEqual([
@@ -219,7 +219,7 @@ describe("BufferSearch", () => {
           [[7, 8], [7, 11]]
         ]);
 
-        advanceClock(editor.buffer.stoppedChangingDelay);
+        advanceClock(editor.getBuffer().stoppedChangingDelay);
 
         expectUpdateEvent();
         expect(getHighlightedRanges()).toEqual([
@@ -256,7 +256,7 @@ describe("BufferSearch", () => {
           [[7, 8], [7, 11]]
         ]);
 
-        advanceClock(editor.buffer.stoppedChangingDelay);
+        advanceClock(editor.getBuffer().stoppedChangingDelay);
 
         expectUpdateEvent();
         expect(getHighlightedRanges()).toEqual([
@@ -285,7 +285,7 @@ describe("BufferSearch", () => {
           [[7, 8], [7, 11]]
         ]);
 
-        advanceClock(editor.buffer.stoppedChangingDelay);
+        advanceClock(editor.getBuffer().stoppedChangingDelay);
 
         expect(getHighlightedRanges()).toEqual([
           [[1, 0], [1, 3]],
@@ -317,7 +317,7 @@ describe("BufferSearch", () => {
           [[7, 8], [7, 11]]
         ]);
 
-        advanceClock(editor.buffer.stoppedChangingDelay);
+        advanceClock(editor.getBuffer().stoppedChangingDelay);
 
         expectUpdateEvent();
         expect(getHighlightedRanges()).toEqual([
@@ -350,7 +350,7 @@ describe("BufferSearch", () => {
           [[7, 8], [7, 11]]
         ]);
 
-        advanceClock(editor.buffer.stoppedChangingDelay);
+        advanceClock(editor.getBuffer().stoppedChangingDelay);
 
         expectUpdateEvent();
         expect(getHighlightedRanges()).toEqual([
@@ -385,7 +385,7 @@ describe("BufferSearch", () => {
           [[7, 8], [7, 11]]
         ]);
 
-        advanceClock(editor.buffer.stoppedChangingDelay);
+        advanceClock(editor.getBuffer().stoppedChangingDelay);
 
         expect(getHighlightedRanges()).toEqual([
           [[1, 0], [1, 3]],
@@ -444,7 +444,7 @@ describe("BufferSearch", () => {
       expect(currentResultListener).toHaveBeenCalledWith(markerToSelect);
       currentResultListener.reset();
 
-      advanceClock(editor.buffer.stoppedChangingDelay);
+      advanceClock(editor.getBuffer().stoppedChangingDelay);
 
       expectUpdateEvent();
       expect(getHighlightedRanges()).toEqual([
