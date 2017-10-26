@@ -118,14 +118,14 @@ module.exports =
         selectNextObjectForEditorElement(this).skipCurrentSelection()
 
   consumeElementIcons: (service) ->
-    IconServices.set 'element-icons', service
+    IconServices.setElementIcons service
     new Disposable =>
-      IconServices.reset 'element-icons'
+      IconServices.resetElementIcons()
 
   consumeFileIcons: (service) ->
-    IconServices.set 'file-icons', service
+    IconServices.setFileIcons service
     new Disposable ->
-      IconServices.reset 'file-icons'
+      IconServices.resetFileIcons()
 
   toggleAutocompletions: (value) ->
     if not @findView?
