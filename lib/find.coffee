@@ -4,7 +4,7 @@ SelectNext = require './select-next'
 {History, HistoryCycler} = require './history'
 FindOptions = require './find-options'
 BufferSearch = require './buffer-search'
-IconServices = require './icon-services'
+getIconServices = require './get-icon-services'
 FindView = require './find-view'
 ProjectFindView = require './project-find-view'
 ResultsModel = require './project/results-model'
@@ -118,14 +118,14 @@ module.exports =
         selectNextObjectForEditorElement(this).skipCurrentSelection()
 
   consumeElementIcons: (service) ->
-    IconServices.setElementIcons service
+    getIconServices().setElementIcons service
     new Disposable =>
-      IconServices.resetElementIcons()
+      getIconServices().resetElementIcons()
 
   consumeFileIcons: (service) ->
-    IconServices.setFileIcons service
+    getIconServices().setFileIcons service
     new Disposable ->
-      IconServices.resetFileIcons()
+      getIconServices().resetFileIcons()
 
   toggleAutocompletions: (value) ->
     if not @findView?

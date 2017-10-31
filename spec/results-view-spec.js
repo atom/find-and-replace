@@ -6,7 +6,7 @@ const temp = require('temp');
 const fs = require('fs');
 const etch = require('etch');
 const ResultsPaneView = require('../lib/project/results-pane');
-const IconServices = require('../lib/icon-services');
+const getIconServices = require('../lib/get-icon-services');
 const {beforeEach, it, fit, ffit, fffit} = require('./async-spec-helpers')
 
 global.beforeEach(function() {
