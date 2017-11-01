@@ -721,48 +721,61 @@ describe('ResultsView', () => {
     })
 
     describe('file-icons.element-icons', () => {
+      beforeEach(() => jasmine.useRealClock())
+
       it('has no default handler', () => {
         expect(getIconServices().elementIcons).toBe(null)
       })
 
-      it('uses the element-icon service if available', async () => {
+      it('uses the element-icon service if available', () => {
+        const iconSelector = '.path-details .icon:not([data-name="fake-file-path"])'
         const provider = (element, path) => {
           expect(element).toBeInstanceOf(HTMLElement)
           expect(typeof path === "string").toBe(true)
           expect(path.length).toBeGreaterThan(0)
           const classes = path.endsWith('one-long-line.coffee')
-            ? 'foo bar'
+            ? ['foo', 'bar']
             : ['baz', 'qlux']
           element.classList.add(...classes)
           return new Disposable(() => {
             element.classList.remove(...classes)
           })
         }
-        const disposable = atom.packages.serviceHub.provide('file-icons.element-icons', '1.0.0', provider)
-        expect(getIconServices().elementIcons).toBe(provider)
-        projectFindView.findEditor.setText('i');
-        atom.commands.dispatch(projectFindView.element, 'core:confirm');
+        let disposable
+        
+        waitsForPromise(() => {
+          disposable = atom.packages.serviceHub.provide('file-icons.element-icons', '1.0.0', provider)
+          expect(getIconServices().elementIcons).toBe(provider)
+          projectFindView.findEditor.setText('i');
+          atom.commands.dispatch(projectFindView.element, 'core:confirm');
+          return searchPromise
+        })
 
-        await searchPromise
-        await delayFor(35)
-        resultsView = getResultsView();
-        let fileIconClasses = Array.from(resultsView.element.querySelectorAll('.path-details .icon')).map(el => el.className);
-        expect(fileIconClasses).toContain('foo bar baz qlux')
-        expect(fileIconClasses).not.toContain('first-icon-class second-icon-class icon');
-        expect(fileIconClasses).not.toContain('third-icon-class fourth-icon-class icon');
-        expect(fileIconClasses).not.toContain('icon-file-text icon');
+        waitsForPromise(() => delayFor(35))
 
-        disposable.dispose();
-        projectFindView.findEditor.setText('e');
-        atom.commands.dispatch(projectFindView.element, 'core:confirm');
+        runs(() => {
+          resultsView = getResultsView()
+          const iconElements = resultsView.element.querySelectorAll(iconSelector)
+          expect(iconElements[0].className.trim()).toBe('icon foo bar')
+          expect(iconElements[1].className.trim()).toBe('icon baz qlux')
+          expect(resultsView.element.querySelector('.icon-file-text')).toBe(null)
 
-        await searchPromise
-        await delayFor(35)
-        resultsView = getResultsView();
-        fileIconClasses = Array.from(resultsView.element.querySelectorAll('.path-details .icon')).map(el => el.className);
-        expect(fileIconClasses).not.toContain('foo bar baz qlux first-icon-class second-icon-class icon');
-        expect(fileIconClasses).not.toContain('foo bar baz qlux third-icon-class fourth-icon-class icon');
-        expect(fileIconClasses).toContain('icon-file-text icon');
+          disposable.dispose()
+          projectFindView.findEditor.setText('e')
+          atom.commands.dispatch(projectFindView.element, 'core:confirm')
+        })
+
+        waitsForPromise(() => searchPromise)
+
+        waitsForPromise(() => delayFor(35))
+
+        runs(() => {
+          resultsView = getResultsView()
+          const iconElements = resultsView.element.querySelectorAll(iconSelector)
+          expect(iconElements[0].className.trim()).toBe('icon-file-text icon')
+          expect(iconElements[1].className.trim()).toBe('icon-file-text icon')
+          expect(resultsView.element.querySelector('.foo, .bar, .baz, .qlux')).toBe(null)
+        })
       })
     })
   })
