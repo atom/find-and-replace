@@ -7,6 +7,8 @@ const fs = require('fs');
 const etch = require('etch');
 const ResultsPaneView = require('../lib/project/results-pane');
 const getIconServices = require('../lib/get-icon-services');
+const DefaultFileIcons = require('../lib/default-file-icons');
+const {Disposable} = require('atom')
 const {beforeEach, it, fit, ffit, fffit} = require('./async-spec-helpers')
 
 global.beforeEach(function() {
@@ -668,41 +670,102 @@ describe('ResultsView', () => {
     })
   });
 
-  describe("icon-service lifecycle", () => {
-    it('renders file icon classes based on the provided file-icons service', async () => {
-      const fileIconsDisposable = atom.packages.serviceHub.provide('atom.file-icons', '1.0.0', {
-        iconClassForPath(path, context) {
-          expect(context).toBe("find-and-replace");
-          if (path.endsWith('one-long-line.coffee')) {
-            return "first-icon-class second-icon-class";
-          } else {
-            return ['third-icon-class', 'fourth-icon-class'];
+  describe('icon services', () => {
+    describe('atom.file-icons', () => {
+      it('has a default handler', () => {
+        expect(getIconServices().fileIcons).toBe(DefaultFileIcons)
+      })
+
+      it('displays icons for common filetypes', () => {
+        expect(DefaultFileIcons.iconClassForPath('README.md')).toBe('icon-book')
+        expect(DefaultFileIcons.iconClassForPath('zip.zip')).toBe('icon-file-zip')
+        expect(DefaultFileIcons.iconClassForPath('a.gif')).toBe('icon-file-media')
+        expect(DefaultFileIcons.iconClassForPath('a.pdf')).toBe('icon-file-pdf')
+        expect(DefaultFileIcons.iconClassForPath('an.exe')).toBe('icon-file-binary')
+        expect(DefaultFileIcons.iconClassForPath('jg.js')).toBe('icon-file-text')
+      })
+
+      it('allows a service provider to change the handler', async () => {
+        const provider = {
+          iconClassForPath(path, context) {
+            expect(context).toBe('find-and-replace')
+            return (path.endsWith('one-long-line.coffee'))
+              ? 'first-icon-class second-icon-class'
+              : ['third-icon-class', 'fourth-icon-class']
           }
         }
-      });
+        const disposable = atom.packages.serviceHub.provide('atom.file-icons', '1.0.0', provider);
+        expect(getIconServices().fileIcons).toBe(provider)
 
-      projectFindView.findEditor.setText('i');
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
-      await searchPromise;
+        projectFindView.findEditor.setText('i');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
+        await searchPromise;
 
-      resultsView = getResultsView();
-      let fileIconClasses = Array.from(resultsView.element.querySelectorAll('.path-details .icon')).map(el => el.className);
-      expect(fileIconClasses).toContain('first-icon-class second-icon-class icon');
-      expect(fileIconClasses).toContain('third-icon-class fourth-icon-class icon');
-      expect(fileIconClasses).not.toContain('icon-file-text icon');
+        resultsView = getResultsView();
+        let fileIconClasses = Array.from(resultsView.element.querySelectorAll('.path-details .icon')).map(el => el.className);
+        expect(fileIconClasses).toContain('first-icon-class second-icon-class icon');
+        expect(fileIconClasses).toContain('third-icon-class fourth-icon-class icon');
+        expect(fileIconClasses).not.toContain('icon-file-text icon');
 
-      fileIconsDisposable.dispose();
-      projectFindView.findEditor.setText('e');
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+        disposable.dispose();
+        projectFindView.findEditor.setText('e');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
 
-      await searchPromise;
-      resultsView = getResultsView();
-      fileIconClasses = Array.from(resultsView.element.querySelectorAll('.path-details .icon')).map(el => el.className);
-      expect(fileIconClasses).not.toContain('first-icon-class second-icon-class icon');
-      expect(fileIconClasses).not.toContain('third-icon-class fourth-icon-class icon');
-      expect(fileIconClasses).toContain('icon-file-text icon');
+        await searchPromise;
+        resultsView = getResultsView();
+        fileIconClasses = Array.from(resultsView.element.querySelectorAll('.path-details .icon')).map(el => el.className);
+        expect(fileIconClasses).not.toContain('first-icon-class second-icon-class icon');
+        expect(fileIconClasses).not.toContain('third-icon-class fourth-icon-class icon');
+        expect(fileIconClasses).toContain('icon-file-text icon');
+      })
     })
-  });
+
+    describe('file-icons.element-icons', () => {
+      it('has no default handler', () => {
+        expect(getIconServices().elementIcons).toBe(null)
+      })
+
+      it('uses the element-icon service if available', async () => {
+        const provider = (element, path) => {
+          expect(element).toBeInstanceOf(HTMLElement)
+          expect(typeof path === "string").toBe(true)
+          expect(path.length).toBeGreaterThan(0)
+          const classes = path.endsWith('one-long-line.coffee')
+            ? 'foo bar'
+            : ['baz', 'qlux']
+          element.classList.add(...classes)
+          return new Disposable(() => {
+            element.classList.remove(...classes)
+          })
+        }
+        const disposable = atom.packages.serviceHub.provide('file-icons.element-icons', '1.0.0', provider)
+        expect(getIconServices().elementIcons).toBe(provider)
+        projectFindView.findEditor.setText('i');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
+
+        await searchPromise
+        await delayFor(35)
+        resultsView = getResultsView();
+        let fileIconClasses = Array.from(resultsView.element.querySelectorAll('.path-details .icon')).map(el => el.className);
+        expect(fileIconClasses).toContain('foo bar baz qlux')
+        expect(fileIconClasses).not.toContain('first-icon-class second-icon-class icon');
+        expect(fileIconClasses).not.toContain('third-icon-class fourth-icon-class icon');
+        expect(fileIconClasses).not.toContain('icon-file-text icon');
+
+        disposable.dispose();
+        projectFindView.findEditor.setText('e');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
+
+        await searchPromise
+        await delayFor(35)
+        resultsView = getResultsView();
+        fileIconClasses = Array.from(resultsView.element.querySelectorAll('.path-details .icon')).map(el => el.className);
+        expect(fileIconClasses).not.toContain('foo bar baz qlux first-icon-class second-icon-class icon');
+        expect(fileIconClasses).not.toContain('foo bar baz qlux third-icon-class fourth-icon-class icon');
+        expect(fileIconClasses).toContain('icon-file-text icon');
+      })
+    })
+  })
 
   describe('updating the search while viewing results', () => {
     it('resets the results message', async () => {
@@ -919,4 +982,10 @@ function buildMouseEvent(type, properties) {
 
 function clickOn(element) {
   element.dispatchEvent(buildMouseEvent('mousedown', { detail: 1 }));
+}
+
+function delayFor(ms) {
+  return new Promise(done => {
+    setTimeout(() => done(), ms)
+  })
 }
