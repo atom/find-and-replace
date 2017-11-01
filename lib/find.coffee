@@ -107,7 +107,7 @@ module.exports =
         panelToToggle.show()
         postToggleAction?()
 
-    atom.commands.add '.editor:not(.mini)',
+    @subscriptions.add atom.commands.add '.editor:not(.mini)',
       'find-and-replace:select-next': (event) ->
         selectNextObjectForEditorElement(this).findAndSelectNext()
       'find-and-replace:select-all': (event) ->
