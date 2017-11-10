@@ -50,11 +50,6 @@
       "versions": {
         "1.0.0": "consumeAutocompleteWatchEditor"
       }
-    },
-    "file-icons.element-icons": {
-      "versions": {
-        "1.0.0": "consumeElementIcons"
-      }
     }
   },
   "providedServices": {
