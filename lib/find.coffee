@@ -4,7 +4,7 @@ SelectNext = require './select-next'
 {History, HistoryCycler} = require './history'
 FindOptions = require './find-options'
 BufferSearch = require './buffer-search'
-FileIcons = require './file-icons'
+getIconServices = require './get-icon-services'
 FindView = require './find-view'
 ProjectFindView = require './project-find-view'
 ResultsModel = require './project/results-model'
@@ -117,10 +117,15 @@ module.exports =
       'find-and-replace:select-skip': (event) ->
         selectNextObjectForEditorElement(this).skipCurrentSelection()
 
+  consumeElementIcons: (service) ->
+    getIconServices().setElementIcons service
+    new Disposable =>
+      getIconServices().resetElementIcons()
+
   consumeFileIcons: (service) ->
-    FileIcons.setService service
+    getIconServices().setFileIcons service
     new Disposable ->
-      FileIcons.resetService()
+      getIconServices().resetFileIcons()
 
   toggleAutocompletions: (value) ->
     if not @findView?
