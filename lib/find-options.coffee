@@ -61,6 +61,6 @@ class FindOptions
     else
       expression = _.escapeRegExp(@findPattern)
 
-    expression = "\\b#{expression}\\b" if @wholeWord
+    expression = "\\b(?:#{expression})\\b" if @wholeWord
 
     new RegExp(expression, flags)
