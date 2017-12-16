@@ -3,7 +3,7 @@ const {TextEditor} = require('atom');
 const FindOptions = require('../lib/find-options');
 const BufferSearch = require('../lib/buffer-search');
 
-describe("BufferSearch", () => {
+describe('BufferSearch', () => {
   let model, editor, markersListener, currentResultListener;
 
   beforeEach(() => {
@@ -400,6 +400,67 @@ describe("BufferSearch", () => {
       })
     });
   });
+
+  describe("when the 'in current selection' option is set to true", () => {
+    beforeEach(() => {
+      model.setFindOptions({inCurrentSelection: true})
+    })
+
+    describe("if the current selection is non-empty", () => {
+      beforeEach(() => {
+        editor.setSelectedBufferRange([[1, 3], [4, 5]]);
+      })
+
+      it("only searches in the given selection", () => {
+        model.search("a+");
+        expect(scannedRanges().pop()).toEqual([[1, 3], [4, 5]]);
+        expect(getHighlightedRanges()).toEqual([
+          [[2, 4], [2, 7]],
+          [[3, 8], [3, 11]]
+        ]);
+      })
+
+      it("executes another search if the current selection is different from the last search's selection", () => {
+        model.search("a+");
+
+        editor.setSelectedBufferRange([[5, 0], [5, 2]]);
+
+        model.search("a+");
+        expect(scannedRanges().pop()).toEqual([[5, 0], [5, 2]]);
+        expect(getHighlightedRanges()).toEqual([
+          [[5, 0], [5, 2]]
+        ]);
+      })
+
+      it("does not execute another search if the current selection is idential to the last search's selection", () => {
+        spyOn(model, 'recreateMarkers').andCallThrough()
+
+        model.search("a+");
+        model.search("a+");
+        expect(model.recreateMarkers.callCount).toBe(1)
+      })
+    })
+
+    describe("if the current selection is empty", () => {
+      beforeEach(() => {
+        editor.setSelectedBufferRange([[0, 0], [0, 0]]);
+      })
+
+      it("ignores the option and searches the entire buffer", () => {
+        model.search("a+");
+        expect(getHighlightedRanges()).toEqual([
+          [[1, 0], [1, 3]],
+          [[2, 4], [2, 7]],
+          [[3, 8], [3, 11]],
+          [[5, 0], [5, 3]],
+          [[6, 4], [6, 7]],
+          [[7, 8], [7, 11]]
+        ]);
+
+        expect(scannedRanges().pop()).toEqual([[0, 0], [Infinity, Infinity]]);
+      })
+    })
+  })
 
   describe("replacing a search result", () => {
     beforeEach(() => {
