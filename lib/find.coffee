@@ -119,7 +119,7 @@ module.exports =
 
   consumeElementIcons: (service) ->
     getIconServices().setElementIcons service
-    new Disposable =>
+    new Disposable ->
       getIconServices().resetElementIcons()
 
   consumeFileIcons: (service) ->

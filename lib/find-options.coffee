@@ -41,16 +41,17 @@ class FindOptions
     result
 
   set: (newParams={}) ->
-    changedParams = null
+    changedParams = {}
     for key in Params
       if newParams[key]? and newParams[key] isnt this[key]
         changedParams ?= {}
         this[key] = changedParams[key] = newParams[key]
 
-    if changedParams?
+    if Object.keys(changedParams).length
       for param, val of changedParams
         @emitter.emit("did-change-#{param}")
       @emitter.emit('did-change', changedParams)
+    return changedParams
 
   getFindPatternRegex: ->
     flags = 'gm'
