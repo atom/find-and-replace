@@ -225,6 +225,29 @@ describe("SelectNext", () => {
         ]);
       });
     });
+
+    it('honors the reversed orientation of previous selections', () => {
+      editor.setText('ab ab ab ab')
+      editor.setSelectedBufferRange([[0, 0], [0, 2]], {reversed: true})
+
+      atom.commands.dispatch(editorElement, 'find-and-replace:select-next')
+      expect(editor.getSelections().length).toBe(2)
+      expect(editor.getSelections().every(s => s.isReversed())).toBe(true)
+
+      atom.commands.dispatch(editorElement, 'find-and-replace:select-next')
+      expect(editor.getSelections().length).toBe(3)
+      expect(editor.getSelections().every(s => s.isReversed())).toBe(true)
+
+      editor.setSelectedBufferRange([[0, 0], [0, 2]], {reversed: false})
+
+      atom.commands.dispatch(editorElement, 'find-and-replace:select-next')
+      expect(editor.getSelections().length).toBe(2)
+      expect(editor.getSelections().every(s => !s.isReversed())).toBe(true)
+
+      atom.commands.dispatch(editorElement, 'find-and-replace:select-next')
+      expect(editor.getSelections().length).toBe(3)
+      expect(editor.getSelections().every(s => !s.isReversed())).toBe(true)
+    })
   });
 
   describe("find-and-replace:select-all", () => {
@@ -323,6 +346,21 @@ describe("SelectNext", () => {
         ]);
       });
     });
+
+    it('honors the reversed orientation of previous selections', () => {
+      editor.setText('ab ab ab ab')
+      editor.setSelectedBufferRange([[0, 0], [0, 2]], {reversed: true})
+
+      atom.commands.dispatch(editorElement, 'find-and-replace:select-all')
+      expect(editor.getSelections().length).toBe(4)
+      expect(editor.getSelections().every(s => s.isReversed())).toBe(true)
+
+      editor.setSelectedBufferRange([[0, 0], [0, 2]], {reversed: false})
+
+      atom.commands.dispatch(editorElement, 'find-and-replace:select-all')
+      expect(editor.getSelections().length).toBe(4)
+      expect(editor.getSelections().every(s => !s.isReversed())).toBe(true)
+    })
   });
 
   describe("find-and-replace:select-undo", () => {
@@ -570,5 +608,30 @@ describe("SelectNext", () => {
         ]);
       });
     });
+
+    it('honors the reversed orientation of previous selections', () => {
+      editor.setText('ab ab ab ab')
+      editor.setSelectedBufferRange([[0, 0], [0, 2]], {reversed: true})
+
+      atom.commands.dispatch(editorElement, 'find-and-replace:select-skip')
+      expect(editor.getSelections().length).toBe(1)
+      expect(editor.getSelections().every(s => s.isReversed())).toBe(true)
+
+      atom.commands.dispatch(editorElement, 'find-and-replace:select-next')
+      atom.commands.dispatch(editorElement, 'find-and-replace:select-skip')
+      expect(editor.getSelections().length).toBe(2)
+      expect(editor.getSelections().every(s => s.isReversed())).toBe(true)
+
+      editor.setSelectedBufferRange([[0, 0], [0, 2]], {reversed: false})
+
+      atom.commands.dispatch(editorElement, 'find-and-replace:select-skip')
+      expect(editor.getSelections().length).toBe(1)
+      expect(editor.getSelections().every(s => !s.isReversed())).toBe(true)
+
+      atom.commands.dispatch(editorElement, 'find-and-replace:select-next')
+      atom.commands.dispatch(editorElement, 'find-and-replace:select-skip')
+      expect(editor.getSelections().length).toBe(2)
+      expect(editor.getSelections().every(s => !s.isReversed())).toBe(true)
+    })
   });
 });
