@@ -1038,7 +1038,7 @@ describe('ProjectFindView', () => {
         // * focus project/sample.js by clicking on a project/sample.js result
         // * when the file has been activated, it's results for the project search should be highlighted
 
-        editor = await atom.workspace.open('project/sample.js');
+        editor = await atom.workspace.open('sample.js');
         expect(getResultDecorations('find-result')).toHaveLength(0);
 
         projectFindView.findEditor.setText('item');
