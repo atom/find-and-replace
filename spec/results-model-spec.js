@@ -12,7 +12,7 @@ describe("ResultsModel", () => {
     atom.config.set("core.excludeVcsIgnoredPaths", false);
     atom.config.set("find-and-replace.searchContextLineCountBefore", 2);
     atom.config.set("find-and-replace.searchContextLineCountAfter", 3);
-    atom.project.setPaths([path.join(__dirname, "fixtures")]);
+    atom.project.setPaths([path.join(__dirname, "fixtures/project")]);
 
     editor = await atom.workspace.open("sample.js");
     resultsModel = new ResultsModel(new FindOptions());

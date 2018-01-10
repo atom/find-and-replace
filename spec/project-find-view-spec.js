@@ -63,7 +63,7 @@ describe('ProjectFindView', () => {
         atom.commands.dispatch(workspaceElement, 'project-find:show');
         await activationPromise;
         projectFindView.findEditor.setText('');
-        editor = await atom.workspace.open('sample.js');
+        editor = await atom.workspace.open('project/sample.js');
       });
 
       it("populates the findEditor with selection when there is a selection", () => {
@@ -268,6 +268,7 @@ describe('ProjectFindView', () => {
 
   describe("finding", () => {
     beforeEach(async () => {
+      atom.project.setPaths([path.join(__dirname, 'fixtures/project')]);
       editor = await atom.workspace.open('sample.js');
       editorElement = atom.views.getView(editor);
       atom.commands.dispatch(workspaceElement, 'project-find:show');
@@ -800,6 +801,30 @@ describe('ProjectFindView', () => {
           await etch.getScheduler().getNextUpdatePromise()
           expect(resultsPaneView.refs.previewCount.textContent).toBe("7 results found in 1 file for items");
         });
+
+        it("doesn't update the results list when a buffer outside the project changes", async () => {
+          const editor = await atom.workspace.open('../sample.js')
+
+          atom.commands.dispatch(projectFindView.element, 'core:confirm');
+          await searchPromise;
+
+          const resultsView = getResultsView();
+          const resultsPaneView = getExistingResultsPane();
+
+          await resultsView.heightInvalidationPromise
+          expect(resultsView.refs.listView.element.querySelectorAll(".search-result")).toHaveLength(13);
+          expect(resultsPaneView.refs.previewCount.textContent).toBe("13 results found in 2 files for items");
+
+          resultsView.selectFirstResult();
+          for (let i = 0; i < 7; i++) await resultsView.moveDown()
+          expect(resultsView.refs.listView.element.querySelectorAll(".path")[1]).toHaveClass('selected');
+
+          editor.setText('there is one "items" in this file');
+          advanceClock(editor.getBuffer().stoppedChangingDelay);
+          await etch.getScheduler().getNextUpdatePromise()
+          expect(resultsPaneView.refs.previewCount.textContent).toBe("13 results found in 2 files for items");
+          expect(resultsView.refs.listView.element.querySelectorAll(".path")[1]).toHaveClass('selected');
+        });
       });
 
       describe("when no results exist", () => {
@@ -1010,10 +1035,10 @@ describe('ProjectFindView', () => {
         // * open samplejs
         // * run a search that has sample js results
         // * that should place the pattern in the buffer find
-        // * focus sample.js by clicking on a sample.js result
+        // * focus project/sample.js by clicking on a project/sample.js result
         // * when the file has been activated, it's results for the project search should be highlighted
 
-        editor = await atom.workspace.open('sample.js');
+        editor = await atom.workspace.open('project/sample.js');
         expect(getResultDecorations('find-result')).toHaveLength(0);
 
         projectFindView.findEditor.setText('item');
@@ -1031,7 +1056,7 @@ describe('ProjectFindView', () => {
         atom.commands.dispatch(resultsView.element, 'core:confirm');
         await new Promise(resolve => editor.onDidChangeSelectionRange(resolve))
 
-        // sample.js has 6 results
+        // project/sample.js has 6 results
         expect(getResultDecorations('find-result')).toHaveLength(5);
         expect(getResultDecorations('current-result')).toHaveLength(1);
         expect(workspaceElement).toHaveClass('find-visible');
@@ -1046,7 +1071,7 @@ describe('ProjectFindView', () => {
         atom.commands.dispatch(projectFindView.element, 'project-find:toggle-whole-word-option');
         await searchPromise;
 
-        // sample.js has 0 results for whole word `item`
+        // project/sample.js has 0 results for whole word `item`
         expect(getResultDecorations('find-result')).toHaveLength(0);
         expect(workspaceElement).toHaveClass('find-visible');
 
@@ -1061,12 +1086,12 @@ describe('ProjectFindView', () => {
 
     beforeEach(async () => {
       testDir = temp.mkdirSync('atom-find-and-replace');
-      sampleJs = path.join(testDir, 'sample.js');
+      sampleJs = path.join(testDir, 'project/sample.js');
       sampleCoffee = path.join(testDir, 'sample.coffee');
 
       fs.makeTreeSync(testDir);
       fs.writeFileSync(sampleCoffee, fs.readFileSync(require.resolve('./fixtures/sample.coffee')));
-      fs.writeFileSync(sampleJs, fs.readFileSync(require.resolve('./fixtures/sample.js')));
+      fs.writeFileSync(sampleJs, fs.readFileSync(require.resolve('./fixtures/project/sample.js')));
 
       atom.commands.dispatch(workspaceElement, 'project-find:show');
       await activationPromise;
@@ -1449,7 +1474,7 @@ describe('ProjectFindView', () => {
       beforeEach(async () => {
         atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'right');
 
-        editor = await atom.workspace.open('sample.js');
+        editor = await atom.workspace.open('project/sample.js');
         editorElement = atom.views.getView(editor);
 
         atom.commands.dispatch(workspaceElement, 'project-find:show');
@@ -1475,7 +1500,7 @@ describe('ProjectFindView', () => {
       beforeEach(async () => {
         atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'down');
 
-        editor = await atom.workspace.open('sample.js');
+        editor = await atom.workspace.open('project/sample.js');
         editorElement = atom.views.getView(editor);
 
         atom.commands.dispatch(workspaceElement, 'project-find:show');

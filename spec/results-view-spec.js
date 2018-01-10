@@ -42,7 +42,7 @@ describe('ResultsView', () => {
     jasmine.attachToDOM(workspaceElement);
 
     atom.config.set('core.excludeVcsIgnoredPaths', false);
-    atom.project.setPaths([path.join(__dirname, 'fixtures')]);
+    atom.project.setPaths([path.join(__dirname, 'fixtures/project')]);
 
     let activationPromise = atom.packages.activatePackage("find-and-replace").then(function({mainModule}) {
       mainModule.createViews();
@@ -82,7 +82,7 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      expect(resultsView.refs.listView.element.querySelector('.path-name').textContent).toBe(path.join("fixtures", "one-long-line.coffee"));
+      expect(resultsView.refs.listView.element.querySelector('.path-name').textContent).toBe(path.join("project", "one-long-line.coffee"));
     });
   });
 
@@ -742,7 +742,7 @@ describe('ResultsView', () => {
           })
         }
         let disposable
-        
+
         waitsForPromise(() => {
           disposable = atom.packages.serviceHub.provide('file-icons.element-icons', '1.0.0', provider)
           expect(getIconServices().elementIcons).toBe(provider)
