@@ -241,6 +241,7 @@ atom-workspace.find-visible {
   position: relative;
   display: flex;
   flex-direction: column;
+  padding: 0;
 
   .preview-header {
     display: flex;
@@ -274,8 +275,8 @@ atom-workspace.find-visible {
     position: relative;
     flex: 1;
 
-    .list-tree {
-      padding: 0 @component-padding;
+    .list-tree .path {
+      padding: 0 0 0 @component-padding;
     }
 
     .line-number {
