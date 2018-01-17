@@ -1,14 +1,21 @@
 const dedent = require('dedent')
-const {TextEditor} = require('atom');
+const {TextEditor, Range} = require('atom');
 const FindOptions = require('../lib/find-options');
 const BufferSearch = require('../lib/buffer-search');
 
 describe('BufferSearch', () => {
-  let model, editor, markersListener, currentResultListener;
+  let model, editor, buffer, markersListener, currentResultListener, searchSpy;
 
   beforeEach(() => {
     editor = new TextEditor();
-    spyOn(editor, 'scanInBufferRange').andCallThrough();
+    buffer = editor.buffer;
+
+    // TODO - remove this conditional after Atom 1.25 ships
+    if (buffer.findAndMarkAllInRangeSync) {
+      searchSpy = spyOn(buffer, 'findAndMarkAllInRangeSync').andCallThrough();
+    } else {
+      searchSpy = spyOn(buffer, 'scanInRange').andCallThrough();
+    }
 
     editor.setText(dedent`
       -----------
@@ -75,7 +82,7 @@ describe('BufferSearch', () => {
   }
 
   function scannedRanges() {
-    return editor.scanInBufferRange.argsForCall.map(args => args[1]);
+    return searchSpy.argsForCall.map(args => args.find(arg => arg instanceof Range))
   }
 
   it("highlights all the occurrences of the search regexp", () => {
@@ -97,7 +104,7 @@ describe('BufferSearch', () => {
   describe("when the buffer changes", () => {
     beforeEach(() => {
       markersListener.reset();
-      editor.scanInBufferRange.reset();
+      searchSpy.reset();
     });
 
     describe("when changes occur in the middle of the buffer", () => {
@@ -464,7 +471,7 @@ describe('BufferSearch', () => {
 
   describe("replacing a search result", () => {
     beforeEach(() => {
-      editor.scanInBufferRange.reset()
+      searchSpy.reset()
     });
 
     it("replaces the marked text with the given string", () => {
