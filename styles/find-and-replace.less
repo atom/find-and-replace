@@ -275,6 +275,13 @@ atom-workspace.find-visible {
     position: relative;
     flex: 1;
 
+    &-container {
+      // adds some padding
+      // so the last item can be clicked 
+      // when there is a horizontal scrollbar -> #943
+      padding-bottom: @component-padding;
+    }
+
     .list-tree .path {
       padding: 0 0 0 @component-padding;
     }
