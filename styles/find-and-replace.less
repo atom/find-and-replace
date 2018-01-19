@@ -245,16 +245,26 @@ atom-workspace.find-visible {
 
   .preview-header {
     display: flex;
-    padding: @component-padding/2 @component-padding/2 @component-padding/2 @component-padding;
+    flex-wrap: wrap;
+    padding: @component-padding/2;
     align-items: center;
     justify-content: space-between;
+    overflow: hidden;
     font-weight: normal;
     border-bottom: 1px solid @panel-heading-border-color;
     background-color: @panel-heading-background-color;
   }
 
+  .preview-count {
+    margin: @component-padding/2;
+  }
+
   .preview-controls {
-    flex-shrink: 0;
+    display: flex;
+    flex-wrap: wrap;
+    .btn-group {
+      margin: @component-padding/2;
+    }
   }
 
   .loading-spinner-tiny,
@@ -284,6 +294,15 @@ atom-workspace.find-visible {
 
     .list-tree .path {
       padding: 0 0 0 @component-padding;
+    }
+
+    // decrease intentation
+    .search-result.search-result.search-result {
+      padding-left: 0;
+      margin-left: @component-padding;
+    }
+    .search-result > .list-tree > .list-item {
+      margin-left: 8px;
     }
 
     .line-number {

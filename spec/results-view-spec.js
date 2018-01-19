@@ -590,7 +590,7 @@ describe('ResultsView', () => {
       projectFindView.findEditor.setText('thiswillnotmatchanythingintheproject');
       atom.commands.dispatch(projectFindView.element, 'core:confirm');
       await searchPromise;
-      expect(getResultsPane().refs.previewControls.style.visibility).toBe('hidden');
+      expect(getResultsPane().refs.previewControls.style.display).toBe('none');
     });
   });
 
