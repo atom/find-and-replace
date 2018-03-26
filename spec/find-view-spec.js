@@ -970,7 +970,7 @@ describe("FindView", () => {
           editor.setSelectedBufferRange([[0, 0], [0, 0]]);
         });
 
-        it("toggles find within a selction via and event and only finds matches within the selection", () => {
+        it("toggles find within a selection via an event", () => {
           findView.findEditor.setText("items");
           atom.commands.dispatch(findView.findEditor.element, "find-and-replace:toggle-selection-option");
           expect(editor.getSelectedBufferRange()).toEqual([[1, 22], [1, 27]]);
