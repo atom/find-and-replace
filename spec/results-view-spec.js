@@ -742,7 +742,7 @@ describe('ResultsView', () => {
           })
         }
         let disposable
-        
+
         waitsForPromise(() => {
           disposable = atom.packages.serviceHub.provide('file-icons.element-icons', '1.0.0', provider)
           expect(getIconServices().elementIcons).toBe(provider)
