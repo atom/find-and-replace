@@ -951,18 +951,18 @@ describe("FindView", () => {
         editor.setSelectedBufferRange([[2, 0], [4, 0]]);
       });
 
-      it("toggles find within a selction via and event and only finds matches within the selection", () => {
+      it("toggles find within a selection via an event and only finds matches within the selection", () => {
         findView.findEditor.setText("items");
         atom.commands.dispatch(findView.findEditor.element, "find-and-replace:toggle-selection-option");
-        expect(editor.getSelectedBufferRange()).toEqual([[2, 8], [2, 13]]);
-        expect(findView.refs.resultCounter.textContent).toEqual("1 of 3");
+        expect(editor.getSelectedBufferRange()).toEqual([[2, 0], [4, 0]]);
+        expect(findView.refs.resultCounter.textContent).toEqual("3 found");
       });
 
-      it("toggles find within a selction via and button and only finds matches within the selection", () => {
+      it("toggles find within a selection via button and only finds matches within the selection", () => {
         findView.findEditor.setText("items");
         findView.refs.selectionOptionButton.click();
-        expect(editor.getSelectedBufferRange()).toEqual([[2, 8], [2, 13]]);
-        expect(findView.refs.resultCounter.textContent).toEqual("1 of 3");
+        expect(editor.getSelectedBufferRange()).toEqual([[2, 0], [4, 0]]);
+        expect(findView.refs.resultCounter.textContent).toEqual("3 found");
       });
 
       describe("when there is no selection", () => {
