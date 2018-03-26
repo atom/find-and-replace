@@ -377,11 +377,13 @@ describe('ResultsView', () => {
       resultsView.selectFirstResult();
     });
 
-    function paneItemOpening() {
+    function paneItemOpening(pending = null) {
       return new Promise(resolve => {
-        const subscription = atom.workspace.onDidOpen(() => {
-          resolve()
-          subscription.dispose()
+        const subscription = atom.workspace.onDidOpen(({pane, item}) => {
+          if (pending === null || (pane.getPendingItem() === item) === pending) {
+            resolve()
+            subscription.dispose()
+          }
         })
       })
     }
@@ -412,7 +414,7 @@ describe('ResultsView', () => {
       // Otherwise, the double click will transfer focus back to the results view
       expect(click2.defaultPrevented).toBe(true);
 
-      await paneItemOpening()
+      await paneItemOpening(false)
       const editor = atom.workspace.getCenter().getActiveTextEditor();
       expect(atom.workspace.getCenter().getActivePane().getPendingItem()).toBe(null);
       expect(atom.views.getView(editor)).toHaveFocus();
