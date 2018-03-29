@@ -54,6 +54,11 @@ class FindOptions
     return changedParams
 
   getFindPatternRegex: (forceUnicode = false) ->
+    for i in [0..@findPattern.length]
+      if @findPattern.charCodeAt(i) > 128
+        forceUnicode = true
+        break
+
     flags = 'gm'
     flags += 'i' unless @caseSensitive
     flags += 'u' if forceUnicode
