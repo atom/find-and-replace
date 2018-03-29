@@ -53,9 +53,10 @@ class FindOptions
       @emitter.emit('did-change', changedParams)
     return changedParams
 
-  getFindPatternRegex: ->
+  getFindPatternRegex: (forceUnicode = false) ->
     flags = 'gm'
     flags += 'i' unless @caseSensitive
+    flags += 'u' if forceUnicode
 
     if @useRegex
       expression = @findPattern
