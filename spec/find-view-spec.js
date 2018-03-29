@@ -1040,6 +1040,14 @@ describe("FindView", () => {
           expect(editor.getSelectedBufferRange()).toEqual([[6, 16], [6, 23]]);
         });
       });
+
+      it("matches astral-plane unicode characters with .", () => {
+        editor.setText("\n\nbefore😄after\n\n");
+        atom.commands.dispatch(findView.findEditor.element, "find-and-replace:toggle-regex-option");
+        findView.findEditor.setText("before.after");
+        atom.commands.dispatch(findView.findEditor.element, "core:confirm");
+        expect(editor.getSelectedBufferRange()).toEqual([[2, 0], [2, 13]])
+      });
     });
 
     describe("when whole-word is toggled", () => {
@@ -1157,6 +1165,13 @@ describe("FindView", () => {
           findView.refs.caseOptionButton.click();
           expect(editor.getSelectedBufferRange()).toEqual([[1, 0], [1, 5]]);
         });
+      });
+
+      it("finds unicode characters with case folding", () => {
+        editor.setText("---\n> április\n---\n")
+        findView.findEditor.setText("Április")
+        atom.commands.dispatch(findView.findEditor.element, "core:confirm")
+        expect(editor.getSelectedBufferRange()).toEqual([[1, 2], [1, 9]])
       });
     });
 
