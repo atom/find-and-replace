@@ -1042,6 +1042,11 @@ describe("FindView", () => {
       });
 
       it("matches astral-plane unicode characters with .", () => {
+        if (!editor.getBuffer().hasAstral) {
+          console.log('Skipping astral-plane test case')
+          return
+        }
+
         editor.setText("\n\nbefore😄after\n\n");
         atom.commands.dispatch(findView.findEditor.element, "find-and-replace:toggle-regex-option");
         findView.findEditor.setText("before.after");
@@ -1168,6 +1173,11 @@ describe("FindView", () => {
       });
 
       it("finds unicode characters with case folding", () => {
+        if (!editor.getBuffer().hasAstral) {
+          console.log('Skipping unicode test case')
+          return
+        }
+
         editor.setText("---\n> április\n---\n")
         findView.findEditor.setText("Április")
         atom.commands.dispatch(findView.findEditor.element, "core:confirm")
