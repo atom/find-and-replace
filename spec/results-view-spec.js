@@ -363,6 +363,50 @@ describe('ResultsView', () => {
 
       expect(resultsView.element.querySelector('.collapsed')).toBe(null);
     })
+
+    it('preserves the collapsed state of the right files when results are removed', async () => {
+      projectFindView.findEditor.setText('push');
+      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      await searchPromise;
+      resultsView = getResultsView();
+
+      // collapse the first result
+      resultsView.selectFirstResult();
+      resultsView.collapseResult();
+
+      // remove the first result
+      const firstPath = resultsView.model.getPaths()[0];
+      const firstResult = resultsView.model.getResult(firstPath);
+      resultsView.model.removeResult(firstPath);
+
+      // Check that the first result is not collapsed
+      const matchedPaths = resultsView.refs.listView.element.querySelectorAll('.path.list-nested-item');
+      expect(matchedPaths[0]).not.toHaveClass('collapsed')
+    });
+
+    it('preserves the collapsed state of the right files when results are added', async () => {
+      projectFindView.findEditor.setText('push');
+      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      await searchPromise;
+      resultsView = getResultsView();
+
+      // remove the first result
+      const firstPath = resultsView.model.getPaths()[0];
+      const firstResult = resultsView.model.getResult(firstPath);
+      resultsView.model.removeResult(firstPath);
+
+      // collapse the new first result
+      resultsView.selectFirstResult();
+      resultsView.collapseResult();
+
+      // re-add the old first result
+      resultsView.model.addResult(firstPath, firstResult);
+
+      // Check that the first result is not collapsed while the second one still is
+      const matchedPaths = resultsView.refs.listView.element.querySelectorAll('.path.list-nested-item');
+      expect(matchedPaths[0]).not.toHaveClass('collapsed')
+      expect(matchedPaths[1]).toHaveClass('collapsed')
+    });
   });
 
   describe("opening results", () => {
