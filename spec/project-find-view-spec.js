@@ -320,7 +320,8 @@ describe('ProjectFindView', () => {
           const resultsView = getResultsView();
           await resultsView.heightInvalidationPromise
           expect(resultsView.element).toBeVisible();
-          expect(resultsView.refs.listView.element.querySelectorAll(".match-row")).toHaveLength(3);
+          expect(resultsView.refs.listView.element.querySelectorAll(".match-row")).toHaveLength(2);
+          expect(resultsView.refs.listView.element.querySelectorAll(".match.highlight-info")).toHaveLength(3);
         });
 
         it("doesn't insert a escaped char if there are multiple backslashs in front of the char", async () => {
@@ -697,7 +698,8 @@ describe('ProjectFindView', () => {
         const resultsView = getResultsView();
         await resultsView.heightInvalidationPromise
         expect(resultsView.element).toBeVisible();
-        expect(resultsView.refs.listView.element.querySelectorAll(".match-row")).toHaveLength(13);
+        expect(resultsView.refs.listView.element.querySelectorAll(".match-row")).toHaveLength(11);
+        expect(resultsView.refs.listView.element.querySelectorAll(".match.highlight-info")).toHaveLength(13);
       })
     });
 
@@ -757,7 +759,8 @@ describe('ProjectFindView', () => {
 
           await resultsView.heightInvalidationPromise
           expect(resultsView.element).toBeVisible();
-          expect(resultsView.refs.listView.element.querySelectorAll(".match-row")).toHaveLength(13);
+          expect(resultsView.refs.listView.element.querySelectorAll(".match-row")).toHaveLength(11);
+          expect(resultsView.refs.listView.element.querySelectorAll(".match.highlight-info")).toHaveLength(13);
 
           expect(resultsPaneView.refs.previewCount.textContent).toBe("13 results found in 2 files for items");
           expect(projectFindView.errorMessages).not.toBeVisible();
@@ -783,11 +786,12 @@ describe('ProjectFindView', () => {
           const resultsPaneView = getExistingResultsPane();
 
           await resultsView.heightInvalidationPromise
-          expect(resultsView.refs.listView.element.querySelectorAll(".match-row")).toHaveLength(13);
+          expect(resultsView.refs.listView.element.querySelectorAll(".match-row")).toHaveLength(11);
+          expect(resultsView.refs.listView.element.querySelectorAll(".match.highlight-info")).toHaveLength(13);
           expect(resultsPaneView.refs.previewCount.textContent).toBe("13 results found in 2 files for items");
 
           resultsView.selectFirstResult();
-          for (let i = 0; i < 7; i++) resultsView.moveDown();
+          for (let i = 0; i < 6; i++) resultsView.moveDown();
           await resultsView.moveDown();
 
           expect(resultsView.refs.listView.element.querySelectorAll(".path-row")[1]).toHaveClass('selected');
@@ -1035,7 +1039,8 @@ describe('ProjectFindView', () => {
         resultsView.scrollToBottom(); // To load ALL the results
         await etch.update(resultsView);
         expect(resultsView.element).toBeVisible();
-        expect(resultsView.refs.listView.element.querySelectorAll(".match-row")).toHaveLength(13);
+        expect(resultsView.refs.listView.element.querySelectorAll(".match-row")).toHaveLength(11);
+        expect(resultsView.refs.listView.element.querySelectorAll(".match.highlight-info")).toHaveLength(13);
 
         resultsView.selectFirstResult();
         for (let i = 0; i < 9; i++) resultsView.moveDown();

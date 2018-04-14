@@ -35,11 +35,11 @@ describe("ResultRowGroup", () => {
 
       const expectedRows = [
         new ResultPathRow(rowGroup),
-        new MatchRow(rowGroup, false, 0, result.matches[0]),
-        new MatchRow(rowGroup, true, 7, result.matches[1]),
-        new MatchRow(rowGroup, true, 13, result.matches[2]),
-        new MatchRow(rowGroup, true, 16, result.matches[3]),
-        new MatchRow(rowGroup, false, 17, result.matches[4])
+        new MatchRow(rowGroup, false, 0, [ result.matches[0] ]),
+        new MatchRow(rowGroup, true, 7, [ result.matches[1] ]),
+        new MatchRow(rowGroup, true, 13, [ result.matches[2] ]),
+        new MatchRow(rowGroup, true, 16, [ result.matches[3] ]),
+        new MatchRow(rowGroup, false, 17, [ result.matches[4] ])
       ]
 
       for (let i = 0; i < rowGroup.rows.length; ++i) {
@@ -56,26 +56,26 @@ describe("ResultRowGroup", () => {
       const expectedRows = [
         new ResultPathRow(rowGroup),
 
-        new MatchRow(rowGroup, false, 0, result.matches[0]),
+        new MatchRow(rowGroup, false, 0, [ result.matches[0] ]),
         new TrailingContextRow(rowGroup, lines[1], false, 0, 1),
         new TrailingContextRow(rowGroup, lines[2], false, 0, 2),
 
         new LeadingContextRow(rowGroup, lines[4], true, 7, 3),
         new LeadingContextRow(rowGroup, lines[5], false, 7, 2),
         new LeadingContextRow(rowGroup, lines[6], false, 7, 1),
-        new MatchRow(rowGroup, false, 7, result.matches[1]),
+        new MatchRow(rowGroup, false, 7, [ result.matches[1] ]),
         new TrailingContextRow(rowGroup, lines[8], false, 7, 1),
         new TrailingContextRow(rowGroup, lines[9], false, 7, 2),
 
         new LeadingContextRow(rowGroup, lines[10], false, 13, 3),
         new LeadingContextRow(rowGroup, lines[11], false, 13, 2),
         new LeadingContextRow(rowGroup, lines[12], false, 13, 1),
-        new MatchRow(rowGroup, false, 13, result.matches[2]),
+        new MatchRow(rowGroup, false, 13, [ result.matches[2] ]),
         new TrailingContextRow(rowGroup, lines[14], false, 13, 1),
         new TrailingContextRow(rowGroup, lines[15], false, 13, 2),
 
-        new MatchRow(rowGroup, false, 16, result.matches[3]),
-        new MatchRow(rowGroup, false, 17, result.matches[4])
+        new MatchRow(rowGroup, false, 16, [ result.matches[3] ]),
+        new MatchRow(rowGroup, false, 17, [ result.matches[4] ])
       ]
 
       for (let i = 0; i < rowGroup.rows.length; ++i) {

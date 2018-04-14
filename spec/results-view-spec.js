@@ -517,11 +517,11 @@ describe('ResultsView', () => {
       await resultsView.heightInvalidationPromise;
 
       let {length: resultCount} = resultsView.refs.listView.element.querySelectorAll(".match-row");
-      expect(resultCount).toBe(13);
+      expect(resultCount).toBe(11);
 
       resultsView.selectFirstResult();
 
-      // moves down for 13 results + 2 files
+      // moves down for 11 results + 2 files
       for (let i = 0; i < resultCount; ++i) {
         resultsView.moveDown();
       }
@@ -947,7 +947,7 @@ describe('ResultsView', () => {
     it('maintains selected result when adding and removing results', async () => {
       {
         const matchRows = resultsView.refs.listView.element.querySelectorAll('.match-row');
-        expect(matchRows.length).toBe(4);
+        expect(matchRows.length).toBe(3);
 
         resultsView.moveDown();
         resultsView.moveDown();
@@ -967,7 +967,7 @@ describe('ResultsView', () => {
       // check that the same match is still selected
       {
         const matchRows = resultsView.refs.listView.element.querySelectorAll('.match-row');
-        expect(matchRows.length).toBe(2);
+        expect(matchRows.length).toBe(1);
         expect(matchRows[0]).toHaveClass('selected');
         expect(matchRows[0].querySelector('.preview').textContent).toBe('      current < pivot ? left.push(current) : right.push(current);');
         expect(resultsView.selectedRowIndex).toBe(1);
@@ -980,7 +980,7 @@ describe('ResultsView', () => {
       // check that the same match is still selected
       {
         const matchRows = resultsView.refs.listView.element.querySelectorAll('.match-row');
-        expect(matchRows.length).toBe(4);
+        expect(matchRows.length).toBe(3);
         expect(matchRows[2]).toHaveClass('selected');
         expect(matchRows[2].querySelector('.preview').textContent).toBe('      current < pivot ? left.push(current) : right.push(current);');
         expect(resultsView.selectedRowIndex).toBe(4);
