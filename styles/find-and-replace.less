@@ -299,13 +299,10 @@ atom-workspace.find-visible {
       padding: 0 0 0 @component-padding;
       margin-left: 8px;
 
+      box-shadow: inset 0 1px 0 mix(@base-border-color, @base-background-color);
+
       // box-shadow over a border is used to not affect height calculation
       &.separator {
-        box-shadow: inset 0 1px 0 @base-border-color;
-      }
-    }
-    div:first-child .list-item {
-      .context-row, .match-row {
         box-shadow: inset 0 1px 0 @base-border-color;
       }
     }
