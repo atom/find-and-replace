@@ -202,7 +202,7 @@ describe('ResultsView', () => {
       const {listView} = resultsView.refs;
       expect(listView.element.querySelectorAll('.path-row').length).not.toBeGreaterThan(resultsView.model.getPathCount());
       expect(listView.element.querySelectorAll('.match-row').length).not.toBeGreaterThan(resultsView.model.getMatchCount());
-      expect(listView.element.querySelector('.path-row')).toHaveClass('selected');
+      expect(listView.element.querySelector('.path-row').parentElement).toHaveClass('selected');
 
       let initiallySelectedItem = getSelectedItem();
       let initiallySelectedOffset = getSelectedOffset();
@@ -258,7 +258,7 @@ describe('ResultsView', () => {
 
       for (let i = 0; i < 100; i++) resultsView.pageUp();
       await resultsView.pageUp();
-      expect(listView.element.querySelector('.path-row')).toHaveClass('selected');
+      expect(listView.element.querySelector('.path-row').parentElement).toHaveClass('selected');
       expect(getSelectedPosition()).toBeLessThan(initiallySelectedPosition);
     });
   });
@@ -278,12 +278,11 @@ describe('ResultsView', () => {
       expect(listView.element.querySelectorAll('li').length).toBeLessThan(resultsView.model.getPathCount() + resultsView.model.getMatchCount());
 
       await resultsView.moveToBottom();
-      expect(listView.element.querySelector('.path-row')).not.toHaveClass('selected');
       expect(_.last(listView.element.querySelectorAll('.match-row'))).toHaveClass('selected');
       expect(listView.element.scrollTop).not.toBe(0);
 
       await resultsView.moveToTop();
-      expect(listView.element.querySelector('.path-row')).toHaveClass('selected');
+      expect(listView.element.querySelector('.path-row').parentElement).toHaveClass('selected');
       expect(listView.element.scrollTop).toBe(0);
     });
 
@@ -292,7 +291,7 @@ describe('ResultsView', () => {
       await resultsView.collapseResult();
       await resultsView.moveToBottom();
 
-      expect(_.last(resultsView.refs.listView.element.querySelectorAll('.path-row'))).toHaveClass('selected');
+      expect(_.last(resultsView.refs.listView.element.querySelectorAll('.path-row')).parentElement).toHaveClass('selected');
     });
 
     it("selects the path when when core:move-to-top is triggered and first item is collapsed", async () => {
@@ -300,7 +299,7 @@ describe('ResultsView', () => {
       atom.commands.dispatch(resultsView.element, 'core:move-left');
       await resultsView.moveToTop();
 
-      expect(resultsView.refs.listView.element.querySelector('.path-row')).toHaveClass('selected');
+      expect(resultsView.refs.listView.element.querySelector('.path-row').parentElement).toHaveClass('selected');
     });
   });
 
@@ -321,15 +320,15 @@ describe('ResultsView', () => {
 
       await resultsView.collapseAllResults();
       const selectedPath = resultsView.element.querySelector('.selected');
-      expect(selectedPath).toHaveClass('path-row');
-      expect(selectedPath.parentNode.dataset.filePath).toContain('sample.coffee');
+      expect(selectedPath.firstChild).toHaveClass('path-row');
+      expect(selectedPath.firstChild.dataset.filePath).toContain('sample.coffee');
 
       // Moving down while the path is collapsed moves to the next path,
       // as opposed to selecting the next match within the collapsed path.
       resultsView.moveDown();
       await resultsView.expandAllResults();
       const newSelectedPath = resultsView.element.querySelector('.selected');
-      expect(newSelectedPath.parentNode.dataset.filePath).toContain('sample.js');
+      expect(newSelectedPath.firstChild.dataset.filePath).toContain('sample.js');
 
       resultsView.moveDown();
       resultsView.moveDown();
@@ -404,8 +403,8 @@ describe('ResultsView', () => {
 
       // Check that the first result is not collapsed while the second one still is
       const matchedPaths = resultsView.refs.listView.element.querySelectorAll('.path-row');
-      expect(matchedPaths[0]).not.toHaveClass('collapsed')
-      expect(matchedPaths[1]).toHaveClass('collapsed')
+      expect(matchedPaths[0].parentElement).not.toHaveClass('collapsed')
+      expect(matchedPaths[1].parentElement).toHaveClass('collapsed')
     });
   });
 
@@ -545,7 +544,7 @@ describe('ResultsView', () => {
       await resultsView.moveUp();
       await resultsView.moveUp();
       selectedItem = resultsView.element.querySelector('.selected');
-      expect(selectedItem).toHaveClass('path-row');
+      expect(selectedItem.firstChild).toHaveClass('path-row');
       expect(selectedItem).not.toBe(lastSelectedItem);
 
       // stays at the top
@@ -577,18 +576,18 @@ describe('ResultsView', () => {
 
         let selectedItem = resultsView.element.querySelector('.selected');
         expect(selectedItem).toHaveClass('collapsed');
-        expect(selectedItem).toBe(resultsView.refs.listView.element.querySelector('.path-row'));
+        expect(selectedItem).toBe(resultsView.refs.listView.element.querySelector('.path-row').parentElement);
       });
 
-      it("collapses all results if collapse All button is pressed", () => {
-        clickOn(getResultsPane().refs.collapseAll);
-        for (let item of Array.from(resultsView.element.querySelector('.path-row'))) {
-          expect(item).toHaveClass('collapsed');
+      it("collapses all results if collapse All button is pressed", async () => {
+        await resultsView.collapseAllResults();
+        for (let item of Array.from(resultsView.refs.listView.element.querySelectorAll('.path-row'))) {
+          expect(item.parentElement).toHaveClass('collapsed');
         }
       });
 
       it("expands the selected results view", async () => {
-        clickOn(resultsView.refs.listView.element.querySelector('.path-row'));
+        clickOn(resultsView.refs.listView.element.querySelector('.path-row').parentElement);
 
         await resultsView.expandResult();
 
@@ -597,10 +596,11 @@ describe('ResultsView', () => {
         expect(selectedItem).toBe(resultsView.refs.listView.element.querySelector('.match-row'));
       });
 
-      it("expands all results if 'Expand All' button is pressed", () => {
-        clickOn(getResultsPane().refs.expandAll);
-        for (let item of Array.from(resultsView.element.querySelector('.path-row'))) {
-          expect(item).not.toHaveClass('collapsed');
+      it("expands all results if 'Expand All' button is pressed", async () => {
+        await resultsView.expandAllResults();
+        await etch.update(resultsView.refs.listView);
+        for (let item of Array.from(resultsView.refs.listView.element.querySelectorAll('.path-row'))) {
+          expect(item.parentElement).not.toHaveClass('collapsed');
         }
       });
 
@@ -613,13 +613,13 @@ describe('ResultsView', () => {
           expect(resultsView.refs.listView.element.querySelectorAll('.match-row')[0]).toHaveClass('selected');
 
           await resultsView.moveUp();
-          expect(resultsView.refs.listView.element.querySelectorAll('.path-row')[1]).toHaveClass('selected');
+          expect(resultsView.refs.listView.element.querySelectorAll('.path-row')[1].parentElement).toHaveClass('selected');
 
           await resultsView.moveUp();
-          expect(resultsView.refs.listView.element.querySelectorAll('.path-row')[0]).toHaveClass('selected');
+          expect(resultsView.refs.listView.element.querySelectorAll('.path-row')[0].parentElement).toHaveClass('selected');
 
           await resultsView.moveDown();
-          expect(resultsView.refs.listView.element.querySelectorAll('.path-row')[1]).toHaveClass('selected');
+          expect(resultsView.refs.listView.element.querySelectorAll('.path-row')[1].parentElement).toHaveClass('selected');
         });
       });
     });
@@ -873,7 +873,7 @@ describe('ResultsView', () => {
 
     function getFirstMatchRows(resultsView) {
       const {element} = resultsView.refs.listView
-      const rowNodes = Array.from(element.querySelectorAll('.list-item div'));
+      const rowNodes = Array.from(element.querySelectorAll('.list-item'));
       const rowCount = resultsView.resultRowGroups[0].rows.filter(row =>
         row.data.matchLineNumber === resultsView.resultRows[1].data.matchLineNumber
       ).length

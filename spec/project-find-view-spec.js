@@ -783,24 +783,25 @@ describe('ProjectFindView', () => {
           await searchPromise;
 
           const resultsView = getResultsView();
+          const listView = resultsView.refs.listView;
           const resultsPaneView = getExistingResultsPane();
 
           await resultsView.heightInvalidationPromise
-          expect(resultsView.refs.listView.element.querySelectorAll(".match-row")).toHaveLength(11);
-          expect(resultsView.refs.listView.element.querySelectorAll(".match.highlight-info")).toHaveLength(13);
+          expect(listView.element.querySelectorAll(".match-row")).toHaveLength(11);
+          expect(listView.element.querySelectorAll(".match.highlight-info")).toHaveLength(13);
           expect(resultsPaneView.refs.previewCount.textContent).toBe("13 results found in 2 files for items");
 
           resultsView.selectFirstResult();
           for (let i = 0; i < 6; i++) resultsView.moveDown();
           await resultsView.moveDown();
 
-          expect(resultsView.refs.listView.element.querySelectorAll(".path-row")[1]).toHaveClass('selected');
+          expect(listView.element.querySelectorAll(".path-row")[1].parentElement).toHaveClass('selected');
 
           editor.setText('there is one "items" in this file');
           advanceClock(editor.getBuffer().stoppedChangingDelay);
           await etch.getScheduler().getNextUpdatePromise()
           expect(resultsPaneView.refs.previewCount.textContent).toBe("8 results found in 2 files for items");
-          expect(resultsView.refs.listView.element.querySelectorAll(".path-row")[1]).toHaveClass('selected');
+          expect(listView.element.querySelectorAll(".path-row")[1].parentElement).toHaveClass('selected');
 
           // Ensure the newly added item can be opened.
           await resultsView.moveDown()
