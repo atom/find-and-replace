@@ -287,22 +287,24 @@ atom-workspace.find-visible {
 
     &-container {
       // adds some padding
-      // so the last item can be clicked 
+      // so the last item can be clicked
       // when there is a horizontal scrollbar -> #943
       padding-bottom: @component-padding;
     }
 
-    .list-tree .path {
+    .list-item {
       padding: 0 0 0 @component-padding;
     }
-
-    // decrease intentation
-    .search-result.search-result.search-result {
-      padding-left: 0;
-      margin-left: @component-padding;
-    }
-    .search-result > .list-tree > .list-item {
+    .context-row, .match-row {
+      padding: 0 0 0 @component-padding;
       margin-left: 8px;
+
+      box-shadow: inset 0 1px 0 mix(@base-border-color, @base-background-color);
+
+      // box-shadow over a border is used to not affect height calculation
+      &.separator {
+        box-shadow: inset 0 1px 0 @base-border-color;
+      }
     }
 
     .line-number {
@@ -311,21 +313,13 @@ atom-workspace.find-visible {
       display: inline-block;
       font-family: @find-and-replace-font;
     }
-    .match-line.selected .line-number {
+    .match-row.selected .line-number {
       color: @text-color-selected;
     }
 
     .path-match-number {
       padding-left: @component-padding;
       color: @text-color-subtle;
-    }
-
-    .search-result {
-      // box-shadow over a border is used to not affect height calculation
-      box-shadow: inset 0 -1px 0 @base-border-color;
-      &:first-child {
-        box-shadow: inset 0 -1px 0 @base-border-color, inset 0 1px 0 @base-border-color;
-      }
     }
 
     .preview {
@@ -335,10 +329,10 @@ atom-workspace.find-visible {
       color: @text-color-subtle;
     }
 
-    .match-line .preview {
+    .match-row .preview {
       color: @text-color-highlight;
     }
-    .match-line.selected .preview {
+    .match-row.selected .preview {
       color: @text-color-selected;
     }
 

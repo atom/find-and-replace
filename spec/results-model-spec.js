@@ -21,9 +21,11 @@ describe("ResultsModel", () => {
   describe("searching for a pattern", () => {
     it("populates the model with all the results, and updates in response to changes in the buffer", async () => {
       const resultAddedSpy = jasmine.createSpy();
+      const resultSetSpy = jasmine.createSpy();
       const resultRemovedSpy = jasmine.createSpy();
 
       resultsModel.onDidAddResult(resultAddedSpy);
+      resultsModel.onDidSetResult(resultSetSpy);
       resultsModel.onDidRemoveResult(resultRemovedSpy);
       await resultsModel.search("items", "*.js", "");
 
@@ -46,7 +48,8 @@ describe("ResultsModel", () => {
 
       editor.setText("there are some items in here");
       advanceClock(editor.buffer.stoppedChangingDelay);
-      expect(resultAddedSpy.callCount).toBe(2);
+      expect(resultAddedSpy.callCount).toBe(1);
+      expect(resultSetSpy.callCount).toBe(1);
 
       result = resultsModel.getResult(editor.getPath());
       expect(result.matches.length).toBe(1);
@@ -59,7 +62,8 @@ describe("ResultsModel", () => {
 
       editor.setText("no matches in here");
       advanceClock(editor.buffer.stoppedChangingDelay);
-      expect(resultAddedSpy.callCount).toBe(2);
+      expect(resultAddedSpy.callCount).toBe(1);
+      expect(resultSetSpy.callCount).toBe(1);
       expect(resultRemovedSpy.callCount).toBe(1);
 
       result = resultsModel.getResult(editor.getPath());

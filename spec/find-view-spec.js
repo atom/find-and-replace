@@ -376,7 +376,7 @@ describe("FindView", () => {
         });
       });
 
-      describe("when regex seach is disabled", () => {
+      describe("when regex search is disabled", () => {
         it("finds the literal backslash t", () => {
           findView.findEditor.setText("\\t");
           atom.commands.dispatch(findView.findEditor.element, "core:confirm");
