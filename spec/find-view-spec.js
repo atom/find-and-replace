@@ -725,6 +725,14 @@ describe("FindView", () => {
       expect(findView.wrapIcon).not.toBeVisible();
     });
 
+    it("allows searching for dashes in combination with non-ascii characters (regression)", () => {
+      editor.setText("123-Âbc");
+      findView.findEditor.setText("3-â");
+      atom.commands.dispatch(findView.findEditor.element, "find-and-replace:find-next");
+      expect(findView.refs.descriptionLabel).not.toHaveClass("text-error");
+      expect(editor.getSelectedBufferRange()).toEqual([[0, 2], [0, 5]]);
+    });
+
     describe("when find-and-replace:use-selection-as-find-pattern is triggered", () => {
       it("places the selected text into the find editor", () => {
         editor.setSelectedBufferRange([[1, 6], [1, 10]]);
