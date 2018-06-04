@@ -66,8 +66,15 @@ class FindOptions
     if @useRegex
       expression = @findPattern
     else
-      expression = _.escapeRegExp(@findPattern)
+      expression = escapeRegExp(@findPattern)
 
     expression = "\\b#{expression}\\b" if @wholeWord
 
     new RegExp(expression, flags)
+
+# This is different from _.escapeRegExp, which escapes dashes. Escaped dashes
+# are not allowed outside of character classes in RegExps with the `u` flag.
+#
+# See atom/find-and-replace#1022
+escapeRegExp = (string) ->
+  string.replace(/[\/\\^$*+?.()|[\]{}]/g, '\\$&')
