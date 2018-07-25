@@ -28,6 +28,6 @@
   '.list-item.match-row': [
     { 'label': 'Copy', 'command': 'core:copy' }
   ]
-  '.list-item': [
+  '.list-item.match-row, .list-item.path-row': [
     { 'label': 'Copy Path', 'command': 'find-and-replace:copy-path' }
   ]
