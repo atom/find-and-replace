@@ -674,7 +674,7 @@ describe('ProjectFindView', () => {
 
         await searchPromise;
         expect(projectFindView.refs.wholeWordOptionButton).toHaveClass('selected');
-        expect(atom.workspace.scan.mostRecentCall.args[0]).toEqual(/\bwholeword\b/gim);
+        expect(atom.workspace.scan.mostRecentCall.args[0]).toEqual(/\b(?:wholeword)\b/gim);
       });
 
       it("toggles whole word option via a button and finds files matching the pattern", async () => {
@@ -684,7 +684,7 @@ describe('ProjectFindView', () => {
         await searchPromise;
 
         expect(projectFindView.refs.wholeWordOptionButton).toHaveClass('selected');
-        expect(atom.workspace.scan.mostRecentCall.args[0]).toEqual(/\bwholeword\b/gim);
+        expect(atom.workspace.scan.mostRecentCall.args[0]).toEqual(/\b(?:wholeword)\b/gim);
       });
     });
 
