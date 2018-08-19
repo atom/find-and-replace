@@ -359,7 +359,7 @@ describe('ResultsView', () => {
       await searchPromise;
 
       expect(resultsView.element.querySelector('.collapsed')).toBe(null);
-    })
+    });
 
     it('preserves the collapsed state of the right files when results are removed', async () => {
       projectFindView.findEditor.setText('push');
@@ -405,6 +405,31 @@ describe('ResultsView', () => {
       const matchedPaths = resultsView.refs.listView.element.querySelectorAll('.path-row');
       expect(matchedPaths[0].parentElement).not.toHaveClass('collapsed')
       expect(matchedPaths[1].parentElement).toHaveClass('collapsed')
+    });
+
+    it("does not contract result when right clicked", async () => {
+      projectFindView.findEditor.setText('items');
+      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      await searchPromise;
+
+      resultsView = getResultsView();
+
+      const pathNode = resultsView.refs.listView.element.querySelectorAll('.path-row')[0];
+      pathNode.dispatchEvent(buildMouseEvent('mousedown', {target: pathNode, which: 3}));
+      expect(resultsView.element.querySelector('.collapsed')).toBe(null);
+    });
+
+    it("does not expand result when right clicked", async () => {
+      projectFindView.findEditor.setText('items');
+      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      await searchPromise;
+
+      resultsView = getResultsView();
+      resultsView.collapseAllResults();
+
+      const pathNode = resultsView.refs.listView.element.querySelectorAll('.path-row')[0];
+      pathNode.dispatchEvent(buildMouseEvent('mousedown', {target: pathNode, which: 3}));
+      expect(resultsView.element.querySelector('.collapsed')).toBeDefined();
     });
   });
 
@@ -471,7 +496,43 @@ describe('ResultsView', () => {
       const editor = atom.workspace.getCenter().getActiveTextEditor();
       expect(atom.workspace.getCenter().getActivePane().getPendingItem()).toBe(editor);
       expect(atom.views.getView(editor)).toHaveFocus();
+    });
+
+    it("opens the file in a new non-active tab on 'find-and-replace:open-in-tab'", async () => {
+      const resultsPane = atom.workspace.paneForURI(ResultsPaneView.URI);
+      const preEditors = atom.workspace.getTextEditors(); // keep track of editor list before command execution
+      atom.commands.dispatch(resultsView.element, 'find-and-replace:open-in-tab');
+      await paneItemOpening();
+      const postEditors = atom.workspace.getTextEditors(); // editors after command execution
+      const found = _.find(postEditors, (editor) => {
+        return editor.getPath().includes('sample.');
+      });
+      // the results pane should still be active
+      expect(atom.workspace.getCenter().getActivePane()).toBe(resultsPane);
+      // the file should still be opened in an editor
+      expect(found).toBeDefined();
+      // number of editors should be increased by one
+      expect(postEditors.length).toBe(preEditors.length + 1);
+    });
+
+    it("brings an already opened tab into focus on 'find-and-replace:open-in-tab'", async () => {
+      atom.commands.dispatch(resultsView.element, 'find-and-replace:open-in-tab');
+      await paneItemOpening();
+      atom.commands.dispatch(resultsView.element, 'find-and-replace:open-in-tab');
+      await paneItemOpening();
+      expect(atom.workspace.getCenter().getActivePaneItem().getPath()).toContain('sample.');
     })
+
+    it("opens the file in a new window on 'find-and-replace:open-in-window'", async () => {
+      spyOn(atom, 'open');
+      atom.commands.dispatch(resultsView.element, 'find-and-replace:open-in-window');
+      expect(atom.open).toHaveBeenCalledWith({
+        pathsToOpen: [resultsView.model.getPaths()[0]],
+        newWindow: true,
+        devMode: atom.inDevMode(),
+        safeMode: atom.inSafeMode()
+      });
+    });
 
     describe("the `projectSearchResultsPaneSplitDirection` option", () => {
       beforeEach(() => {
