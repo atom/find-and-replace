@@ -26,12 +26,11 @@
     { 'label': 'Search in Directory', 'command': 'project-find:show-in-current-directory' }
   ]
   '.list-item.match-row': [
-    { 'label': 'Open in New Tab', 'command': 'find-and-replace:open-in-tab' }
+    { 'label': 'Open in New Tab', 'command': 'find-and-replace:open-in-new-tab' }
     { 'label': 'Copy', 'command': 'core:copy' }
     { 'label': 'Copy Path', 'command': 'find-and-replace:copy-path' }
   ]
   '.list-item.path-row': [
-    { 'label': 'Open in New Tab', 'command': 'find-and-replace:open-in-tab' }
-    { 'label': 'Open in New Window', 'command': 'find-and-replace:open-in-window' }
+    { 'label': 'Open in New Tab', 'command': 'find-and-replace:open-in-new-tab' }
     { 'label': 'Copy Path', 'command': 'find-and-replace:copy-path' }
   ]

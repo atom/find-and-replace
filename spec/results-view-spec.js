@@ -498,10 +498,10 @@ describe('ResultsView', () => {
       expect(atom.views.getView(editor)).toHaveFocus();
     });
 
-    it("opens the file in a new non-active tab on 'find-and-replace:open-in-tab'", async () => {
+    it("opens the file in a new non-active tab on 'find-and-replace:open-in-new-tab'", async () => {
       const resultsPane = atom.workspace.paneForURI(ResultsPaneView.URI);
       const preEditors = atom.workspace.getTextEditors(); // keep track of editor list before command execution
-      atom.commands.dispatch(resultsView.element, 'find-and-replace:open-in-tab');
+      atom.commands.dispatch(resultsView.element, 'find-and-replace:open-in-new-tab');
       await paneItemOpening();
       const postEditors = atom.workspace.getTextEditors(); // editors after command execution
       const found = _.find(postEditors, (editor) => {
@@ -515,24 +515,13 @@ describe('ResultsView', () => {
       expect(postEditors.length).toBe(preEditors.length + 1);
     });
 
-    it("brings an already opened tab into focus on 'find-and-replace:open-in-tab'", async () => {
-      atom.commands.dispatch(resultsView.element, 'find-and-replace:open-in-tab');
+    it("brings an already opened tab into focus on 'find-and-replace:open-in-new-tab'", async () => {
+      atom.commands.dispatch(resultsView.element, 'find-and-replace:open-in-new-tab');
       await paneItemOpening();
-      atom.commands.dispatch(resultsView.element, 'find-and-replace:open-in-tab');
+      atom.commands.dispatch(resultsView.element, 'find-and-replace:open-in-new-tab');
       await paneItemOpening();
       expect(atom.workspace.getCenter().getActivePaneItem().getPath()).toContain('sample.');
     })
-
-    it("opens the file in a new window on 'find-and-replace:open-in-window'", async () => {
-      spyOn(atom, 'open');
-      atom.commands.dispatch(resultsView.element, 'find-and-replace:open-in-window');
-      expect(atom.open).toHaveBeenCalledWith({
-        pathsToOpen: [resultsView.model.getPaths()[0]],
-        newWindow: true,
-        devMode: atom.inDevMode(),
-        safeMode: atom.inSafeMode()
-      });
-    });
 
     describe("the `projectSearchResultsPaneSplitDirection` option", () => {
       beforeEach(() => {
