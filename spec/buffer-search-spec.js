@@ -581,4 +581,15 @@ describe('BufferSearch', () => {
       }
     })
   );
+
+  describe("setEditor", () => {
+    it("does not attempt to directly access the buffer property of an editor", () => {
+      editor.buffer2 = buffer
+      editor.buffer = undefined
+      spyOn(editor, "getBuffer").andReturn(editor.buffer2);
+      expect(() => model.setEditor(editor)).not.toThrow();
+
+      editor.buffer = editor.buffer2 // Reset for spec teardown
+    })
+  })
 });
