@@ -8,7 +8,7 @@ describe('BufferSearch', () => {
 
   beforeEach(() => {
     editor = new TextEditor();
-    buffer = editor.buffer;
+    buffer = editor.getBuffer();
 
     // TODO - remove this conditional after Atom 1.25 ships
     if (buffer.findAndMarkAllInRangeSync) {
@@ -28,7 +28,7 @@ describe('BufferSearch', () => {
       ccc ddd aaa
       -----------
     `);
-    advanceClock(editor.getBuffer().stoppedChangingDelay);
+    advanceClock(buffer.stoppedChangingDelay);
 
     const findOptions = new FindOptions({findPattern: "a+"});
     model = new BufferSearch(findOptions);
@@ -122,7 +122,7 @@ describe('BufferSearch', () => {
           [[7, 8], [7, 11]]
         ]);
 
-        advanceClock(editor.getBuffer().stoppedChangingDelay);
+        advanceClock(buffer.stoppedChangingDelay);
 
         expectUpdateEvent();
         expect(getHighlightedRanges()).toEqual([
@@ -158,7 +158,7 @@ describe('BufferSearch', () => {
           [[7, 8], [7, 11]]
         ]);
 
-        advanceClock(editor.getBuffer().stoppedChangingDelay);
+        advanceClock(buffer.stoppedChangingDelay);
 
         expectUpdateEvent();
         expect(getHighlightedRanges()).toEqual([
@@ -192,7 +192,7 @@ describe('BufferSearch', () => {
           [[6, 4], [6, 7]]
         ]);
 
-        advanceClock(editor.getBuffer().stoppedChangingDelay);
+        advanceClock(buffer.stoppedChangingDelay);
 
         expectUpdateEvent();
         expect(getHighlightedRanges()).toEqual([
@@ -226,7 +226,7 @@ describe('BufferSearch', () => {
           [[7, 8], [7, 11]]
         ]);
 
-        advanceClock(editor.getBuffer().stoppedChangingDelay);
+        advanceClock(buffer.stoppedChangingDelay);
 
         expectUpdateEvent();
         expect(getHighlightedRanges()).toEqual([
@@ -263,7 +263,7 @@ describe('BufferSearch', () => {
           [[7, 8], [7, 11]]
         ]);
 
-        advanceClock(editor.getBuffer().stoppedChangingDelay);
+        advanceClock(buffer.stoppedChangingDelay);
 
         expectUpdateEvent();
         expect(getHighlightedRanges()).toEqual([
@@ -292,7 +292,7 @@ describe('BufferSearch', () => {
           [[7, 8], [7, 11]]
         ]);
 
-        advanceClock(editor.getBuffer().stoppedChangingDelay);
+        advanceClock(buffer.stoppedChangingDelay);
 
         expect(getHighlightedRanges()).toEqual([
           [[1, 0], [1, 3]],
@@ -324,7 +324,7 @@ describe('BufferSearch', () => {
           [[7, 8], [7, 11]]
         ]);
 
-        advanceClock(editor.getBuffer().stoppedChangingDelay);
+        advanceClock(buffer.stoppedChangingDelay);
 
         expectUpdateEvent();
         expect(getHighlightedRanges()).toEqual([
@@ -357,7 +357,7 @@ describe('BufferSearch', () => {
           [[7, 8], [7, 11]]
         ]);
 
-        advanceClock(editor.getBuffer().stoppedChangingDelay);
+        advanceClock(buffer.stoppedChangingDelay);
 
         expectUpdateEvent();
         expect(getHighlightedRanges()).toEqual([
@@ -392,7 +392,7 @@ describe('BufferSearch', () => {
           [[7, 8], [7, 11]]
         ]);
 
-        advanceClock(editor.getBuffer().stoppedChangingDelay);
+        advanceClock(buffer.stoppedChangingDelay);
 
         expect(getHighlightedRanges()).toEqual([
           [[1, 0], [1, 3]],
@@ -512,7 +512,7 @@ describe('BufferSearch', () => {
       expect(currentResultListener).toHaveBeenCalledWith(markerToSelect);
       currentResultListener.reset();
 
-      advanceClock(editor.getBuffer().stoppedChangingDelay);
+      advanceClock(buffer.stoppedChangingDelay);
 
       expectUpdateEvent();
       expect(getHighlightedRanges()).toEqual([
