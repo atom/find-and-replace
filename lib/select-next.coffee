@@ -79,7 +79,8 @@ class SelectNext
     foundRange
 
   addSelection: (range) ->
-    selection = @editor.addSelectionForBufferRange(range)
+    reversed = @editor.getLastSelection().isReversed()
+    selection = @editor.addSelectionForBufferRange(range, {reversed})
     @updateSavedSelections selection
 
   scanForNextOccurrence: (range, callback) ->

@@ -75,3 +75,9 @@
   'ctrl-enter': 'find-and-replace:replace-all'
 '.platform-linux .project-find .replace-container atom-text-editor':
   'ctrl-enter': 'project-find:replace-all'
+
+'.results-view':
+  'home': 'core:move-to-top'
+  'ctrl-home': 'core:move-to-top'
+  'end': 'core:move-to-bottom'
+  'ctrl-end': 'core:move-to-bottom'

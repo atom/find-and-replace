@@ -5,6 +5,11 @@ notifications:
     on_success: never
     on_failure: change
 
+env:
+- ATOM_CHANNEL=stable
+- ATOM_CHANNEL=beta
+- ATOM_CHANNEL=dev
+
 script: 'curl -s https://raw.githubusercontent.com/atom/ci/master/build-package.sh | sh'
 
 git:

@@ -6,7 +6,9 @@ const temp = require('temp');
 const fs = require('fs');
 const etch = require('etch');
 const ResultsPaneView = require('../lib/project/results-pane');
-const FileIcons = require('../lib/file-icons');
+const getIconServices = require('../lib/get-icon-services');
+const DefaultFileIcons = require('../lib/default-file-icons');
+const {Disposable} = require('atom')
 const {beforeEach, it, fit, ffit, fffit} = require('./async-spec-helpers')
 
 global.beforeEach(function() {
@@ -62,6 +64,7 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
+      await resultsView.heightInvalidationPromise;
       expect(resultsView.refs.listView.element.querySelector('.path-name').textContent).toBe("one-long-line.coffee");
       expect(resultsView.refs.listView.element.querySelectorAll('.preview').length).toBe(1);
       expect(resultsView.refs.listView.element.querySelector('.preview').textContent).toBe('test test test test test test test test test test test a b c d e f g h i j k l abcdefghijklmnopqrstuvwxyz');
@@ -80,6 +83,7 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
+      await resultsView.heightInvalidationPromise;
       expect(resultsView.refs.listView.element.querySelector('.path-name').textContent).toBe(path.join("fixtures", "one-long-line.coffee"));
     });
   });
@@ -98,6 +102,7 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
+      await resultsView.heightInvalidationPromise;
       expect(resultsView.refs.listView.element.querySelector('.path-name').textContent).toBe("one-long-line.coffee");
       expect(resultsView.refs.listView.element.querySelectorAll('.preview').length).toBe(1);
       expect(resultsView.refs.listView.element.querySelector('.match').textContent).toBe('ghijkl');
@@ -109,6 +114,7 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
+      await resultsView.heightInvalidationPromise;
       expect(resultsView.refs.listView.element.querySelector('.match').textContent).toBe('ghijkl');
       expect(resultsView.refs.listView.element.querySelector('.match')).toHaveClass('highlight-info');
       expect(resultsView.refs.listView.element.querySelector('.replacement').textContent).toBe('');
@@ -116,6 +122,7 @@ describe('ResultsView', () => {
 
       projectFindView.replaceEditor.setText('cats');
       advanceClock(modifiedDelay);
+      await etch.update(resultsView);
 
       expect(resultsView.refs.listView.element.querySelector('.match').textContent).toBe('ghijkl');
       expect(resultsView.refs.listView.element.querySelector('.match')).toHaveClass('highlight-error');
@@ -124,6 +131,7 @@ describe('ResultsView', () => {
 
       projectFindView.replaceEditor.setText('');
       advanceClock(modifiedDelay);
+      await etch.update(resultsView);
 
       expect(resultsView.refs.listView.element.querySelector('.match').textContent).toBe('ghijkl');
       expect(resultsView.refs.listView.element.querySelector('.match')).toHaveClass('highlight-info');
@@ -138,6 +146,7 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
+      await resultsView.heightInvalidationPromise;
       const listElement = resultsView.refs.listView.element;
       expect(listElement.querySelectorAll('.match')[0].textContent).toBe('function ()');
       expect(listElement.querySelectorAll('.replacement')[0].textContent).toBe('() =>');
@@ -156,6 +165,7 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
+      await resultsView.heightInvalidationPromise;
       const {listView} = resultsView.refs;
       expect(listView.element.scrollTop).toBe(0);
       expect(listView.element.scrollHeight).toBeGreaterThan(listView.element.offsetHeight);
@@ -190,19 +200,17 @@ describe('ResultsView', () => {
 
     it("selects the first result on the next page when core:page-down is triggered", async () => {
       const {listView} = resultsView.refs;
-      expect(listView.element.querySelectorAll('.path').length).not.toBeGreaterThan(resultsView.model.getPathCount());
-      expect(listView.element.querySelectorAll('.match-line').length).not.toBeGreaterThan(resultsView.model.getMatchCount());
-      expect(listView.element.querySelector('.match-line')).toHaveClass('selected');
+      expect(listView.element.querySelectorAll('.path-row').length).not.toBeGreaterThan(resultsView.model.getPathCount());
+      expect(listView.element.querySelectorAll('.match-row').length).not.toBeGreaterThan(resultsView.model.getMatchCount());
+      expect(listView.element.querySelector('.path-row').parentElement).toHaveClass('selected');
 
       let initiallySelectedItem = getSelectedItem();
       let initiallySelectedOffset = getSelectedOffset();
       let initiallySelectedPosition = getSelectedPosition();
 
       await resultsView.pageDown();
-      await etch.getScheduler().getNextUpdatePromise();
 
       expect(getSelectedItem()).not.toBe(initiallySelectedItem);
-      expect(Math.abs(getSelectedOffset() - initiallySelectedOffset)).toBeLessThan(getSelectedItem().offsetHeight);
       expect(getSelectedPosition()).toBeGreaterThan(initiallySelectedPosition);
 
       initiallySelectedItem = getSelectedItem();
@@ -210,22 +218,21 @@ describe('ResultsView', () => {
       initiallySelectedPosition = getSelectedPosition();
 
       await resultsView.pageDown();
-      await etch.getScheduler().getNextUpdatePromise();
 
       expect(getSelectedItem()).not.toBe(initiallySelectedItem);
-      expect(Math.abs(getSelectedOffset() - initiallySelectedOffset)).toBeLessThan(getSelectedItem().offsetHeight);
       expect(getSelectedPosition()).toBeGreaterThan(initiallySelectedPosition);
 
       initiallySelectedPosition = getSelectedPosition();
 
-      for (let i = 0; i < 100; i++) await resultsView.pageDown();
-      expect(_.last(resultsView.element.querySelectorAll('.match-line'))).toHaveClass('selected');
+      for (let i = 0; i < 100; i++) resultsView.pageDown();
+      await resultsView.pageDown();
+      expect(_.last(resultsView.element.querySelectorAll('.match-row'))).toHaveClass('selected');
       expect(getSelectedPosition()).toBeGreaterThan(initiallySelectedPosition);
     });
 
     it("selects the first result on the previous page when core:page-up is triggered", async () => {
       await resultsView.moveToBottom();
-      expect(_.last(resultsView.element.querySelectorAll('.match-line'))).toHaveClass('selected');
+      expect(_.last(resultsView.element.querySelectorAll('.match-row'))).toHaveClass('selected');
 
       const {listView} = resultsView.refs;
 
@@ -236,7 +243,6 @@ describe('ResultsView', () => {
       await resultsView.pageUp();
 
       expect(getSelectedItem()).not.toBe(initiallySelectedItem);
-      expect(Math.abs(getSelectedOffset() - initiallySelectedOffset)).toBeLessThan(getSelectedItem().offsetHeight);
       expect(getSelectedPosition()).toBeLessThan(initiallySelectedPosition);
 
       initiallySelectedItem = getSelectedItem();
@@ -246,13 +252,13 @@ describe('ResultsView', () => {
       await resultsView.pageUp();
 
       expect(getSelectedItem()).not.toBe(initiallySelectedItem);
-      expect(Math.abs(getSelectedOffset() - initiallySelectedOffset)).toBeLessThan(getSelectedItem().offsetHeight);
       expect(getSelectedPosition()).toBeLessThan(initiallySelectedPosition);
 
       initiallySelectedPosition = getSelectedPosition();
 
-      for (let i = 0; i < 100; i++) await resultsView.pageUp();
-      expect(listView.element.querySelector('.path')).toHaveClass('selected');
+      for (let i = 0; i < 100; i++) resultsView.pageUp();
+      await resultsView.pageUp();
+      expect(listView.element.querySelector('.path-row').parentElement).toHaveClass('selected');
       expect(getSelectedPosition()).toBeLessThan(initiallySelectedPosition);
     });
   });
@@ -264,6 +270,7 @@ describe('ResultsView', () => {
       projectFindView.confirm();
       await searchPromise;
       resultsView = getResultsView();
+      await resultsView.heightInvalidationPromise;
     });
 
     it("selects the first/last item when core:move-to-top/move-to-bottom is triggered", async () => {
@@ -271,21 +278,20 @@ describe('ResultsView', () => {
       expect(listView.element.querySelectorAll('li').length).toBeLessThan(resultsView.model.getPathCount() + resultsView.model.getMatchCount());
 
       await resultsView.moveToBottom();
-      expect(listView.element.querySelectorAll('li')[1]).not.toHaveClass('selected');
-      expect(_.last(listView.element.querySelectorAll('li'))).toHaveClass('selected');
+      expect(_.last(listView.element.querySelectorAll('.match-row'))).toHaveClass('selected');
       expect(listView.element.scrollTop).not.toBe(0);
 
       await resultsView.moveToTop();
-      expect(listView.element.querySelector('.match-line')).toHaveClass('selected');
+      expect(listView.element.querySelector('.path-row').parentElement).toHaveClass('selected');
       expect(listView.element.scrollTop).toBe(0);
     });
 
     it("selects the path when when core:move-to-bottom is triggered and last item is collapsed", async () => {
       await resultsView.moveToBottom();
-      resultsView.collapseResult();
+      await resultsView.collapseResult();
       await resultsView.moveToBottom();
 
-      expect(_.last(resultsView.element.querySelectorAll('li')).closest('.path')).toHaveClass('selected');
+      expect(_.last(resultsView.refs.listView.element.querySelectorAll('.path-row')).parentElement).toHaveClass('selected');
     });
 
     it("selects the path when when core:move-to-top is triggered and first item is collapsed", async () => {
@@ -293,7 +299,7 @@ describe('ResultsView', () => {
       atom.commands.dispatch(resultsView.element, 'core:move-left');
       await resultsView.moveToTop();
 
-      expect(resultsView.refs.listView.element.querySelector('li').closest('.path')).toHaveClass('selected');
+      expect(resultsView.refs.listView.element.querySelector('.path-row').parentElement).toHaveClass('selected');
     });
   });
 
@@ -304,45 +310,36 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
+      await resultsView.heightInvalidationPromise;
 
       resultsView.moveDown();
       resultsView.moveDown();
-      resultsView.moveDown();
-
+      await resultsView.moveDown();
       const selectedMatch = resultsView.element.querySelector('.selected');
-      expect(selectedMatch).toHaveClass('match-line');
+      expect(selectedMatch).toHaveClass('match-row');
 
-      resultsView.collapseAllResults();
+      await resultsView.collapseAllResults();
       const selectedPath = resultsView.element.querySelector('.selected');
-      expect(selectedPath).toHaveClass('path');
-      expect(selectedPath.dataset.path).toContain('sample.coffee');
-
-      // If the result is re-expanded without moving up or down, the original
-      // selected match remains selected.
-      resultsView.expandAllResults();
-      const newSelectedMatch = resultsView.element.querySelector('.selected');
-      expect(newSelectedMatch.innerHTML).toBe(selectedMatch.innerHTML);
-      expect(selectedPath.contains(newSelectedMatch)).toBe(true);
-
-      resultsView.collapseAllResults();
-      resultsView.moveDown();
-      resultsView.expandAllResults();
+      expect(selectedPath.firstChild).toHaveClass('path-row');
+      expect(selectedPath.firstChild.dataset.filePath).toContain('sample.coffee');
 
       // Moving down while the path is collapsed moves to the next path,
       // as opposed to selecting the next match within the collapsed path.
+      resultsView.moveDown();
+      await resultsView.expandAllResults();
       const newSelectedPath = resultsView.element.querySelector('.selected');
-      expect(newSelectedPath.dataset.path).toContain('sample.js');
+      expect(newSelectedPath.firstChild.dataset.filePath).toContain('sample.js');
 
       resultsView.moveDown();
       resultsView.moveDown();
-      resultsView.moveDown();
-      expect(resultsView.element.querySelector('.selected')).toHaveClass('match-line');
+      await resultsView.moveDown();
+      expect(resultsView.element.querySelector('.selected')).toHaveClass('match-row');
 
       // Moving up while the path is collapsed moves to the previous path,
       // as opposed to moving up to the next match within the collapsed path.
       resultsView.collapseAllResults();
       resultsView.moveUp();
-      resultsView.expandAllResults();
+      await resultsView.expandAllResults();
       expect(resultsView.element.querySelector('.selected')).toBe(selectedPath);
     });
 
@@ -352,7 +349,9 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      resultsView.collapseResult();
+      await resultsView.heightInvalidationPromise;
+
+      await resultsView.collapseResult();
       expect(resultsView.element.querySelector('.collapsed')).not.toBe(null);
 
       projectFindView.findEditor.setText('sort');
@@ -361,6 +360,52 @@ describe('ResultsView', () => {
 
       expect(resultsView.element.querySelector('.collapsed')).toBe(null);
     })
+
+    it('preserves the collapsed state of the right files when results are removed', async () => {
+      projectFindView.findEditor.setText('push');
+      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      await searchPromise;
+      resultsView = getResultsView();
+
+      // collapse the first result
+      resultsView.selectFirstResult();
+      resultsView.collapseResult();
+
+      // remove the first result
+      const firstPath = resultsView.model.getPaths()[0];
+      const firstResult = resultsView.model.getResult(firstPath);
+      resultsView.model.removeResult(firstPath);
+
+      // Check that the first result is not collapsed
+      const matchedPaths = resultsView.refs.listView.element.querySelectorAll('.path.list-nested-item');
+      expect(matchedPaths[0]).not.toHaveClass('collapsed')
+    });
+
+    it('preserves the collapsed state of the right files when results are added', async () => {
+      projectFindView.findEditor.setText('push');
+      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      await searchPromise;
+      resultsView = getResultsView();
+
+      // remove the first result
+      const firstPath = resultsView.model.getPaths()[0];
+      const firstResult = resultsView.model.getResult(firstPath);
+      resultsView.model.removeResult(firstPath);
+
+      // collapse the new first result
+      resultsView.selectFirstResult();
+      resultsView.collapseResult();
+
+      // re-add the old first result
+      resultsView.model.addResult(firstPath, firstResult);
+
+      await etch.update(resultsView);
+
+      // Check that the first result is not collapsed while the second one still is
+      const matchedPaths = resultsView.refs.listView.element.querySelectorAll('.path-row');
+      expect(matchedPaths[0].parentElement).not.toHaveClass('collapsed')
+      expect(matchedPaths[1].parentElement).toHaveClass('collapsed')
+    });
   });
 
   describe("opening results", () => {
@@ -372,14 +417,17 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
+      await resultsView.heightInvalidationPromise;
       resultsView.selectFirstResult();
     });
 
-    function paneItemOpening() {
+    function paneItemOpening(pending = null) {
       return new Promise(resolve => {
-        const subscription = atom.workspace.onDidOpen(() => {
-          resolve()
-          subscription.dispose()
+        const subscription = atom.workspace.onDidOpen(({pane, item}) => {
+          if (pending === null || (pane.getPendingItem() === item) === pending) {
+            resolve()
+            subscription.dispose()
+          }
         })
       })
     }
@@ -401,7 +449,7 @@ describe('ResultsView', () => {
     });
 
     it("opens the file containing the result in a non-pending state when the search result is double-clicked", async () => {
-      const pathNode = resultsView.refs.listView.element.querySelectorAll(".search-result")[0];
+      const pathNode = resultsView.refs.listView.element.querySelectorAll(".match-row")[0];
       const click1 = buildMouseEvent('mousedown', {target: pathNode, detail: 1});
       const click2 = buildMouseEvent('mousedown', {target: pathNode, detail: 2});
       pathNode.dispatchEvent(click1);
@@ -410,14 +458,14 @@ describe('ResultsView', () => {
       // Otherwise, the double click will transfer focus back to the results view
       expect(click2.defaultPrevented).toBe(true);
 
-      await paneItemOpening()
+      await paneItemOpening(false)
       const editor = atom.workspace.getCenter().getActiveTextEditor();
       expect(atom.workspace.getCenter().getActivePane().getPendingItem()).toBe(null);
       expect(atom.views.getView(editor)).toHaveFocus();
     });
 
     it("opens the file containing the result in a pending state when the search result is single-clicked", async () => {
-      const pathNode = resultsView.refs.listView.element.querySelectorAll(".search-result")[0];
+      const pathNode = resultsView.refs.listView.element.querySelectorAll(".match-row")[0];
       pathNode.dispatchEvent(buildMouseEvent('mousedown', {target: pathNode, which: 1}));
       await paneItemOpening()
       const editor = atom.workspace.getCenter().getActiveTextEditor();
@@ -465,33 +513,44 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
+      await resultsView.heightInvalidationPromise;
 
-      let {length: resultCount} = resultsView.refs.listView.element.querySelectorAll(".search-result");
-      expect(resultCount).toBe(13);
+      let {length: resultCount} = resultsView.refs.listView.element.querySelectorAll(".match-row");
+      expect(resultCount).toBe(11);
 
       resultsView.selectFirstResult();
 
-      // moves down for 13 results + 2 files
-      _.times(resultCount + 1, () => atom.commands.dispatch(resultsView.element, 'core:move-down'));
+      // moves down for 11 results + 2 files
+      for (let i = 0; i < resultCount; ++i) {
+        resultsView.moveDown();
+      }
+      await resultsView.moveDown();
+      await resultsView.moveDown();
       let selectedItem = resultsView.element.querySelector('.selected');
-      expect(selectedItem).toHaveClass('match-line');
+      expect(selectedItem).toHaveClass('match-row');
 
       // stays at the bottom
       let lastSelectedItem = selectedItem;
-      _.times(2, () => atom.commands.dispatch(resultsView.element, 'core:move-down'));
+      await resultsView.moveDown();
+      await resultsView.moveDown();
       selectedItem = resultsView.element.querySelector('.selected');
       expect(selectedItem).toBe(lastSelectedItem);
 
       // moves up to the top
       lastSelectedItem = selectedItem;
-      _.times(resultCount + 1, () => atom.commands.dispatch(resultsView.element, 'core:move-up'));
+      for (let i = 0; i < resultCount; ++i) {
+        resultsView.moveUp();
+      }
+      await resultsView.moveUp();
+      await resultsView.moveUp();
       selectedItem = resultsView.element.querySelector('.selected');
-      expect(selectedItem).toHaveClass('path');
+      expect(selectedItem.firstChild).toHaveClass('path-row');
       expect(selectedItem).not.toBe(lastSelectedItem);
 
       // stays at the top
       lastSelectedItem = selectedItem;
-      _.times(2, () => atom.commands.dispatch(resultsView.element, 'core:move-up'));
+      await resultsView.moveUp();
+      await resultsView.moveUp();
       selectedItem = resultsView.element.querySelector('.selected');
       expect(selectedItem).toBe(lastSelectedItem);
     });
@@ -502,6 +561,7 @@ describe('ResultsView', () => {
         atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
         resultsView = getResultsView();
+        await resultsView.heightInvalidationPromise;
       });
 
       it("shows the preview-controls", () => {
@@ -509,61 +569,57 @@ describe('ResultsView', () => {
         expect(getResultsPane().refs.previewControls.style).not.toBe('hidden');
       });
 
-      it("collapses the selected results view", () => {
-        clickOn(resultsView.refs.listView.element.querySelector('.search-result'));
+      it("collapses the selected results view", async () => {
+        clickOn(resultsView.refs.listView.element.querySelector('.match-row'));
 
-        atom.commands.dispatch(resultsView.element, 'core:move-left');
+        await resultsView.collapseResult();
 
         let selectedItem = resultsView.element.querySelector('.selected');
         expect(selectedItem).toHaveClass('collapsed');
-        expect(selectedItem).toBe(resultsView.refs.listView.element.querySelector('.path'));
+        expect(selectedItem).toBe(resultsView.refs.listView.element.querySelector('.path-row').parentElement);
       });
 
-      it("collapses all results if collapse All button is pressed", () => {
-        clickOn(getResultsPane().refs.collapseAll);
-        for (let item of Array.from(resultsView.element.querySelector('.list-nested-item'))) {
-          expect(item).toHaveClass('collapsed');
+      it("collapses all results if collapse All button is pressed", async () => {
+        await resultsView.collapseAllResults();
+        for (let item of Array.from(resultsView.refs.listView.element.querySelectorAll('.path-row'))) {
+          expect(item.parentElement).toHaveClass('collapsed');
         }
       });
 
-      it("expands the selected results view", () => {
-        clickOn(resultsView.refs.listView.element.querySelector('.path'));
+      it("expands the selected results view", async () => {
+        clickOn(resultsView.refs.listView.element.querySelector('.path-row').parentElement);
 
-        atom.commands.dispatch(resultsView.element, 'core:move-right');
+        await resultsView.expandResult();
 
         let selectedItem = resultsView.element.querySelector('.selected');
-        expect(selectedItem).toHaveClass('match-line');
-        expect(selectedItem).toBe(resultsView.refs.listView.element.querySelector('.match-line'));
+        expect(selectedItem).toHaveClass('match-row');
+        expect(selectedItem).toBe(resultsView.refs.listView.element.querySelector('.match-row'));
       });
 
-      it("expands all results if 'Expand All' button is pressed", () => {
-        clickOn(getResultsPane().refs.expandAll);
-        for (let item of Array.from(resultsView.element.querySelector('.list-nested-item'))) {
-          expect(item).not.toHaveClass('collapsed');
+      it("expands all results if 'Expand All' button is pressed", async () => {
+        await resultsView.expandAllResults();
+        await etch.update(resultsView.refs.listView);
+        for (let item of Array.from(resultsView.refs.listView.element.querySelectorAll('.path-row'))) {
+          expect(item.parentElement).not.toHaveClass('collapsed');
         }
       });
 
       describe("when there are collapsed results", () => {
-        it("moves to the correct next result when a path is selected", () => {
-          clickOn(resultsView.element.querySelectorAll('.path')[1]);
-          clickOn(resultsView.element.querySelectorAll('.path')[0].querySelector('.search-result:last-child'));
+        it("moves to the correct prev/next result when a path is selected", async () => {
+          resultsView.selectRow(0);
+          resultsView.collapseResult();
+          await resultsView.selectRow(2);
 
-          atom.commands.dispatch(resultsView.element, 'core:move-down');
+          expect(resultsView.refs.listView.element.querySelectorAll('.match-row')[0]).toHaveClass('selected');
 
-          let selectedItem = resultsView.element.querySelector('.selected');
-          expect(selectedItem).toHaveClass('path');
-          expect(selectedItem).toBe(resultsView.element.querySelectorAll('.path')[1]);
-        });
+          await resultsView.moveUp();
+          expect(resultsView.refs.listView.element.querySelectorAll('.path-row')[1].parentElement).toHaveClass('selected');
 
-        it("moves to the correct previous result when a path is selected", () => {
-          clickOn(resultsView.element.querySelectorAll('.path')[0]);
-          clickOn(resultsView.element.querySelectorAll('.path')[1].querySelector('.search-result'));
+          await resultsView.moveUp();
+          expect(resultsView.refs.listView.element.querySelectorAll('.path-row')[0].parentElement).toHaveClass('selected');
 
-          atom.commands.dispatch(resultsView.element, 'core:move-up');
-          expect(resultsView.element.querySelectorAll('.path')[1]).toHaveClass('selected');
-
-          atom.commands.dispatch(resultsView.element, 'core:move-up');
-          expect(resultsView.refs.listView.element.querySelectorAll('.path')[0]).toHaveClass('selected');
+          await resultsView.moveDown();
+          expect(resultsView.refs.listView.element.querySelectorAll('.path-row')[1].parentElement).toHaveClass('selected');
         });
       });
     });
@@ -575,6 +631,7 @@ describe('ResultsView', () => {
       atom.commands.dispatch(projectFindView.element, 'core:confirm');
       await searchPromise;
       resultsView = getResultsView();
+      await resultsView.heightInvalidationPromise;
       atom.commands.dispatch(resultsView.element, 'core:confirm');
       atom.commands.dispatch(resultsView.element, 'core:move-down');
       atom.commands.dispatch(resultsView.element, 'core:move-up');
@@ -588,7 +645,7 @@ describe('ResultsView', () => {
       projectFindView.findEditor.setText('thiswillnotmatchanythingintheproject');
       atom.commands.dispatch(projectFindView.element, 'core:confirm');
       await searchPromise;
-      expect(getResultsPane().refs.previewControls.style.visibility).toBe('hidden');
+      expect(getResultsPane().refs.previewControls.style.display).toBe('none');
     });
   });
 
@@ -601,6 +658,7 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
+      await resultsView.heightInvalidationPromise;
       resultsView.selectFirstResult();
 
       _.times(2, () => atom.commands.dispatch(resultsView.element, 'core:move-down'));
@@ -616,8 +674,9 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      resultsView.selectFirstResult();
-      resultsView.collapseResult();
+      await resultsView.heightInvalidationPromise;
+      await resultsView.selectFirstResult();
+      await resultsView.collapseResult();
 
       atom.commands.dispatch(resultsView.element, 'find-and-replace:copy-path');
       expect(atom.clipboard.read()).toBe('sample.coffee');
@@ -641,6 +700,7 @@ describe('ResultsView', () => {
         await searchPromise;
 
         resultsView = getResultsView();
+        await resultsView.heightInvalidationPromise;
         resultsView.selectFirstResult();
         resultsView.collapseResult();
         atom.commands.dispatch(resultsView.element, 'find-and-replace:copy-path');
@@ -651,8 +711,8 @@ describe('ResultsView', () => {
     });
   });
 
-  describe("preview font", () => {
-    it('respects the editor.fontFamily setting', async () => {
+  describe("fonts", () => {
+    it('respect the editor.fontFamily setting', async () => {
       atom.config.set('editor.fontFamily', 'Courier');
 
       projectFindView.findEditor.setText('items');
@@ -660,49 +720,125 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      const previewElement = resultsView.element.querySelector('.match-line .preview');
-      expect(previewElement.style.fontFamily).toBe('Courier');
+      await etch.update(resultsView);
+      expect(resultsView.element.style.fontFamily).toBe('Courier');
 
       atom.config.set('editor.fontFamily', 'Helvetica');
-      expect(previewElement.style.fontFamily).toBe('Helvetica');
+      await etch.update(resultsView);
+      expect(resultsView.element.style.fontFamily).toBe('Helvetica');
     })
   });
 
-  describe("icon-service lifecycle", () => {
-    it('renders file icon classes based on the provided file-icons service', async () => {
-      const fileIconsDisposable = atom.packages.serviceHub.provide('atom.file-icons', '1.0.0', {
-        iconClassForPath(path, context) {
-          expect(context).toBe("find-and-replace");
-          if (path.endsWith('one-long-line.coffee')) {
-            return "first-icon-class second-icon-class";
-          } else {
-            return ['third-icon-class', 'fourth-icon-class'];
+  describe('icon services', () => {
+    describe('atom.file-icons', () => {
+      it('has a default handler', () => {
+        expect(getIconServices().fileIcons).toBe(DefaultFileIcons)
+      })
+
+      it('displays icons for common filetypes', () => {
+        expect(DefaultFileIcons.iconClassForPath('README.md')).toBe('icon-book')
+        expect(DefaultFileIcons.iconClassForPath('zip.zip')).toBe('icon-file-zip')
+        expect(DefaultFileIcons.iconClassForPath('a.gif')).toBe('icon-file-media')
+        expect(DefaultFileIcons.iconClassForPath('a.pdf')).toBe('icon-file-pdf')
+        expect(DefaultFileIcons.iconClassForPath('an.exe')).toBe('icon-file-binary')
+        expect(DefaultFileIcons.iconClassForPath('jg.js')).toBe('icon-file-text')
+      })
+
+      it('allows a service provider to change the handler', async () => {
+        const provider = {
+          iconClassForPath(path, context) {
+            expect(context).toBe('find-and-replace')
+            return (path.endsWith('one-long-line.coffee'))
+              ? 'first-icon-class second-icon-class'
+              : ['third-icon-class', 'fourth-icon-class']
           }
         }
-      });
+        const disposable = atom.packages.serviceHub.provide('atom.file-icons', '1.0.0', provider);
+        expect(getIconServices().fileIcons).toBe(provider)
 
-      projectFindView.findEditor.setText('i');
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
-      await searchPromise;
+        projectFindView.findEditor.setText('i');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
+        await searchPromise;
 
-      resultsView = getResultsView();
-      let fileIconClasses = Array.from(resultsView.element.querySelectorAll('.path-details .icon')).map(el => el.className);
-      expect(fileIconClasses).toContain('first-icon-class second-icon-class icon');
-      expect(fileIconClasses).toContain('third-icon-class fourth-icon-class icon');
-      expect(fileIconClasses).not.toContain('icon-file-text icon');
+        resultsView = getResultsView();
+        await resultsView.heightInvalidationPromise;
+        let fileIconClasses = Array.from(resultsView.refs.listView.element.querySelectorAll('.path-row .icon')).map(el => el.className);
+        expect(fileIconClasses).toContain('first-icon-class second-icon-class icon');
+        expect(fileIconClasses).toContain('third-icon-class fourth-icon-class icon');
+        expect(fileIconClasses).not.toContain('icon-file-text icon');
 
-      fileIconsDisposable.dispose();
-      projectFindView.findEditor.setText('e');
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+        disposable.dispose();
+        projectFindView.findEditor.setText('e');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
 
-      await searchPromise;
-      resultsView = getResultsView();
-      fileIconClasses = Array.from(resultsView.element.querySelectorAll('.path-details .icon')).map(el => el.className);
-      expect(fileIconClasses).not.toContain('first-icon-class second-icon-class icon');
-      expect(fileIconClasses).not.toContain('third-icon-class fourth-icon-class icon');
-      expect(fileIconClasses).toContain('icon-file-text icon');
+        await searchPromise;
+        resultsView = getResultsView();
+        fileIconClasses = Array.from(resultsView.refs.listView.element.querySelectorAll('.path-row .icon')).map(el => el.className);
+        expect(fileIconClasses).not.toContain('first-icon-class second-icon-class icon');
+        expect(fileIconClasses).not.toContain('third-icon-class fourth-icon-class icon');
+        expect(fileIconClasses).toContain('icon-file-text icon');
+      })
     })
-  });
+
+    describe('file-icons.element-icons', () => {
+      beforeEach(() => jasmine.useRealClock())
+
+      it('has no default handler', () => {
+        expect(getIconServices().elementIcons).toBe(null)
+      })
+
+      it('uses the element-icon service if available', () => {
+        const iconSelector = '.path-row .icon:not([data-name="fake-file-path"])'
+        const provider = (element, path) => {
+          expect(element).toBeInstanceOf(HTMLElement)
+          expect(typeof path === "string").toBe(true)
+          expect(path.length).toBeGreaterThan(0)
+          const classes = path.endsWith('one-long-line.coffee')
+            ? ['foo', 'bar']
+            : ['baz', 'qlux']
+          element.classList.add(...classes)
+          return new Disposable(() => {
+            element.classList.remove(...classes)
+          })
+        }
+        let disposable
+
+        waitsForPromise(() => {
+          disposable = atom.packages.serviceHub.provide('file-icons.element-icons', '1.0.0', provider)
+          expect(getIconServices().elementIcons).toBe(provider)
+          projectFindView.findEditor.setText('i');
+          atom.commands.dispatch(projectFindView.element, 'core:confirm');
+          return searchPromise
+        })
+
+        waitsForPromise(() => delayFor(35))
+
+        runs(() => {
+          resultsView = getResultsView()
+          const iconElements = resultsView.element.querySelectorAll(iconSelector)
+          expect(iconElements[0].className.trim()).toBe('icon foo bar')
+          expect(iconElements[1].className.trim()).toBe('icon baz qlux')
+          expect(resultsView.element.querySelector('.icon-file-text')).toBe(null)
+
+          disposable.dispose()
+          projectFindView.findEditor.setText('e')
+          atom.commands.dispatch(projectFindView.element, 'core:confirm')
+        })
+
+        waitsForPromise(() => searchPromise)
+
+        waitsForPromise(() => delayFor(35))
+
+        runs(() => {
+          resultsView = getResultsView()
+          const iconElements = resultsView.element.querySelectorAll(iconSelector)
+          expect(iconElements[0].className.trim()).toBe('icon-file-text icon')
+          expect(iconElements[1].className.trim()).toBe('icon-file-text icon')
+          expect(resultsView.element.querySelector('.foo, .bar, .baz, .qlux')).toBe(null)
+        })
+      })
+    })
+  })
 
   describe('updating the search while viewing results', () => {
     it('resets the results message', async () => {
@@ -711,140 +847,90 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsPane = getResultsPane();
+      await etch.update(resultsPane);
       expect(resultsPane.refs.previewCount.textContent).toContain('3 files');
 
       projectFindView.findEditor.setText('');
       atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      await etch.update(resultsPane);
       expect(resultsPane.refs.previewCount.textContent).toContain('Project search results');
     })
   });
 
   describe('search result context lines', () => {
     beforeEach(async () => {
-      atom.config.set('find-and-replace.searchContextLineCountBefore', 2);
+      atom.config.set('find-and-replace.searchContextLineCountBefore', 4);
       atom.config.set('find-and-replace.searchContextLineCountAfter', 3);
       atom.config.set('find-and-replace.leadingContextLineCount', 0);
       atom.config.set('find-and-replace.trailingContextLineCount', 0);
 
-      projectFindView.findEditor.setText('items');
+      projectFindView.findEditor.setText('items.');
       atom.commands.dispatch(projectFindView.element, 'core:confirm');
       await searchPromise;
 
       resultsView = getResultsView();
     });
 
-    function getLineNodesMatchFirstPath(resultsView, matchIndex) {
-      const pathNodes = resultsView.refs.listView.element.querySelectorAll('.path');
-      expect(pathNodes.length).not.toBeLessThan(1);
-      const pathNameNode = pathNodes[0].querySelector('.path-name');
-      expect(pathNameNode.textContent).toBe('sample.coffee');
-      // the second file is sample.js which we don't use
-      expect(pathNodes.length).not.toBeLessThan(matchIndex + 1);
-      const resultNode = pathNodes[matchIndex].querySelector('.search-result');
-      return resultNode.querySelectorAll('.list-item');
+    function getFirstMatchRows(resultsView) {
+      const {element} = resultsView.refs.listView
+      const rowNodes = Array.from(element.querySelectorAll('.list-item'));
+      const rowCount = resultsView.resultRowGroups[0].rows.filter(row =>
+        row.data.matchLineNumber === resultsView.resultRows[1].data.matchLineNumber
+      ).length
+      return rowNodes.slice(1, 1 + rowCount);
     }
 
-    it('shows the context lines', async () => {
-      // show no context lines
+    it('shows no context lines', async () => {
       expect(resultsView.model.getFindOptions().leadingContextLineCount).toBe(0);
       expect(resultsView.model.getFindOptions().trailingContextLineCount).toBe(0);
-      {
-        const lineNodes = getLineNodesMatchFirstPath(resultsView, 0);
-        expect(lineNodes.length).toBe(1);
-        expect(lineNodes[0]).toHaveClass('match-line');
-        expect(lineNodes[0].querySelector('.preview').textContent).toBe('  sort: (items) ->');
-      }
 
-      // show all leading context lines, show 1 trailing context line
-      await resultsView.toggleLeadingContextLines();
+      const lineNodes = getFirstMatchRows(resultsView);
+      expect(lineNodes.length).toBe(1);
+      expect(lineNodes[0]).toHaveClass('match-row');
+      expect(lineNodes[0].querySelector('.preview').textContent).toBe('    return items if items.length <= 1');
+    });
+
+    it('shows 1 leading context line, 1 trailing context line', async () => {
+      resultsView.incrementLeadingContextLines();
       await resultsView.incrementTrailingContextLines();
-      expect(resultsView.model.getFindOptions().leadingContextLineCount).toBe(2);
+      expect(resultsView.model.getFindOptions().leadingContextLineCount).toBe(1);
       expect(resultsView.model.getFindOptions().trailingContextLineCount).toBe(1);
 
-      {
-        const lineNodes = getLineNodesMatchFirstPath(resultsView, 0);
-        expect(lineNodes.length).toBe(3);
-        expect(lineNodes[0]).not.toHaveClass('match-line');
-        expect(lineNodes[0].querySelector('.preview').textContent).toBe('class quicksort');
-        expect(lineNodes[1]).toHaveClass('match-line');
-        expect(lineNodes[1].querySelector('.preview').textContent).toBe('  sort: (items) ->');
-        expect(lineNodes[2]).not.toHaveClass('match-line');
-        expect(lineNodes[2].querySelector('.preview').textContent).toBe('    return items if items.length <= 1');
-      }
+      const lineNodes = getFirstMatchRows(resultsView);
+      expect(lineNodes.length).toBe(3);
+      expect(lineNodes[0]).toHaveClass('context-row');
+      /*
+      FIXME: I suspect this test fails because of a bug in atom's scan
+      See issue #16948
+      expect(lineNodes[0].querySelector('.preview').textContent).toBe('  sort: (items) ->');
+      */
+      expect(lineNodes[1]).toHaveClass('match-row');
+      expect(lineNodes[1].querySelector('.preview').textContent).toBe('    return items if items.length <= 1');
+      expect(lineNodes[2]).toHaveClass('context-row');
+      expect(lineNodes[2].querySelector('.preview').textContent).toBe('');
+    });
 
-      // show 1 leading context line, show 2 trailing context lines
-      await resultsView.decrementLeadingContextLines();
+    it('shows all leading context lines, 2 trailing context lines', async () => {
+      resultsView.toggleLeadingContextLines();
+      resultsView.incrementTrailingContextLines();
       await resultsView.incrementTrailingContextLines();
-      expect(resultsView.model.getFindOptions().leadingContextLineCount).toBe(1);
+      expect(resultsView.model.getFindOptions().leadingContextLineCount).toBe(4);
       expect(resultsView.model.getFindOptions().trailingContextLineCount).toBe(2);
 
-      {
-        const lineNodes = getLineNodesMatchFirstPath(resultsView, 0);
-        expect(lineNodes.length).toBe(4);
-        expect(lineNodes[0]).not.toHaveClass('match-line');
-        expect(lineNodes[0].querySelector('.preview').textContent).toBe('class quicksort');
-        expect(lineNodes[1]).toHaveClass('match-line');
-        expect(lineNodes[1].querySelector('.preview').textContent).toBe('  sort: (items) ->');
-        expect(lineNodes[2]).not.toHaveClass('match-line');
-        expect(lineNodes[2].querySelector('.preview').textContent).toBe('    return items if items.length <= 1');
-        expect(lineNodes[3]).not.toHaveClass('match-line');
-        expect(lineNodes[3].querySelector('.preview').textContent).toBe('');
-      }
+      const lineNodes = getFirstMatchRows(resultsView);
 
-      // show no leading context lines, show 3 trailing context lines
-      await resultsView.decrementLeadingContextLines();
-      await resultsView.incrementTrailingContextLines();
-      expect(resultsView.model.getFindOptions().leadingContextLineCount).toBe(0);
-      expect(resultsView.model.getFindOptions().trailingContextLineCount).toBe(3);
+      // There are two leading context lines after the start of the document
+      // There are two trailing context lines before the next match
+      expect(lineNodes.length).toBe(4);
 
-      {
-        const lineNodes = getLineNodesMatchFirstPath(resultsView, 0);
-        expect(lineNodes.length).toBe(4);
-        expect(lineNodes[0]).toHaveClass('match-line');
-        expect(lineNodes[0].querySelector('.preview').textContent).toBe('  sort: (items) ->');
-        expect(lineNodes[1]).not.toHaveClass('match-line');
-        expect(lineNodes[1].querySelector('.preview').textContent).toBe('    return items if items.length <= 1');
-        expect(lineNodes[2]).not.toHaveClass('match-line');
-        expect(lineNodes[2].querySelector('.preview').textContent).toBe('');
-        expect(lineNodes[3]).not.toHaveClass('match-line');
-        expect(lineNodes[3].querySelector('.preview').textContent).toBe('    pivot = items.shift()');
-      }
-
-      // show 1 leading context line, show 2 trailing context lines
-      await resultsView.incrementLeadingContextLines();
-      await resultsView.decrementTrailingContextLines();
-      expect(resultsView.model.getFindOptions().leadingContextLineCount).toBe(1);
-      expect(resultsView.model.getFindOptions().trailingContextLineCount).toBe(2);
-
-      {
-        const lineNodes = getLineNodesMatchFirstPath(resultsView, 0);
-        expect(lineNodes.length).toBe(4);
-        expect(lineNodes[0]).not.toHaveClass('match-line');
-        expect(lineNodes[0].querySelector('.preview').textContent).toBe('class quicksort');
-        expect(lineNodes[1]).toHaveClass('match-line');
-        expect(lineNodes[1].querySelector('.preview').textContent).toBe('  sort: (items) ->');
-        expect(lineNodes[2]).not.toHaveClass('match-line');
-        expect(lineNodes[2].querySelector('.preview').textContent).toBe('    return items if items.length <= 1');
-        expect(lineNodes[3]).not.toHaveClass('match-line');
-        expect(lineNodes[3].querySelector('.preview').textContent).toBe('');
-      }
-
-      // show 1 leading context line, show 2 trailing context lines
-      await resultsView.incrementTrailingContextLines();
-      expect(resultsView.model.getFindOptions().trailingContextLineCount).toBe(3);
-      await resultsView.incrementLeadingContextLines();
-      await resultsView.toggleTrailingContextLines();
-      expect(resultsView.model.getFindOptions().leadingContextLineCount).toBe(2);
-      expect(resultsView.model.getFindOptions().trailingContextLineCount).toBe(0);
-
-      {
-        const lineNodes = getLineNodesMatchFirstPath(resultsView, 0);
-        expect(lineNodes.length).toBe(2);
-        expect(lineNodes[0]).not.toHaveClass('match-line');
-        expect(lineNodes[0].querySelector('.preview').textContent).toBe('class quicksort');
-        expect(lineNodes[1]).toHaveClass('match-line');
-        expect(lineNodes[1].querySelector('.preview').textContent).toBe('  sort: (items) ->');
-      }
+      expect(lineNodes[0]).toHaveClass('context-row');
+      expect(lineNodes[0].querySelector('.preview').textContent).toBe('class quicksort');
+      expect(lineNodes[1]).toHaveClass('context-row');
+      expect(lineNodes[1].querySelector('.preview').textContent).toBe('  sort: (items) ->');
+      expect(lineNodes[2]).toHaveClass('match-row');
+      expect(lineNodes[2].querySelector('.preview').textContent).toBe('    return items if items.length <= 1');
+      expect(lineNodes[3]).toHaveClass('context-row');
+      expect(lineNodes[3].querySelector('.preview').textContent).toBe('');
     });
   });
 
@@ -855,50 +941,49 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
+      await resultsView.heightInvalidationPromise;
     });
 
     it('maintains selected result when adding and removing results', async () => {
       {
-        const matchLines = resultsView.refs.listView.element.querySelectorAll('.match-line');
-        expect(matchLines.length).toBe(4);
+        const matchRows = resultsView.refs.listView.element.querySelectorAll('.match-row');
+        expect(matchRows.length).toBe(3);
 
         resultsView.moveDown();
         resultsView.moveDown();
         resultsView.moveDown();
-        resultsView.moveDown();
-        expect(matchLines[3]).toHaveClass('selected');
-        expect(matchLines[3].querySelector('.preview').textContent).toBe('      current < pivot ? left.push(current) : right.push(current);');
-        expect(resultsView.selectedResultIndex).toBe(1);
-        expect(resultsView.selectedMatchIndex).toBe(1);
+        await resultsView.moveDown();
+        expect(matchRows[2]).toHaveClass('selected');
+        expect(matchRows[2].querySelector('.preview').textContent).toBe('      current < pivot ? left.push(current) : right.push(current);');
+        expect(resultsView.selectedRowIndex).toBe(4);
       }
 
       // remove the first result
       const firstPath = resultsView.model.getPaths()[0];
       const firstResult = resultsView.model.getResult(firstPath);
       resultsView.model.removeResult(firstPath);
+      await etch.update(resultsView);
 
       // check that the same match is still selected
       {
-        const matchLines = resultsView.refs.listView.element.querySelectorAll('.match-line');
-        expect(matchLines.length).toBe(2);
-        expect(matchLines[1]).toHaveClass('selected');
-        expect(matchLines[1].querySelector('.preview').textContent).toBe('      current < pivot ? left.push(current) : right.push(current);');
-        expect(resultsView.selectedResultIndex).toBe(0);
-        expect(resultsView.selectedMatchIndex).toBe(1);
-
+        const matchRows = resultsView.refs.listView.element.querySelectorAll('.match-row');
+        expect(matchRows.length).toBe(1);
+        expect(matchRows[0]).toHaveClass('selected');
+        expect(matchRows[0].querySelector('.preview').textContent).toBe('      current < pivot ? left.push(current) : right.push(current);');
+        expect(resultsView.selectedRowIndex).toBe(1);
       }
 
       // re-add the first result
       resultsView.model.addResult(firstPath, firstResult);
+      await etch.update(resultsView);
 
       // check that the same match is still selected
       {
-        const matchLines = resultsView.refs.listView.element.querySelectorAll('.match-line');
-        expect(matchLines.length).toBe(4);
-        expect(matchLines[3]).toHaveClass('selected');
-        expect(matchLines[3].querySelector('.preview').textContent).toBe('      current < pivot ? left.push(current) : right.push(current);');
-        expect(resultsView.selectedResultIndex).toBe(1);
-        expect(resultsView.selectedMatchIndex).toBe(1);
+        const matchRows = resultsView.refs.listView.element.querySelectorAll('.match-row');
+        expect(matchRows.length).toBe(3);
+        expect(matchRows[2]).toHaveClass('selected');
+        expect(matchRows[2].querySelector('.preview').textContent).toBe('      current < pivot ? left.push(current) : right.push(current);');
+        expect(resultsView.selectedRowIndex).toBe(4);
       }
     });
   })
@@ -919,4 +1004,10 @@ function buildMouseEvent(type, properties) {
 
 function clickOn(element) {
   element.dispatchEvent(buildMouseEvent('mousedown', { detail: 1 }));
+}
+
+function delayFor(ms) {
+  return new Promise(done => {
+    setTimeout(() => done(), ms)
+  })
 }

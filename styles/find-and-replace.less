@@ -241,19 +241,30 @@ atom-workspace.find-visible {
   position: relative;
   display: flex;
   flex-direction: column;
+  padding: 0;
 
   .preview-header {
     display: flex;
-    padding: @component-padding/2 @component-padding/2 @component-padding/2 @component-padding;
+    flex-wrap: wrap;
+    padding: @component-padding/2;
     align-items: center;
     justify-content: space-between;
+    overflow: hidden;
     font-weight: normal;
     border-bottom: 1px solid @panel-heading-border-color;
     background-color: @panel-heading-background-color;
   }
 
+  .preview-count {
+    margin: @component-padding/2;
+  }
+
   .preview-controls {
-    flex-shrink: 0;
+    display: flex;
+    flex-wrap: wrap;
+    .btn-group {
+      margin: @component-padding/2;
+    }
   }
 
   .loading-spinner-tiny,
@@ -274,8 +285,26 @@ atom-workspace.find-visible {
     position: relative;
     flex: 1;
 
-    .list-tree {
-      padding: 0 @component-padding;
+    &-container {
+      // adds some padding
+      // so the last item can be clicked
+      // when there is a horizontal scrollbar -> #943
+      padding-bottom: @component-padding;
+    }
+
+    .list-item {
+      padding: 0 0 0 @component-padding;
+    }
+    .context-row, .match-row {
+      padding: 0 0 0 @component-padding;
+      margin-left: 8px;
+
+      box-shadow: inset 0 1px 0 mix(@base-border-color, @base-background-color);
+
+      // box-shadow over a border is used to not affect height calculation
+      &.separator {
+        box-shadow: inset 0 1px 0 @base-border-color;
+      }
     }
 
     .line-number {
@@ -284,21 +313,13 @@ atom-workspace.find-visible {
       display: inline-block;
       font-family: @find-and-replace-font;
     }
-    .match-line.selected .line-number {
+    .match-row.selected .line-number {
       color: @text-color-selected;
     }
 
     .path-match-number {
       padding-left: @component-padding;
       color: @text-color-subtle;
-    }
-
-    .search-result {
-      // box-shadow over a border is used to not affect height calculation
-      box-shadow: inset 0 -1px 0 @base-border-color;
-      &:first-child {
-        box-shadow: inset 0 -1px 0 @base-border-color, inset 0 1px 0 @base-border-color;
-      }
     }
 
     .preview {
@@ -308,10 +329,10 @@ atom-workspace.find-visible {
       color: @text-color-subtle;
     }
 
-    .match-line .preview {
+    .match-row .preview {
       color: @text-color-highlight;
     }
-    .match-line.selected .preview {
+    .match-row.selected .preview {
       color: @text-color-selected;
     }
 

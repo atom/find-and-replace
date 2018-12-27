@@ -2,7 +2,7 @@
   "name": "find-and-replace",
   "main": "./lib/find",
   "description": "Find and replace within buffers and across the project.",
-  "version": "0.212.3",
+  "version": "0.215.14",
   "license": "MIT",
   "activationCommands": {
     "atom-workspace": [
@@ -30,6 +30,7 @@
     "atom": "*"
   },
   "dependencies": {
+    "binary-search": "^1.3.3",
     "element-resize-detector": "^1.1.10",
     "etch": "0.9.3",
     "fs-plus": "^3.0.0",
@@ -49,6 +50,11 @@
     "autocomplete.watchEditor": {
       "versions": {
         "1.0.0": "consumeAutocompleteWatchEditor"
+      }
+    },
+    "file-icons.element-icons": {
+      "versions": {
+        "1.0.0": "consumeElementIcons"
       }
     }
   },
