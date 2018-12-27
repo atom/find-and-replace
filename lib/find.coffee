@@ -1,4 +1,4 @@
-{CompositeDisposable, Disposable, TextBuffer} = require 'atom'
+{CompositeDisposable, Disposable, TextBuffer, TextEditor} = require 'atom'
 
 SelectNext = require './select-next'
 {History, HistoryCycler} = require './history'
@@ -30,7 +30,7 @@ module.exports =
     @resultsModel = new ResultsModel(@findOptions)
 
     @subscriptions.add atom.workspace.getCenter().observeActivePaneItem (paneItem) =>
-      if paneItem?.getBuffer?()
+      if paneItem instanceof TextEditor
         @findModel.setEditor(paneItem)
       else
         @findModel.setEditor(null)
