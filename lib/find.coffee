@@ -30,7 +30,7 @@ module.exports =
     @resultsModel = new ResultsModel(@findOptions)
 
     @subscriptions.add atom.workspace.getCenter().observeActivePaneItem (paneItem) =>
-      if paneItem?.getBuffer?() and paneItem?.buffer?
+      if paneItem?.getBuffer?()
         @findModel.setEditor(paneItem)
       else
         @findModel.setEditor(null)
