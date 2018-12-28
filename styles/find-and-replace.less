@@ -1,9 +1,10 @@
 @import "ui-variables";
 @import "syntax-variables";
 
+@find-and-replace-font: Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+
 // result markers
-atom-text-editor,
-atom-text-editor::shadow {
+atom-text-editor {
   .find-result .region {
     background-color: transparent;
     border-radius: @component-border-radius;
@@ -26,8 +27,7 @@ atom-text-editor::shadow {
 }
 
 atom-workspace.find-visible {
-  atom-text-editor,
-  atom-text-editor::shadow {
+  atom-text-editor {
     .find-result,
     .current-result {
       display: block;
@@ -37,6 +37,7 @@ atom-workspace.find-visible {
 
 // Both project and buffer FNR styles
 .find-and-replace,
+.preview-pane,
 .project-find {
   @min-width: 200px; // min width before it starts scrolling
 
@@ -47,6 +48,7 @@ atom-workspace.find-visible {
   .header {
     padding: @component-padding/4 @component-padding/2;
     min-width: @min-width;
+    line-height: 1.75;
   }
   .header-item {
     margin: @component-padding/4 0;
@@ -75,18 +77,27 @@ atom-workspace.find-visible {
     }
   }
 
-  .btn-group-options {
-    .btn {
-      line-height: 1;
-    }
-  }
-
   .btn > .icon {
     width: 20px;
     height: 16px;
     vertical-align: middle;
     fill: currentColor;
     stroke: currentColor;
+    pointer-events: none;
+  }
+
+  .close-button {
+    margin-left: @component-padding;
+    cursor: pointer;
+    color: @text-color-subtle;
+    &:hover {
+      color: @text-color-highlight;
+    }
+    .icon::before {
+      margin-right: 0;
+      text-align: center;
+      vertical-align: middle;
+    }
   }
 
   .description {
@@ -105,7 +116,19 @@ atom-workspace.find-visible {
     color: @text-color-subtle;
     position: relative;
     .options {
+      margin-right: .5em;
       color: @text-color;
+    }
+  }
+
+  .btn-group-options {
+    display: inline-flex;
+    margin-top: -.1em;
+
+    .btn {
+      width: 36px;
+      padding: 0;
+      line-height: 1.75;
     }
   }
 
@@ -120,32 +143,24 @@ atom-workspace.find-visible {
 
 // Buffer find and replace
 .find-and-replace {
-  @button-width: 120px;        // Find + Replace buttons
-  @option-button-width: 200px; // Replace All + option buttons
-  @item-width: 260px;          // wrap block width
+  @input-width: 260px;
+  @block-width: 260px;
 
   .input-block-item {
-    flex: 1 1 @item-width;
+    flex: 1 1 @block-width;
   }
   .input-block-item--flex {
-    flex: 100 1 @item-width;
+    flex: 100 1 @input-width;
   }
 
   .btn-group-find,
   .btn-group-replace {
-    flex: 1 1 @button-width;
-  }
-  .btn-group-replace-all,
-  .btn-group-options {
-    flex: 1 1 @option-button-width;
+    flex: 1;
   }
 
-  .btn-group-options {
-    .btn {
-      flex: 1 1 25%;
-      padding: 0;
-      text-align: center;
-    }
+  .btn-group-find-all,
+  .btn-group-replace-all {
+    flex: 2;
   }
 
   .find-container atom-text-editor {
@@ -171,7 +186,10 @@ atom-workspace.find-visible {
 .find-wrap-icon {
   @wrap-size: @font-size * 10;
 
-  display: none;
+  opacity: 0;
+  transition: opacity 0.5s;
+  &.visible { opacity: 1; }
+
   position: absolute;
 
   // These are getting placed in the DOM as a pane item, so override the pane
@@ -202,17 +220,13 @@ atom-workspace.find-visible {
 // Project find and replace
 .project-find {
   @project-input-width: 260px;
-  @project-block-width: 220px;
+  @project-block-width: 160px;
 
   .input-block-item {
     flex: 1 1 @project-block-width;
   }
   .input-block-item--flex {
     flex: 100 1 @project-input-width;
-  }
-
-  .btn-group-find {
-    flex: .6;
   }
 
   .loading,
@@ -225,11 +239,32 @@ atom-workspace.find-visible {
 
 .preview-pane {
   position: relative;
-  display: -webkit-flex;
-  -webkit-flex-direction: column;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
 
-  .panel-heading {
-    -webkit-flex-shrink: 0;
+  .preview-header {
+    display: flex;
+    flex-wrap: wrap;
+    padding: @component-padding/2;
+    align-items: center;
+    justify-content: space-between;
+    overflow: hidden;
+    font-weight: normal;
+    border-bottom: 1px solid @panel-heading-border-color;
+    background-color: @panel-heading-background-color;
+  }
+
+  .preview-count {
+    margin: @component-padding/2;
+  }
+
+  .preview-controls {
+    display: flex;
+    flex-wrap: wrap;
+    .btn-group {
+      margin: @component-padding/2;
+    }
   }
 
   .loading-spinner-tiny,
@@ -248,20 +283,37 @@ atom-workspace.find-visible {
   .results-view {
     overflow: auto;
     position: relative;
-    padding: 0 @component-padding;
-    -webkit-flex: 1;
+    flex: 1;
 
-    .search-result {
-      padding-top: 2px;
-      padding-bottom: 2px;
+    &-container {
+      // adds some padding
+      // so the last item can be clicked
+      // when there is a horizontal scrollbar -> #943
+      padding-bottom: @component-padding;
+    }
+
+    .list-item {
+      padding: 0 0 0 @component-padding;
+    }
+    .context-row, .match-row {
+      padding: 0 0 0 @component-padding;
+      margin-left: 8px;
+
+      box-shadow: inset 0 1px 0 mix(@base-border-color, @base-background-color);
+
+      // box-shadow over a border is used to not affect height calculation
+      &.separator {
+        box-shadow: inset 0 1px 0 @base-border-color;
+      }
     }
 
     .line-number {
       margin-right: 1ex;
       text-align: right;
       display: inline-block;
+      font-family: @find-and-replace-font;
     }
-    .selected .line-number {
+    .match-row.selected .line-number {
       color: @text-color-selected;
     }
 
@@ -272,8 +324,18 @@ atom-workspace.find-visible {
 
     .preview {
       word-break: break-all;
-      font-family: monospace;
+      font-family: @find-and-replace-font;
+      white-space: pre;
+      color: @text-color-subtle;
     }
+
+    .match-row .preview {
+      color: @text-color-highlight;
+    }
+    .match-row.selected .preview {
+      color: @text-color-selected;
+    }
+
 
     .selected {
       .highlight-info {
@@ -291,27 +353,27 @@ atom-workspace.find-visible {
   }
 }
 
-.find-container atom-text-editor::shadow, .replace-container atom-text-editor::shadow {
+.find-container atom-text-editor, .replace-container atom-text-editor {
   // Styles for regular expression highlighting
-  .regexp {
-    .escape {
+  .syntax--regexp {
+    .syntax--escape {
       color: @text-color-info;
     }
-    .range, .character-class, .wildcard {
+    .syntax--range, .syntax--character-class, .syntax--wildcard {
       color: @text-color-success;
     }
-    .wildcard {
+    .syntax--wildcard {
       font-weight: bold;
     }
-    .set {
+    .syntax--set {
       color: inherit;
     }
-    .keyword, .punctuation {
+    .syntax--keyword, .syntax--punctuation {
       color: @text-color-error;
       font-weight: normal;
     }
 
-    .replacement.variable {
+    .syntax--replacement.syntax--variable {
       color: @text-color-warning;
     }
   }
