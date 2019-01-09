@@ -777,6 +777,14 @@ describe("FindView", () => {
           "current < pivot \\? left\\.push\\(current\\) : right\\.push\\(current\\);"
         );
       });
+
+      it("searches for the amount of results", () => {
+        spyOn(findView, 'liveSearch') // ignore live search - we're interested in the explicit search call
+
+        editor.setSelectedBufferRange([[1, 8], [1, 8]]);
+        atom.commands.dispatch(workspaceElement, "find-and-replace:use-selection-as-find-pattern");
+        expect(findView.refs.resultCounter.textContent).toEqual("5 found");
+      })
     });
 
     describe("when find-and-replace:use-selection-as-replace-pattern is triggered", () => {
