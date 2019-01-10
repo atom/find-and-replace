@@ -30,7 +30,7 @@ module.exports =
     @resultsModel = new ResultsModel(@findOptions)
 
     @subscriptions.add atom.workspace.getCenter().observeActivePaneItem (paneItem) =>
-      if paneItem?.getBuffer?()
+      if atom.workspace.isTextEditor(paneItem)
         @findModel.setEditor(paneItem)
       else
         @findModel.setEditor(null)
@@ -54,6 +54,10 @@ module.exports =
       @projectFindView.findInCurrentlySelectedDirectory(target)
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:use-selection-as-find-pattern', =>
+      return if @projectFindPanel?.isVisible() or @findPanel?.isVisible()
+      @createViews()
+
+    @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:use-selection-as-replace-pattern', =>
       return if @projectFindPanel?.isVisible() or @findPanel?.isVisible()
       @createViews()
 

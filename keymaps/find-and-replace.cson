@@ -16,6 +16,7 @@
   'cmd-d': 'find-and-replace:select-next'
   'cmd-alt-e': 'find-and-replace:replace-next'
   'cmd-e': 'find-and-replace:use-selection-as-find-pattern'
+  'cmd-shift-e': 'find-and-replace:use-selection-as-replace-pattern'
   'cmd-u': 'find-and-replace:select-undo'
   'cmd-k cmd-d': 'find-and-replace:select-skip'
 
@@ -27,6 +28,7 @@
   'alt-f3': 'find-and-replace:select-all'
   'ctrl-d': 'find-and-replace:select-next'
   'ctrl-e': 'find-and-replace:use-selection-as-find-pattern'
+  'ctrl-shift-e': 'find-and-replace:use-selection-as-replace-pattern'
   'ctrl-u': 'find-and-replace:select-undo'
   'ctrl-k ctrl-d': 'find-and-replace:select-skip'
 
@@ -75,3 +77,9 @@
   'ctrl-enter': 'find-and-replace:replace-all'
 '.platform-linux .project-find .replace-container atom-text-editor':
   'ctrl-enter': 'project-find:replace-all'
+
+'.results-view':
+  'home': 'core:move-to-top'
+  'ctrl-home': 'core:move-to-top'
+  'end': 'core:move-to-bottom'
+  'ctrl-end': 'core:move-to-bottom'

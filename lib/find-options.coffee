@@ -53,15 +53,28 @@ class FindOptions
       @emitter.emit('did-change', changedParams)
     return changedParams
 
-  getFindPatternRegex: ->
+  getFindPatternRegex: (forceUnicode = false) ->
+    for i in [0..@findPattern.length]
+      if @findPattern.charCodeAt(i) > 128
+        forceUnicode = true
+        break
+
     flags = 'gm'
     flags += 'i' unless @caseSensitive
+    flags += 'u' if forceUnicode
 
     if @useRegex
       expression = @findPattern
     else
-      expression = _.escapeRegExp(@findPattern)
+      expression = escapeRegExp(@findPattern)
 
     expression = "\\b#{expression}\\b" if @wholeWord
 
     new RegExp(expression, flags)
+
+# This is different from _.escapeRegExp, which escapes dashes. Escaped dashes
+# are not allowed outside of character classes in RegExps with the `u` flag.
+#
+# See atom/find-and-replace#1022
+escapeRegExp = (string) ->
+  string.replace(/[\/\\^$*+?.()|[\]{}]/g, '\\$&')

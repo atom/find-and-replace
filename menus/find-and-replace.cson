@@ -23,8 +23,11 @@
 
 'context-menu':
   '.tree-view li.directory': [
-    { 'label': 'Search in Directory', 'command': 'project-find:show-in-current-directory' }
+    { 'label': 'Search in Folder', 'command': 'project-find:show-in-current-directory' }
   ]
-  '.path-details.list-item': [
+  '.list-item.match-row': [
+    { 'label': 'Copy', 'command': 'core:copy' }
+  ]
+  '.list-item.match-row, .list-item.path-row': [
     { 'label': 'Copy Path', 'command': 'find-and-replace:copy-path' }
   ]

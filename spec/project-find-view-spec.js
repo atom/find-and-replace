@@ -284,7 +284,7 @@ describe('ProjectFindView', () => {
         atom.commands.dispatch(workspaceElement, 'project-find:show');
       });
 
-      describe("when regex seach is enabled", () => {
+      describe("when regex search is enabled", () => {
         it("finds a literal tab character", async () => {
           atom.commands.dispatch(projectFindView.element, 'project-find:toggle-regex-option');
           projectFindView.findEditor.setText('\\t');
@@ -295,11 +295,11 @@ describe('ProjectFindView', () => {
           const resultsView = getResultsView();
           await resultsView.heightInvalidationPromise
           expect(resultsView.element).toBeVisible();
-          expect(resultsView.refs.listView.element.querySelectorAll(".search-result")).toHaveLength(2);
+          expect(resultsView.refs.listView.element.querySelectorAll(".match-row")).toHaveLength(2);
         })
       });
 
-      describe("when regex seach is disabled", () => {
+      describe("when regex search is disabled", () => {
         it("finds the escape char", async () => {
           projectFindView.findEditor.setText('\\t');
 
@@ -309,7 +309,7 @@ describe('ProjectFindView', () => {
           const resultsView = getResultsView();
           await resultsView.heightInvalidationPromise
           expect(resultsView.element).toBeVisible();
-          expect(resultsView.refs.listView.element.querySelectorAll(".search-result")).toHaveLength(1);
+          expect(resultsView.refs.listView.element.querySelectorAll(".match-row")).toHaveLength(1);
         });
 
         it("finds a backslash", async () => {
@@ -321,7 +321,8 @@ describe('ProjectFindView', () => {
           const resultsView = getResultsView();
           await resultsView.heightInvalidationPromise
           expect(resultsView.element).toBeVisible();
-          expect(resultsView.refs.listView.element.querySelectorAll(".search-result")).toHaveLength(3);
+          expect(resultsView.refs.listView.element.querySelectorAll(".match-row")).toHaveLength(2);
+          expect(resultsView.refs.listView.element.querySelectorAll(".match.highlight-info")).toHaveLength(3);
         });
 
         it("doesn't insert a escaped char if there are multiple backslashs in front of the char", async () => {
@@ -333,7 +334,7 @@ describe('ProjectFindView', () => {
           const resultsView = getResultsView();
           await resultsView.heightInvalidationPromise
           expect(resultsView.element).toBeVisible();
-          expect(resultsView.refs.listView.element.querySelectorAll(".search-result")).toHaveLength(1);
+          expect(resultsView.refs.listView.element.querySelectorAll(".match-row")).toHaveLength(1);
         });
       });
     });
@@ -448,9 +449,12 @@ describe('ProjectFindView', () => {
         expect(resultsPaneView1).not.toBe(resultsPaneView2);
         simulateResizeEvent(resultsView2.element);
 
-        const {length: resultCount} = resultsPaneView1.querySelectorAll('.search-result');
+        await etch.update(resultsView1);
+        await etch.update(resultsView2);
+
+        const resultCount = resultsPaneView1.querySelectorAll('.match-row').length;
         expect(resultCount).toBeGreaterThan(0);
-        expect(resultsPaneView2.querySelectorAll('.search-result')).toHaveLength(resultCount);
+        expect(resultsPaneView2.querySelectorAll('.match-row')).toHaveLength(resultCount);
         expect(resultsPaneView2.querySelector('.preview-count').innerHTML).toEqual(resultsPaneView1.querySelector('.preview-count').innerHTML);
       });
 
@@ -471,6 +475,10 @@ describe('ProjectFindView', () => {
         const resultsPaneView2 = atom.views.getView(pane2.itemForURI(ResultsPaneView.URI));
         expect(pane1).not.toBe(pane2);
         expect(resultsPaneView1).not.toBe(resultsPaneView2);
+
+        await etch.update(resultsView1);
+        await etch.update(resultsView2);
+
         expect(resultsPaneView2.querySelector('.preview-count').innerHTML).toEqual(resultsPaneView1.querySelector('.preview-count').innerHTML);
       });
     });
@@ -691,7 +699,8 @@ describe('ProjectFindView', () => {
         const resultsView = getResultsView();
         await resultsView.heightInvalidationPromise
         expect(resultsView.element).toBeVisible();
-        expect(resultsView.refs.listView.element.querySelectorAll(".search-result")).toHaveLength(13);
+        expect(resultsView.refs.listView.element.querySelectorAll(".match-row")).toHaveLength(11);
+        expect(resultsView.refs.listView.element.querySelectorAll(".match.highlight-info")).toHaveLength(13);
       })
     });
 
@@ -701,7 +710,7 @@ describe('ProjectFindView', () => {
       });
 
       describe("when the there search field is empty", () => {
-        it("does not run the seach but clears the model", () => {
+        it("does not run the search but clears the model", () => {
           spyOn(atom.workspace, 'scan');
           spyOn(projectFindView.model, 'clear');
           atom.commands.dispatch(projectFindView.element, 'core:confirm');
@@ -751,7 +760,8 @@ describe('ProjectFindView', () => {
 
           await resultsView.heightInvalidationPromise
           expect(resultsView.element).toBeVisible();
-          expect(resultsView.refs.listView.element.querySelectorAll(".search-result")).toHaveLength(13);
+          expect(resultsView.refs.listView.element.querySelectorAll(".match-row")).toHaveLength(11);
+          expect(resultsView.refs.listView.element.querySelectorAll(".match.highlight-info")).toHaveLength(13);
 
           expect(resultsPaneView.refs.previewCount.textContent).toBe("13 results found in 2 files for items");
           expect(projectFindView.errorMessages).not.toBeVisible();
@@ -774,21 +784,25 @@ describe('ProjectFindView', () => {
           await searchPromise;
 
           const resultsView = getResultsView();
+          const listView = resultsView.refs.listView;
           const resultsPaneView = getExistingResultsPane();
 
           await resultsView.heightInvalidationPromise
-          expect(resultsView.refs.listView.element.querySelectorAll(".search-result")).toHaveLength(13);
+          expect(listView.element.querySelectorAll(".match-row")).toHaveLength(11);
+          expect(listView.element.querySelectorAll(".match.highlight-info")).toHaveLength(13);
           expect(resultsPaneView.refs.previewCount.textContent).toBe("13 results found in 2 files for items");
 
           resultsView.selectFirstResult();
-          for (let i = 0; i < 7; i++) await resultsView.moveDown()
-          expect(resultsView.refs.listView.element.querySelectorAll(".path")[1]).toHaveClass('selected');
+          for (let i = 0; i < 6; i++) resultsView.moveDown();
+          await resultsView.moveDown();
+
+          expect(listView.element.querySelectorAll(".path-row")[1].parentElement).toHaveClass('selected');
 
           editor.setText('there is one "items" in this file');
           advanceClock(editor.getBuffer().stoppedChangingDelay);
           await etch.getScheduler().getNextUpdatePromise()
           expect(resultsPaneView.refs.previewCount.textContent).toBe("8 results found in 2 files for items");
-          expect(resultsView.refs.listView.element.querySelectorAll(".path")[1]).toHaveClass('selected');
+          expect(listView.element.querySelectorAll(".path-row")[1].parentElement).toHaveClass('selected');
 
           // Ensure the newly added item can be opened.
           await resultsView.moveDown()
@@ -840,7 +854,7 @@ describe('ProjectFindView', () => {
           const resultsView = getResultsView();
           expect(projectFindView.refs.errorMessages).not.toBeVisible();
           expect(resultsView.element).toBeVisible();
-          expect(resultsView.refs.listView.element.querySelectorAll(".search-result")).toHaveLength(0);
+          expect(resultsView.refs.listView.element.querySelectorAll(".match-row")).toHaveLength(0);
         });
       });
     });
@@ -940,6 +954,45 @@ describe('ProjectFindView', () => {
       });
     });
 
+    describe("when find-and-replace:use-selection-as-replace-pattern is triggered", () => {
+      it("places the selected text into the replace editor", () => {
+        editor.setSelectedBufferRange([[1, 6], [1, 10]]);
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:use-selection-as-replace-pattern');
+        expect(projectFindView.replaceEditor.getText()).toBe('sort');
+
+        editor.setSelectedBufferRange([[1, 13], [1, 21]]);
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:use-selection-as-replace-pattern');
+        expect(projectFindView.replaceEditor.getText()).toBe('function');
+      });
+
+      it("places the word under the cursor into the replace editor", () => {
+        editor.setSelectedBufferRange([[1, 8], [1, 8]]);
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:use-selection-as-replace-pattern');
+        expect(projectFindView.replaceEditor.getText()).toBe('sort');
+
+        editor.setSelectedBufferRange([[1, 15], [1, 15]]);
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:use-selection-as-replace-pattern');
+        expect(projectFindView.replaceEditor.getText()).toBe('function');
+      });
+
+      it("places the previously selected text into the replace editor if no selection and no word under cursor", () => {
+        editor.setSelectedBufferRange([[1, 13], [1, 21]]);
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:use-selection-as-replace-pattern');
+        expect(projectFindView.replaceEditor.getText()).toBe('function');
+
+        editor.setSelectedBufferRange([[1, 1], [1, 1]]);
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:use-selection-as-replace-pattern');
+        expect(projectFindView.replaceEditor.getText()).toBe('function');
+      });
+
+      it("places selected text into the replace editor and escapes it when Regex is enabled", () => {
+        atom.commands.dispatch(projectFindView.element, 'project-find:toggle-regex-option')
+        editor.setSelectedBufferRange([[6, 6], [6, 65]]);
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:use-selection-as-replace-pattern');
+        expect(projectFindView.replaceEditor.getText()).toBe('current < pivot \\? left\\.push\\(current\\) : right\\.push\\(current\\);');
+      });
+    });
+
     describe("when there is an error searching", () => {
       it("displays the errors in the results pane", async () => {
         projectFindView.findEditor.setText('items');
@@ -951,10 +1004,12 @@ describe('ProjectFindView', () => {
           expect(errorList.querySelectorAll("li")).toHaveLength(0);
 
           callback(null, {path: '/some/path.js', code: 'ENOENT', message: 'Nope'});
+          await etch.update(resultsPaneView);
           expect(errorList).toBeVisible();
           expect(errorList.querySelectorAll("li")).toHaveLength(1);
 
           callback(null, {path: '/some/path.js', code: 'ENOENT', message: 'Broken'});
+          await etch.update(resultsPaneView);
           expect(errorList.querySelectorAll("li")).toHaveLength(2);
         });
 
@@ -1047,11 +1102,14 @@ describe('ProjectFindView', () => {
 
         const resultsView = getResultsView();
         resultsView.scrollToBottom(); // To load ALL the results
+        await etch.update(resultsView);
         expect(resultsView.element).toBeVisible();
-        expect(resultsView.refs.listView.element.querySelectorAll(".search-result")).toHaveLength(13);
+        expect(resultsView.refs.listView.element.querySelectorAll(".match-row")).toHaveLength(11);
+        expect(resultsView.refs.listView.element.querySelectorAll(".match.highlight-info")).toHaveLength(13);
 
         resultsView.selectFirstResult();
-        for (let i = 0; i < 10; i++) await resultsView.moveDown();
+        for (let i = 0; i < 9; i++) resultsView.moveDown();
+        await resultsView.moveDown();
 
         atom.commands.dispatch(resultsView.element, 'core:confirm');
         await new Promise(resolve => editor.onDidChangeSelectionRange(resolve))
@@ -1252,6 +1310,8 @@ describe('ProjectFindView', () => {
           projectFindView.refs.replaceAllButton.click();
           await replacePromise;
 
+          await etch.update(getExistingResultsPane());
+
           expect(projectFindView.errorMessages).not.toBeVisible();
           expect(getExistingResultsPane().refs.previewCount.textContent).toContain('13 results found in 2 files for items');
           expect(projectFindView.refs.descriptionLabel.textContent).toContain('Replaced items with items-123 13 times in 2 files');
@@ -1343,7 +1403,7 @@ describe('ProjectFindView', () => {
 
           const resultsView = getResultsView();
           expect(resultsView.element).toBeVisible();
-          expect(resultsView.refs.listView.element.querySelectorAll(".search-result")).toHaveLength(0);
+          expect(resultsView.refs.listView.element.querySelectorAll(".match-row")).toHaveLength(0);
 
           expect(projectFindView.refs.descriptionLabel.textContent).toContain("Replaced items with sunshine 13 times in 2 files");
 
@@ -1415,10 +1475,12 @@ describe('ProjectFindView', () => {
           expect(errorList.querySelectorAll("li")).toHaveLength(0);
 
           callback(null, {path: '/some/path.js', code: 'ENOENT', message: 'Nope'});
+          await etch.update(getExistingResultsPane());
           expect(errorList).toBeVisible();
           expect(errorList.querySelectorAll("li")).toHaveLength(1);
 
           callback(null, {path: '/some/path.js', code: 'ENOENT', message: 'Broken'});
+          await etch.update(getExistingResultsPane());
           expect(errorList.querySelectorAll("li")).toHaveLength(2);
         });
 

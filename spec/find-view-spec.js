@@ -376,7 +376,7 @@ describe("FindView", () => {
         });
       });
 
-      describe("when regex seach is disabled", () => {
+      describe("when regex search is disabled", () => {
         it("finds the literal backslash t", () => {
           findView.findEditor.setText("\\t");
           atom.commands.dispatch(findView.findEditor.element, "core:confirm");
@@ -536,7 +536,7 @@ describe("FindView", () => {
 
           it("displays the error", () => {
             expect(findView.refs.descriptionLabel).toHaveClass("text-error");
-            expect(findView.refs.descriptionLabel.textContent).toContain("Search string is too large");
+            expect(findView.refs.descriptionLabel.textContent).toBe("regular expression is too large");
           });
 
           it("will be reset when there is no longer an error", () => {
@@ -725,6 +725,14 @@ describe("FindView", () => {
       expect(findView.wrapIcon).not.toBeVisible();
     });
 
+    it("allows searching for dashes in combination with non-ascii characters (regression)", () => {
+      editor.setText("123-Âbc");
+      findView.findEditor.setText("3-â");
+      atom.commands.dispatch(findView.findEditor.element, "find-and-replace:find-next");
+      expect(findView.refs.descriptionLabel).not.toHaveClass("text-error");
+      expect(editor.getSelectedBufferRange()).toEqual([[0, 2], [0, 5]]);
+    });
+
     describe("when find-and-replace:use-selection-as-find-pattern is triggered", () => {
       it("places the selected text into the find editor", () => {
         editor.setSelectedBufferRange([[1, 6], [1, 10]]);
@@ -768,6 +776,65 @@ describe("FindView", () => {
         expect(findView.findEditor.getText()).toBe(
           "current < pivot \\? left\\.push\\(current\\) : right\\.push\\(current\\);"
         );
+      });
+
+      it("searches for the amount of results", () => {
+        spyOn(findView, 'liveSearch') // ignore live search - we're interested in the explicit search call
+
+        editor.setSelectedBufferRange([[1, 8], [1, 8]]);
+        atom.commands.dispatch(workspaceElement, "find-and-replace:use-selection-as-find-pattern");
+        expect(findView.refs.resultCounter.textContent).toEqual("5 found");
+      })
+    });
+
+    describe("when find-and-replace:use-selection-as-replace-pattern is triggered", () => {
+      it("places the selected text into the replace editor", () => {
+        editor.setSelectedBufferRange([[3, 8], [3, 13]]);
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:use-selection-as-replace-pattern');
+        expect(findView.replaceEditor.getText()).toBe('pivot');
+        expect(editor.getSelectedBufferRange()).toEqual([[3, 8], [3, 13]]);
+
+        findView.findEditor.setText('sort');
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:find-next');
+        expect(editor.getSelectedBufferRange()).toEqual([[8, 11], [8, 15]]);
+        expect(editor.getTextInBufferRange(editor.getSelectedBufferRange())).toEqual('sort');
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:replace-next');
+        expect(editor.getTextInBufferRange([[8, 11], [8, 16]])).toEqual('pivot');
+        expect(editor.getSelectedBufferRange()).toEqual([[8, 44], [8, 48]]);
+        expect(editor.getTextInBufferRange(editor.getSelectedBufferRange())).toEqual('sort');
+      });
+
+      it("places the word under the cursor into the replace editor", () => {
+        editor.setSelectedBufferRange([[3, 8], [3, 8]]);
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:use-selection-as-replace-pattern');
+        expect(findView.replaceEditor.getText()).toBe('pivot');
+        expect(editor.getSelectedBufferRange()).toEqual([[3, 8], [3, 8]]);
+
+        findView.findEditor.setText('sort');
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:find-next');
+        expect(editor.getSelectedBufferRange()).toEqual([[8, 11], [8, 15]]);
+        expect(editor.getTextInBufferRange(editor.getSelectedBufferRange())).toEqual('sort');
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:replace-next');
+        expect(editor.getTextInBufferRange([[8, 11], [8, 16]])).toEqual('pivot');
+        expect(editor.getSelectedBufferRange()).toEqual([[8, 44], [8, 48]]);
+        expect(editor.getTextInBufferRange(editor.getSelectedBufferRange())).toEqual('sort');
+      });
+
+      it("places the previously selected text into the replace editor if no selection", () => {
+        editor.setSelectedBufferRange([[1, 6], [1, 10]]);
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:use-selection-as-replace-pattern');
+        expect(findView.replaceEditor.getText()).toBe('sort');
+
+        editor.setSelectedBufferRange([[1, 1], [1, 1]]);
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:use-selection-as-replace-pattern');
+        expect(findView.replaceEditor.getText()).toBe('sort');
+      });
+
+      it("places selected text into the replace editor and escapes it when Regex is enabled", () => {
+        atom.commands.dispatch(findView.replaceEditor.element, 'find-and-replace:toggle-regex-option');
+        editor.setSelectedBufferRange([[6, 6], [6, 65]]);
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:use-selection-as-replace-pattern');
+        expect(findView.replaceEditor.getText()).toBe('current < pivot \\? left\\.push\\(current\\) : right\\.push\\(current\\);');
       });
     });
 
@@ -951,18 +1018,18 @@ describe("FindView", () => {
         editor.setSelectedBufferRange([[2, 0], [4, 0]]);
       });
 
-      it("toggles find within a selction via and event and only finds matches within the selection", () => {
+      it("toggles find within a selection via an event and only finds matches within the selection", () => {
         findView.findEditor.setText("items");
         atom.commands.dispatch(findView.findEditor.element, "find-and-replace:toggle-selection-option");
-        expect(editor.getSelectedBufferRange()).toEqual([[2, 8], [2, 13]]);
-        expect(findView.refs.resultCounter.textContent).toEqual("1 of 3");
+        expect(editor.getSelectedBufferRange()).toEqual([[2, 0], [4, 0]]);
+        expect(findView.refs.resultCounter.textContent).toEqual("3 found");
       });
 
-      it("toggles find within a selction via and button and only finds matches within the selection", () => {
+      it("toggles find within a selection via button and only finds matches within the selection", () => {
         findView.findEditor.setText("items");
         findView.refs.selectionOptionButton.click();
-        expect(editor.getSelectedBufferRange()).toEqual([[2, 8], [2, 13]]);
-        expect(findView.refs.resultCounter.textContent).toEqual("1 of 3");
+        expect(editor.getSelectedBufferRange()).toEqual([[2, 0], [4, 0]]);
+        expect(findView.refs.resultCounter.textContent).toEqual("3 found");
       });
 
       describe("when there is no selection", () => {
@@ -970,7 +1037,7 @@ describe("FindView", () => {
           editor.setSelectedBufferRange([[0, 0], [0, 0]]);
         });
 
-        it("toggles find within a selction via and event and only finds matches within the selection", () => {
+        it("toggles find within a selection via an event", () => {
           findView.findEditor.setText("items");
           atom.commands.dispatch(findView.findEditor.element, "find-and-replace:toggle-selection-option");
           expect(editor.getSelectedBufferRange()).toEqual([[1, 22], [1, 27]]);
@@ -1039,6 +1106,19 @@ describe("FindView", () => {
           findView.refs.regexOptionButton.click();
           expect(editor.getSelectedBufferRange()).toEqual([[6, 16], [6, 23]]);
         });
+      });
+
+      it("matches astral-plane unicode characters with .", () => {
+        if (!editor.getBuffer().hasAstral) {
+          console.log('Skipping astral-plane test case')
+          return
+        }
+
+        editor.setText("\n\nbefore😄after\n\n");
+        atom.commands.dispatch(findView.findEditor.element, "find-and-replace:toggle-regex-option");
+        findView.findEditor.setText("before.after");
+        atom.commands.dispatch(findView.findEditor.element, "core:confirm");
+        expect(editor.getSelectedBufferRange()).toEqual([[2, 0], [2, 13]])
       });
     });
 
@@ -1157,6 +1237,18 @@ describe("FindView", () => {
           findView.refs.caseOptionButton.click();
           expect(editor.getSelectedBufferRange()).toEqual([[1, 0], [1, 5]]);
         });
+      });
+
+      it("finds unicode characters with case folding", () => {
+        if (!editor.getBuffer().hasAstral) {
+          console.log('Skipping unicode test case')
+          return
+        }
+
+        editor.setText("---\n> április\n---\n")
+        findView.findEditor.setText("Április")
+        atom.commands.dispatch(findView.findEditor.element, "core:confirm")
+        expect(editor.getSelectedBufferRange()).toEqual([[1, 2], [1, 9]])
       });
     });
 
