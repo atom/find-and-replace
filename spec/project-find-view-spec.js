@@ -929,6 +929,45 @@ describe('ProjectFindView', () => {
       });
     });
 
+    describe("when find-and-replace:use-selection-as-replace-pattern is triggered", () => {
+      it("places the selected text into the replace editor", () => {
+        editor.setSelectedBufferRange([[1, 6], [1, 10]]);
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:use-selection-as-replace-pattern');
+        expect(projectFindView.replaceEditor.getText()).toBe('sort');
+
+        editor.setSelectedBufferRange([[1, 13], [1, 21]]);
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:use-selection-as-replace-pattern');
+        expect(projectFindView.replaceEditor.getText()).toBe('function');
+      });
+
+      it("places the word under the cursor into the replace editor", () => {
+        editor.setSelectedBufferRange([[1, 8], [1, 8]]);
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:use-selection-as-replace-pattern');
+        expect(projectFindView.replaceEditor.getText()).toBe('sort');
+
+        editor.setSelectedBufferRange([[1, 15], [1, 15]]);
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:use-selection-as-replace-pattern');
+        expect(projectFindView.replaceEditor.getText()).toBe('function');
+      });
+
+      it("places the previously selected text into the replace editor if no selection and no word under cursor", () => {
+        editor.setSelectedBufferRange([[1, 13], [1, 21]]);
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:use-selection-as-replace-pattern');
+        expect(projectFindView.replaceEditor.getText()).toBe('function');
+
+        editor.setSelectedBufferRange([[1, 1], [1, 1]]);
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:use-selection-as-replace-pattern');
+        expect(projectFindView.replaceEditor.getText()).toBe('function');
+      });
+
+      it("places selected text into the replace editor and escapes it when Regex is enabled", () => {
+        atom.commands.dispatch(projectFindView.element, 'project-find:toggle-regex-option')
+        editor.setSelectedBufferRange([[6, 6], [6, 65]]);
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:use-selection-as-replace-pattern');
+        expect(projectFindView.replaceEditor.getText()).toBe('current < pivot \\? left\\.push\\(current\\) : right\\.push\\(current\\);');
+      });
+    });
+
     describe("when there is an error searching", () => {
       it("displays the errors in the results pane", async () => {
         projectFindView.findEditor.setText('items');

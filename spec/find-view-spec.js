@@ -777,6 +777,65 @@ describe("FindView", () => {
           "current < pivot \\? left\\.push\\(current\\) : right\\.push\\(current\\);"
         );
       });
+
+      it("searches for the amount of results", () => {
+        spyOn(findView, 'liveSearch') // ignore live search - we're interested in the explicit search call
+
+        editor.setSelectedBufferRange([[1, 8], [1, 8]]);
+        atom.commands.dispatch(workspaceElement, "find-and-replace:use-selection-as-find-pattern");
+        expect(findView.refs.resultCounter.textContent).toEqual("5 found");
+      })
+    });
+
+    describe("when find-and-replace:use-selection-as-replace-pattern is triggered", () => {
+      it("places the selected text into the replace editor", () => {
+        editor.setSelectedBufferRange([[3, 8], [3, 13]]);
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:use-selection-as-replace-pattern');
+        expect(findView.replaceEditor.getText()).toBe('pivot');
+        expect(editor.getSelectedBufferRange()).toEqual([[3, 8], [3, 13]]);
+
+        findView.findEditor.setText('sort');
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:find-next');
+        expect(editor.getSelectedBufferRange()).toEqual([[8, 11], [8, 15]]);
+        expect(editor.getTextInBufferRange(editor.getSelectedBufferRange())).toEqual('sort');
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:replace-next');
+        expect(editor.getTextInBufferRange([[8, 11], [8, 16]])).toEqual('pivot');
+        expect(editor.getSelectedBufferRange()).toEqual([[8, 44], [8, 48]]);
+        expect(editor.getTextInBufferRange(editor.getSelectedBufferRange())).toEqual('sort');
+      });
+
+      it("places the word under the cursor into the replace editor", () => {
+        editor.setSelectedBufferRange([[3, 8], [3, 8]]);
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:use-selection-as-replace-pattern');
+        expect(findView.replaceEditor.getText()).toBe('pivot');
+        expect(editor.getSelectedBufferRange()).toEqual([[3, 8], [3, 8]]);
+
+        findView.findEditor.setText('sort');
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:find-next');
+        expect(editor.getSelectedBufferRange()).toEqual([[8, 11], [8, 15]]);
+        expect(editor.getTextInBufferRange(editor.getSelectedBufferRange())).toEqual('sort');
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:replace-next');
+        expect(editor.getTextInBufferRange([[8, 11], [8, 16]])).toEqual('pivot');
+        expect(editor.getSelectedBufferRange()).toEqual([[8, 44], [8, 48]]);
+        expect(editor.getTextInBufferRange(editor.getSelectedBufferRange())).toEqual('sort');
+      });
+
+      it("places the previously selected text into the replace editor if no selection", () => {
+        editor.setSelectedBufferRange([[1, 6], [1, 10]]);
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:use-selection-as-replace-pattern');
+        expect(findView.replaceEditor.getText()).toBe('sort');
+
+        editor.setSelectedBufferRange([[1, 1], [1, 1]]);
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:use-selection-as-replace-pattern');
+        expect(findView.replaceEditor.getText()).toBe('sort');
+      });
+
+      it("places selected text into the replace editor and escapes it when Regex is enabled", () => {
+        atom.commands.dispatch(findView.replaceEditor.element, 'find-and-replace:toggle-regex-option');
+        editor.setSelectedBufferRange([[6, 6], [6, 65]]);
+        atom.commands.dispatch(workspaceElement, 'find-and-replace:use-selection-as-replace-pattern');
+        expect(findView.replaceEditor.getText()).toBe('current < pivot \\? left\\.push\\(current\\) : right\\.push\\(current\\);');
+      });
     });
 
     describe("when find-and-replace:find-next-selected is triggered", () => {
