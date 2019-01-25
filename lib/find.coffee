@@ -36,8 +36,8 @@ module.exports =
 
       if atom.workspace.isTextEditor(paneItem)
         @findModel.setEditor(paneItem)
-      else if paneItem?.onDidChangeEmbeddedTextEditor?
-        @currentItemSub = paneItem.onDidChangeEmbeddedTextEditor (editor) =>
+      else if paneItem?.observeEmbeddedTextEditor?
+        @currentItemSub = paneItem.observeEmbeddedTextEditor (editor) =>
           if atom.workspace.getCenter().getActivePaneItem() is paneItem
             @findModel.setEditor(editor)
         @subscriptions.add @currentItemSub

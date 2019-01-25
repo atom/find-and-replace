@@ -40,7 +40,10 @@ class DeferredEditorItem {
     return etch.update(this)
   }
 
-  onDidChangeEmbeddedTextEditor(cb) {
+  observeEmbeddedTextEditor(cb) {
+    if (this.editorShown) {
+      cb(this.refs.theEditor)
+    }
     return this.emitter.on('did-change-embedded-text-editor', cb)
   }
 
