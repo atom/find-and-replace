@@ -1,10 +1,15 @@
 const {it, fit, ffit, beforeEach, afterEach} = require('./async-spec-helpers') // eslint-disable-line no-unused-vars
 
 const BufferSearch = require('../lib/buffer-search')
+const EmbeddedEditorItem = require('./item/embedded-editor-item')
+const UnrecognizedItem = require('./item/unrecognized-item');
 
 describe('Find', () => {
   describe('updating the find model', () => {
     beforeEach(async () => {
+      atom.workspace.addOpener(EmbeddedEditorItem.opener)
+      atom.workspace.addOpener(UnrecognizedItem.opener)
+
       const activationPromise = atom.packages.activatePackage('find-and-replace')
       atom.commands.dispatch(atom.views.getView(atom.workspace), 'find-and-replace:show')
       await activationPromise
@@ -20,10 +25,13 @@ describe('Find', () => {
       expect(BufferSearch.prototype.setEditor).toHaveBeenCalledWith(editor)
     })
 
-    it("sets the find model's editor to null if a non-editor is focused", async () => {
-      spyOn(atom.workspace, 'isTextEditor').andReturn(false)
+    it("sets the find model's editor to an embedded text editor", async () => {
+      const embedded = await atom.workspace.open(EmbeddedEditorItem.uri)
+      expect(BufferSearch.prototype.setEditor).toHaveBeenCalledWith(embedded.refs.theEditor)
+    })
 
-      await atom.workspace.open()
+    it("sets the find model's editor to null if a non-editor is focused", async () => {
+      await atom.workspace.open(UnrecognizedItem.uri)
       expect(BufferSearch.prototype.setEditor).toHaveBeenCalledWith(null)
     })
   })
