@@ -42,7 +42,7 @@ describe('ResultsView', () => {
     jasmine.attachToDOM(workspaceElement);
 
     atom.config.set('core.excludeVcsIgnoredPaths', false);
-    atom.project.setPaths([path.join(__dirname, 'fixtures')]);
+    atom.project.setPaths([path.join(__dirname, 'fixtures/project')]);
 
     let activationPromise = atom.packages.activatePackage("find-and-replace").then(function({mainModule}) {
       mainModule.createViews();
@@ -84,7 +84,7 @@ describe('ResultsView', () => {
 
       resultsView = getResultsView();
       await resultsView.heightInvalidationPromise;
-      expect(resultsView.refs.listView.element.querySelector('.path-name').textContent).toBe(path.join("fixtures", "one-long-line.coffee"));
+      expect(resultsView.refs.listView.element.querySelector('.path-name').textContent).toBe(path.join("project", "one-long-line.coffee"));
     });
   });
 
