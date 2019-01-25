@@ -826,18 +826,19 @@ describe('ProjectFindView', () => {
           const resultsPaneView = getExistingResultsPane();
 
           await resultsView.heightInvalidationPromise
-          expect(resultsView.refs.listView.element.querySelectorAll(".search-result")).toHaveLength(13);
+          console.log(resultsView.refs.listView.element)
+          expect(resultsView.refs.listView.element.querySelectorAll(".list-item")).toHaveLength(13);
           expect(resultsPaneView.refs.previewCount.textContent).toBe("13 results found in 2 files for items");
 
           resultsView.selectFirstResult();
           for (let i = 0; i < 7; i++) await resultsView.moveDown()
-          expect(resultsView.refs.listView.element.querySelectorAll(".path")[1]).toHaveClass('selected');
+          expect(resultsView.refs.listView.element.querySelectorAll(".list-nested-item")[1]).toHaveClass('selected');
 
           editor.setText('there is one "items" in this file');
           advanceClock(editor.getBuffer().stoppedChangingDelay);
           await etch.getScheduler().getNextUpdatePromise()
           expect(resultsPaneView.refs.previewCount.textContent).toBe("13 results found in 2 files for items");
-          expect(resultsView.refs.listView.element.querySelectorAll(".path")[1]).toHaveClass('selected');
+          expect(resultsView.refs.listView.element.querySelectorAll(".list-nested-item")[1]).toHaveClass('selected');
         });
       });
 
