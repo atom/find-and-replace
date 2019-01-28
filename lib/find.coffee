@@ -21,6 +21,7 @@ module.exports =
       new ResultsPaneView() if filePath is ResultsPaneView.URI
 
     @subscriptions = new CompositeDisposable
+    @currentItemSub = new Disposable
     @findHistory = new History(findHistory)
     @replaceHistory = new History(replaceHistory)
     @pathsHistory = new History(pathsHistory)
@@ -30,8 +31,16 @@ module.exports =
     @resultsModel = new ResultsModel(@findOptions)
 
     @subscriptions.add atom.workspace.getCenter().observeActivePaneItem (paneItem) =>
+      @subscriptions.delete @currentItemSub
+      @currentItemSub.dispose()
+
       if atom.workspace.isTextEditor(paneItem)
         @findModel.setEditor(paneItem)
+      else if paneItem?.observeEmbeddedTextEditor?
+        @currentItemSub = paneItem.observeEmbeddedTextEditor (editor) =>
+          if atom.workspace.getCenter().getActivePaneItem() is paneItem
+            @findModel.setEditor(editor)
+        @subscriptions.add @currentItemSub
       else if paneItem?.getEmbeddedTextEditor?
         @findModel.setEditor(paneItem.getEmbeddedTextEditor())
       else
