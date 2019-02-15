@@ -31,6 +31,9 @@ class FindOptions
   onDidChange: (callback) ->
     @emitter.on('did-change', callback)
 
+  onDidChangeUseRegex: (callback) ->
+    @emitter.on('did-change-useRegex', callback)
+
   onDidChangeReplacePattern: (callback) ->
     @emitter.on('did-change-replacePattern', callback)
 
