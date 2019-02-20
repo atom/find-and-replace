@@ -109,6 +109,26 @@ describe("FindView", () => {
         "current < pivot \\? left\\.push\\(current\\) : right\\.push\\(current\\);"
       );
     });
+
+    it('selects the text to find when the panel is re-shown', async () => {
+      atom.commands.dispatch(editorView, "find-and-replace:show");
+      await activationPromise;
+
+      const stringToSearch = "not found";
+      const findEditor = findView.findEditor;
+
+      findEditor.setText(stringToSearch);
+
+      atom.commands.dispatch(findEditor.element, "core:confirm");
+      atom.commands.dispatch(document.activeElement, "core:cancel");
+      atom.commands.dispatch(editorView, "find-and-replace:show");
+
+      expect(findEditor.getSelectedBufferRange()).toEqual([[0, 0], [0, stringToSearch.length]]);
+
+      const selectionElement = findEditor.getElement().querySelector('.highlight.selection .selection');
+
+      expect(selectionElement.getBoundingClientRect().width).toBeGreaterThan(0);
+    });
   });
 
   describe("when find-and-replace:toggle is triggered", () => {
