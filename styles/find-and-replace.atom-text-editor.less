@@ -1,0 +1,18 @@
+// Note: This file is specially named!
+// Less files with the name `*.atom-text-editor.less` will be loaded into the text-editor!
+//
+// Since these styles applies to the editor, this file needs to be loaded in the
+// context of the editor.
+// See example in decoration-example Atom package (not published?)
+
+// Highlighting ranges of text
+// Remember: no default is provided for highlight decorations.
+.syntax--find-results-main-line-number {
+  color: @syntax-color-variable;
+}
+.syntax--find-results-context-line-number {
+  color: fadeout(@syntax-color-variable, 30%);
+}
+.syntax--find-results-path {
+  color: @syntax-color-import;
+}

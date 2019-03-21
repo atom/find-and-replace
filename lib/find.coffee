@@ -9,6 +9,7 @@ FindView = require './find-view'
 ProjectFindView = require './project-find-view'
 ResultsModel = require './project/results-model'
 ResultsPaneView = require './project/results-pane'
+ResultsTextViewManager = require './project/results-text-view-manager'
 
 module.exports =
   activate: ({findOptions, findHistory, replaceHistory, pathsHistory}={}) ->
@@ -17,8 +18,12 @@ module.exports =
       atom.config.set('find-and-replace.projectSearchResultsPaneSplitDirection', 'right')
     atom.config.unset('find-and-replace.openProjectFindResultsInRightPane')
 
-    atom.workspace.addOpener (filePath) ->
-      new ResultsPaneView() if filePath is ResultsPaneView.URI
+    atom.workspace.addOpener (filePath) =>
+      if filePath is ResultsPaneView.URI
+        if atom.config.get('find-and-replace.findResultsAsText')
+          return @resultsTextViewManager.getResultsTextEditor()
+        else
+          return new ResultsPaneView()
 
     @subscriptions = new CompositeDisposable
     @currentItemSub = new Disposable
@@ -29,6 +34,8 @@ module.exports =
     @findOptions = new FindOptions(findOptions)
     @findModel = new BufferSearch(@findOptions)
     @resultsModel = new ResultsModel(@findOptions)
+
+    @resultsTextViewManager = new ResultsTextViewManager(@resultsModel)
 
     @subscriptions.add atom.workspace.getCenter().observeActivePaneItem (paneItem) =>
       @subscriptions.delete @currentItemSub
@@ -217,6 +224,7 @@ module.exports =
     @projectFindView = null
 
     ResultsPaneView.model = null
+    ResultsTextViewManager.model = null
     @resultsModel = null
 
     @autocompleteSubscriptions?.dispose()
