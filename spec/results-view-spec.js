@@ -69,7 +69,48 @@ describe('ResultsView', () => {
       expect(resultsView.refs.listView.element.querySelectorAll('.preview').length).toBe(1);
       expect(resultsView.refs.listView.element.querySelector('.preview').textContent).toBe('test test test test test test test test test test test a b c d e f g h i j k l abcdefghijklmnopqrstuvwxyz');
       expect(resultsView.refs.listView.element.querySelector('.match').textContent).toBe('ghijkl');
-    })
+    });
+  });
+
+  describe("when the result has lines that contain multiple matches", () => {
+    let previews;
+
+    beforeEach(async () => {
+      projectFindView.findEditor.setText('1234');
+      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      await searchPromise;
+
+      resultsView = getResultsView();
+      await resultsView.heightInvalidationPromise;
+
+      previews = resultsView.refs.listView.element.querySelectorAll('.preview');
+    });
+
+    it('returns search results for combined test', () => {
+      expect(resultsView.refs.listView.element.querySelector('.path-name').textContent).toBe("combined.txt");
+      expect(previews.length).toBe(4);
+    });
+
+    it('concatenates noncontiguous matches on same line with ellipsis', () => {
+      expect(previews[0].textContent).toBe('1234 pxdding0 pxdding1 pxdding2 pxdding3 pxdding4 pxdding5 pxdding6 pxdding7 pxdding8 pxdding9 pxdding10…pxdding12 pxdding13 pxdding14 pxdding15 pxdding16 1234 pxdding17 pxdding18 pxdding19 pxdding20 pxdding21…pxdding25 pxdding26 pxdding27 pxdding28 pxdding29 pxdding30 pxdding31 pxdding32 pxdding33 pxdding34 1234');
+      expect(previews[0].querySelectorAll('.match')[0].textContent).toBe('1234');
+      expect(previews[0].querySelectorAll('.match').length).toBe(3);
+    });
+
+    it('concatenates contiguous matches with touching matches seamlessly', () => {
+      expect(previews[1].textContent).toBe('1234 pxdding0 pxdding1 pxdding2 1234 pxdding3 pxdding4 1234 pxdding5 1234 pxdding6 pxdding7 pxdding8 1234');
+      expect(previews[1].querySelectorAll('.match').length).toBe(5);
+    });
+
+    it('concatenates contigous matches with touching contexts seamlessly', () => {
+      expect(previews[2].textContent).toBe('1234 pxdding0 pxdding1 pxdding2 pxdding3 pxdding4 pxdding5 pxdding6 pxdding7 pxdding8 pxdding9 pxdding10 pxdding11 pxdding12 pxdding13 pxdding14 1234 pxdding15 pxdding16 pxdding17 pxdding18 pxdding19 pxdding20 pxdding21 pxdding22 pxdding23 pxdding24 pxdding25 pxdding26 pxdding27 1234');
+      expect(previews[2].querySelectorAll('.match').length).toBe(3);
+    });
+
+    it('concatenates different types of (non)contigous matches on same line accordingly', () => {
+      expect(previews[3].textContent).toBe('1234 pxdding0 pxdding1 pxdding2 pxdding3 pxdding4 pxdding5 pxdding6 pxdding7 pxdding8 pxdding9 pxdding10…pxdding12 pxdding13 pxdding14 pxdding15 pxdding16 1234 short text 1234 pxdding17 pxdding18 pxdding19 pxdding20 pxdding21 pxdding22 pxdding23 pxdding24 pxdding25 pxdding26 pxdding27 pxdding28 pxdding29 1234');
+      expect(previews[3].querySelectorAll('.match').length).toBe(4);
+    });
   });
 
   describe("when there are multiple project paths", () => {
@@ -117,8 +158,7 @@ describe('ResultsView', () => {
       await resultsView.heightInvalidationPromise;
       expect(resultsView.refs.listView.element.querySelector('.match').textContent).toBe('ghijkl');
       expect(resultsView.refs.listView.element.querySelector('.match')).toHaveClass('highlight-info');
-      expect(resultsView.refs.listView.element.querySelector('.replacement').textContent).toBe('');
-      expect(resultsView.refs.listView.element.querySelector('.replacement')).toBeHidden();
+      expect(resultsView.refs.listView.element.querySelector('.replacement')).toBeNull();
 
       projectFindView.replaceEditor.setText('cats');
       advanceClock(modifiedDelay);
@@ -135,7 +175,7 @@ describe('ResultsView', () => {
 
       expect(resultsView.refs.listView.element.querySelector('.match').textContent).toBe('ghijkl');
       expect(resultsView.refs.listView.element.querySelector('.match')).toHaveClass('highlight-info');
-      expect(resultsView.refs.listView.element.querySelector('.replacement')).toBeHidden();
+      expect(resultsView.refs.listView.element.querySelector('.replacement')).toBeNull();
     });
 
     it('renders the captured text when the replace pattern uses captures', async () => {
@@ -816,8 +856,9 @@ describe('ResultsView', () => {
         runs(() => {
           resultsView = getResultsView()
           const iconElements = resultsView.element.querySelectorAll(iconSelector)
-          expect(iconElements[0].className.trim()).toBe('icon foo bar')
-          expect(iconElements[1].className.trim()).toBe('icon baz qlux')
+          expect(iconElements[0].className.trim()).toBe('icon baz qlux')
+          expect(iconElements[1].className.trim()).toBe('icon foo bar')
+          expect(iconElements[2].className.trim()).toBe('icon baz qlux')
           expect(resultsView.element.querySelector('.icon-file-text')).toBe(null)
 
           disposable.dispose()
