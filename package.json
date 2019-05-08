@@ -40,8 +40,7 @@
   },
   "devDependencies": {
     "coffeelint": "^1.9.7",
-    "dedent": "^0.6.0",
-    "sinon": "1.17.4"
+    "dedent": "^0.6.0"
   },
   "consumedServices": {
     "atom.file-icons": {

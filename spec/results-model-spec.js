@@ -1,7 +1,6 @@
 /** @babel */
 
 const path = require("path");
-const sinon = require("sinon")
 const ResultsModel = require("../lib/project/results-model");
 const FindOptions = require("../lib/find-options");
 
@@ -16,7 +15,7 @@ describe("ResultsModel", () => {
 
     editor = await atom.workspace.open("sample.js");
     reporterSpy = {
-      sendSearchEvent: sinon.spy()
+      sendSearchEvent: jasmine.createSpy()
     }
     resultsModel = new ResultsModel(new FindOptions(), reporterSpy);
   });
@@ -140,8 +139,8 @@ describe("ResultsModel", () => {
       editor.getBuffer().destroy()
       result = resultsModel.getResult(editor.getPath())
 
-      expect(Number.isInteger(reporterSpy.sendSearchEvent.args[0][0])).toBeTruthy()
-      expect(reporterSpy.sendSearchEvent.args[0][1]).toBe(6)
+      expect(Number.isInteger(reporterSpy.sendSearchEvent.calls[0].args[0])).toBeTruthy()
+      expect(reporterSpy.sendSearchEvent.calls[0].args[1]).toBe(6)
     });
   });
 });
