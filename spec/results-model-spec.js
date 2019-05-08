@@ -1,12 +1,12 @@
 /** @babel */
 
 const path = require("path");
+const sinon = require("sinon")
 const ResultsModel = require("../lib/project/results-model");
 const FindOptions = require("../lib/find-options");
-const {beforeEach, it, fit, ffit, fffit} = require('./async-spec-helpers')
 
 describe("ResultsModel", () => {
-  let editor, resultsModel;
+  let editor, resultsModel, reporterStub;
 
   beforeEach(async () => {
     atom.config.set("core.excludeVcsIgnoredPaths", false);
@@ -15,7 +15,10 @@ describe("ResultsModel", () => {
     atom.project.setPaths([path.join(__dirname, "fixtures/project")]);
 
     editor = await atom.workspace.open("sample.js");
-    resultsModel = new ResultsModel(new FindOptions());
+    reporterStub = {
+      sendSearchEvent: sinon.spy()
+    }
+    resultsModel = new ResultsModel(new FindOptions(), reporterStub);
   });
 
   describe("searching for a pattern", () => {
