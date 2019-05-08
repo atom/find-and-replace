@@ -6,7 +6,7 @@ const ResultsModel = require("../lib/project/results-model");
 const FindOptions = require("../lib/find-options");
 
 describe("ResultsModel", () => {
-  let editor, resultsModel, reporterStub;
+  let editor, resultsModel, reporterSpy;
 
   beforeEach(async () => {
     atom.config.set("core.excludeVcsIgnoredPaths", false);
@@ -15,10 +15,10 @@ describe("ResultsModel", () => {
     atom.project.setPaths([path.join(__dirname, "fixtures/project")]);
 
     editor = await atom.workspace.open("sample.js");
-    reporterStub = {
+    reporterSpy = {
       sendSearchEvent: sinon.spy()
     }
-    resultsModel = new ResultsModel(new FindOptions(), reporterStub);
+    resultsModel = new ResultsModel(new FindOptions(), reporterSpy);
   });
 
   describe("searching for a pattern", () => {
@@ -129,6 +129,19 @@ describe("ResultsModel", () => {
       expect(cancelledSpy).toHaveBeenCalled();
       expect(resultsModel.getPathCount()).toBe(1);
       expect(resultsModel.getMatchCount()).toBe(5);
+    });
+  });
+
+  describe("logging metrics", () => {
+    it("logs the elapsed time and the number of results", async () => {
+      await resultsModel.search('items', '*.js', '');
+
+      advanceClock(editor.buffer.stoppedChangingDelay)
+      editor.getBuffer().destroy()
+      result = resultsModel.getResult(editor.getPath())
+
+      expect(Number.isInteger(reporterSpy.sendSearchEvent.args[0][0])).toBeTruthy()
+      expect(reporterSpy.sendSearchEvent.args[0][1]).toBe(6)
     });
   });
 });
