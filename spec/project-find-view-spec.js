@@ -9,7 +9,8 @@ const ResultsPaneView = require('../lib/project/results-pane');
 const etch = require('etch');
 const {beforeEach, it, fit, ffit, fffit, conditionPromise} = require('./async-spec-helpers')
 
-describe('ProjectFindView', () => {
+for (const ripgrep of [false, true]) {
+describe(`ProjectFindView (ripgrep=${ripgrep})`, () => {
   const {stoppedChangingDelay} = TextBuffer.prototype;
   let activationPromise, searchPromise, editor, editorElement, findView,
       projectFindView, workspaceElement;
@@ -33,7 +34,14 @@ describe('ProjectFindView', () => {
     return getExistingResultsPane().refs.resultsView;
   }
 
+  function waitForSearchResults() {
+    return conditionPromise(
+      () => projectFindView.refs.descriptionLabel.textContent.includes('results found')
+    )
+  }
+
   beforeEach(() => {
+    atom.config.set('find-and-replace.useRipgrep', ripgrep)
     workspaceElement = atom.views.getView(atom.workspace);
     atom.config.set('core.excludeVcsIgnoredPaths', false);
     atom.project.setPaths([path.join(__dirname,   'fixtures')]);
@@ -278,6 +286,8 @@ describe('ProjectFindView', () => {
 
     describe("when the find string contains an escaped char", () => {
       beforeEach(() => {
+        jasmine.useRealClock()
+
         let projectPath = temp.mkdirSync("atom");
         fs.writeFileSync(path.join(projectPath, "tabs.txt"), "\t\n\\\t\n\\\\t");
         atom.project.setPaths([projectPath]);
@@ -396,6 +406,7 @@ describe('ProjectFindView', () => {
       beforeEach(() => {
         workspaceElement.style.height = '1000px';
         atom.commands.dispatch(editorElement, 'project-find:show');
+        jasmine.useRealClock()
       });
 
       it("splits when option is right", async () => {
@@ -451,6 +462,7 @@ describe('ProjectFindView', () => {
 
         await etch.update(resultsView1);
         await etch.update(resultsView2);
+        await waitForSearchResults();
 
         const resultCount = resultsPaneView1.querySelectorAll('.match-row').length;
         expect(resultCount).toBeGreaterThan(0);
@@ -690,11 +702,16 @@ describe('ProjectFindView', () => {
     });
 
     describe("when project-find:confirm is triggered", () => {
+      beforeEach(() => {
+        jasmine.useRealClock()
+      });
+
       it("displays the results and no errors", async () => {
         projectFindView.findEditor.setText('items');
         atom.commands.dispatch(projectFindView.element, 'project-find:confirm');
 
         await searchPromise;
+        await waitForSearchResults();
 
         const resultsView = getResultsView();
         await resultsView.heightInvalidationPromise
@@ -707,6 +724,7 @@ describe('ProjectFindView', () => {
     describe("when core:confirm is triggered", () => {
       beforeEach(() => {
         atom.commands.dispatch(workspaceElement, 'project-find:show')
+        jasmine.useRealClock()
       });
 
       describe("when the there search field is empty", () => {
@@ -799,21 +817,29 @@ describe('ProjectFindView', () => {
           expect(listView.element.querySelectorAll(".path-row")[1].parentElement).toHaveClass('selected');
 
           editor.setText('there is one "items" in this file');
-          advanceClock(editor.getBuffer().stoppedChangingDelay);
           await etch.getScheduler().getNextUpdatePromise()
-          expect(resultsPaneView.refs.previewCount.textContent).toBe("8 results found in 2 files for items");
+          await searchPromise;
+
+          await conditionPromise(
+            () => resultsPaneView.refs.previewCount.textContent === "8 results found in 2 files for items"
+          )
+
           expect(listView.element.querySelectorAll(".path-row")[1].parentElement).toHaveClass('selected');
 
           // Ensure the newly added item can be opened.
           await resultsView.moveDown()
           atom.commands.dispatch(resultsView.element, 'core:confirm');
-          await new Promise(resolve => editor.onDidChangeSelectionRange(resolve));
-          expect(editor.getSelectedText()).toBe("items")
+          await waitForSearchResults();
+          await conditionPromise(
+            () => editor.getSelectedText() === "items"
+          )
 
           editor.setText('no matches in this file');
-          advanceClock(editor.getBuffer().stoppedChangingDelay);
-          await etch.getScheduler().getNextUpdatePromise()
-          expect(resultsPaneView.refs.previewCount.textContent).toBe("7 results found in 1 file for items");
+          await waitForSearchResults();
+
+          await conditionPromise(
+            () => resultsPaneView.refs.previewCount.textContent === "7 results found in 1 file for items"
+          )
         });
 
         it("doesn't update the results list when a buffer outside the project changes", async () => {
@@ -826,7 +852,6 @@ describe('ProjectFindView', () => {
           const resultsPaneView = getExistingResultsPane();
 
           await resultsView.heightInvalidationPromise
-          console.log(resultsView.refs.listView.element)
           expect(resultsView.refs.listView.element.querySelectorAll(".list-item")).toHaveLength(13);
           expect(resultsPaneView.refs.previewCount.textContent).toBe("13 results found in 2 files for items");
 
@@ -1087,6 +1112,7 @@ describe('ProjectFindView', () => {
       });
 
       it('highlights the search results in the selected file', async () => {
+        jasmine.useRealClock();
         // Process here is to
         // * open samplejs
         // * run a search that has sample js results
@@ -1100,6 +1126,7 @@ describe('ProjectFindView', () => {
         projectFindView.findEditor.setText('item');
         atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
+        await waitForSearchResults();
 
         const resultsView = getResultsView();
         resultsView.scrollToBottom(); // To load ALL the results
@@ -1630,6 +1657,7 @@ describe('ProjectFindView', () => {
     });
   });
 });
+}
 
 function simulateResizeEvent(element) {
   Array.from(element.children).forEach((child) => {
