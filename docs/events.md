@@ -17,6 +17,7 @@ Currently Find and Replace does not log any counter events.
   |-------|-------|
   | `ec` | `time-to-search`
   | `ev` | Number of found results
+  | `el` | Search system in use (`ripgrep` or `standard`)
 
 ## Standard events
 
