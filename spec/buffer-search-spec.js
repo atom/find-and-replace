@@ -448,6 +448,56 @@ describe('BufferSearch', () => {
       })
     })
 
+    describe("if there are multiple non-empty selections", () => {
+      beforeEach(() => {
+        editor.setSelectedBufferRanges([
+          [[1, 3], [2, 11]],
+          [[5, 2], [8, 0]],
+        ]);
+      })
+
+      it("searches in all the selections", () => {
+        model.search("a+");
+
+        expect(getHighlightedRanges()).toEqual([
+          [[2, 4], [2, 7]],
+          [[5, 2], [5, 3]],
+          [[6, 4], [6, 7]],
+          [[7, 8], [7, 11]]
+        ]);
+      })
+
+      it("executes another search if the current selection is different from the last search's selection", () => {
+        spyOn(model, 'recreateMarkers').andCallThrough()
+
+        model.search("a+");
+        editor.setSelectedBufferRanges([
+          [[1, 3], [2, 11]],
+          [[5, 1], [8, 0]],
+        ]);
+        model.search("a+");
+
+        expect(model.recreateMarkers.callCount).toBe(2)
+        expect(getHighlightedRanges()).toEqual([
+          [[2, 4], [2, 7]],
+          [[5, 1], [5, 3]],
+          [[6, 4], [6, 7]],
+          [[7, 8], [7, 11]]
+        ]);
+      })
+
+      it("does not execute another search if the current selection is idential to the last search's selection", () => {
+        spyOn(model, 'recreateMarkers').andCallThrough()
+        editor.setSelectedBufferRanges([
+          [[1, 3], [2, 11]],
+          [[5, 1], [8, 0]],
+        ]);
+        model.search("a+");
+        model.search("a+");
+        expect(model.recreateMarkers.callCount).toBe(1)
+      })
+    })
+
     describe("if the current selection is empty", () => {
       beforeEach(() => {
         editor.setSelectedBufferRange([[0, 0], [0, 0]]);
