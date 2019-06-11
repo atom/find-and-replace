@@ -1,7 +1,6 @@
 /** @babel */
 
 const path = require("path");
-const {beforeEach, it, fit, ffit, fffit} = require('./async-spec-helpers')
 
 describe("FindView", () => {
   let workspaceElement, editorView, editor, findView, activationPromise;

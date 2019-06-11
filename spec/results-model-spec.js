@@ -3,7 +3,6 @@
 const path = require("path");
 const ResultsModel = require("../lib/project/results-model");
 const FindOptions = require("../lib/find-options");
-const {beforeEach, it, fit, ffit, fffit} = require('./async-spec-helpers')
 
 describe("ResultsModel", () => {
   let editor, resultsModel, reporterSpy;

@@ -3,7 +3,6 @@
 const path = require('path');
 const SelectNext = require('../lib/select-next');
 const dedent = require('dedent');
-const {beforeEach, it, fit, ffit, fffit} = require('./async-spec-helpers')
 
 describe("SelectNext", () => {
   let workspaceElement, editorElement, editor;

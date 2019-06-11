@@ -7,7 +7,6 @@ const {
   MatchRow,
   ResultRowGroup
 } = require("../lib/project/result-row");
-const {beforeEach, it, fit, ffit, fffit} = require('./async-spec-helpers')
 
 describe("ResultRowGroup", () => {
   const lines = (new Array(18)).fill().map((x, i) => `line-${i}`)

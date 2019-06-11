@@ -7,7 +7,7 @@ const dedent = require('dedent');
 const {TextBuffer} = require('atom');
 const ResultsPaneView = require('../lib/project/results-pane');
 const etch = require('etch');
-const {beforeEach, it, fit, ffit, fffit, conditionPromise} = require('./async-spec-helpers')
+const {conditionPromise} = require('./async-spec-helpers');
 
 for (const ripgrep of [false, true]) {
 describe(`ProjectFindView (ripgrep=${ripgrep})`, () => {
