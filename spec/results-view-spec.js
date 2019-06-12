@@ -9,7 +9,6 @@ const ResultsPaneView = require('../lib/project/results-pane');
 const getIconServices = require('../lib/get-icon-services');
 const DefaultFileIcons = require('../lib/default-file-icons');
 const {Disposable} = require('atom')
-const {beforeEach, it, fit, ffit, fffit} = require('./async-spec-helpers')
 
 global.beforeEach(function() {
   this.addMatchers({

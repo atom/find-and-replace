@@ -1,5 +1,3 @@
-const {it, fit, ffit, beforeEach, afterEach} = require('./async-spec-helpers') // eslint-disable-line no-unused-vars
-
 const BufferSearch = require('../lib/buffer-search')
 const EmbeddedEditorItem = require('./item/embedded-editor-item')
 const DeferredEditorItem = require('./item/deferred-editor-item');
