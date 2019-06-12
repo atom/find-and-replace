@@ -669,6 +669,8 @@ describe('ResultsView', () => {
 
   describe("copying path with find-and-replace:copy-path", () => {
     it("copies the selected file path to clipboard", async () => {
+      jasmine.useRealClock()
+
       projectFindView.findEditor.setText('items');
       atom.commands.dispatch(projectFindView.element, 'core:confirm');
       await searchPromise;
@@ -686,6 +688,8 @@ describe('ResultsView', () => {
     });
 
     it("copies the selected file path to the clipboard when there are multiple project folders", async () => {
+      jasmine.useRealClock()
+
       const folder1 = temp.mkdirSync('folder-1')
       const file1 = path.join(folder1, 'sample.txt')
       fs.writeFileSync(file1, 'items')
