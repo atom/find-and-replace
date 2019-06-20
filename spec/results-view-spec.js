@@ -35,6 +35,40 @@ describe('ResultsView', () => {
     return getResultsPane().refs.resultsView;
   }
 
+  function buildResultsView() {
+    const FindOptions = require("../lib/find-options")
+    const ResultsModel = require("../lib/project/results-model")
+    const { Result } = ResultsModel
+    const ResultsView = require("../lib/project/results-view")
+    const model = new ResultsModel(new FindOptions({}), null)
+    const resultsView = new ResultsView({ model })
+    model.addResult("/a/b.txt", Result.create({
+      filePath: "/a/b.txt",
+      matches: [
+        {
+          lineText: "hello world",
+          matchText: "world",
+          range: {start: {row: 0, column: 6}, end: {row: 0, column: 11}},
+          leadingContextLines: [],
+          trailingContextLines: []
+        }
+      ]
+    }))
+    model.addResult("/c/d.txt", Result.create({
+      filePath: "/c/d.txt",
+      matches: [
+        {
+          lineText: "goodnight moon",
+          matchText: "night",
+          range: {start: {row: 0, column: 4}, end: {row: 0, column: 8}},
+          leadingContextLines: [],
+          trailingContextLines: []
+        }
+      ]
+    }))
+    return resultsView
+  }
+
   beforeEach(async () => {
     workspaceElement = atom.views.getView(atom.workspace);
     workspaceElement.style.height = '1000px';
@@ -649,80 +683,41 @@ describe('ResultsView', () => {
   });
 
   describe("copying items with core:copy", () => {
-    it("copies the selected line onto the clipboard", async () => {
-      await atom.workspace.open('sample.js');
+    it("copies the selected line onto the clipboard", () => {
+      const resultsView = buildResultsView();
 
-      projectFindView.findEditor.setText('items');
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
-      await searchPromise;
-
-      resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
       resultsView.selectFirstResult();
-
-      _.times(2, () => atom.commands.dispatch(resultsView.element, 'core:move-down'));
+      _.times(3, () => atom.commands.dispatch(resultsView.element, 'core:move-down'));
       atom.commands.dispatch(resultsView.element, 'core:copy');
-      expect(atom.clipboard.read()).toBe('    return items if items.length <= 1');
+      expect(atom.clipboard.read()).toBe('goodnight moon');
     });
   });
 
   describe("copying path with find-and-replace:copy-path", () => {
-    it("copies the selected file path to clipboard", async () => {
-      jasmine.useRealClock()
+    it("copies the selected file path to clipboard", () => {
+      const resultsView = buildResultsView();
 
-      projectFindView.findEditor.setText('items');
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
-      await searchPromise;
-
-      resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
-      await resultsView.selectFirstResult();
-      await resultsView.collapseResult();
-
-      atom.commands.dispatch(resultsView.element, 'find-and-replace:copy-path');
-      expect(atom.clipboard.read()).toBe('sample.coffee');
-      atom.commands.dispatch(resultsView.element, 'core:move-down');
-      atom.commands.dispatch(resultsView.element, 'find-and-replace:copy-path');
-      expect(atom.clipboard.read()).toBe('sample.js');
-    });
-
-    it("copies the selected file path to the clipboard when there are multiple project folders", async () => {
-      jasmine.useRealClock()
-
-      const folder1 = temp.mkdirSync('folder-1')
-      const file1 = path.join(folder1, 'sample.txt')
-      fs.writeFileSync(file1, 'items')
-
-      const folder2 = temp.mkdirSync('folder-2')
-      const file2 = path.join(folder2, 'sample.txt')
-      fs.writeFileSync(file2, 'items')
-
-      atom.project.setPaths([folder1, folder2]);
-      projectFindView.findEditor.setText('items');
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
-      await searchPromise;
-
-      resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
       resultsView.selectFirstResult();
-      resultsView.collapseResult();
+      // await resultsView.collapseResult();
       atom.commands.dispatch(resultsView.element, 'find-and-replace:copy-path');
-      expect(atom.clipboard.read()).toBe(path.join(path.basename(folder1), path.basename(file1)));
+      expect(atom.clipboard.read()).toBe('/a/b.txt');
+
+      atom.commands.dispatch(resultsView.element, 'core:move-down');
       atom.commands.dispatch(resultsView.element, 'core:move-down');
       atom.commands.dispatch(resultsView.element, 'find-and-replace:copy-path');
-      expect(atom.clipboard.read()).toBe(path.join(path.basename(folder2), path.basename(file2)));
+      expect(atom.clipboard.read()).toBe('/c/d.txt');
+
+      atom.commands.dispatch(resultsView.element, 'core:move-up');
+      atom.commands.dispatch(resultsView.element, 'find-and-replace:copy-path');
+      expect(atom.clipboard.read()).toBe('/a/b.txt');
     });
   });
 
   describe("fonts", () => {
     it('respect the editor.fontFamily setting', async () => {
       atom.config.set('editor.fontFamily', 'Courier');
+      const resultsView = buildResultsView();
 
-      projectFindView.findEditor.setText('items');
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
-      await searchPromise;
-
-      resultsView = getResultsView();
       await etch.update(resultsView);
       expect(resultsView.element.style.fontFamily).toBe('Courier');
 
