@@ -35,37 +35,41 @@ describe('ResultsView', () => {
     return getResultsPane().refs.resultsView;
   }
 
-  function buildResultsView() {
+  function buildResultsView(options = {}) {
     const FindOptions = require("../lib/find-options")
     const ResultsModel = require("../lib/project/results-model")
     const { Result } = ResultsModel
     const ResultsView = require("../lib/project/results-view")
     const model = new ResultsModel(new FindOptions({}), null)
     const resultsView = new ResultsView({ model })
-    model.addResult("/a/b.txt", Result.create({
-      filePath: "/a/b.txt",
-      matches: [
-        {
-          lineText: "hello world",
-          matchText: "world",
-          range: {start: {row: 0, column: 6}, end: {row: 0, column: 11}},
-          leadingContextLines: [],
-          trailingContextLines: []
-        }
-      ]
-    }))
-    model.addResult("/c/d.txt", Result.create({
-      filePath: "/c/d.txt",
-      matches: [
-        {
-          lineText: "goodnight moon",
-          matchText: "night",
-          range: {start: {row: 0, column: 4}, end: {row: 0, column: 8}},
-          leadingContextLines: [],
-          trailingContextLines: []
-        }
-      ]
-    }))
+
+    if (!options.empty) {
+      model.addResult("/a/b.txt", Result.create({
+        filePath: "/a/b.txt",
+        matches: [
+          {
+            lineText: "hello world",
+            matchText: "world",
+            range: {start: {row: 0, column: 6}, end: {row: 0, column: 11}},
+            leadingContextLines: [],
+            trailingContextLines: []
+          }
+        ]
+      }))
+      model.addResult("/c/d.txt", Result.create({
+        filePath: "/c/d.txt",
+        matches: [
+          {
+            lineText: "goodnight moon",
+            matchText: "night",
+            range: {start: {row: 0, column: 4}, end: {row: 0, column: 8}},
+            leadingContextLines: [],
+            trailingContextLines: []
+          }
+        ]
+      }))
+    }
+
     return resultsView
   }
 
@@ -660,11 +664,7 @@ describe('ResultsView', () => {
 
   describe("when the results view is empty", () => {
     it("ignores core:confirm and other commands for selecting results", async () => {
-      projectFindView.findEditor.setText('thiswillnotmatchanythingintheproject');
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
-      await searchPromise;
-      resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
+      const resultsView = buildResultsView({ empty: true });
       atom.commands.dispatch(resultsView.element, 'core:confirm');
       atom.commands.dispatch(resultsView.element, 'core:move-down');
       atom.commands.dispatch(resultsView.element, 'core:move-up');
@@ -675,10 +675,8 @@ describe('ResultsView', () => {
     });
 
     it("won't show the preview-controls", async () => {
-      projectFindView.findEditor.setText('thiswillnotmatchanythingintheproject');
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
-      await searchPromise;
-      expect(getResultsPane().refs.previewControls.style.display).toBe('none');
+      const resultsPane = new ResultsPaneView();
+      expect(resultsPane.refs.previewControls.style.display).toBe('none');
     });
   });
 
