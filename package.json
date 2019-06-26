@@ -32,7 +32,6 @@
   },
   "dependencies": {
     "binary-search": "^1.3.3",
-    "element-resize-detector": "^1.1.10",
     "etch": "0.9.3",
     "fs-plus": "^3.0.0",
     "temp": "^0.8.3",

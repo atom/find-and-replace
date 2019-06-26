@@ -24,10 +24,6 @@ describe('ResultsView', () => {
 
   function getResultsPane() {
     let pane = atom.workspace.paneForURI(ResultsPaneView.URI);
-
-    // Allow element-resize-detector to perform batched measurements
-    advanceClock(1);
-
     if (pane) return pane.itemForURI(ResultsPaneView.URI);
   }
 
@@ -35,37 +31,41 @@ describe('ResultsView', () => {
     return getResultsPane().refs.resultsView;
   }
 
-  function buildResultsView() {
+  function buildResultsView(options = {}) {
     const FindOptions = require("../lib/find-options")
     const ResultsModel = require("../lib/project/results-model")
     const { Result } = ResultsModel
     const ResultsView = require("../lib/project/results-view")
     const model = new ResultsModel(new FindOptions({}), null)
     const resultsView = new ResultsView({ model })
-    model.addResult("/a/b.txt", Result.create({
-      filePath: "/a/b.txt",
-      matches: [
-        {
-          lineText: "hello world",
-          matchText: "world",
-          range: {start: {row: 0, column: 6}, end: {row: 0, column: 11}},
-          leadingContextLines: [],
-          trailingContextLines: []
-        }
-      ]
-    }))
-    model.addResult("/c/d.txt", Result.create({
-      filePath: "/c/d.txt",
-      matches: [
-        {
-          lineText: "goodnight moon",
-          matchText: "night",
-          range: {start: {row: 0, column: 4}, end: {row: 0, column: 8}},
-          leadingContextLines: [],
-          trailingContextLines: []
-        }
-      ]
-    }))
+
+    if (!options.empty) {
+      model.addResult("/a/b.txt", Result.create({
+        filePath: "/a/b.txt",
+        matches: [
+          {
+            lineText: "hello world",
+            matchText: "world",
+            range: {start: {row: 0, column: 6}, end: {row: 0, column: 11}},
+            leadingContextLines: [],
+            trailingContextLines: []
+          }
+        ]
+      }))
+      model.addResult("/c/d.txt", Result.create({
+        filePath: "/c/d.txt",
+        matches: [
+          {
+            lineText: "goodnight moon",
+            matchText: "night",
+            range: {start: {row: 0, column: 4}, end: {row: 0, column: 8}},
+            leadingContextLines: [],
+            trailingContextLines: []
+          }
+        ]
+      }))
+    }
+
     return resultsView
   }
 
@@ -97,7 +97,6 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
       expect(resultsView.refs.listView.element.querySelector('.path-name').textContent).toBe("one-long-line.coffee");
       expect(resultsView.refs.listView.element.querySelectorAll('.preview').length).toBe(1);
       expect(resultsView.refs.listView.element.querySelector('.preview').textContent).toBe('test test test test test test test test test test test a b c d e f g h i j k l abcdefghijklmnopqrstuvwxyz');
@@ -116,7 +115,6 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
       expect(resultsView.refs.listView.element.querySelector('.path-name').textContent).toBe(path.join("project", "one-long-line.coffee"));
     });
   });
@@ -135,7 +133,6 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
       expect(resultsView.refs.listView.element.querySelector('.path-name').textContent).toBe("one-long-line.coffee");
       expect(resultsView.refs.listView.element.querySelectorAll('.preview').length).toBe(1);
       expect(resultsView.refs.listView.element.querySelector('.match').textContent).toBe('ghijkl');
@@ -147,7 +144,6 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
       expect(resultsView.refs.listView.element.querySelector('.match').textContent).toBe('ghijkl');
       expect(resultsView.refs.listView.element.querySelector('.match')).toHaveClass('highlight-info');
       expect(resultsView.refs.listView.element.querySelector('.replacement').textContent).toBe('');
@@ -179,7 +175,6 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
       const listElement = resultsView.refs.listView.element;
       expect(listElement.querySelectorAll('.match')[0].textContent).toBe('function ()');
       expect(listElement.querySelectorAll('.replacement')[0].textContent).toBe('() =>');
@@ -198,7 +193,6 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
       const {listView} = resultsView.refs;
       expect(listView.element.scrollTop).toBe(0);
       expect(listView.element.scrollHeight).toBeGreaterThan(listView.element.offsetHeight);
@@ -303,7 +297,6 @@ describe('ResultsView', () => {
       projectFindView.confirm();
       await searchPromise;
       resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
     });
 
     it("selects the first/last item when core:move-to-top/move-to-bottom is triggered", async () => {
@@ -343,7 +336,6 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
 
       resultsView.moveDown();
       resultsView.moveDown();
@@ -382,7 +374,6 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
 
       await resultsView.collapseResult();
       expect(resultsView.element.querySelector('.collapsed')).not.toBe(null);
@@ -450,7 +441,6 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
       resultsView.selectFirstResult();
     });
 
@@ -546,7 +536,6 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
 
       let {length: resultCount} = resultsView.refs.listView.element.querySelectorAll(".match-row");
       expect(resultCount).toBe(11);
@@ -594,7 +583,6 @@ describe('ResultsView', () => {
         atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
         resultsView = getResultsView();
-        await resultsView.heightInvalidationPromise;
       });
 
       it("shows the preview-controls", () => {
@@ -660,11 +648,7 @@ describe('ResultsView', () => {
 
   describe("when the results view is empty", () => {
     it("ignores core:confirm and other commands for selecting results", async () => {
-      projectFindView.findEditor.setText('thiswillnotmatchanythingintheproject');
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
-      await searchPromise;
-      resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
+      const resultsView = buildResultsView({ empty: true });
       atom.commands.dispatch(resultsView.element, 'core:confirm');
       atom.commands.dispatch(resultsView.element, 'core:move-down');
       atom.commands.dispatch(resultsView.element, 'core:move-up');
@@ -675,10 +659,8 @@ describe('ResultsView', () => {
     });
 
     it("won't show the preview-controls", async () => {
-      projectFindView.findEditor.setText('thiswillnotmatchanythingintheproject');
-      atom.commands.dispatch(projectFindView.element, 'core:confirm');
-      await searchPromise;
-      expect(getResultsPane().refs.previewControls.style.display).toBe('none');
+      const resultsPane = new ResultsPaneView();
+      expect(resultsPane.refs.previewControls.style.display).toBe('none');
     });
   });
 
@@ -759,7 +741,6 @@ describe('ResultsView', () => {
         await searchPromise;
 
         resultsView = getResultsView();
-        await resultsView.heightInvalidationPromise;
         let fileIconClasses = Array.from(resultsView.refs.listView.element.querySelectorAll('.path-row .icon')).map(el => el.className);
         expect(fileIconClasses).toContain('first-icon-class second-icon-class icon');
         expect(fileIconClasses).toContain('third-icon-class fourth-icon-class icon');
@@ -939,7 +920,6 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
     });
 
     it('maintains selected result when adding and removing results', async () => {
