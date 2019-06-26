@@ -22,10 +22,6 @@ describe(`ProjectFindView (ripgrep=${ripgrep})`, () => {
   function getExistingResultsPane() {
     const pane = atom.workspace.paneForURI(ResultsPaneView.URI);
     if (pane) {
-
-      // Allow element-resize-detector to perform batched measurements
-      advanceClock(1);
-
       return pane.itemForURI(ResultsPaneView.URI);
     }
   }
