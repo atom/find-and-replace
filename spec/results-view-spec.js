@@ -97,7 +97,6 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
       expect(resultsView.refs.listView.element.querySelector('.path-name').textContent).toBe("one-long-line.coffee");
       expect(resultsView.refs.listView.element.querySelectorAll('.preview').length).toBe(1);
       expect(resultsView.refs.listView.element.querySelector('.preview').textContent).toBe('test test test test test test test test test test test a b c d e f g h i j k l abcdefghijklmnopqrstuvwxyz');
@@ -116,7 +115,6 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
       expect(resultsView.refs.listView.element.querySelector('.path-name').textContent).toBe(path.join("project", "one-long-line.coffee"));
     });
   });
@@ -135,7 +133,6 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
       expect(resultsView.refs.listView.element.querySelector('.path-name').textContent).toBe("one-long-line.coffee");
       expect(resultsView.refs.listView.element.querySelectorAll('.preview').length).toBe(1);
       expect(resultsView.refs.listView.element.querySelector('.match').textContent).toBe('ghijkl');
@@ -147,7 +144,6 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
       expect(resultsView.refs.listView.element.querySelector('.match').textContent).toBe('ghijkl');
       expect(resultsView.refs.listView.element.querySelector('.match')).toHaveClass('highlight-info');
       expect(resultsView.refs.listView.element.querySelector('.replacement').textContent).toBe('');
@@ -179,7 +175,6 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
       const listElement = resultsView.refs.listView.element;
       expect(listElement.querySelectorAll('.match')[0].textContent).toBe('function ()');
       expect(listElement.querySelectorAll('.replacement')[0].textContent).toBe('() =>');
@@ -198,7 +193,6 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
       const {listView} = resultsView.refs;
       expect(listView.element.scrollTop).toBe(0);
       expect(listView.element.scrollHeight).toBeGreaterThan(listView.element.offsetHeight);
@@ -303,7 +297,6 @@ describe('ResultsView', () => {
       projectFindView.confirm();
       await searchPromise;
       resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
     });
 
     it("selects the first/last item when core:move-to-top/move-to-bottom is triggered", async () => {
@@ -343,7 +336,6 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
 
       resultsView.moveDown();
       resultsView.moveDown();
@@ -382,7 +374,6 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
 
       await resultsView.collapseResult();
       expect(resultsView.element.querySelector('.collapsed')).not.toBe(null);
@@ -450,7 +441,6 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
       resultsView.selectFirstResult();
     });
 
@@ -546,7 +536,6 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
 
       let {length: resultCount} = resultsView.refs.listView.element.querySelectorAll(".match-row");
       expect(resultCount).toBe(11);
@@ -594,7 +583,6 @@ describe('ResultsView', () => {
         atom.commands.dispatch(projectFindView.element, 'core:confirm');
         await searchPromise;
         resultsView = getResultsView();
-        await resultsView.heightInvalidationPromise;
       });
 
       it("shows the preview-controls", () => {
@@ -753,7 +741,6 @@ describe('ResultsView', () => {
         await searchPromise;
 
         resultsView = getResultsView();
-        await resultsView.heightInvalidationPromise;
         let fileIconClasses = Array.from(resultsView.refs.listView.element.querySelectorAll('.path-row .icon')).map(el => el.className);
         expect(fileIconClasses).toContain('first-icon-class second-icon-class icon');
         expect(fileIconClasses).toContain('third-icon-class fourth-icon-class icon');
@@ -933,7 +920,6 @@ describe('ResultsView', () => {
       await searchPromise;
 
       resultsView = getResultsView();
-      await resultsView.heightInvalidationPromise;
     });
 
     it('maintains selected result when adding and removing results', async () => {

@@ -299,7 +299,6 @@ describe(`ProjectFindView (ripgrep=${ripgrep})`, () => {
           await searchPromise;
 
           const resultsView = getResultsView();
-          await resultsView.heightInvalidationPromise
           expect(resultsView.element).toBeVisible();
           expect(resultsView.refs.listView.element.querySelectorAll(".match-row")).toHaveLength(2);
         })
@@ -313,7 +312,6 @@ describe(`ProjectFindView (ripgrep=${ripgrep})`, () => {
           await searchPromise;
 
           const resultsView = getResultsView();
-          await resultsView.heightInvalidationPromise
           expect(resultsView.element).toBeVisible();
           expect(resultsView.refs.listView.element.querySelectorAll(".match-row")).toHaveLength(1);
         });
@@ -325,7 +323,6 @@ describe(`ProjectFindView (ripgrep=${ripgrep})`, () => {
           await searchPromise;
 
           const resultsView = getResultsView();
-          await resultsView.heightInvalidationPromise
           expect(resultsView.element).toBeVisible();
           expect(resultsView.refs.listView.element.querySelectorAll(".match-row")).toHaveLength(2);
           expect(resultsView.refs.listView.element.querySelectorAll(".match.highlight-info")).toHaveLength(3);
@@ -338,7 +335,6 @@ describe(`ProjectFindView (ripgrep=${ripgrep})`, () => {
           await searchPromise;
 
           const resultsView = getResultsView();
-          await resultsView.heightInvalidationPromise
           expect(resultsView.element).toBeVisible();
           expect(resultsView.refs.listView.element.querySelectorAll(".match-row")).toHaveLength(1);
         });
@@ -710,7 +706,6 @@ describe(`ProjectFindView (ripgrep=${ripgrep})`, () => {
         await waitForSearchResults();
 
         const resultsView = getResultsView();
-        await resultsView.heightInvalidationPromise
         expect(resultsView.element).toBeVisible();
         expect(resultsView.refs.listView.element.querySelectorAll(".match-row")).toHaveLength(11);
         expect(resultsView.refs.listView.element.querySelectorAll(".match.highlight-info")).toHaveLength(13);
@@ -772,7 +767,6 @@ describe(`ProjectFindView (ripgrep=${ripgrep})`, () => {
           const resultsView = getResultsView();
           const resultsPaneView = getExistingResultsPane();
 
-          await resultsView.heightInvalidationPromise
           expect(resultsView.element).toBeVisible();
           expect(resultsView.refs.listView.element.querySelectorAll(".match-row")).toHaveLength(11);
           expect(resultsView.refs.listView.element.querySelectorAll(".match.highlight-info")).toHaveLength(13);
@@ -801,7 +795,6 @@ describe(`ProjectFindView (ripgrep=${ripgrep})`, () => {
           const listView = resultsView.refs.listView;
           const resultsPaneView = getExistingResultsPane();
 
-          await resultsView.heightInvalidationPromise
           expect(listView.element.querySelectorAll(".match-row")).toHaveLength(11);
           expect(listView.element.querySelectorAll(".match.highlight-info")).toHaveLength(13);
           expect(resultsPaneView.refs.previewCount.textContent).toBe("13 results found in 2 files for items");
@@ -847,7 +840,6 @@ describe(`ProjectFindView (ripgrep=${ripgrep})`, () => {
           const resultsView = getResultsView();
           const resultsPaneView = getExistingResultsPane();
 
-          await resultsView.heightInvalidationPromise
           expect(resultsView.refs.listView.element.querySelectorAll(".list-item")).toHaveLength(13);
           expect(resultsPaneView.refs.previewCount.textContent).toBe("13 results found in 2 files for items");
 
