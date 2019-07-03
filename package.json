@@ -130,6 +130,12 @@
       "title": "Use ripgrep",
       "description": "Use the experimental `ripgrep` search crawler. This will make searches substantially faster on large projects."
     },
+    "enablePCRE2": {
+      "type": "boolean",
+      "default": false,
+      "title": "Enable PCRE2 regex engine",
+      "description": "Enable PCRE2 regex engine (applies only to `ripgrep` search). This will enable additional regex features such as lookbehind, but may make searches slower."
+    },
     "autocompleteSearches": {
       "type": "boolean",
       "default": false,
