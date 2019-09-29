@@ -1835,7 +1835,19 @@ describe("FindView", () => {
 
       findView.findEditor.setText("items");
       atom.commands.dispatch(findView.findEditor.element, "find-and-replace:toggle-regex-option");
-      expect(findView.refs.descriptionLabel.textContent).toContain("No results");
+      expect(findView.model.getFindOptions().useRegex).toBe(true);
+      expect(findView.refs.descriptionLabel.textContent).toContain("no results");
+    });
+
+    it("toggles selection via an event and finds text matching the pattern", async () => {
+      atom.commands.dispatch(editorView, "find-and-replace:show");
+      editor.destroy();
+      await activationPromise;
+
+      findView.findEditor.setText("items");
+      atom.commands.dispatch(findView.findEditor.element, "find-and-replace:toggle-selection-option");
+      expect(findView.model.getFindOptions().inCurrentSelection).toBe(true);
+      expect(findView.refs.descriptionLabel.textContent).toContain("no results");
     });
   });
 });
