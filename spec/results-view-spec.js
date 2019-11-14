@@ -496,6 +496,22 @@ describe('ResultsView', () => {
       expect(atom.views.getView(editor)).toHaveFocus();
     })
 
+    it("Result view should maintain scroll position", async () => {
+      spyOn(resultsView,'setScrollTop').andCallThrough();
+
+      projectFindView.findEditor.setText('1');
+      atom.commands.dispatch(projectFindView.element, 'core:confirm');
+      await searchPromise;
+
+      resultsView.moveToBottom();
+
+      const pathNode = resultsView.element.querySelector('.selected');
+      pathNode.dispatchEvent(buildMouseEvent('mousedown', {target: pathNode, which: 1}));
+      await paneItemOpening();
+
+      expect(resultsView.setScrollTop).toHaveBeenCalledWith(resultsView.currentScrollTop);
+    });
+
     describe("the `projectSearchResultsPaneSplitDirection` option", () => {
       beforeEach(() => {
         spyOn(atom.workspace, 'open').andCallThrough()
