@@ -965,6 +965,29 @@ describe('ResultsView', () => {
       }
     });
   })
+
+  fit('should replace foo( with bar(', async () => {
+    //bug only exist when the file is open.
+    const editor = await atom.workspace.open(path.join(__dirname, 'fixtures/project/foo.js'));
+
+    spyOn(atom, 'confirm').andReturn(0);
+
+    projectFindView.findEditor.setText('foo(');
+    projectFindView.replaceEditor.setText('bar(');
+    projectFindView.refs.wholeWordOptionButton.click();
+
+    atom.commands.dispatch(projectFindView.element, 'core:confirm');
+    await searchPromise;
+
+    projectFindView.replaceAll();
+
+    projectFindView.findEditor.setText('foo(');
+
+    atom.commands.dispatch(projectFindView.element, 'core:confirm');
+    await searchPromise;
+
+    expect(editor.getText()).toBe('bar(x)');
+  });
 });
 
 function buildMouseEvent(type, properties) {
