@@ -966,7 +966,7 @@ describe('ResultsView', () => {
     });
   })
 
-  fit('should replace foo( with bar(', async () => {
+  it('should replace foo( with bar(', async () => {
     //bug only exist when the file is open.
     const editor = await atom.workspace.open(path.join(__dirname, 'fixtures/project/foo.js'));
 
