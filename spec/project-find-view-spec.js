@@ -1153,6 +1153,24 @@ describe(`ProjectFindView (ripgrep=${ripgrep})`, () => {
         atom.commands.dispatch(projectFindView.element, 'project-find:toggle-whole-word-option');
       });
     });
+
+    describe("when user asked not to override last search results", () => {
+      beforeEach(async () => {
+        atom.commands.dispatch(editorElement, 'project-find:show');
+        projectFindView.findEditor.setText('items');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
+        await searchPromise;
+
+      });
+      it("opens new search results in new panel", async () => {
+        const result_pane = getExistingResultsPane();
+        result_pane.dontOverrideTab();
+        projectFindView.findEditor.setText('items2');
+        atom.commands.dispatch(projectFindView.element, 'core:confirm');
+        await searchPromise;
+        expect(result_pane).not.toBe(getExistingResultsPane());
+      });
+    });
   });
 
   describe("replacing", () => {
