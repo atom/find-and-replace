@@ -21,7 +21,7 @@ module.exports =
     atom.config.unset('find-and-replace.openProjectFindResultsInRightPane')
 
     atom.workspace.addOpener (filePath) ->
-      new ResultsPaneView() if filePath is ResultsPaneView.URI
+      new ResultsPaneView() if filePath.indexOf(ResultsPaneView.URI) isnt -1
 
     @subscriptions = new CompositeDisposable
     @currentItemSub = new Disposable
@@ -207,7 +207,12 @@ module.exports =
     #    And on each new model, it will run the search again.
     #
     # See https://github.com/atom/find-and-replace/issues/63
-    ResultsPaneView.model = @resultsModel
+    #ResultsPaneView.model = @resultsModel
+    # This makes projectFindView accesible in ResultsPaneView so that resultsModel
+    # can be properly set for ResultsPaneView instances and ProjectFindView instance
+    # as different pane views don't necessarily use same models anymore
+    # but most recent pane view and projectFindView do
+    ResultsPaneView.projectFindView = @projectFindView
 
     @toggleAutocompletions atom.config.get('find-and-replace.autocompleteSearches')
 
@@ -225,7 +230,6 @@ module.exports =
     @projectFindView = null
 
     ResultsPaneView.model = null
-    @resultsModel = null
 
     @autocompleteSubscriptions?.dispose()
     @autocompleteManagerService = null
