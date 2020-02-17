@@ -472,6 +472,7 @@ describe("FindView", () => {
         findView.findEditor.setText("item");
         atom.commands.dispatch(findView.findEditor.element, "core:confirm");
         expect(findView.refs.replaceAllButton).not.toHaveClass("disabled");
+        expect(findView.refs.replacePrevButton).not.toHaveClass("disabled");
         expect(findView.refs.replaceNextButton).not.toHaveClass("disabled");
 
         const disposable = findView.replaceTooltipSubscriptions;
@@ -479,23 +480,27 @@ describe("FindView", () => {
         findView.findEditor.setText("it");
         atom.commands.dispatch(findView.findEditor.element, "core:confirm");
         expect(findView.refs.replaceAllButton).not.toHaveClass("disabled");
+        expect(findView.refs.replacePrevButton).not.toHaveClass("disabled");
         expect(findView.refs.replaceNextButton).not.toHaveClass("disabled");
         expect(disposable.dispose).not.toHaveBeenCalled();
 
         findView.findEditor.setText("nopenotinthefile");
         atom.commands.dispatch(findView.findEditor.element, "core:confirm");
         expect(findView.refs.replaceAllButton).toHaveClass("disabled");
+        expect(findView.refs.replacePrevButton).toHaveClass("disabled");
         expect(findView.refs.replaceNextButton).toHaveClass("disabled");
         expect(disposable.dispose).toHaveBeenCalled();
 
         findView.findEditor.setText("i");
         atom.commands.dispatch(findView.findEditor.element, "core:confirm");
         expect(findView.refs.replaceAllButton).not.toHaveClass("disabled");
+        expect(findView.refs.replacePrevButton).not.toHaveClass("disabled");
         expect(findView.refs.replaceNextButton).not.toHaveClass("disabled");
 
         findView.findEditor.setText("");
         atom.commands.dispatch(findView.findEditor.element, "core:confirm");
         expect(findView.refs.replaceAllButton).toHaveClass("disabled");
+        expect(findView.refs.replacePrevButton).toHaveClass("disabled");
         expect(findView.refs.replaceNextButton).toHaveClass("disabled");
       });
     });
@@ -583,19 +588,16 @@ describe("FindView", () => {
       expect(findView.findEditor.element).toHaveFocus();
     });
 
+    it("selects the previous match when the previous match button is pressed", () => {
+      findView.refs.prevButton.click();
+      expect(findView.refs.resultCounter.textContent).toEqual("1 of 6");
+      expect(editor.getSelectedBufferRange()).toEqual([[1, 22], [1, 27]]);
+    });
+
     it("selects the next match when the next match button is pressed", () => {
       findView.refs.nextButton.click();
       expect(findView.refs.resultCounter.textContent).toEqual("3 of 6");
       expect(editor.getSelectedBufferRange()).toEqual([[2, 34], [2, 39]]);
-    });
-
-    it("selects the previous match when the next match button is pressed while holding shift", () => {
-      findView.refs.nextButton.dispatchEvent(new MouseEvent("click", {
-        shiftKey: true
-      }));
-
-      expect(findView.refs.resultCounter.textContent).toEqual("1 of 6");
-      expect(editor.getSelectedBufferRange()).toEqual([[1, 22], [1, 27]]);
     });
 
     it("selects the next match when the 'find-and-replace:find-next' event is triggered and correctly focuses the editor", () => {
@@ -1556,6 +1558,16 @@ describe("FindView", () => {
           );
 
           expect(editor.getSelectedBufferRange()).toEqual([[0, 81], [0, 86]]);
+        });
+      });
+
+      describe("when the replace previous button is pressed", () => {
+        it("replaces the match after the cursor and selects the previous match", () => {
+          findView.refs.replacePrevButton.click();
+          expect(findView.refs.resultCounter.textContent).toEqual("5 of 5");
+          expect(editor.lineTextForBufferRow(2)).toBe("    if (items.length <= 1) return items;");
+          expect(editor.getSelectedBufferRange()).toEqual([[5, 16], [5, 21]]);
+          expect(findView.replaceEditor.element).toHaveFocus();
         });
       });
 
