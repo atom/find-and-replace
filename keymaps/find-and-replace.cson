@@ -34,7 +34,7 @@
 
 '.platform-darwin .find-and-replace':
   'shift-enter': 'find-and-replace:show-previous'
-  'cmd-enter': 'find-and-replace:confirm'
+  'cmd-enter': 'find-and-replace:insert-newline'
   'alt-enter': 'find-and-replace:find-all'
   'cmd-alt-/': 'find-and-replace:toggle-regex-option'
   'cmd-alt-c': 'find-and-replace:toggle-case-option'
@@ -43,19 +43,19 @@
 
 '.platform-win32 .find-and-replace, .platform-linux .find-and-replace':
   'shift-enter': 'find-and-replace:show-previous'
-  'ctrl-enter': 'find-and-replace:confirm'
+  'ctrl-enter': 'find-and-replace:insert-newline'
   'alt-enter': 'find-and-replace:find-all'
   'ctrl-alt-/': 'find-and-replace:toggle-regex-option'
   'ctrl-shift-c': 'find-and-replace:toggle-case-option'
 
 '.platform-darwin .project-find':
-  'cmd-enter': 'project-find:confirm'
+  'cmd-enter': 'project-find:insert-newline'
   'cmd-alt-/': 'project-find:toggle-regex-option'
   'cmd-alt-c': 'project-find:toggle-case-option'
   'cmd-alt-w': 'project-find:toggle-whole-word-option'
 
 '.platform-win32 .project-find, .platform-linux .project-find':
-  'ctrl-enter': 'project-find:confirm'
+  'ctrl-enter': 'project-find:insert-newline'
   'ctrl-alt-/': 'project-find:toggle-regex-option'
   'ctrl-shift-c': 'project-find:toggle-case-option'
 
@@ -64,19 +64,19 @@
   'shift-tab': 'find-and-replace:focus-previous'
 
 '.platform-darwin .find-and-replace .replace-container atom-text-editor':
-  'cmd-enter': 'find-and-replace:replace-all'
+  'alt-enter': 'find-and-replace:replace-all'
 '.platform-darwin .project-find .replace-container atom-text-editor':
-  'cmd-enter': 'project-find:replace-all'
+  'alt-enter': 'project-find:replace-all'
 
 '.platform-win32 .find-and-replace .replace-container atom-text-editor':
-  'ctrl-enter': 'find-and-replace:replace-all'
+  'alt-enter': 'find-and-replace:replace-all'
 '.platform-win32 .project-find .replace-container atom-text-editor':
-  'ctrl-enter': 'project-find:replace-all'
+  'alt-enter': 'project-find:replace-all'
 
 '.platform-linux .find-and-replace .replace-container atom-text-editor':
-  'ctrl-enter': 'find-and-replace:replace-all'
+  'alt-enter': 'find-and-replace:replace-all'
 '.platform-linux .project-find .replace-container atom-text-editor':
-  'ctrl-enter': 'project-find:replace-all'
+  'alt-enter': 'project-find:replace-all'
 
 '.results-view':
   'home': 'core:move-to-top'
