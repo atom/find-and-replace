@@ -6,7 +6,7 @@ branches:
     only:
       - master
 
-clone_depth: 10
+clone_depth: 3
 
 skip_tags: true
 
@@ -14,8 +14,8 @@ environment:
   APM_TEST_PACKAGES:
 
   matrix:
-  - ATOM_CHANNEL: stable
-  - ATOM_CHANNEL: beta
+  # - ATOM_CHANNEL: stable
+  # - ATOM_CHANNEL: beta
   - ATOM_CHANNEL: dev
 
 install:
