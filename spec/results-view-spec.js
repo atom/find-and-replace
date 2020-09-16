@@ -303,7 +303,13 @@ describe('ResultsView', () => {
       const {listView} = resultsView.refs;
       expect(listView.element.querySelectorAll('li').length).toBeLessThan(resultsView.model.getPathCount() + resultsView.model.getMatchCount());
 
+      expect(listView.element.querySelectorAll('li').length).toBeGreaterThan(0);
+      expect(resultsView.resultRows.length).toBeGreaterThan(0);
+
       await resultsView.moveToBottom();
+
+      expect(listView.element.querySelectorAll('.match-row').length).toBeGreaterThan(0);
+
       expect(_.last(listView.element.querySelectorAll('.match-row'))).toHaveClass('selected');
       expect(listView.element.scrollTop).not.toBe(0);
 
