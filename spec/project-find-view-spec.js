@@ -1204,7 +1204,7 @@ describe(`ProjectFindView (ripgrep=${ripgrep})`, () => {
         atom.project.setPaths([projectPath]);
         atom.commands.dispatch(workspaceElement, 'project-find:show');
 
-        spyOn(atom, 'confirm').andReturn({response:0});
+        spyOn(atom, 'confirm').andReturn(0);
       });
 
       describe("when the regex option is chosen", () => {
@@ -1310,7 +1310,7 @@ describe(`ProjectFindView (ripgrep=${ripgrep})`, () => {
 
     describe("when the replace button is pressed", () => {
       beforeEach(() => {
-        spyOn(atom, 'confirm').andReturn({ response: 0 });
+        spyOn(atom, 'confirm').andReturn(0);
       });
 
       it("runs the search, and replaces all the matches", async () => {
@@ -1380,7 +1380,7 @@ describe(`ProjectFindView (ripgrep=${ripgrep})`, () => {
 
       describe("when a search with no results has been run", () => {
         beforeEach(async () => {
-          spyOn(atom, 'confirm').andReturn({ response: 0 });
+          spyOn(atom, 'confirm').andReturn(0);
           projectFindView.findEditor.setText('nopenotinthefile');
           atom.commands.dispatch(projectFindView.element, 'core:confirm');
 
@@ -1412,7 +1412,7 @@ describe(`ProjectFindView (ripgrep=${ripgrep})`, () => {
         });
 
         it("messages the user when the search text has changed since that last search", () => {
-          spyOn(atom, 'confirm').andReturn({ response: 0 });
+          spyOn(atom, 'confirm').andReturn(0);
           spyOn(atom.workspace, 'scan').andCallThrough();
 
           projectFindView.findEditor.setText('sort');
@@ -1428,7 +1428,7 @@ describe(`ProjectFindView (ripgrep=${ripgrep})`, () => {
         });
 
         it("replaces all the matches and updates the results view", async () => {
-          spyOn(atom, 'confirm').andReturn({ response: 0 });
+          spyOn(atom, 'confirm').andReturn(0);
           projectFindView.replaceEditor.setText('sunshine');
 
           expect(projectFindView.errorMessages).not.toBeVisible();
@@ -1478,7 +1478,7 @@ describe(`ProjectFindView (ripgrep=${ripgrep})`, () => {
           atom.commands.dispatch(projectFindView.element, 'core:confirm');
           await searchPromise;
 
-          spyOn(atom, 'confirm').andReturn({ response: 0 });
+          spyOn(atom, 'confirm').andReturn(0);
           projectFindView.replaceEditor.setText('sunshine');
 
           expect(projectFindView.errorMessages).not.toBeVisible();
@@ -1496,7 +1496,7 @@ describe(`ProjectFindView (ripgrep=${ripgrep})`, () => {
 
     describe("when there is an error replacing", () => {
       beforeEach(async () => {
-        spyOn(atom, 'confirm').andReturn({ response: 0 });
+        spyOn(atom, 'confirm').andReturn(0);
         projectFindView.findEditor.setText('items');
         atom.commands.dispatch(projectFindView.element, 'project-find:confirm');
         await searchPromise;
