@@ -1,15 +1,15 @@
 '.platform-darwin':
-  'cmd-F': 'project-find:show'
+  'cmd-shift-f': 'project-find:show'
   'cmd-f': 'find-and-replace:show'
   'cmd-alt-f': 'find-and-replace:show-replace'
 
 '.platform-win32, .platform-linux':
-  'ctrl-F': 'project-find:show'
+  'ctrl-shift-f': 'project-find:show'
   'ctrl-f': 'find-and-replace:show'
 
 '.platform-darwin atom-text-editor':
   'cmd-g': 'find-and-replace:find-next'
-  'cmd-G': 'find-and-replace:find-previous'
+  'cmd-shift-g': 'find-and-replace:find-previous'
   'cmd-f3': 'find-and-replace:find-next-selected'
   'cmd-shift-f3': 'find-and-replace:find-previous-selected'
   'cmd-ctrl-g': 'find-and-replace:select-all'
