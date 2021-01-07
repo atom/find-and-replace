@@ -6,7 +6,7 @@ branches:
     only:
       - master
 
-clone_depth: 10
+clone_depth: 3
 
 skip_tags: true
 
@@ -14,12 +14,12 @@ environment:
   APM_TEST_PACKAGES:
 
   matrix:
-  - ATOM_CHANNEL: stable
-  - ATOM_CHANNEL: beta
+  # - ATOM_CHANNEL: stable
+  # - ATOM_CHANNEL: beta
   - ATOM_CHANNEL: dev
 
 install:
-  - ps: Install-Product node 4
+  - ps: Install-Product node 12.16.3
 
 build_script:
   - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/atom/ci/master/build-package.ps1'))
