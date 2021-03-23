@@ -632,3 +632,225 @@ describe('BufferSearch', () => {
     })
   );
 });
+
+describe("BufferSearch", () => {
+  let model, editor, markersListener, currentResultListener;
+
+  beforeEach(() => {
+    editor = new TextEditor();
+    spyOn(editor, 'scanInBufferRange').andCallThrough();
+
+    editor.setText(dedent`
+      -----------
+      aaa bbb ccc
+      ddd Aaa bbb
+      CCC DDD aaa
+      -----------
+      AAA Bbb cCc
+      Ddd Aaa Bbb
+      ccc DDD Aaa
+      -----------
+    `);
+    advanceClock(editor.buffer.stoppedChangingDelay);
+
+    const findOptions = new FindOptions({findPattern: "aaa"});
+    model = new BufferSearch(findOptions);
+
+    markersListener = jasmine.createSpy('markersListener');
+    model.onDidUpdate(markersListener);
+
+    currentResultListener = jasmine.createSpy('currentResultListener');
+    model.onDidChangeCurrentResult(currentResultListener);
+
+    model.setEditor(editor);
+    markersListener.reset();
+  });
+
+  afterEach(() => {
+    model.destroy();
+    editor.destroy();
+  });
+
+
+  describe("when replacing text with preserve case on", () => {
+    beforeEach(() => {
+      atom.config.set('find-and-replace.preserveCaseOnReplace', true)
+    });
+
+    it("preserves case.", () => {
+      model.search("aaa", {
+        caseSensitive: false,
+        useRegex: false,
+        wholeWord: false
+      });
+      const markers = markersListener.mostRecentCall.args[0];
+      markersListener.reset();
+
+      model.replace(markers, "foo");
+
+      expect(editor.getText()).toBe(dedent`
+        -----------
+        foo bbb ccc
+        ddd Foo bbb
+        CCC DDD foo
+        -----------
+        FOO Bbb cCc
+        Ddd Foo Bbb
+        ccc DDD Foo
+        -----------
+      `);
+    });
+
+    it("preserves case using regex search.", () => {
+      model.search("a+", {
+        caseSensitive: false,
+        useRegex: true,
+        wholeWord: false
+      });
+      const markers = markersListener.mostRecentCall.args[0];
+      markersListener.reset();
+
+      model.replace(markers, "foo");
+
+      expect(editor.getText()).toBe(dedent`
+        -----------
+        foo bbb ccc
+        ddd Foo bbb
+        CCC DDD foo
+        -----------
+        FOO Bbb cCc
+        Ddd Foo Bbb
+        ccc DDD Foo
+        -----------
+      `);
+    });
+
+    it("preserves case across words.", () => {
+      model.search("aaa", {
+        caseSensitive: false,
+        useRegex: false,
+        wholeWord: false
+      });
+      const markers = markersListener.mostRecentCall.args[0];
+      markersListener.reset();
+
+      model.replace(markers, "foo bar");
+
+      expect(editor.getText()).toBe(dedent`
+        -----------
+        foo bar bbb ccc
+        ddd Foo bar bbb
+        CCC DDD foo bar
+        -----------
+        FOO BAR Bbb cCc
+        Ddd Foo bar Bbb
+        ccc DDD Foo bar
+        -----------
+      `);
+    });
+
+    it("preserves case only when it's consistent between searched words.", () => {
+      model.search("aaa bbb", {
+        caseSensitive: false,
+        useRegex: false,
+        wholeWord: false
+      });
+      const markers = markersListener.mostRecentCall.args[0];
+      markersListener.reset();
+
+      model.replace(markers, "foo");
+
+      expect(editor.getText()).toBe(dedent`
+        -----------
+        foo ccc
+        ddd Foo
+        CCC DDD aaa
+        -----------
+        foo cCc
+        Ddd Foo
+        ccc DDD Aaa
+        -----------
+      `);
+    });
+    it("preserves case and honors caseSensitive option.", () => {
+      model.search("Aaa", {
+        caseSensitive: true,
+        useRegex: false,
+        wholeWord: false
+      });
+      const markers = markersListener.mostRecentCall.args[0];
+      markersListener.reset();
+
+      model.replace(markers, "foo");
+
+      expect(editor.getText()).toBe(dedent`
+        -----------
+        aaa bbb ccc
+        ddd Foo bbb
+        CCC DDD aaa
+        -----------
+        AAA Bbb cCc
+        Ddd Foo Bbb
+        ccc DDD Foo
+        -----------
+      `);
+    });
+    it("preserves case of original replacement when capitalized.", () => {
+      model.search("aaa", {
+        caseSensitive: false,
+        useRegex: false,
+        wholeWord: false
+      });
+      const markers = markersListener.mostRecentCall.args[0];
+      markersListener.reset();
+
+      model.replace(markers, "FoO");
+
+      expect(editor.getText()).toBe(dedent`
+        -----------
+        foo bbb ccc
+        ddd Foo bbb
+        CCC DDD foo
+        -----------
+        FOO Bbb cCc
+        Ddd Foo Bbb
+        ccc DDD Foo
+        -----------
+      `);
+    });
+    it("preserves case of sentence, title, upper and lower case.", () => {
+      editor.setText(dedent`
+        x aaa bbb x
+        x Aaa bbb x
+        x aaa Bbb x
+        x Aaa Bbb x
+        x AAA BBB x
+        x aaA bbb x
+        x aaa bbB x
+        x aaA bbB x
+      `);
+      advanceClock(editor.buffer.stoppedChangingDelay);
+
+      model.search("aAa bBb", {
+        caseSensitive: false,
+        useRegex: false,
+        wholeWord: false
+      });
+      const markers = markersListener.mostRecentCall.args[0];
+      markersListener.reset();
+
+      model.replace(markers, "xxX yYy");
+
+      expect(editor.getText()).toBe(dedent`
+        x xxx yyy x
+        x Xxx yyy x
+        x xxX yYy x
+        x Xxx Yyy x
+        x XXX YYY x
+        x xxX yYy x
+        x xxX yYy x
+        x xxX yYy x
+      `);
+    });
+  });
+});
