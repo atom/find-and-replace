@@ -1,5 +1,5 @@
 # Find and Replace package
-[![OS X Build Status](https://travis-ci.org/atom/find-and-replace.svg?branch=master)](https://travis-ci.org/atom/find-and-replace) [![Windows Build Status](https://ci.appveyor.com/api/projects/status/6w4baiiq5mw4nxky/branch/master?svg=true)](https://ci.appveyor.com/project/Atom/find-and-replace/branch/master) [![Dependency Status](https://david-dm.org/atom/find-and-replace.svg)](https://david-dm.org/atom/find-and-replace)
+[![CI](https://github.com/atom/find-and-replace/actions/workflows/ci.yml/badge.svg)](https://github.com/atom/find-and-replace/actions/workflows/ci.yml)
 
 Find and replace in the current buffer or across the entire project in Atom.
 
