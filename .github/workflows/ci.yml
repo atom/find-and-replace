@@ -9,7 +9,7 @@ jobs:
   Test:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [macos-latest]
         channel: [stable, beta]
     runs-on: ${{ matrix.os }}
     steps:
