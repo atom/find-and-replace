@@ -979,6 +979,50 @@ describe('ResultsView', () => {
     });
   });
 
+  describe('changing font size', () => {
+    it('should increase font size on window:increase-font-size', async () => {
+      const resultsView = buildResultsView();
+      await resultsView.invalidateItemHeights()
+      const currentFontSize = atom.config.get("editor.fontSize");
+
+      await dispatchCommandAndWaitUntilUpdate(resultsView, 'window:increase-font-size');
+
+      getItemContainers(resultsView).forEach(container => expect(container.style.fontSize).toBe(`${currentFontSize + 1}px`))
+    })
+
+    it('should decrease font size on window:decrease-font-size', async () => {
+      const resultsView = buildResultsView();
+      await resultsView.invalidateItemHeights()
+      const currentFontSize = atom.config.get("editor.fontSize");
+
+      await dispatchCommandAndWaitUntilUpdate(resultsView, 'window:decrease-font-size');
+
+      getItemContainers(resultsView).forEach(container => expect(container.style.fontSize).toBe(`${currentFontSize - 1}px`))
+    })
+
+
+    it('should reset font size on window:reset-font-size', async () => {
+      const resultsView = buildResultsView();
+      await resultsView.invalidateItemHeights()
+      const defaultFontSize = atom.config.get("editor.defaultFontSize")
+
+      await dispatchCommandAndWaitUntilUpdate(resultsView, 'window:increase-font-size');
+      await dispatchCommandAndWaitUntilUpdate(resultsView, 'window:increase-font-size');
+      await dispatchCommandAndWaitUntilUpdate(resultsView, 'window:reset-font-size');
+
+      getItemContainers(resultsView).forEach(container => expect(container.style.fontSize).toBe(`${defaultFontSize}px`))
+    })
+
+    async function dispatchCommandAndWaitUntilUpdate(element, command) {
+      atom.commands.dispatch(projectFindView.element, command);
+      await etch.update(element)
+    }
+
+    function getItemContainers(resultsView) {
+      return resultsView.refs.listView.element.querySelectorAll('.item-container');
+    }
+  })
+
   describe('selected result and match index', () => {
     beforeEach(async () => {
       projectFindView.findEditor.setText('push');
