@@ -4,6 +4,7 @@ _ = require 'underscore-plus'
 Params = [
   'findPattern'
   'replacePattern'
+  'paths'
   'pathsPattern'
   'useRegex'
   'wholeWord'
@@ -20,6 +21,7 @@ class FindOptions
 
     @findPattern = ''
     @replacePattern = state.replacePattern ? ''
+    @paths = state.paths ? []
     @pathsPattern = state.pathsPattern ? ''
     @useRegex = state.useRegex ? atom.config.get('find-and-replace.useRegex') ? false
     @caseSensitive = state.caseSensitive ? atom.config.get('find-and-replace.caseSensitive') ? false
