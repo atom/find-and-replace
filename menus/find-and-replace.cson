@@ -24,13 +24,16 @@
 'context-menu':
   '.tree-view li.directory': [
     { 'label': 'Search in Folder', 'command': 'project-find:show-in-current-directory' }
+    { 'type': 'separator' }
   ]
   '.list-item.match-row': [
     { 'label': 'Open in New Tab', 'command': 'find-and-replace:open-in-new-tab' }
     { 'label': 'Copy', 'command': 'core:copy' }
     { 'label': 'Copy Path', 'command': 'find-and-replace:copy-path' }
+    { 'type': 'separator' }
   ]
   '.list-item.path-row': [
     { 'label': 'Open in New Tab', 'command': 'find-and-replace:open-in-new-tab' }
     { 'label': 'Copy Path', 'command': 'find-and-replace:copy-path' }
+    { 'type': 'separator' }
   ]
