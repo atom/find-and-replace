@@ -1,4 +1,5 @@
-# Find and Replace package
+##### Atom and all repositories under Atom will be archived on December 15, 2022. Learn more in our [official announcement](https://github.blog/2022-06-08-sunsetting-atom/)
+ # Find and Replace package
 [![CI](https://github.com/atom/find-and-replace/actions/workflows/ci.yml/badge.svg)](https://github.com/atom/find-and-replace/actions/workflows/ci.yml)
 
 Find and replace in the current buffer or across the entire project in Atom.
