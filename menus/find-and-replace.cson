@@ -10,6 +10,9 @@
     { 'label': 'Find in Project', 'command': 'project-find:show'}
     { 'label': 'Toggle Find in Project', 'command': 'project-find:toggle'}
     { 'type': 'separator' }
+    { 'label': 'Find in Open Files', 'command': 'open-files-find:show'}
+    { 'label': 'Toggle Find in Open Files', 'command': 'open-files-find:toggle'}
+    { 'type': 'separator' }
     { 'label': 'Find All', 'command': 'find-and-replace:find-all'}
     { 'label': 'Find Next', 'command': 'find-and-replace:find-next'}
     { 'label': 'Find Previous', 'command': 'find-and-replace:find-previous'}

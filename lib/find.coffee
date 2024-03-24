@@ -6,6 +6,7 @@ FindOptions = require './find-options'
 BufferSearch = require './buffer-search'
 getIconServices = require './get-icon-services'
 FindView = require './find-view'
+OpenFilesFindView = require './open-files-find-view'
 ProjectFindView = require './project-find-view'
 ResultsModel = require './project/results-model'
 ResultsPaneView = require './project/results-pane'
@@ -49,26 +50,35 @@ module.exports =
       else
         @findModel.setEditor(null)
 
-    @subscriptions.add atom.commands.add '.find-and-replace, .project-find', 'window:focus-next-pane', ->
+    @subscriptions.add atom.commands.add '.find-and-replace, .open-files-find, .project-find', 'window:focus-next-pane', ->
       atom.views.getView(atom.workspace).focus()
+
+    @subscriptions.add atom.commands.add 'atom-workspace', 'open-files-find:show', =>
+      @createViews()
+      showPanel @openFilesFindPanel, => @openFilesFindView.focusFindElement()
+
+    @subscriptions.add atom.commands.add 'atom-workspace', 'open-files-find:toggle', =>
+      @createViews()
+      togglePanel @openFilesFindPanel, => @openFilesFindView.focusFindElement()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'project-find:show', =>
       @createViews()
-      showPanel @projectFindPanel, @findPanel, => @projectFindView.focusFindElement()
+      showPanel @projectFindPanel, => @projectFindView.focusFindElement()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'project-find:toggle', =>
       @createViews()
-      togglePanel @projectFindPanel, @findPanel, => @projectFindView.focusFindElement()
+      togglePanel @projectFindPanel, => @projectFindView.focusFindElement()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'project-find:show-in-current-directory', ({target}) =>
       @createViews()
       @findPanel.hide()
+      @openFilesFindPanel.hide()
       @projectFindPanel.show()
       @projectFindView.focusFindElement()
       @projectFindView.findInCurrentlySelectedDirectory(target)
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:use-selection-as-find-pattern', =>
-      return if @projectFindPanel?.isVisible() or @findPanel?.isVisible()
+      return if @openFilesFindPanel?.isVisible() or @projectFindPanel?.isVisible() or @findPanel?.isVisible()
       @createViews()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:use-selection-as-replace-pattern', =>
@@ -77,15 +87,15 @@ module.exports =
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:toggle', =>
       @createViews()
-      togglePanel @findPanel, @projectFindPanel, => @findView.focusFindEditor()
+      togglePanel @findPanel, => @findView.focusFindEditor()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:show', =>
       @createViews()
-      showPanel @findPanel, @projectFindPanel, => @findView.focusFindEditor()
+      showPanel @findPanel, => @findView.focusFindEditor()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:show-replace', =>
       @createViews()
-      showPanel @findPanel, @projectFindPanel, => @findView.focusReplaceEditor()
+      showPanel @findPanel, => @findView.focusReplaceEditor()
 
     @subscriptions.add atom.commands.add 'atom-workspace', 'find-and-replace:clear-history', =>
       @findHistory.clear()
@@ -96,6 +106,7 @@ module.exports =
       isMiniEditor = target.tagName is 'ATOM-TEXT-EDITOR' and target.hasAttribute('mini')
       unless isMiniEditor
         @findPanel?.hide()
+        @openFilesFindPanel?.hide()
         @projectFindPanel?.hide()
 
     @subscriptions.add atom.commands.add 'atom-workspace',
@@ -111,13 +122,13 @@ module.exports =
         @selectNextObjects.set(editor, selectNext)
       selectNext
 
-    showPanel = (panelToShow, panelToHide, postShowAction) ->
-      panelToHide.hide()
+    showPanel = (panelToShow, postShowAction) =>
+      @panels.map (p) => p.hide() unless p is panelToShow
       panelToShow.show()
       postShowAction?()
 
-    togglePanel = (panelToToggle, panelToHide, postToggleAction) ->
-      panelToHide.hide()
+    togglePanel = (panelToToggle, postToggleAction) =>
+      @panels.map (p) => p.hide() unless p is panelToToggle
 
       if panelToToggle.isVisible()
         panelToToggle.hide()
@@ -187,13 +198,16 @@ module.exports =
     options = {findBuffer, replaceBuffer, pathsBuffer, findHistoryCycler, replaceHistoryCycler, pathsHistoryCycler}
 
     @findView = new FindView(@findModel, options)
-
+    @openFilesFindView = new OpenFilesFindView(@resultsModel, options)
     @projectFindView = new ProjectFindView(@resultsModel, options)
 
     @findPanel = atom.workspace.addBottomPanel(item: @findView, visible: false, className: 'tool-panel panel-bottom')
+    @openFilesFindPanel = atom.workspace.addBottomPanel(item: @openFilesFindView, visible: false, className: 'tool-panel panel-bottom')
     @projectFindPanel = atom.workspace.addBottomPanel(item: @projectFindView, visible: false, className: 'tool-panel panel-bottom')
+    @panels = [@findPanel, @openFilesFindPanel, @projectFindPanel]
 
     @findView.setPanel(@findPanel)
+    @openFilesFindView.setPanel(@openFilesFindPanel)
     @projectFindView.setPanel(@projectFindPanel)
 
     # HACK: Soooo, we need to get the model to the pane view whenever it is
@@ -223,6 +237,11 @@ module.exports =
     @findView = null
     @findModel?.destroy()
     @findModel = null
+
+    @openFilesFindPanel?.destroy()
+    @openFilesFindPanel = null
+    @openFilesFindView?.destroy()
+    @openFilesFindView = null
 
     @projectFindPanel?.destroy()
     @projectFindPanel = null
